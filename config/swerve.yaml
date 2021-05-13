@@ -1,0 +1,37 @@
+rm_manual:
+  robot_type: "standard"
+  control_param:
+    accel_x: 7.5
+    accel_y: 7.5
+    accel_angular: 7.5
+    brake_multiple: 1
+    expect_shoot_hz: 10
+    safe_shoot_hz: 3
+    safe_shoot_speed: 15.0
+    gimbal_error_limit: 99.
+    rc_param:
+      coefficient_x: 3.0
+      coefficient_y: 3.0
+      coefficient_angular: 20.0
+      coefficient_yaw: 12.56
+      coefficient_pitch: 12.56
+    pc_param:
+      coefficient_x: 5.0
+      coefficient_y: 5.0
+      coefficient_angular: 1.0
+      coefficient_yaw: 750.0
+      coefficient_pitch: 750.0
+      normal_critical_speed: 0.5
+      burst_critical_speed: 1.0
+      normal_angular: 1.0
+      burst_angular: 6.0
+      spin_sin_amplitude: 3.0
+      spin_sin_frequency: 6.28
+  power_limit:
+    danger_surplus: 28.0
+    roll_back_buffer: 55.0
+    coeff: 0.3
+    multiple: 7.0
+    safety_current: 7.5
+    use_power_manager: false
+    default_power_limit: true
