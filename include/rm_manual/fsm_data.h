@@ -19,7 +19,7 @@
 #include "rm_manual/referee.h"
 #include "rm_manual/shooter_heat_limit.h"
 #include "rm_manual/target_cost_function.h"
-template<typename T>
+
 class FsmData {
  public:
   FsmData() = default;

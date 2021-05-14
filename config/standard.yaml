@@ -8,7 +8,7 @@ rm_manual:
     expect_shoot_hz: 12
     safe_shoot_hz: 3
     safe_shoot_speed: 15.0
-    gimbal_error_limit: 0.01
+    gimbal_error_limit: 0.05
     rc_param:
       coefficient_x: 5.0
       coefficient_y: 5.0

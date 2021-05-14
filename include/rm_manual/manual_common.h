@@ -17,48 +17,57 @@
 /**
  * Control FSM handles the FSM states from a higher level
  */
-template<typename T>
 class Manual {
  public:
   explicit Manual(ros::NodeHandle &nh);
 // Runs the FSM logic and handles the state transitions and normal runs
   void run();
-  virtual void ctrlQCallback();
-  virtual void ctrlWCallback();
-  virtual void qCallback();
-  virtual void wCallback();
-  virtual void eCallback();
-  virtual void rCallback();
-  virtual void aCallback();
-  virtual void sCallback();
-  virtual void dCallback();
-  virtual void fCallback();
-  virtual void gCallback();
-  virtual void zCallback();
-  virtual void xCallback();
-  virtual void cCallback();
-  virtual void vCallback();
-  virtual void shiftCallback();
+  virtual void leftSwitchDown();
+  virtual void leftSwitchMid();
+  virtual void leftSwitchUp();
+  virtual void rightSwitchDown();
+  virtual void rightSwitchMid();
+  virtual void rightSwitchUp();
+  virtual void ctrlQPress();
+  virtual void ctrlWPress();
+  virtual void qPress(ros::Duration period);
+  virtual void wPress(ros::Duration period);
+  virtual void ePress(ros::Duration period);
+  virtual void rPress(ros::Duration period);
+  virtual void aPress(ros::Duration period);
+  virtual void sPress(ros::Duration period);
+  virtual void dPress(ros::Duration period);
+  virtual void fPress(ros::Duration period);
+  virtual void gPress(ros::Duration period);
+  virtual void zPress(ros::Duration period);
+  virtual void xPress(ros::Duration period);
+  virtual void cPress(ros::Duration period);
+  virtual void vPress(ros::Duration period);
+  virtual void shiftPress(ros::Duration period);
+  virtual void mouseLeftPress(ros::Duration period);
+  virtual void mouseRightPress(ros::Duration period);
+  virtual void mouseLeftRightPress(ros::Duration period);
 
   uint8_t getShootSpeedCmd(int shoot_speed);
-
   void setArm(double linear_x, double linear_y, double linear_z,
               double angular_x, double angular_y, double angular_z, ros::Time now);
-  void setChassis(uint8_t chassis_mode, double linear_x, double linear_y, double angular_z);
+  void setChassis(double linear_x, double linear_y, double angular_z);
   void setGimbal(uint8_t gimbal_mode, double rate_yaw, double rate_pitch, uint8_t target_id, double bullet_speed);
   void setShoot(uint8_t shoot_mode, int shoot_speed, double shoot_hz, ros::Time now);
 
   void loadParam();
+  void powerLimit();
   ros::NodeHandle nh_;
   // Send related data to FsmState
-  FsmData<T> data_;
+  FsmData data_;
 
   tf2_ros::Buffer tf_;
   tf2_ros::TransformListener *tf_listener_;
 
-  bool passive_flag_=true;
-  bool raw_flag_=false;
-  bool rc_flag_=true;
+  bool rc_flag_ = true;
+  bool emergency_stop_ = true;
+
+  uint8_t current_chassis_mode_;
 
   // chassis fsm control accelerate
   double accel_x_ = 0.0;
@@ -82,8 +91,27 @@ class Manual {
   double actual_shoot_speed_ = 0;
   int ultimate_shoot_speed_ = 0;
 
+  ros::Time last_press_q_ = ros::Time::now();
+  ros::Time last_press_w_ = ros::Time::now();
+  ros::Time last_press_e_ = ros::Time::now();
+  ros::Time last_press_r_ = ros::Time::now();
+  ros::Time last_press_t_ = ros::Time::now();
+  ros::Time last_press_a_ = ros::Time::now();
+  ros::Time last_press_s_ = ros::Time::now();
+  ros::Time last_press_d_ = ros::Time::now();
+  ros::Time last_press_f_ = ros::Time::now();
+  ros::Time last_press_g_ = ros::Time::now();
+  ros::Time last_press_z_ = ros::Time::now();
+  ros::Time last_press_x_ = ros::Time::now();
+  ros::Time last_press_c_ = ros::Time::now();
+  ros::Time last_press_v_ = ros::Time::now();
+  ros::Time last_press_shift_ = ros::Time::now();
+  ros::Time last_press_mouse_left_ = ros::Time::now();
+  ros::Time last_press_mouse_right_ = ros::Time::now();
+  ros::Time last_press_mouse_right_left_ = ros::Time::now();
   double safety_power_ = 0;
   bool have_power_manager_ = false;
+  int last_target_id_ = 0;
 };
 
 #endif //SRC_RM_SOFTWARE_RM_DECISION_SRC_FSM_FSM_STATE_H_
