@@ -27,7 +27,9 @@ Manual::Manual(ros::NodeHandle &node_handle) : nh_(node_handle) {
   have_power_manager_ = getParam(nh_, "power_limit/have_power_manager", false);
   actual_shoot_speed_ = safe_shoot_speed_;
   ultimate_shoot_speed_ = safe_shoot_speed_;
+  controller_manager_ = new ControllerManager(node_handle);
   current_chassis_mode_ = rm_msgs::ChassisCmd::FOLLOW;
+  data_.dbus_data_.stamp = ros::Time::now();
 }
 
 void Manual::run() {
@@ -35,6 +37,19 @@ void Manual::run() {
   // run referee system
   data_.referee_->read();
   loadParam();
+  if (remote_control_is_open_ && ((now - data_.dbus_data_.stamp).toSec() > 0.1)) {
+    if (controller_manager_->checkControllersLoaded()) {
+      this->remoteControlTurnOff();
+      remote_control_is_open_ = false;
+      ROS_INFO("remote control turn off");
+    }
+  } else if (!remote_control_is_open_ && ((now - data_.dbus_data_.stamp).toSec() < 0.1)) {
+    if (controller_manager_->checkControllersLoaded()) {
+      this->remoteControlTurnOn();
+      remote_control_is_open_ = true;
+      ROS_INFO("remote control turn on");
+    }
+  }
   if (data_.dbus_data_.s_r == rm_msgs::DbusData::DOWN) {
     this->rightSwitchDown();
   } else if (data_.dbus_data_.s_r == rm_msgs::DbusData::MID) {
@@ -244,7 +259,8 @@ void Manual::ctrlWPress() {
 }
 
 void Manual::qPress(ros::Duration period) {
-
+  if (period.toSec() > 0.5)
+    is_burst_ = !is_burst_;
 }
 
 void Manual::wPress(ros::Duration period) {
@@ -302,22 +318,62 @@ void Manual::cPress(ros::Duration period) {
 void Manual::vPress(ros::Duration period) {
 
 }
-
+void Manual::bPress(ros::Duration period) {
+  if (period.toSec() > 0.5) {
+    only_attack_base_ = !only_attack_base_;
+  }
+}
 void Manual::shiftPress(ros::Duration period) {
   data_.cmd_vel_.linear.x *= 2.0;
   data_.cmd_vel_.linear.y *= 2.0;
 }
 
 void Manual::mouseLeftPress(ros::Duration period) {
-
+  data_.shoot_cmd_.mode = rm_msgs::ShootCmd::PUSH;
+  if (is_burst_) { // ignore shooter heat limit
+    data_.shoot_cmd_.hz = expect_shoot_hz_;
+  } else {
+    data_.shooter_heat_limit_->input(data_.referee_, expect_shoot_hz_, safe_shoot_hz_);
+    data_.shoot_cmd_.hz = data_.shooter_heat_limit_->output();
+  }
 }
 
 void Manual::mouseRightPress(ros::Duration period) {
-
+  int target_id = 0;
+  data_.target_cost_function_->input(data_.track_data_array_,
+                                     data_.referee_->referee_data_.game_robot_hp_,
+                                     only_attack_base_);
+  target_id = data_.target_cost_function_->output();
+  if (target_id == 0) {
+    data_.gimbal_cmd_.mode = rm_msgs::GimbalCmd::RATE;
+  } else {
+    data_.gimbal_cmd_.target_id = target_id;
+    data_.gimbal_cmd_.mode = rm_msgs::GimbalCmd::TRACK;
+  }
 }
 
 void Manual::mouseLeftRightPress(ros::Duration period) {
-
+  ros::Time now = ros::Time::now();
+  int target_id = 0;
+  data_.target_cost_function_->input(data_.track_data_array_,
+                                     data_.referee_->referee_data_.game_robot_hp_,
+                                     only_attack_base_);
+  target_id = data_.target_cost_function_->output();
+  if (target_id == 0) {
+    data_.gimbal_cmd_.mode = rm_msgs::GimbalCmd::RATE;
+  } else {
+    data_.gimbal_cmd_.target_id = target_id;
+    data_.gimbal_cmd_.mode = rm_msgs::GimbalCmd::TRACK;
+  }
+  if (now - data_.gimbal_des_error_.stamp > ros::Duration(1.0)) { // check time stamp
+    data_.gimbal_des_error_.error = 0;
+    ROS_WARN("The time stamp of gimbal track error is too old");
+  }
+  if (data_.gimbal_des_error_.error >= this->gimbal_error_limit_) { // check  error
+    data_.shoot_cmd_.mode = rm_msgs::ShootCmd::READY;
+  } else {
+    data_.shoot_cmd_.mode = rm_msgs::ShootCmd::PUSH;
+  }
 }
 
 void Manual::setChassis(double linear_x, double linear_y, double angular_z) {
@@ -372,6 +428,12 @@ void Manual::setArm(double linear_x, double linear_y, double linear_z,
   //data_.engineer_vel_cmd_pub_.publish(data_.arm_cmd_vel_);
 }
 
+void Manual::remoteControlTurnOff() {
+  controller_manager_->stopAllControllers();
+}
+void Manual::remoteControlTurnOn() {
+  controller_manager_->startAllControllers();
+}
 // RobotRunner a template
 
 class Manual;

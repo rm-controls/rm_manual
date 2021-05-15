@@ -10,9 +10,12 @@
 #include <utility>
 #include <tf/transform_listener.h>
 #include <control_toolbox/pid.h>
+#include <controller_manager_msgs/SwitchController.h>
+
 #include <rm_common/ros_utilities.h>
 #include "rm_common/ori_tool.h"
-#include "rm_manual/fsm_data.h"
+#include "rm_manual/data.h"
+#include "rm_manual/controller_manager.h"
 
 /**
  * Control FSM handles the FSM states from a higher level
@@ -43,10 +46,13 @@ class Manual {
   virtual void xPress(ros::Duration period);
   virtual void cPress(ros::Duration period);
   virtual void vPress(ros::Duration period);
+  virtual void bPress(ros::Duration period);
   virtual void shiftPress(ros::Duration period);
   virtual void mouseLeftPress(ros::Duration period);
   virtual void mouseRightPress(ros::Duration period);
   virtual void mouseLeftRightPress(ros::Duration period);
+  virtual void remoteControlTurnOff();
+  virtual void remoteControlTurnOn();
 
   uint8_t getShootSpeedCmd(int shoot_speed);
   void setArm(double linear_x, double linear_y, double linear_z,
@@ -57,16 +63,21 @@ class Manual {
 
   void loadParam();
   void powerLimit();
+
   ros::NodeHandle nh_;
   // Send related data to FsmState
-  FsmData data_;
+  Data data_;
+
+  ControllerManager *controller_manager_;
 
   tf2_ros::Buffer tf_;
   tf2_ros::TransformListener *tf_listener_;
 
   bool rc_flag_ = true;
   bool emergency_stop_ = true;
-
+  bool remote_control_is_open_ = false;
+  bool is_burst_ = false;
+  bool only_attack_base_ = false;
   uint8_t current_chassis_mode_;
 
   // chassis fsm control accelerate
@@ -105,6 +116,7 @@ class Manual {
   ros::Time last_press_x_ = ros::Time::now();
   ros::Time last_press_c_ = ros::Time::now();
   ros::Time last_press_v_ = ros::Time::now();
+  ros::Time last_press_b_ = ros::Time::now();
   ros::Time last_press_shift_ = ros::Time::now();
   ros::Time last_press_mouse_left_ = ros::Time::now();
   ros::Time last_press_mouse_right_ = ros::Time::now();

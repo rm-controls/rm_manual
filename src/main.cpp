@@ -3,6 +3,7 @@
 //
 
 #include "rm_manual/manual_common.h"
+
 int main(int argc, char **argv) {
   std::string robot;
   Manual *manual_control;

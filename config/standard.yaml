@@ -1,5 +1,15 @@
 rm_manual:
   robot_type: "standard"
+  start_controller:
+    robot_state_controller: true
+    joint_state_controller: true
+    chassis_controller: true
+    gimbal_controller: true
+    shooter_controller: true
+    imu_sensor_controller: true
+    engineer_arm_controller: false
+    engineer_hand_controller: false
+    joint_group_position_controller: false
   control_param:
     accel_x: 8.0
     accel_y: 8.0

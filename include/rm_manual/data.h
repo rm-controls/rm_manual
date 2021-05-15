@@ -20,9 +20,9 @@
 #include "rm_manual/shooter_heat_limit.h"
 #include "rm_manual/target_cost_function.h"
 
-class FsmData {
+class Data {
  public:
-  FsmData() = default;
+  Data() = default;
 
   ros::Subscriber dbus_sub_;
   ros::Subscriber track_sub_;
@@ -60,13 +60,13 @@ class FsmData {
     referee_ = new Referee();
     // sub
     dbus_sub_ = nh.subscribe<rm_msgs::DbusData>(
-        "/dbus_data", 10, &FsmData::dbusDataCallback, this);
+        "/dbus_data", 10, &Data::dbusDataCallback, this);
     track_sub_ = nh.subscribe<rm_msgs::TrackDataArray>(
-        "/track", 10, &FsmData::trackCallback, this);
+        "/track", 10, &Data::trackCallback, this);
     gimbal_des_error_sub_ = nh.subscribe<rm_msgs::GimbalDesError>(
-        "/error_des", 10, &FsmData::gimbalDesErrorCallback, this);
+        "/error_des", 10, &Data::gimbalDesErrorCallback, this);
     odom_sub_ = nh.subscribe<nav_msgs::Odometry>(
-        "/odom", 10, &FsmData::odomCallback, this);
+        "/odom", 10, &Data::odomCallback, this);
     // pub
     ros::NodeHandle root_nh;
     vel_cmd_pub_ = root_nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
