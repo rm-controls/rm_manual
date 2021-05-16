@@ -15,6 +15,7 @@ int main(int argc, char **argv) {
   else if (robot == "hero")
     manual_control = new Manual(nh);
   ros::Rate loop_rate(100);
+
   while (ros::ok()) {
     ros::spinOnce();
     loop_rate.sleep();

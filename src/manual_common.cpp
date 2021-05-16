@@ -30,6 +30,7 @@ Manual::Manual(ros::NodeHandle &node_handle) : nh_(node_handle) {
   controller_manager_ = new ControllerManager(node_handle);
   current_chassis_mode_ = rm_msgs::ChassisCmd::FOLLOW;
   data_.dbus_data_.stamp = ros::Time::now();
+  controller_manager_->loadAllControllers();
 }
 
 void Manual::run() {
@@ -38,17 +39,13 @@ void Manual::run() {
   data_.referee_->read();
   loadParam();
   if (remote_control_is_open_ && ((now - data_.dbus_data_.stamp).toSec() > 0.1)) {
-    if (controller_manager_->checkControllersLoaded()) {
       this->remoteControlTurnOff();
       remote_control_is_open_ = false;
       ROS_INFO("remote control turn off");
-    }
   } else if (!remote_control_is_open_ && ((now - data_.dbus_data_.stamp).toSec() < 0.1)) {
-    if (controller_manager_->checkControllersLoaded()) {
       this->remoteControlTurnOn();
       remote_control_is_open_ = true;
       ROS_INFO("remote control turn on");
-    }
   }
   if (data_.dbus_data_.s_r == rm_msgs::DbusData::DOWN) {
     this->rightSwitchDown();
