@@ -16,7 +16,7 @@ ControllerManager::ControllerManager(ros::NodeHandle &nh) {
     ROS_INFO("No information controllers defined");
   for (int i = 0; i < controllers.size(); ++i)
     information_controllers_.push_back(controllers[0][i]);
-  if (nh.getParam("information_controllers", controllers))
+  if (nh.getParam("movement_controllers", controllers))
     ROS_INFO("No movement controllers defined");
   for (int i = 0; i < controllers.size(); ++i)
     movement_controllers_.push_back(controllers[0][i]);
