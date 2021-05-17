@@ -7,7 +7,6 @@ rm_manual:
     - controllers/gimbal_controller
     - controllers/shooter_controller
     - controllers/imu_sensor_controller
-  #
   start_controller:
     robot_state_controller: true
     joint_state_controller: true
@@ -47,6 +46,6 @@ rm_manual:
       spin_sin_frequency: 6.28
   power_limit:
     safety_power: 50
-    have_power_manager: true
+    have_power_manager: false
 
 
