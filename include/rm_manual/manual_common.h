@@ -17,13 +17,9 @@
 #include "rm_manual/data.h"
 #include "rm_manual/controller_manager.h"
 
-/**
- * Control FSM handles the FSM states from a higher level
- */
 class Manual {
  public:
   explicit Manual(ros::NodeHandle &nh);
-// Runs the FSM logic and handles the state transitions and normal runs
   void run();
   virtual void leftSwitchDown();
   virtual void leftSwitchMid();

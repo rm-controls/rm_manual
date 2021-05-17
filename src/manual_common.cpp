@@ -30,7 +30,7 @@ Manual::Manual(ros::NodeHandle &node_handle) : nh_(node_handle) {
   controller_manager_ = new ControllerManager(node_handle);
   current_chassis_mode_ = rm_msgs::ChassisCmd::FOLLOW;
   data_.dbus_data_.stamp = ros::Time::now();
-  controller_manager_->InitControllers();
+  controller_manager_->loadAllControllers();
 }
 
 void Manual::run() {
@@ -427,10 +427,11 @@ void Manual::setShoot(uint8_t shoot_mode, int shoot_speed, double shoot_hz, ros:
 }
 
 void Manual::remoteControlTurnOff() {
-  controller_manager_->stopAllControllers();
+  controller_manager_->stopMovementControllers();
 }
+
 void Manual::remoteControlTurnOn() {
-  controller_manager_->startAllControllers();
+  controller_manager_->startMovementControllers();
 }
 // RobotRunner a template
 
