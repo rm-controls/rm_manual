@@ -13,11 +13,15 @@ class ControllerManager {
  public:
   ControllerManager(ros::NodeHandle &node_handle);
 
-  void loadAllControllers();
+  void InitControllers();
   void startAllControllers();
   void stopAllControllers();
 
-  XmlRpc::XmlRpcValue *controllers_;
+  XmlRpc::XmlRpcValue *base_controllers_;
+  XmlRpc::XmlRpcValue *module_controllers_;
+
+  std::vector<std::string> base_controllers_vector_;
+  std::vector<std::string> module_controllers_vector_;
  private:
   ros::NodeHandle nh_;
   //server client

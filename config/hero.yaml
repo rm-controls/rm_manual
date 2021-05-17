@@ -1,21 +1,13 @@
 rm_manual:
   robot_type: "hero"
-  load_controllers:
+  base_controllers:
     - controllers/robot_state_controller
     - controllers/joint_state_controller
+    - controllers/imu_sensor_controller
+  module_controllers:
     - controllers/chassis_controller
     - controllers/gimbal_controller
     - controllers/shooter_controller
-    - controllers/imu_sensor_controller
-  robot_state_controller: true
-    joint_state_controller: true
-    chassis_controller: true
-    gimbal_controller: true
-    shooter_controller: true
-    imu_sensor_controller: true
-    engineer_arm_controller: false
-    engineer_hand_controller: false
-    joint_group_position_controller: false
   control_param:
     accel_x: 10.0
     accel_y: 10.0

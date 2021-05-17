@@ -16,7 +16,6 @@ int main(int argc, char **argv) {
     ROS_ERROR("no robot type ");
     return 0;
   }
-
   ros::Rate loop_rate(100);
   while (ros::ok()) {
     ros::spinOnce();
