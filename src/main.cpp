@@ -10,12 +10,14 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "rm_manual");
   ros::NodeHandle nh("~");
   robot = getParam(nh, "robot_type", (std::string) "error");
-  if (robot == "standard")
+  if (robot == "standard" || robot == "hero")
     manual_control = new Manual(nh);
-  else if (robot == "hero")
-    manual_control = new Manual(nh);
-  ros::Rate loop_rate(100);
+  else {
+    ROS_ERROR("no robot type ");
+    return 0;
+  }
 
+  ros::Rate loop_rate(100);
   while (ros::ok()) {
     ros::spinOnce();
     loop_rate.sleep();

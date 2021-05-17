@@ -55,8 +55,7 @@ class Manual {
   virtual void remoteControlTurnOn();
 
   uint8_t getShootSpeedCmd(int shoot_speed);
-  void setArm(double linear_x, double linear_y, double linear_z,
-              double angular_x, double angular_y, double angular_z, ros::Time now);
+
   void setChassis(double linear_x, double linear_y, double angular_z);
   void setGimbal(uint8_t gimbal_mode, double rate_yaw, double rate_pitch, uint8_t target_id, double bullet_speed);
   void setShoot(uint8_t shoot_mode, int shoot_speed, double shoot_hz, ros::Time now);
@@ -78,8 +77,10 @@ class Manual {
   bool remote_control_is_open_ = false;
   bool is_burst_ = false;
   bool only_attack_base_ = false;
+  bool enter_pc_ = false;
   uint8_t current_chassis_mode_;
-
+  uint8_t current_gimbal_mode_;
+  uint8_t current_shooter_mode_;
   // chassis fsm control accelerate
   double accel_x_ = 0.0;
   double accel_y_ = 0.0;

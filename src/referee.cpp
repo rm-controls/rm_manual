@@ -1,8 +1,8 @@
 //
 // Created by luohx on 20-2-19.
 //
-#include "rm_manual/referee.h"
 #include <ros/ros.h>
+#include "rm_manual/referee.h"
 
 void Referee::init(ros::NodeHandle nh) {
   serial::Timeout timeout = serial::Timeout::simpleTimeout(50);
@@ -12,7 +12,8 @@ void Referee::init(ros::NodeHandle nh) {
     serial_.setBaudrate(115200);
     serial_.setTimeout(timeout);
   } catch (std::exception &e) {
-    ROS_ERROR("Cannot set serial port of referee system, check whether the serial library is installed.");
+    ROS_ERROR(
+        "Cannot set serial port of referee system, check whether the serial library is installed and try to use catkin clean");
     return;
   }
 
@@ -21,7 +22,7 @@ void Referee::init(ros::NodeHandle nh) {
       serial_.open();
       is_open_ = true;
     } catch (serial::IOException &e) {
-      ROS_WARN("Referee system serial cannot open [%s]", e.what());
+      ROS_ERROR("Referee system serial cannot open");
     }
   }
   if (is_open_) {
@@ -36,206 +37,6 @@ void Referee::init(ros::NodeHandle nh) {
   tf_listener_ = new tf2_ros::TransformListener(tf_);
 }
 
-/**
- * Send data to client UI
- */
-void Referee::run() {
-  uint8_t graph_operate_type;
-  char power_string[30];
-  float power_float;
-  ros::Time now = ros::Time::now();
-  geometry_msgs::TransformStamped gimbal_transformStamped;
-
-  if (robot_id_ != 0 && robot_id_ != kRedSentry && robot_id_ != kBlueSentry) {
-    if (dbus_data_.key_g) {
-      if (now - last_press_time_g_ < ros::Duration(0.5)) dbus_data_.key_g = false;
-      else last_press_time_g_ = now;
-    }
-    if (dbus_data_.key_r) {
-      if (now - last_press_time_r_ < ros::Duration(0.5)) dbus_data_.key_r = false;
-      else last_press_time_r_ = now;
-    }
-    if (dbus_data_.key_q) {
-      if (now - last_press_time_q_ < ros::Duration(0.5)) dbus_data_.key_q = false;
-      else last_press_time_q_ = now;
-    }
-    if (dbus_data_.key_c) {
-      if (now - last_press_time_c_ < ros::Duration(0.5)) dbus_data_.key_c = false;
-      else last_press_time_c_ = now;
-    }
-
-    if (dbus_data_.key_ctrl && dbus_data_.key_q) {
-      is_chassis_passive_ = true;
-      is_gimbal_passive_ = true;
-      is_shooter_passive_ = true;
-      chassis_update_flag_ = true;
-      gimbal_update_flag_ = true;
-      shooter_update_flag_ = true;
-    }
-    if (dbus_data_.key_ctrl && dbus_data_.key_w) {
-      is_chassis_passive_ = false;
-      is_gimbal_passive_ = false;
-      is_shooter_passive_ = false;
-      chassis_update_flag_ = true;
-      gimbal_update_flag_ = true;
-      shooter_update_flag_ = true;
-    }
-
-    if (dbus_data_.key_g) {
-      gyro_flag_ = !gyro_flag_;
-      chassis_update_flag_ = true;
-    }
-    if (dbus_data_.key_r) {
-      twist_flag_ = !twist_flag_;
-      chassis_update_flag_ = true;
-    }
-    if (!is_shooter_passive_ && dbus_data_.key_q) {
-      burst_flag_ = !burst_flag_;
-      shooter_update_flag_ = true;
-    }
-    if (dbus_data_.key_c) {
-      only_attack_base_flag_ = !only_attack_base_flag_;
-      attack_mode_update_flag_ = true;
-    }
-    if (dbus_data_.key_x) {
-      graph_operate_type = kAdd;
-      chassis_update_flag_ = true;
-      gimbal_update_flag_ = true;
-      shooter_update_flag_ = true;
-      attack_mode_update_flag_ = true;
-    } else {
-      graph_operate_type = kUpdate;
-    }
-
-/*
-    // get armors' position
-    try {
-      gimbal_transformStamped = this->tf_.lookupTransform("yaw", "base_link", ros::Time(0));
-    }
-    catch (tf2::TransformException &ex) {
-      //ROS_ERROR("%s",ex.what());
-    }
-    quatToRPY(gimbal_transformStamped.transform.rotation, roll, pitch, yaw);
-
-    // update information of armor
-    if (referee_data_.robot_hurt_.armor_id == 0) {
-      if (referee_data_.robot_hurt_.hurt_type == 0x0) {
-        drawCircle((int) (960 + 340 * sin(0 - yaw)), (int) (540 + 340 * cos(0 - yaw)), 50, 5, kPurple, kAdd);
-      } else if (referee_data_.robot_hurt_.hurt_type == 0x5) {
-        drawCircle((int) (960 + 340 * sin(0 - yaw)), (int) (540 + 340 * cos(0 - yaw)), 50, 5, kYellow, kAdd);
-      }
-      last_hurt_id0_ = now;
-      referee_data_.robot_hurt_.hurt_type = 0x9;
-      referee_data_.robot_hurt_.armor_id = 9;
-    }
-    if (referee_data_.robot_hurt_.armor_id == 1) {
-      if (referee_data_.robot_hurt_.hurt_type == 0x0) {
-        drawCircle((int) (960 + 340 * sin(3 * M_PI_2 - yaw)), (int) (540 + 340 * cos(3 * M_PI_2 - yaw)),
-                   50, 6, kPurple, kAdd);
-      } else if (referee_data_.robot_hurt_.hurt_type == 0x5) {
-        drawCircle((int) (960 + 340 * sin(3 * M_PI_2 - yaw)), (int) (540 + 340 * cos(3 * M_PI_2 - yaw)),
-                   50, 6, kYellow, kAdd);
-      }
-      last_hurt_id1_ = now;
-      referee_data_.robot_hurt_.hurt_type = 0x9;
-      referee_data_.robot_hurt_.armor_id = 9;
-    }
-    if (referee_data_.robot_hurt_.armor_id == 2) {
-      if (referee_data_.robot_hurt_.hurt_type == 0x0) { // bullet damage
-        drawCircle((int) (960 + 340 * sin(M_PI - yaw)), (int) (540 + 340 * cos(M_PI - yaw)), 50, 7, kPurple, kAdd);
-      } else if (referee_data_.robot_hurt_.hurt_type == 0x5) { // hit damage
-        drawCircle((int) (960 + 340 * sin(M_PI - yaw)), (int) (540 + 340 * cos(M_PI - yaw)), 50, 7, kYellow, kAdd);
-      }
-      last_hurt_id2_ = now;
-      referee_data_.robot_hurt_.hurt_type = 0x9;
-      referee_data_.robot_hurt_.armor_id = 9;
-    }
-    if (referee_data_.robot_hurt_.armor_id == 3) {
-      if (referee_data_.robot_hurt_.hurt_type == 0x0) {
-        drawCircle((int) (960 + 340 * sin(M_PI_2 - yaw)), (int) (540 + 340 * cos(M_PI_2 - yaw)), 50, 8, kPurple, kAdd);
-      } else if (referee_data_.robot_hurt_.hurt_type == 0x5) {
-        drawCircle((int) (960 + 340 * sin(M_PI_2 - yaw)), (int) (540 + 340 * cos(M_PI_2 - yaw)), 50, 8, kYellow, kAdd);
-      }
-      last_hurt_id3_ = now;
-      referee_data_.robot_hurt_.hurt_type = 0x9;
-      referee_data_.robot_hurt_.armor_id = 9;
-    }
-
-    if (now - last_hurt_id0_ > ros::Duration(0.5)) {
-      drawCircle((int) (960 + 340 * sin(0 - yaw)), (int) (540 + 340 * cos(0 - yaw)),
-                 50, 5, kGreen, kDelete);
-    }
-    if (now - last_hurt_id1_ > ros::Duration(0.5)) {
-      drawCircle((int) (960 + 340 * sin(3 * M_PI_2 - yaw)), (int) (540 + 340 * cos(3 * M_PI_2 - yaw)),
-                 50, 6, kGreen, kDelete);
-    }
-    if (now - last_hurt_id2_ > ros::Duration(0.5)) {
-      drawCircle((int) (960 + 340 * sin(M_PI - yaw)), (int) (540 + 340 * cos(M_PI - yaw)),
-                 50, 7, kGreen, kDelete);
-    }
-    if (now - last_hurt_id3_ > ros::Duration(0.5)) {
-      drawCircle((int) (960 + 340 * sin(M_PI_2 - yaw)), (int) (540 + 340 * cos(M_PI_2 - yaw)),
-                 50, 8, kGreen, kDelete);
-    }
-*/
-
-    power_float = power_manager_data_.parameters[3] * 100;
-    sprintf(power_string, "Cap: %1.0f%%", power_float);
-    if (power_float >= 60)
-      drawString(910, 100, 4, kGreen, graph_operate_type, power_string);
-    else if (power_float < 60 && power_float >= 30)
-      drawString(910, 100, 4, kYellow, graph_operate_type, power_string);
-    else if (power_float < 30)
-      drawString(910, 100, 4, kOrange, graph_operate_type, power_string);
-
-    if (chassis_update_flag_) {
-      if (!is_chassis_passive_) {
-        if (twist_flag_)
-          drawString(1470, 790, 1, kYellow, graph_operate_type, "chassis:twist");
-        else if (gyro_flag_)
-          drawString(1470, 790, 1, kYellow, graph_operate_type, "chassis:gyro");
-        else
-          drawString(1470, 790, 1, kYellow, graph_operate_type, "chassis:follow");
-      } else {
-        drawString(1470, 790, 1, kYellow, graph_operate_type, "chassis:passive");
-      }
-      chassis_update_flag_ = false;
-    }
-    if (gimbal_update_flag_) {
-      if (!is_gimbal_passive_) {
-        if (dbus_data_.p_r)
-          drawString(1470, 740, 2, kYellow, graph_operate_type, "gimbal:track");
-        else
-          drawString(1470, 740, 2, kYellow, graph_operate_type, "gimbal:rate");
-      } else {
-        drawString(1470, 740, 2, kYellow, graph_operate_type, "gimbal:passive");
-      }
-      gimbal_update_flag_ = false;
-    }
-    if (shooter_update_flag_) {
-      if (!is_shooter_passive_) {
-        if (burst_flag_)
-          drawString(1470, 690, 3, kYellow, graph_operate_type, "shooter:burst");
-        else
-          drawString(1470, 690, 3, kYellow, graph_operate_type, "shooter:normal");
-      } else {
-        drawString(1470, 690, 3, kYellow, graph_operate_type, "shooter:passive");
-      }
-      shooter_update_flag_ = false;
-    }
-    if (attack_mode_update_flag_) {
-      if (only_attack_base_flag_) {
-        drawString(1470, 640, 4, kYellow, graph_operate_type, "target:base");
-      } else {
-        drawString(1470, 640, 4, kYellow, graph_operate_type, "target:all");
-      }
-      attack_mode_update_flag_ = false;
-    }
-  }
-
-}
-
-/******************* Receive data from referee system *************************/
 void Referee::read() {
   std::vector<uint8_t> rx_buffer;
   std::vector<uint8_t> temp_buffer;
@@ -288,36 +89,115 @@ void Referee::read() {
       ROS_INFO("Referee system reconnected.");
     }
   }
-
-  getId();
-
-  if (robot_id_ == kRedHero || robot_id_ == kBlueHero) {
-    referee_pub_data_.shooter_heat = referee_data_.power_heat_data_.shooter_id1_42mm_cooling_heat;
-    referee_pub_data_.shooter_heat_cooling_limit = referee_data_.game_robot_status_.shooter_id1_42mm_cooling_limit;
-  } else {
-    referee_pub_data_.shooter_heat = referee_data_.power_heat_data_.shooter_id1_17mm_cooling_heat;
-    referee_pub_data_.shooter_heat_cooling_limit = referee_data_.game_robot_status_.shooter_id1_17mm_cooling_limit;
-  }
-
-  referee_pub_data_.chassis_volt = referee_data_.power_heat_data_.chassis_volt;
-  referee_pub_data_.chassis_current = referee_data_.power_heat_data_.chassis_current;
-  referee_pub_data_.chassis_power = referee_data_.power_heat_data_.chassis_power;
-  referee_pub_data_.chassis_power_buffer = referee_data_.power_heat_data_.chassis_power_buffer;
-  referee_pub_data_.robot_hp = referee_data_.game_robot_status_.remain_HP;
-  referee_pub_data_.hurt_armor_id = referee_data_.robot_hurt_.armor_id;
-  referee_pub_data_.hurt_type = referee_data_.robot_hurt_.hurt_type;
-  referee_pub_data_.stamp = ros::Time::now();
-
-  power_manager_pub_data_.capacity = power_manager_data_.parameters[3] * 100;
-  power_manager_pub_data_.chassis_power_buffer = power_manager_data_.parameters[2];
-  power_manager_pub_data_.limit_power = power_manager_data_.parameters[1];
-  power_manager_pub_data_.chassis_power = power_manager_data_.parameters[0];
-  power_manager_pub_data_.stamp = ros::Time::now();
-
-  referee_pub_.publish(referee_pub_data_);
-  power_manager_pub_.publish(power_manager_pub_data_);
+  getRobotId();
+  publishData();
 }
 
+void Referee::run() {
+  uint8_t graph_operate_type;
+  ros::Time now = ros::Time::now();
+
+  if (robot_id_ != 0 && robot_id_ != kRedSentry && robot_id_ != kBlueSentry) {
+    checkForDelay(0.5, 0.5, now);
+    if (dbus_data_.key_ctrl && dbus_data_.key_q) {
+      chassis_mode_ = "passive";
+      gimbal_mode_ = "passive";
+      shooter_mode_ = "passive";
+      chassis_update_flag_ = true;
+      gimbal_update_flag_ = true;
+      shooter_update_flag_ = true;
+    }
+    if (dbus_data_.key_ctrl && dbus_data_.key_w) {
+      chassis_mode_ = "follow";
+      gimbal_mode_ = "rate";
+      shooter_mode_ = "stop";
+      chassis_update_flag_ = true;
+      gimbal_update_flag_ = true;
+      shooter_update_flag_ = true;
+    }
+    if (dbus_data_.key_g) {
+      gyro_flag_ = !gyro_flag_;
+      chassis_update_flag_ = true;
+    }
+    if (dbus_data_.key_r) {
+      twist_flag_ = !twist_flag_;
+      chassis_update_flag_ = true;
+    }
+    if (shooter_mode_ != "passive" && dbus_data_.key_q) {
+      burst_flag_ = !burst_flag_;
+      shooter_update_flag_ = true;
+    }
+    if (dbus_data_.key_c) {
+      only_attack_base_flag_ = !only_attack_base_flag_;
+      attack_mode_update_flag_ = true;
+    }
+    if (dbus_data_.p_r) {
+      gimbal_update_flag_ = true;
+    }
+    if (last_key_f_ != dbus_data_.key_f) {
+      shooter_update_flag_ = true;
+      last_key_f_ = dbus_data_.key_f;
+    }
+    if (dbus_data_.key_x) {
+      ROS_INFO("Update UI");
+      graph_operate_type = kAdd;
+      chassis_update_flag_ = true;
+      gimbal_update_flag_ = true;
+      shooter_update_flag_ = true;
+      attack_mode_update_flag_ = true;
+    } else {
+      graph_operate_type = kUpdate;
+    }
+
+    displayArmorInfo(getArmorPosition(), now);
+
+    if (cap_update_flag_) {
+      displayCapInfo(graph_operate_type);
+      cap_update_flag_ = false;
+    }
+
+    if (chassis_update_flag_) {
+      displayChassisInfo(graph_operate_type);
+      chassis_update_flag_ = false;
+    }
+    if (gimbal_update_flag_) {
+      displayGimbalInfo(graph_operate_type);
+      gimbal_update_flag_ = false;
+    }
+    if (shooter_update_flag_) {
+      displayShooterInfo(graph_operate_type);
+      shooter_update_flag_ = false;
+    }
+    if (attack_mode_update_flag_) {
+      displayAttackTargetInfo(graph_operate_type);
+      attack_mode_update_flag_ = false;
+    }
+  }
+
+}
+
+double Referee::getActualBulletSpeed(int shoot_speed) const {
+  if (is_open_) {
+    if (referee_data_.shoot_data_.bullet_speed != 0)
+      return referee_data_.shoot_data_.bullet_speed;
+  }
+  return shoot_speed;
+}
+
+double Referee::getUltimateBulletSpeed(int shoot_speed) const {
+  if (is_open_) {
+    if (robot_id_ == kBlueHero || robot_id_ == kRedHero) { // 42mm
+      if (referee_data_.game_robot_status_.shooter_id1_42mm_speed_limit != 0)
+        return referee_data_.game_robot_status_.shooter_id1_42mm_speed_limit;
+    } else { // 17mm
+      if (referee_data_.game_robot_status_.shooter_id1_17mm_speed_limit != 0)
+        return referee_data_.game_robot_status_.shooter_id1_17mm_speed_limit;
+    }
+  }
+  return shoot_speed;
+}
+
+/******************* Receive data from referee system *************************/
 void Referee::unpack(const std::vector<uint8_t> &rx_buffer) {
   int num = 0, count = kUnpackLength;
   uint8_t byte;
@@ -383,6 +263,7 @@ void Referee::unpack(const std::vector<uint8_t> &rx_buffer) {
           if (verifyCRC16CheckSum(referee_unpack_obj.protocol_packet,
                                   kProtocolHeaderLength + kProtocolTailLength + kProtocolCmdIdLength
                                       + referee_unpack_obj.data_len)) {
+            last_get_referee_data_ = ros::Time::now();
             getData(referee_unpack_obj.protocol_packet);
             memset(referee_unpack_obj.protocol_packet, 0, sizeof(referee_unpack_obj.protocol_packet));
           }
@@ -510,7 +391,7 @@ void Referee::getData(uint8_t *frame) {
   }
 }
 
-void Referee::getId() {
+void Referee::getRobotId() {
   if (robot_id_ == 0) {
     robot_id_ = referee_data_.game_robot_status_.robot_id;
     switch (robot_id_) {
@@ -538,36 +419,207 @@ void Referee::getId() {
   }
 }
 
-double Referee::getActualBulletSpeed(int shoot_speed) const {
-  if (is_open_) {
-    if (referee_data_.shoot_data_.bullet_speed != 0)
-      return referee_data_.shoot_data_.bullet_speed;
+void Referee::publishData() {
+  if (robot_id_ == kRedHero || robot_id_ == kBlueHero) {
+    referee_pub_data_.shooter_heat = referee_data_.power_heat_data_.shooter_id1_42mm_cooling_heat;
+    referee_pub_data_.shooter_heat_cooling_limit = referee_data_.game_robot_status_.shooter_id1_42mm_cooling_limit;
+  } else {
+    referee_pub_data_.shooter_heat = referee_data_.power_heat_data_.shooter_id1_17mm_cooling_heat;
+    referee_pub_data_.shooter_heat_cooling_limit = referee_data_.game_robot_status_.shooter_id1_17mm_cooling_limit;
   }
-  return shoot_speed;
-}
 
-double Referee::getUltimateBulletSpeed(int shoot_speed) const {
-  if (is_open_) {
-    if (robot_id_ == kBlueHero || robot_id_ == kRedHero) { // 42mm
-      if (referee_data_.game_robot_status_.shooter_id1_42mm_speed_limit != 0)
-        return referee_data_.game_robot_status_.shooter_id1_42mm_speed_limit;
-    } else { // 17mm
-      if (referee_data_.game_robot_status_.shooter_id1_17mm_speed_limit != 0)
-        return referee_data_.game_robot_status_.shooter_id1_17mm_speed_limit;
-    }
-  }
-  return shoot_speed;
+  referee_pub_data_.chassis_volt = referee_data_.power_heat_data_.chassis_volt;
+  referee_pub_data_.chassis_current = referee_data_.power_heat_data_.chassis_current;
+  referee_pub_data_.chassis_power = referee_data_.power_heat_data_.chassis_power;
+  referee_pub_data_.chassis_power_buffer = referee_data_.power_heat_data_.chassis_power_buffer;
+  referee_pub_data_.robot_hp = referee_data_.game_robot_status_.remain_HP;
+  referee_pub_data_.hurt_armor_id = referee_data_.robot_hurt_.armor_id;
+  referee_pub_data_.hurt_type = referee_data_.robot_hurt_.hurt_type;
+  referee_pub_data_.bullet_speed = referee_data_.shoot_data_.bullet_speed;
+  referee_pub_data_.stamp = last_get_referee_data_;
+
+  power_manager_pub_data_.capacity = power_manager_data_.parameters[3] * 100;
+  power_manager_pub_data_.chassis_power_buffer = power_manager_data_.parameters[2];
+  power_manager_pub_data_.limit_power = power_manager_data_.parameters[1];
+  power_manager_pub_data_.chassis_power = power_manager_data_.parameters[0];
+  power_manager_pub_data_.stamp = power_manager_data_.last_get_powermanager_data_;
+
+  referee_pub_.publish(referee_pub_data_);
+  power_manager_pub_.publish(power_manager_pub_data_);
 }
 
 /******************* Send data to referee system *************************/
-/**
- * Draw a graph on client
- * @param robot_id
- * @param client_id
- * @param side
- * @param operate_type
- */
-void Referee::drawCircle(int center_x, int center_y, int radius, int picture_name,
+void Referee::checkForDelay(float key_delay, float cap_data_delay, const ros::Time &now) {
+  // key press delay
+  if (dbus_data_.key_g) {
+    if (now - last_press_g_ < ros::Duration(key_delay)) dbus_data_.key_g = false;
+    else last_press_g_ = now;
+  }
+  if (dbus_data_.key_r) {
+    if (now - last_press_r_ < ros::Duration(key_delay)) dbus_data_.key_r = false;
+    else last_press_r_ = now;
+  }
+  if (dbus_data_.key_q) {
+    if (now - last_press_q_ < ros::Duration(key_delay)) dbus_data_.key_q = false;
+    else last_press_q_ = now;
+  }
+  if (dbus_data_.key_c) {
+    if (now - last_press_c_ < ros::Duration(key_delay)) dbus_data_.key_c = false;
+    else last_press_c_ = now;
+  }
+
+  // cap data display delay
+  if (now - last_update_cap_ > ros::Duration(cap_data_delay)) {
+    cap_update_flag_ = true;
+    last_update_cap_ = now;
+  }
+}
+
+double Referee::getArmorPosition() {
+  geometry_msgs::TransformStamped gimbal_transformStamped;
+  double roll, pitch, yaw;
+
+  // get armors' position
+  try {
+    gimbal_transformStamped = this->tf_.lookupTransform("yaw", "base_link", ros::Time(0));
+  }
+  catch (tf2::TransformException &ex) {
+    //ROS_ERROR("%s",ex.what());
+  }
+  quatToRPY(gimbal_transformStamped.transform.rotation, roll, pitch, yaw);
+
+  return yaw;
+}
+
+void Referee::displayArmorInfo(double yaw, const ros::Time &now) {
+  // update information of armor
+  if (referee_data_.robot_hurt_.armor_id == 0) {
+    if (referee_data_.robot_hurt_.hurt_type == 0x0) {
+      drawCircle((int) (960 + 340 * sin(0 - yaw)), (int) (540 + 340 * cos(0 - yaw)), 50, 5, kPurple, kAdd);
+    } else if (referee_data_.robot_hurt_.hurt_type == 0x5) {
+      drawCircle((int) (960 + 340 * sin(0 - yaw)), (int) (540 + 340 * cos(0 - yaw)), 50, 5, kYellow, kAdd);
+    }
+    last_hurt_armor0_ = now;
+    armor0_update_flag_ = true;
+    referee_data_.robot_hurt_.hurt_type = 0x9;
+    referee_data_.robot_hurt_.armor_id = 9;
+  }
+  if (referee_data_.robot_hurt_.armor_id == 1) {
+    if (referee_data_.robot_hurt_.hurt_type == 0x0) {
+      drawCircle((int) (960 + 340 * sin(3 * M_PI_2 - yaw)), (int) (540 + 340 * cos(3 * M_PI_2 - yaw)),
+                 50, 6, kPurple, kAdd);
+    } else if (referee_data_.robot_hurt_.hurt_type == 0x5) {
+      drawCircle((int) (960 + 340 * sin(3 * M_PI_2 - yaw)), (int) (540 + 340 * cos(3 * M_PI_2 - yaw)),
+                 50, 6, kYellow, kAdd);
+    }
+    last_hurt_armor1_ = now;
+    armor1_update_flag_ = true;
+    referee_data_.robot_hurt_.hurt_type = 0x9;
+    referee_data_.robot_hurt_.armor_id = 9;
+  }
+  if (referee_data_.robot_hurt_.armor_id == 2) {
+    if (referee_data_.robot_hurt_.hurt_type == 0x0) { // bullet damage
+      drawCircle((int) (960 + 340 * sin(M_PI - yaw)), (int) (540 + 340 * cos(M_PI - yaw)), 50, 7, kPurple, kAdd);
+    } else if (referee_data_.robot_hurt_.hurt_type == 0x5) { // hit damage
+      drawCircle((int) (960 + 340 * sin(M_PI - yaw)), (int) (540 + 340 * cos(M_PI - yaw)), 50, 7, kYellow, kAdd);
+    }
+    last_hurt_armor2_ = now;
+    armor2_update_flag_ = true;
+    referee_data_.robot_hurt_.hurt_type = 0x9;
+    referee_data_.robot_hurt_.armor_id = 9;
+  }
+  if (referee_data_.robot_hurt_.armor_id == 3) {
+    if (referee_data_.robot_hurt_.hurt_type == 0x0) {
+      drawCircle((int) (960 + 340 * sin(M_PI_2 - yaw)), (int) (540 + 340 * cos(M_PI_2 - yaw)), 50, 8, kPurple, kAdd);
+    } else if (referee_data_.robot_hurt_.hurt_type == 0x5) {
+      drawCircle((int) (960 + 340 * sin(M_PI_2 - yaw)), (int) (540 + 340 * cos(M_PI_2 - yaw)), 50, 8, kYellow, kAdd);
+    }
+    last_hurt_armor3_ = now;
+    armor3_update_flag_ = true;
+    referee_data_.robot_hurt_.hurt_type = 0x9;
+    referee_data_.robot_hurt_.armor_id = 9;
+  }
+
+  if (now - last_hurt_armor0_ > ros::Duration(0.5) && armor0_update_flag_) {
+    drawCircle((int) (960 + 340 * sin(0 - yaw)), (int) (540 + 340 * cos(0 - yaw)),
+               50, 5, kGreen, kDelete);
+    armor0_update_flag_ = false;
+  }
+  if (now - last_hurt_armor1_ > ros::Duration(0.5) && armor1_update_flag_) {
+    drawCircle((int) (960 + 340 * sin(3 * M_PI_2 - yaw)), (int) (540 + 340 * cos(3 * M_PI_2 - yaw)),
+               50, 6, kGreen, kDelete);
+    armor1_update_flag_ = false;
+  }
+  if (now - last_hurt_armor2_ > ros::Duration(0.5) && armor2_update_flag_) {
+    drawCircle((int) (960 + 340 * sin(M_PI - yaw)), (int) (540 + 340 * cos(M_PI - yaw)),
+               50, 7, kGreen, kDelete);
+    armor2_update_flag_ = false;
+  }
+  if (now - last_hurt_armor3_ > ros::Duration(0.5) && armor3_update_flag_) {
+    drawCircle((int) (960 + 340 * sin(M_PI_2 - yaw)), (int) (540 + 340 * cos(M_PI_2 - yaw)),
+               50, 8, kGreen, kDelete);
+    armor3_update_flag_ = false;
+  }
+}
+
+void Referee::displayCapInfo(uint8_t graph_operate_type) {
+  char power_string[30];
+  float power_float;
+
+  power_float = power_manager_data_.parameters[3] * 100;
+  sprintf(power_string, "Cap: %1.0f%%", power_float);
+  if (power_float >= 60)
+    drawString(910, 100, 0, power_string, kGreen, graph_operate_type);
+  else if (power_float < 60 && power_float >= 30)
+    drawString(910, 100, 0, power_string, kYellow, graph_operate_type);
+  else if (power_float < 30)
+    drawString(910, 100, 0, power_string, kOrange, graph_operate_type);
+}
+
+void Referee::displayChassisInfo(uint8_t graph_operate_type) {
+  if (chassis_mode_ != "passive") {
+    if (twist_flag_)
+      chassis_mode_ = "twist";
+    else if (gyro_flag_)
+      chassis_mode_ = "gyro";
+    else
+      chassis_mode_ = "follow";
+  }
+  drawString(1470, 790, 1, "chassis:" + chassis_mode_, kYellow, graph_operate_type);
+}
+
+void Referee::displayGimbalInfo(uint8_t graph_operate_type) {
+  if (gimbal_mode_ != "passive") {
+    if (dbus_data_.p_r)
+      gimbal_mode_ = "track";
+    else
+      gimbal_mode_ = "rate";
+  }
+  drawString(1470, 740, 2, "gimbal:" + gimbal_mode_, kYellow, graph_operate_type);
+}
+
+void Referee::displayShooterInfo(uint8_t graph_operate_type) {
+  if (dbus_data_.key_f) {
+    shooter_mode_ = "estop";
+    burst_flag_ = false;
+  } else if (shooter_mode_ != "passive") {
+    if (burst_flag_)
+      shooter_mode_ = "burst";
+    else
+      shooter_mode_ = "normal";
+  }
+  drawString(1470, 690, 3, "shooter:" + shooter_mode_, kYellow, graph_operate_type);
+}
+
+void Referee::displayAttackTargetInfo(uint8_t graph_operate_type) {
+  if (only_attack_base_flag_) {
+    drawString(1470, 640, 4, "target:base", kYellow, graph_operate_type);
+  } else {
+    drawString(1470, 640, 4, "target:all", kYellow, graph_operate_type);
+  }
+}
+
+void Referee::drawCircle(int center_x, int center_y, int radius, int picture_id,
                          GraphicColorType color, uint8_t operate_type) {
   uint8_t tx_buffer[128] = {0};
   DrawClientGraphicData send_data;
@@ -596,9 +648,9 @@ void Referee::drawCircle(int center_x, int center_y, int radius, int picture_nam
 
   // Graph data
 
-  send_data.graphic_data_struct_.graphic_name[0] = (uint8_t) (picture_name & 0xff);
-  send_data.graphic_data_struct_.graphic_name[1] = (uint8_t) ((picture_name >> 8) & 0xff);
-  send_data.graphic_data_struct_.graphic_name[2] = (uint8_t) ((picture_name >> 16) & 0xff);
+  send_data.graphic_data_struct_.graphic_name[0] = (uint8_t) (picture_id & 0xff);
+  send_data.graphic_data_struct_.graphic_name[1] = (uint8_t) ((picture_id >> 8) & 0xff);
+  send_data.graphic_data_struct_.graphic_name[2] = (uint8_t) ((picture_id >> 16) & 0xff);
 
   send_data.graphic_data_struct_.start_x = center_x;
   send_data.graphic_data_struct_.start_y = center_y;
@@ -624,12 +676,8 @@ void Referee::drawCircle(int center_x, int center_y, int radius, int picture_nam
   }
 }
 
-void Referee::drawString(int x,
-                         int y,
-                         int picture_name,
-                         GraphicColorType color,
-                         uint8_t operate_type,
-                         std::string data) {
+void Referee::drawString(int x, int y, int picture_id, std::string data,
+                         GraphicColorType color, uint8_t operate_type) {
   uint8_t tx_buffer[128] = {0};
   DrawClientCharData send_data;
   int index = 0;
@@ -656,12 +704,12 @@ void Referee::drawString(int x,
   memcpy(tx_buffer + index, &send_data.student_interactive_header_data_, sizeof(StudentInteractiveHeaderData));
   index += sizeof(StudentInteractiveHeaderData);
 
-  send_data.graphic_data_struct_.graphic_name[1] = (uint8_t) (picture_name & 0xff);
+  send_data.graphic_data_struct_.graphic_name[1] = (uint8_t) (picture_id & 0xff);
   send_data.graphic_data_struct_.start_x = x;
   send_data.graphic_data_struct_.start_y = y;
 
-  send_data.graphic_data_struct_.graphic_name[0] = (uint8_t) ((picture_name >> 8) & 0xff);
-  send_data.graphic_data_struct_.graphic_name[2] = (uint8_t) ((picture_name >> 16) & 0xff);
+  send_data.graphic_data_struct_.graphic_name[0] = (uint8_t) ((picture_id >> 8) & 0xff);
+  send_data.graphic_data_struct_.graphic_name[2] = (uint8_t) ((picture_id >> 16) & 0xff);
   send_data.graphic_data_struct_.graphic_type = 7; // char
   send_data.graphic_data_struct_.operate_type = operate_type;
   send_data.graphic_data_struct_.start_angle = 20; // char size
@@ -852,6 +900,7 @@ void PowerManagerData::read(const std::vector<uint8_t> &rx_buffer) {
 
 void PowerManagerData::Receive_CallBack(unsigned char PID, unsigned char Data[8]) {
   if (PID == 0) {
+    last_get_powermanager_data_ = ros::Time::now();
     parameters[0] = Int16ToFloat((Data[0] << 8) | Data[1]);
     parameters[1] = Int16ToFloat((Data[2] << 8) | Data[3]);
     parameters[2] = Int16ToFloat((Data[4] << 8) | Data[5]);

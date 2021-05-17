@@ -37,15 +37,18 @@ void Manual::run() {
   ros::Time now = ros::Time::now();
   // run referee system
   data_.referee_->read();
+  if (data_.referee_->is_open_) {
+    data_.referee_->run();
+  }
   loadParam();
   if (remote_control_is_open_ && ((now - data_.dbus_data_.stamp).toSec() > 0.1)) {
-      this->remoteControlTurnOff();
-      remote_control_is_open_ = false;
-      ROS_INFO("remote control turn off");
+    this->remoteControlTurnOff();
+    remote_control_is_open_ = false;
+    ROS_INFO("remote control turn off");
   } else if (!remote_control_is_open_ && ((now - data_.dbus_data_.stamp).toSec() < 0.1)) {
-      this->remoteControlTurnOn();
-      remote_control_is_open_ = true;
-      ROS_INFO("remote control turn on");
+    this->remoteControlTurnOn();
+    remote_control_is_open_ = true;
+    ROS_INFO("remote control turn on");
   }
   if (data_.dbus_data_.s_r == rm_msgs::DbusData::DOWN) {
     this->rightSwitchDown();
@@ -140,7 +143,8 @@ void Manual::run() {
 void Manual::powerLimit() {
   if (have_power_manager_) {//have power manger
     data_.chassis_cmd_.power_limit = data_.referee_->power_manager_data_.parameters[1];
-  } else if (!(have_power_manager_) && data_.referee_->is_open_) {//do not have power manger and use referee data
+  } else if (!(have_power_manager_)
+      && data_.referee_->referee_data_.game_robot_status_.max_HP != 0) {//do not have power manger and use referee data
     data_.chassis_cmd_.power_limit = data_.referee_->referee_data_.game_robot_status_.chassis_power_limit;
     if (data_.chassis_cmd_.power_limit > 120) data_.chassis_cmd_.power_limit = 120;
   } else {//use safety power
@@ -244,8 +248,19 @@ void Manual::rightSwitchMid() {
   setChassis(data_.dbus_data_.ch_r_y, -data_.dbus_data_.ch_r_x, data_.dbus_data_.wheel);
 }
 void Manual::rightSwitchUp() {
+  if (!enter_pc_) {
+    enter_pc_ = true;
+    current_shooter_mode_ = rm_msgs::ShootCmd::PASSIVE;
+    current_gimbal_mode_ = rm_msgs::GimbalCmd::RATE;
+  }
+  setShoot(current_shooter_mode_, ultimate_shoot_speed_, 0.0, ros::Time::now());
+  data_.chassis_cmd_.mode = current_chassis_mode_;
+  data_.cmd_vel_.linear.x = 0.0;
+  data_.cmd_vel_.linear.y = 0.0;
+  setGimbal(rm_msgs::GimbalCmd::RATE, -data_.dbus_data_.m_x, data_.dbus_data_.m_y, 0, actual_shoot_speed_);
   emergency_stop_ = false;
   rc_flag_ = false;
+
 }
 void Manual::ctrlQPress() {
   emergency_stop_ = true;
@@ -262,7 +277,7 @@ void Manual::qPress(ros::Duration period) {
 
 void Manual::wPress(ros::Duration period) {
   data_.chassis_cmd_.mode = current_chassis_mode_;
-  data_.cmd_vel_.linear.x = 1.0;
+  data_.cmd_vel_.linear.x = coefficient_x_;
   data_.chassis_cmd_.accel.linear.x = accel_x_;
 }
 
@@ -276,19 +291,19 @@ void Manual::rPress(ros::Duration period) {
 
 void Manual::aPress(ros::Duration period) {
   data_.chassis_cmd_.mode = current_chassis_mode_;
-  data_.cmd_vel_.linear.y = 1.0;
+  data_.cmd_vel_.linear.y = coefficient_y_;
   data_.chassis_cmd_.accel.linear.y = accel_y_;
 }
 
 void Manual::sPress(ros::Duration period) {
   data_.chassis_cmd_.mode = current_chassis_mode_;
-  data_.cmd_vel_.linear.x = -1.0;
+  data_.cmd_vel_.linear.x = -coefficient_x_;
   data_.chassis_cmd_.accel.linear.x = accel_x_;
 }
 
 void Manual::dPress(ros::Duration period) {
   data_.chassis_cmd_.mode = current_chassis_mode_;
-  data_.cmd_vel_.linear.y = -1.0;
+  data_.cmd_vel_.linear.y = -coefficient_y_;
   data_.chassis_cmd_.accel.linear.y = accel_y_;
 }
 
@@ -298,6 +313,7 @@ void Manual::fPress(ros::Duration period) {
 
 void Manual::gPress(ros::Duration period) {
   current_chassis_mode_ = rm_msgs::ChassisCmd::GYRO;
+  data_.cmd_vel_.angular.z = -coefficient_angular_;
 }
 
 void Manual::zPress(ros::Duration period) {
@@ -323,6 +339,7 @@ void Manual::bPress(ros::Duration period) {
 void Manual::shiftPress(ros::Duration period) {
   data_.cmd_vel_.linear.x *= 2.0;
   data_.cmd_vel_.linear.y *= 2.0;
+  data_.cmd_vel_.angular.z *= 2.0;
 }
 
 void Manual::mouseLeftPress(ros::Duration period) {
@@ -388,8 +405,6 @@ void Manual::setChassis(double linear_x, double linear_y, double angular_z) {
   data_.cmd_vel_.linear.y = linear_y * coefficient_y_;
   data_.cmd_vel_.angular.z = angular_z * coefficient_angular_;
 
-  //data_.vel_cmd_pub_.publish(data_.cmd_vel_);
-  //data_.chassis_cmd_pub_.publish(data_.chassis_cmd_);
 }
 
 void Manual::setGimbal(uint8_t gimbal_mode, double rate_yaw, double rate_pitch,
@@ -401,7 +416,6 @@ void Manual::setGimbal(uint8_t gimbal_mode, double rate_yaw, double rate_pitch,
 
   data_.gimbal_cmd_.target_id = target_id;
   data_.gimbal_cmd_.bullet_speed = bullet_speed;
-  //data_.gimbal_cmd_pub_.publish(data_.gimbal_cmd_);
 }
 
 void Manual::setShoot(uint8_t shoot_mode, int shoot_speed, double shoot_hz, ros::Time now) {
@@ -410,19 +424,6 @@ void Manual::setShoot(uint8_t shoot_mode, int shoot_speed, double shoot_hz, ros:
   data_.shoot_cmd_.hz = shoot_hz;
   data_.shoot_cmd_.stamp = now;
 
-  //data_.shooter_cmd_pub_.publish(data_.shoot_cmd_);
-}
-
-void Manual::setArm(double linear_x, double linear_y, double linear_z,
-                    double angular_x, double angular_y, double angular_z, ros::Time now) {
-  data_.arm_cmd_vel_.header.stamp = now;
-  data_.arm_cmd_vel_.twist.linear.x = linear_x;
-  data_.arm_cmd_vel_.twist.linear.y = linear_y;
-  data_.arm_cmd_vel_.twist.linear.z = linear_z;
-  data_.arm_cmd_vel_.twist.angular.x = angular_x;
-  data_.arm_cmd_vel_.twist.angular.y = angular_y;
-  data_.arm_cmd_vel_.twist.angular.z = angular_z;
-  //data_.engineer_vel_cmd_pub_.publish(data_.arm_cmd_vel_);
 }
 
 void Manual::remoteControlTurnOff() {

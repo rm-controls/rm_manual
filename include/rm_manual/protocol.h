@@ -50,14 +50,14 @@ typedef enum {
   kStepDataCrc16 = 5,
 } UnpackStep;
 
-// Unpacking data
+// Use to unpack data
 typedef struct {
   FrameHeaderStruct *p_header;
   uint16_t data_len;
   uint8_t protocol_packet[128];
   UnpackStep unpack_step;
   uint16_t index;
-} UnpackData;
+} UnpackObject;
 
 typedef struct {
   uint8_t game_type: 4;
