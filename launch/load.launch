@@ -1,47 +1,9 @@
 <launch>
     <arg name="robot_type" default="$(env ROBOT_TYPE)" doc="Robot type [standard, hero, engineer]"/>
     <arg name="enemy_color" default="$(env ENEMY_COLOR)" doc="Enemy Color [blue, red]"/>
-    <arg name="load_controller" default="true"/>
-    <arg name="ekf" default="false"/>
-    <arg name="odom_tf" default="true"/>
-    <arg name="camera_tf" default="true"/>
-
-    <node if="$(arg odom_tf)" pkg="tf" type="static_transform_publisher" name="odom_tf_publisher"
-          args="0 0 0 0 0 0 1 map odom 100"/>
 
     <rosparam file="$(find rm_dbus)/config/dbus.yaml" command="load"/>
-    <rosparam file="$(find rm_chassis_controllers)/config/$(arg robot_type).yaml" command="load"/>
-    <rosparam file="$(find rm_gimbal_controllers)/config/$(arg robot_type).yaml" command="load"/>
-    <rosparam file="$(find rm_shooter_controllers)/config/$(arg robot_type).yaml" command="load"/>
-    <rosparam if="$(arg ekf)" param="controllers/chassis_controller/enable_odom_tf">false</rosparam>
     <rosparam file="$(find rm_manual)/config/$(arg robot_type).yaml" command="load"/>
-    <!-- load the controllers -->
-    <!--    <node if="$(arg load_controller)" name="controller_spawner" pkg="controller_manager" type="spawner"
-              respawn="false" output="screen"
-              args="
-              controllers/robot_state_controller
-              controllers/joint_state_controller
-              controllers/chassis_controller
-              controllers/gimbal_controller
-              controllers/shooter_controller
-              controllers/imu_sensor_controller
-              joint_state_controller
-              engineer_arm_controller
-              engineer_hand_controller
-        "/>-->
-    <!-- load other controllers -->
-<!--    <node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false"
-          output="screen" args="load
-          controllers/robot_state_controller
-          controllers/joint_state_controller
-          controllers/chassis_controller
-          controllers/gimbal_controller
-          controllers/shooter_controller
-          controllers/imu_sensor_controller"/>-->
-    <node if="$(arg ekf)" pkg="robot_localization" type="ekf_localization_node" name="ekf_localization"
-          clear_params="true">
-        <rosparam command="load" file="$(find rm_chassis_controllers)/config/localization.yaml"/>
-    </node>
 
     <node name="rm_dbus" pkg="rm_dbus" type="rm_dbus" respawn="false"/>
     <node name="rm_manual" pkg="rm_manual" type="rm_manual" respawn="false">
