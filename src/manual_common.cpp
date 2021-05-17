@@ -31,6 +31,7 @@ Manual::Manual(ros::NodeHandle &node_handle) : nh_(node_handle) {
   current_chassis_mode_ = rm_msgs::ChassisCmd::FOLLOW;
   data_.dbus_data_.stamp = ros::Time::now();
   controller_manager_->loadAllControllers();
+  controller_manager_->startInformationControllers();
 }
 
 void Manual::run() {

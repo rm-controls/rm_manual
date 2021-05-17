@@ -12,18 +12,18 @@ ControllerManager::ControllerManager(ros::NodeHandle &nh) {
   list_controllers_client_ =
       nh.serviceClient<controller_manager_msgs::ListControllersRequest>("/controller_manager/list_controllers");
   XmlRpc::XmlRpcValue controllers;
-  if (nh.getParam("information_controllers", controllers))
+  if (!nh.getParam("information_controllers", controllers))
     ROS_INFO("No information controllers defined");
   for (int i = 0; i < controllers.size(); ++i)
-    information_controllers_.push_back(controllers[0][i]);
-  if (nh.getParam("movement_controllers", controllers))
+    information_controllers_.push_back(controllers[i]);
+  if (!nh.getParam("movement_controllers", controllers))
     ROS_INFO("No movement controllers defined");
   for (int i = 0; i < controllers.size(); ++i)
-    movement_controllers_.push_back(controllers[0][i]);
+    movement_controllers_.push_back(controllers[i]);
 }
 
 bool ControllerManager::loadControllers(const std::vector<std::string> &controllers) {
-  if (load_controllers_client_.waitForExistence(ros::Duration(1.0)))
+  if (!load_controllers_client_.waitForExistence(ros::Duration(1.5)))
     return false;
   controller_manager_msgs::LoadController load_controller;
   bool is_success = true;
