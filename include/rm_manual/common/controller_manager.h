@@ -26,28 +26,34 @@ class ControllerManager {
     return startController(controllers);
   }
 
-  bool startController(const std::vector<std::string> &controllers) {
-    return switchController(controllers, std::vector<std::string>());
-  }
-
   bool stopController(const std::string &controller) {
     std::vector<std::string> controllers;
     controllers.push_back(controller);
     return stopController(controllers);
   }
 
-  bool startMovementControllers() {
-    return startController(movement_controllers_);
-  }
-
-  bool stopMovementControllers() {
-    return stopController(movement_controllers_);
+  bool startController(const std::vector<std::string> &controllers) {
+    return switchController(controllers, std::vector<std::string>());
   }
 
   bool stopController(const std::vector<std::string> &controllers) {
     return switchController(std::vector<std::string>(), controllers);
   }
 
+  bool startMovementControllers() {
+    return startController(movement_controllers_);
+  }
+
+  bool stopInformationControllers() {
+    return stopController(information_controllers_);
+  }
+  bool startInformationControllers() {
+    return startController(information_controllers_);
+  }
+
+  bool stopMovementControllers() {
+    return stopController(movement_controllers_);
+  }
   bool startAllControllers() {
     return startController(information_controllers_) && startController(movement_controllers_);
   }
