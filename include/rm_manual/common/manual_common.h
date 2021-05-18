@@ -16,6 +16,7 @@
 #include <rm_common/ori_tool.h>
 #include "data.h"
 #include "controller_manager.h"
+#include "command_sender.h"
 
 class Manual {
  public:
