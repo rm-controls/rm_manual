@@ -1,8 +1,8 @@
 //
 // Created by luohx on 20-2-19.
 //
-#ifndef SRC_RM_BRIDGE_INCLUDE_RT_RT_REFEREE_H_
-#define SRC_RM_BRIDGE_INCLUDE_RT_RT_REFEREE_H_
+#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_REFEREE_H_
+#define RM_MANUAL_INCLUDE_RM_MANUAL_REFEREE_H_
 
 #include <cstdint>
 #include <serial/serial.h>
@@ -166,4 +166,4 @@ uint16_t getCRC16CheckSum(uint8_t *pchMessage, uint32_t dwLength, uint16_t wCRC)
 uint32_t verifyCRC16CheckSum(uint8_t *pchMessage, uint32_t dwLength);
 void appendCRC16CheckSum(unsigned char *pchMessage, unsigned int dwLength);
 
-#endif //SRC_RM_BRIDGE_INCLUDE_RT_RT_REFEREE_H_
+#endif //RM_MANUAL_INCLUDE_RM_MANUAL_REFEREE_H_

@@ -2,8 +2,8 @@
 // Created by luohx on 20-2-20.
 //
 
-#ifndef SRC_RM_BRIDGE_INCLUDE_RT_PROTOCOL_H_
-#define SRC_RM_BRIDGE_INCLUDE_RT_PROTOCOL_H_
+#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_PROTOCOL_H_
+#define RM_MANUAL_INCLUDE_RM_MANUAL_PROTOCOL_H_
 #define __packed __attribute__((packed))
 #include <cstdint>
 
@@ -400,4 +400,4 @@ const uint16_t wCRC_table[256] =
         0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78
     };
 
-#endif //SRC_RM_BRIDGE_INCLUDE_RT_PROTOCOL_H_
+#endif //RM_MANUAL_INCLUDE_RM_MANUAL_PROTOCOL_H_

@@ -2,8 +2,8 @@
 // Created by luohx on 7/20/20.
 //
 
-#ifndef RM_BASE_RM_DECISION_INCLUDE_FSM_CONTROL_FSM_DATA_H_
-#define RM_BASE_RM_DECISION_INCLUDE_FSM_CONTROL_FSM_DATA_H_
+#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_DATA_H_
+#define RM_MANUAL_INCLUDE_RM_MANUAL_DATA_H_
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
@@ -93,4 +93,4 @@ class Data {
   }
 };
 
-#endif //RM_BASE_RM_DECISION_INCLUDE_FSM_CONTROL_FSM_DATA_H_
+#endif //RM_MANUAL_INCLUDE_RM_MANUAL_DATA_H_

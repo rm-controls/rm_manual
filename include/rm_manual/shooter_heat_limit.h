@@ -2,12 +2,11 @@
 // Created by bruce on 2021/2/10.
 //
 
-#ifndef SRC_RM_SOFTWARE_RM_FSM_INCLUDE_RM_FSM_SHOOTER_HEAT_LIMIT_H_
-#define SRC_RM_SOFTWARE_RM_FSM_INCLUDE_RM_FSM_SHOOTER_HEAT_LIMIT_H_
+#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_SHOOTER_HEAT_LIMIT_H_
+#define RM_MANUAL_INCLUDE_RM_MANUAL_SHOOTER_HEAT_LIMIT_H_
 
 #include <ros/ros.h>
 #include "rm_manual/referee.h"
-
 
 class ShooterHeatLimit {
  public:
@@ -19,4 +18,4 @@ class ShooterHeatLimit {
   double hz = 0.0;
 };
 
-#endif //SRC_RM_SOFTWARE_RM_FSM_INCLUDE_RM_FSM_SHOOTER_HEAT_LIMIT_H_
+#endif //RM_MANUAL_INCLUDE_RM_MANUAL_SHOOTER_HEAT_LIMIT_H_

@@ -2,8 +2,8 @@
 // Created by peter on 2020/12/3.
 //
 
-#ifndef SRC_RM_SOFTWARE_RM_DECISION_SRC_FSM_FSM_STATE_H_
-#define SRC_RM_SOFTWARE_RM_DECISION_SRC_FSM_FSM_STATE_H_
+#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
+#define RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
 
 #include <iostream>
 #include <queue>
@@ -123,4 +123,4 @@ class Manual {
   int last_target_id_ = 0;
 };
 
-#endif //SRC_RM_SOFTWARE_RM_DECISION_SRC_FSM_FSM_STATE_H_
+#endif //RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
