@@ -16,7 +16,7 @@
 #include <rm_msgs/GimbalCmd.h>
 #include <geometry_msgs/Twist.h>
 
-#include "rm_manual/protocol.h"
+#include "protocol.h"
 
 struct RefereeData {
   GameStatus game_status_;

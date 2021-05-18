@@ -2,7 +2,7 @@
 // Created by luohx on 20-2-19.
 //
 #include <ros/ros.h>
-#include "rm_manual/referee.h"
+#include "rm_manual/referee/referee.h"
 
 void Referee::init(ros::NodeHandle nh) {
   serial::Timeout timeout = serial::Timeout::simpleTimeout(50);

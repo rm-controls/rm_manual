@@ -16,9 +16,9 @@
 #include <rm_msgs/ShootCmd.h>
 #include <rm_msgs/GimbalDesError.h>
 
-#include "rm_manual/referee.h"
-#include "rm_manual/shooter_heat_limit.h"
-#include "rm_manual/target_cost_function.h"
+#include "rm_manual/referee/referee.h"
+#include "rm_manual/common/shooter_heat_limit.h"
+#include "rm_manual/common/target_cost_function.h"
 
 class Data {
  public:

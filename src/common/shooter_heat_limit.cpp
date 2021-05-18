@@ -2,7 +2,7 @@
 // Created by bruce on 2021/2/10.
 //
 
-#include "rm_manual/shooter_heat_limit.h"
+#include "rm_manual/common/shooter_heat_limit.h"
 
 void ShooterHeatLimit::input(Referee *referee, double expect_shoot_hz, double safe_shoot_hz) {
   uint16_t cooling_limit;

@@ -2,7 +2,7 @@
 // Created by kiana on 2021/3/22.
 //
 
-#include "rm_manual/target_cost_function.h"
+#include "rm_manual/common/target_cost_function.h"
 
 TargetCostFunction::TargetCostFunction(ros::NodeHandle &nh) {
   ros::NodeHandle cost_nh = ros::NodeHandle(nh, "target_cost_function");

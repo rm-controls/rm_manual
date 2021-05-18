@@ -2,7 +2,7 @@
 // Created by luohx on 7/27/20.
 //
 
-#include "rm_manual/manual_common.h"
+#include "rm_manual/common/manual_common.h"
 
 int main(int argc, char **argv) {
   std::string robot;
@@ -19,8 +19,8 @@ int main(int argc, char **argv) {
   ros::Rate loop_rate(100);
   while (ros::ok()) {
     ros::spinOnce();
-    loop_rate.sleep();
     manual_control->run();
+    loop_rate.sleep();
   }
   return 0;
 }

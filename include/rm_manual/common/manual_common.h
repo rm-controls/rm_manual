@@ -13,9 +13,9 @@
 #include <controller_manager_msgs/SwitchController.h>
 
 #include <rm_common/ros_utilities.h>
-#include "rm_common/ori_tool.h"
-#include "rm_manual/data.h"
-#include "rm_manual/controller_manager.h"
+#include <rm_common/ori_tool.h>
+#include "data.h"
+#include "controller_manager.h"
 
 class Manual {
  public:

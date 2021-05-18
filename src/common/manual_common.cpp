@@ -2,14 +2,7 @@
 // Created by peter on 2020/12/3.
 //
 
-#include "rm_manual/manual_common.h"
-/**
- * Constructor for the Control FSM. Passes in all of the necessary
- * data and stores it in a struct. Initializes the FSM with a starting
- * state and operating mode.
- * @tparam T
- * @param nh
- */
+#include "rm_manual/common/manual_common.h"
 
 Manual::Manual(ros::NodeHandle &node_handle) : nh_(node_handle) {
   tf_listener_ = new tf2_ros::TransformListener(tf_);

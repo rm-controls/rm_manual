@@ -2,7 +2,7 @@
 // Created by astro on 2021/5/15.
 //
 
-#include "rm_manual/controller_manager.h"
+#include "rm_manual/common/controller_manager.h"
 
 ControllerManager::ControllerManager(ros::NodeHandle &nh) {
   switch_controller_client_ =
