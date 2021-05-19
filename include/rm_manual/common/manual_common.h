@@ -18,6 +18,8 @@
 #include "controller_manager.h"
 #include "command_sender.h"
 
+namespace rm_manual {
+
 class Manual {
  public:
   explicit Manual(ros::NodeHandle &nh);
@@ -124,4 +126,5 @@ class Manual {
   int last_target_id_ = 0;
 };
 
+}
 #endif //RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_

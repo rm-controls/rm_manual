@@ -1,10 +1,12 @@
 //
-// Created by luohx on 20-2-19.
+// Created by peter on 2021/5/17.
 //
-#include <ros/ros.h>
 #include "rm_manual/referee/referee.h"
 
-void Referee::init(ros::NodeHandle nh) {
+#include <ros/ros.h>
+
+namespace rm_manual {
+void Referee::init() {
   serial::Timeout timeout = serial::Timeout::simpleTimeout(50);
   rx_data_.insert(rx_data_.begin(), kUnpackLength, 0);
   try {
@@ -22,26 +24,17 @@ void Referee::init(ros::NodeHandle nh) {
       serial_.open();
       is_open_ = true;
     } catch (serial::IOException &e) {
-      ROS_ERROR("Referee system serial cannot open");
+      ROS_ERROR("Cannot open referee port");
     }
   }
-  if (is_open_) {
-    ROS_INFO("Referee serial open successfully.");
-    referee_unpack_obj.index = 0;
-    referee_unpack_obj.unpack_step = kStepHeaderSof;
-  }
-  nh_ = nh;
-  dbus_sub_ = nh.subscribe<rm_msgs::DbusData>(
-      "/dbus_data", 10, &Referee::dbusDataCallback, this);
-
-  tf_listener_ = new tf2_ros::TransformListener(tf_);
+  if (is_open_) ROS_INFO("Referee system connect successfully");
 }
 
+// read data from referee
 void Referee::read() {
   std::vector<uint8_t> rx_buffer;
   std::vector<uint8_t> temp_buffer;
-  serial::Timeout timeout = serial::Timeout::simpleTimeout(50);
-  int rx_len;
+  int rx_len, frame_len;
 
   if (is_open_) {
     if (serial_.waitReadable()) {
@@ -49,131 +42,31 @@ void Referee::read() {
         rx_len = serial_.available();
         serial_.read(rx_buffer, rx_len);
       } catch (serial::IOException &e) {
-        ROS_ERROR("Referee system disconnect.");
+        ROS_ERROR("Referee system disconnect, cannot read referee data");
         is_open_ = false;
         return;
       }
 
-      // Unpack data from power manager
-      power_manager_data_.read(rx_buffer);
-
-      // Unpack data from referee system
       for (int kI = kUnpackLength; kI > rx_len; --kI) {
         temp_buffer.insert(temp_buffer.begin(), rx_data_[kI - 1]);
       }
       temp_buffer.insert(temp_buffer.end(), rx_buffer.begin(), rx_buffer.end());
-
       rx_data_.clear();
       rx_data_.insert(rx_data_.begin(), temp_buffer.begin(), temp_buffer.end());
 
-      unpack(rx_data_);
+      for (int kI = 0; kI < kUnpackLength; ++kI) {
+        if (rx_data_[kI] == 0xA5) {
+          frame_len = unpack(&rx_data_[kI]);
+          if (frame_len != -1) kI += frame_len;
+        }
+      }
+      power_manager_data_.read(rx_buffer);
+      getRobotId();
     }
-
   } else {
-    try {
-      serial_.setPort(serial_port_);
-      serial_.setBaudrate(115200);
-      serial_.setTimeout(timeout);
-    } catch (std::exception &e) {
-      return;
-    }
-
-    if (!serial_.isOpen()) {
-      try {
-        serial_.open();
-        is_open_ = true;
-      } catch (serial::IOException &e) {}
-    }
-
-    if (is_open_) {
-      ROS_INFO("Referee system reconnected.");
-    }
+    init();
   }
-  getRobotId();
   publishData();
-}
-
-void Referee::run() {
-  uint8_t graph_operate_type;
-  ros::Time now = ros::Time::now();
-
-  if (robot_id_ != 0 && robot_id_ != kRedSentry && robot_id_ != kBlueSentry) {
-    checkForDelay(0.5, 0.5, now);
-    if (dbus_data_.key_ctrl && dbus_data_.key_q) {
-      chassis_mode_ = "passive";
-      gimbal_mode_ = "passive";
-      shooter_mode_ = "passive";
-      chassis_update_flag_ = true;
-      gimbal_update_flag_ = true;
-      shooter_update_flag_ = true;
-    }
-    if (dbus_data_.key_ctrl && dbus_data_.key_w) {
-      chassis_mode_ = "follow";
-      gimbal_mode_ = "rate";
-      shooter_mode_ = "stop";
-      chassis_update_flag_ = true;
-      gimbal_update_flag_ = true;
-      shooter_update_flag_ = true;
-    }
-    if (dbus_data_.key_g) {
-      gyro_flag_ = !gyro_flag_;
-      chassis_update_flag_ = true;
-    }
-    if (dbus_data_.key_r) {
-      twist_flag_ = !twist_flag_;
-      chassis_update_flag_ = true;
-    }
-    if (shooter_mode_ != "passive" && dbus_data_.key_q) {
-      burst_flag_ = !burst_flag_;
-      shooter_update_flag_ = true;
-    }
-    if (dbus_data_.key_c) {
-      only_attack_base_flag_ = !only_attack_base_flag_;
-      attack_mode_update_flag_ = true;
-    }
-    if (dbus_data_.p_r) {
-      gimbal_update_flag_ = true;
-    }
-    if (last_key_f_ != dbus_data_.key_f) {
-      shooter_update_flag_ = true;
-      last_key_f_ = dbus_data_.key_f;
-    }
-    if (dbus_data_.key_x) {
-      ROS_INFO("Update UI");
-      graph_operate_type = kAdd;
-      chassis_update_flag_ = true;
-      gimbal_update_flag_ = true;
-      shooter_update_flag_ = true;
-      attack_mode_update_flag_ = true;
-    } else {
-      graph_operate_type = kUpdate;
-    }
-
-    displayArmorInfo(getArmorPosition(), now);
-
-    if (cap_update_flag_) {
-      displayCapInfo(graph_operate_type);
-      cap_update_flag_ = false;
-    }
-
-    if (chassis_update_flag_) {
-      displayChassisInfo(graph_operate_type);
-      chassis_update_flag_ = false;
-    }
-    if (gimbal_update_flag_) {
-      displayGimbalInfo(graph_operate_type);
-      gimbal_update_flag_ = false;
-    }
-    if (shooter_update_flag_) {
-      displayShooterInfo(graph_operate_type);
-      shooter_update_flag_ = false;
-    }
-    if (attack_mode_update_flag_) {
-      displayAttackTargetInfo(graph_operate_type);
-      attack_mode_update_flag_ = false;
-    }
-  }
-
 }
 
 double Referee::getActualBulletSpeed(int shoot_speed) const {
@@ -197,203 +90,122 @@ double Referee::getUltimateBulletSpeed(int shoot_speed) const {
   return shoot_speed;
 }
 
-/******************* Receive data from referee system *************************/
-void Referee::unpack(const std::vector<uint8_t> &rx_buffer) {
-  int num = 0, count = kUnpackLength;
-  uint8_t byte;
-  while (count) {
-    byte = rx_buffer[num];
+int Referee::unpack(uint8_t *rx_data) {
+  uint16_t cmd_id;
+  int frame_len;
+  FrameHeaderStruct frame_header;
 
-    switch (referee_unpack_obj.unpack_step) {
-      case kStepHeaderSof: {
-        if (byte == 0xA5) {
-          referee_unpack_obj.unpack_step = kStepLengthLow;
-          referee_unpack_obj.protocol_packet[referee_unpack_obj.index++] = byte;
-        } else {
-          referee_unpack_obj.index = 0;
+  memcpy(&frame_header, rx_data, kProtocolHeaderLength);
+
+  if (verifyCRC8CheckSum(rx_data, kProtocolHeaderLength) == true) {
+    frame_len = frame_header.data_length + kProtocolHeaderLength + kProtocolCmdIdLength + kProtocolTailLength;;
+
+    if (verifyCRC16CheckSum(rx_data, frame_len) == true) {
+      cmd_id = (rx_data[6] << 8 | rx_data[5]);
+      switch (cmd_id) {
+        case kGameStatusCmdId: {
+          memcpy(&referee_data_.game_status_, rx_data + 7, sizeof(GameStatus));
+          break;
+        }
+        case kGameResultCmdId: {
+          memcpy(&referee_data_.game_result_, rx_data + 7, sizeof(GameResult));
+          break;
+        }
+        case kGameRobotHpCmdId: {
+          memcpy(&referee_data_.game_robot_hp_, rx_data + 7, sizeof(GameRobotHp));
+          break;
+        }
+        case kDartStatusCmdId: {
+          memcpy(&referee_data_.dart_status_, rx_data + 7, sizeof(DartStatus));
+          break;
+        }
+        case kIcraZoneStatusCmdId: {
+          memcpy(&referee_data_.icra_buff_debuff_zone_status, rx_data + 7, sizeof(IcraBuffDebuffZoneStatus));
+          break;
+        }
+        case kFieldEventsCmdId: {
+          memcpy(&referee_data_.event_data_, rx_data + 7, sizeof(EventData));
+          break;
+        }
+        case kSupplyProjectileActionCmdId: {
+          memcpy(&referee_data_.supply_projectile_action_, rx_data + 7, sizeof(SupplyProjectileAction));
+          break;
+        }
+        case kRefereeWarningCmdId: {
+          memcpy(&referee_data_.referee_warning_, rx_data + 7, sizeof(RefereeWarning));
+          break;
+        }
+        case kDartRemainingCmdId: {
+          memcpy(&referee_data_.dart_remaining_time_, rx_data + 7, sizeof(DartRemainingTime));
+          break;
+        }
+        case kRobotStatusCmdId: {
+          memcpy(&referee_data_.game_robot_status_, rx_data + 7, sizeof(GameRobotStatus));
+          break;
+        }
+        case kPowerHeatDataCmdId: {
+          memcpy(&referee_data_.power_heat_data_, rx_data + 7, sizeof(PowerHeatData));
+          referee_data_.power_heat_data_.chassis_volt =
+              referee_data_.power_heat_data_.chassis_volt / 1000;       //mV->V
+          referee_data_.power_heat_data_.chassis_current =
+              referee_data_.power_heat_data_.chassis_current / 1000;    //mA->A
+          break;
+        }
+        case kRobotPosCmdId: {
+          memcpy(&referee_data_.game_robot_pos_, rx_data + 7, sizeof(GameRobotPos));
+          break;
+        }
+        case kBuffCmdId: {
+          memcpy(&referee_data_.buff_, rx_data + 7, sizeof(Buff));
+          break;
+        }
+        case kAerialRobotEnergyCmdId: {
+          memcpy(&referee_data_.aerial_robot_energy_, rx_data + 7, sizeof(AerialRobotEnergy));
+          break;
+        }
+        case kRobotHurtCmdId: {
+          memcpy(&referee_data_.robot_hurt_, rx_data + 7, sizeof(RobotHurt));
+          break;
+        }
+        case kShootDataCmdId: {
+          memcpy(&referee_data_.shoot_data_, rx_data + 7, sizeof(ShootData));
+          break;
+        }
+        case kBulletRemainingCmdId: {
+          memcpy(&referee_data_.bullet_remaining_, rx_data + 7, sizeof(BulletRemaining));
+          break;
+        }
+        case kRobotRfidStatusCmdId: {
+          memcpy(&referee_data_.rfid_status_, rx_data + 7, sizeof(RfidStatus));
+          break;
+        }
+        case kDartClientCmdId: {
+          memcpy(&referee_data_.dart_client_cmd_, rx_data + 7, sizeof(DartClientCmd));
+          break;
+        }
+        case kStudentInteractiveDataCmdId: {
+          memcpy(&referee_data_.student_interactive_data_, rx_data + 7, sizeof(InteractiveData));
+          break;
+        }
+        case kRobotCommandCmdId: {
+          memcpy(&referee_data_.robot_command_, rx_data + 7, sizeof(RobotCommand));
+          break;
+        }
+        default: {
+          ROS_WARN("Referee command ID not found.");
+          break;
         }
       }
-        break;
-      case kStepLengthLow: {
-        referee_unpack_obj.data_len = byte;
-        referee_unpack_obj.protocol_packet[referee_unpack_obj.index++] = byte;
-        referee_unpack_obj.unpack_step = kStepLengthHigh;
-      }
-        break;
-      case kStepLengthHigh: {
-        referee_unpack_obj.data_len |= (byte << 8);
-        referee_unpack_obj.protocol_packet[referee_unpack_obj.index++] = byte;
-        // Check for abnormal data length
-        if (referee_unpack_obj.data_len < kProtocolFrameLength - kProtocolCmdIdLength - kProtocolTailLength) {
-          referee_unpack_obj.unpack_step = kStepFrameSeq;
-        } else {
-          referee_unpack_obj.unpack_step = kStepHeaderSof;
-          referee_unpack_obj.index = 0;
-        }
-      }
-        break;
-      case kStepFrameSeq: {
-        referee_unpack_obj.protocol_packet[referee_unpack_obj.index++] = byte;
-        referee_unpack_obj.unpack_step = kStepHeaderCrc8;
-      }
-        break;
-      case kStepHeaderCrc8: {
-        referee_unpack_obj.protocol_packet[referee_unpack_obj.index] = byte;
-        // Check if the check bit is being read
-        if (referee_unpack_obj.index == (kProtocolHeaderLength - 1)) {
-          if (verifyCRC8CheckSum(referee_unpack_obj.protocol_packet, kProtocolHeaderLength)) {
-            referee_unpack_obj.unpack_step = kStepDataCrc16;
-            referee_unpack_obj.index++;
-          } else {
-            referee_unpack_obj.unpack_step = kStepHeaderSof;
-            referee_unpack_obj.index = 0;
-          }
-        } else {
-          referee_unpack_obj.unpack_step = kStepHeaderSof;
-          referee_unpack_obj.index = 0;
-        }
-      }
-        break;
-      case kStepDataCrc16: {
-        // Read the remain data and check CRC16
-        if (referee_unpack_obj.index
-            < (kProtocolHeaderLength + kProtocolTailLength + kProtocolCmdIdLength + referee_unpack_obj.data_len)) {
-          referee_unpack_obj.protocol_packet[referee_unpack_obj.index++] = byte;
-        } else {
-          if (verifyCRC16CheckSum(referee_unpack_obj.protocol_packet,
-                                  kProtocolHeaderLength + kProtocolTailLength + kProtocolCmdIdLength
-                                      + referee_unpack_obj.data_len)) {
-            last_get_referee_data_ = ros::Time::now();
-            getData(referee_unpack_obj.protocol_packet);
-            memset(referee_unpack_obj.protocol_packet, 0, sizeof(referee_unpack_obj.protocol_packet));
-          }
-          referee_unpack_obj.unpack_step = kStepHeaderSof;
-          referee_unpack_obj.index = 0;
-        }
-      }
-        break;
-      default: {
-        referee_unpack_obj.unpack_step = kStepHeaderSof;
-        memset(referee_unpack_obj.protocol_packet, 0, sizeof(referee_unpack_obj.protocol_packet));
-        referee_unpack_obj.index = 0;
-        num = 0;
-      }
-        break;
-    }
-    num++;
-    count--;
-  }
-  referee_unpack_obj.unpack_step = kStepHeaderSof;
-  memset(referee_unpack_obj.protocol_packet, 0, sizeof(referee_unpack_obj.protocol_packet));
-}
-
-void Referee::getData(uint8_t *frame) {
-  uint16_t cmd_id = 0;
-  uint8_t index = 0;
-  index += (sizeof(FrameHeaderStruct));
-  memcpy(&cmd_id, frame + index, kProtocolCmdIdLength);
-
-  index += kProtocolCmdIdLength;
-
-  switch (cmd_id) {
-    case kGameStatusCmdId: {
-      memcpy(&referee_data_.game_status_, frame + index, sizeof(GameStatus));
-      break;
-    }
-    case kGameResultCmdId: {
-      memcpy(&referee_data_.game_result_, frame + index, sizeof(GameResult));
-      break;
-    }
-    case kGameRobotHpCmdId: {
-      memcpy(&referee_data_.game_robot_hp_, frame + index, sizeof(GameRobotHp));
-      break;
-    }
-    case kDartStatusCmdId: {
-      memcpy(&referee_data_.dart_status_, frame + index, sizeof(DartStatus));
-      break;
-    }
-    case kIcraZoneStatusCmdId: {
-      memcpy(&referee_data_.icra_buff_debuff_zone_status, frame + index, sizeof(IcraBuffDebuffZoneStatus));
-      break;
-    }
-    case kFieldEventsCmdId: {
-      memcpy(&referee_data_.event_data_, frame + index, sizeof(EventData));
-      break;
-    }
-    case kSupplyProjectileActionCmdId: {
-      memcpy(&referee_data_.supply_projectile_action_, frame + index, sizeof(SupplyProjectileAction));
-      break;
-    }
-    case kRefereeWarningCmdId: {
-      memcpy(&referee_data_.referee_warning_, frame + index, sizeof(RefereeWarning));
-      break;
-    }
-    case kDartRemainingCmdId: {
-      memcpy(&referee_data_.dart_remaining_time_, frame + index, sizeof(DartRemainingTime));
-      break;
-    }
-    case kRobotStatusCmdId: {
-      memcpy(&referee_data_.game_robot_status_, frame + index, sizeof(GameRobotStatus));
-      break;
-    }
-    case kPowerHeatDataCmdId: {
-      memcpy(&referee_data_.power_heat_data_, frame + index, sizeof(PowerHeatData));
-      referee_data_.power_heat_data_.chassis_volt =
-          referee_data_.power_heat_data_.chassis_volt / 1000;       //mV->V
-      referee_data_.power_heat_data_.chassis_current =
-          referee_data_.power_heat_data_.chassis_current / 1000;    //mA->A
-      break;
-    }
-    case kRobotPosCmdId: {
-      memcpy(&referee_data_.game_robot_pos_, frame + index, sizeof(GameRobotPos));
-      break;
-    }
-    case kBuffCmdId: {
-      memcpy(&referee_data_.buff_, frame + index, sizeof(Buff));
-      break;
-    }
-    case kAerialRobotEnergyCmdId: {
-      memcpy(&referee_data_.aerial_robot_energy_, frame + index, sizeof(AerialRobotEnergy));
-      break;
-    }
-    case kRobotHurtCmdId: {
-      memcpy(&referee_data_.robot_hurt_, frame + index, sizeof(RobotHurt));
-      break;
-    }
-    case kShootDataCmdId: {
-      memcpy(&referee_data_.shoot_data_, frame + index, sizeof(ShootData));
-      break;
-    }
-    case kBulletRemainingCmdId: {
-      memcpy(&referee_data_.bullet_remaining_, frame + index, sizeof(BulletRemaining));
-      break;
-    }
-    case kRobotRfidStatusCmdId: {
-      memcpy(&referee_data_.rfid_status_, frame + index, sizeof(RfidStatus));
-      break;
-    }
-    case kDartClientCmdId: {
-      memcpy(&referee_data_.dart_client_cmd_, frame + index, sizeof(DartClientCmd));
-      break;
-    }
-    case kStudentInteractiveDataCmdId: {
-      memcpy(&referee_data_.student_interactive_data_, frame + index, sizeof(StudentInteractiveData));
-      break;
-    }
-    case kRobotCommandCmdId: {
-      memcpy(&referee_data_.robot_command_, frame + index, sizeof(RobotCommand));
-      break;
-    }
-    default: {
-      ROS_WARN("Referee command ID not found.");
-      break;
+      last_get_referee_data_ = ros::Time::now();
+      return frame_len;
     }
   }
+  return -1;
 }
 
 void Referee::getRobotId() {
-  if (robot_id_ == 0) {
-    robot_id_ = referee_data_.game_robot_status_.robot_id;
+  robot_id_ = referee_data_.game_robot_status_.robot_id;
+  if (robot_id_ != kBlueSentry && robot_id_ != kRedSentry) {
     switch (robot_id_) {
       case kBlueHero:client_id_ = kBlueHeroClientId;
         break;
@@ -414,6 +226,8 @@ void Referee::getRobotId() {
       case kRedStandard2:client_id_ = kRedStandard2ClientId;
         break;
       case kRedStandard3:client_id_ = kRedStandard3ClientId;
+        break;
+      default:ROS_WARN("Cannot get robot id");
         break;
     }
   }
@@ -448,350 +262,130 @@ void Referee::publishData() {
   power_manager_pub_.publish(power_manager_pub_data_);
 }
 
-/******************* Send data to referee system *************************/
-void Referee::checkForDelay(float key_delay, float cap_data_delay, const ros::Time &now) {
-  // key press delay
-  if (dbus_data_.key_g) {
-    if (now - last_press_g_ < ros::Duration(key_delay)) dbus_data_.key_g = false;
-    else last_press_g_ = now;
-  }
-  if (dbus_data_.key_r) {
-    if (now - last_press_r_ < ros::Duration(key_delay)) dbus_data_.key_r = false;
-    else last_press_r_ = now;
-  }
-  if (dbus_data_.key_q) {
-    if (now - last_press_q_ < ros::Duration(key_delay)) dbus_data_.key_q = false;
-    else last_press_q_ = now;
-  }
-  if (dbus_data_.key_c) {
-    if (now - last_press_c_ < ros::Duration(key_delay)) dbus_data_.key_c = false;
-    else last_press_c_ = now;
-  }
-
-  // cap data display delay
-  if (now - last_update_cap_ > ros::Duration(cap_data_delay)) {
-    cap_update_flag_ = true;
-    last_update_cap_ = now;
-  }
-}
-
-double Referee::getArmorPosition() {
-  geometry_msgs::TransformStamped gimbal_transformStamped;
-  double roll, pitch, yaw;
-
-  // get armors' position
-  try {
-    gimbal_transformStamped = this->tf_.lookupTransform("yaw", "base_link", ros::Time(0));
-  }
-  catch (tf2::TransformException &ex) {
-    //ROS_ERROR("%s",ex.what());
-  }
-  quatToRPY(gimbal_transformStamped.transform.rotation, roll, pitch, yaw);
-
-  return yaw;
-}
-
-void Referee::displayArmorInfo(double yaw, const ros::Time &now) {
-  // update information of armor
-  if (referee_data_.robot_hurt_.armor_id == 0) {
-    if (referee_data_.robot_hurt_.hurt_type == 0x0) {
-      drawCircle((int) (960 + 340 * sin(0 - yaw)), (int) (540 + 340 * cos(0 - yaw)), 50, 5, kPurple, kAdd);
-    } else if (referee_data_.robot_hurt_.hurt_type == 0x5) {
-      drawCircle((int) (960 + 340 * sin(0 - yaw)), (int) (540 + 340 * cos(0 - yaw)), 50, 5, kYellow, kAdd);
-    }
-    last_hurt_armor0_ = now;
-    armor0_update_flag_ = true;
-    referee_data_.robot_hurt_.hurt_type = 0x9;
-    referee_data_.robot_hurt_.armor_id = 9;
-  }
-  if (referee_data_.robot_hurt_.armor_id == 1) {
-    if (referee_data_.robot_hurt_.hurt_type == 0x0) {
-      drawCircle((int) (960 + 340 * sin(3 * M_PI_2 - yaw)), (int) (540 + 340 * cos(3 * M_PI_2 - yaw)),
-                 50, 6, kPurple, kAdd);
-    } else if (referee_data_.robot_hurt_.hurt_type == 0x5) {
-      drawCircle((int) (960 + 340 * sin(3 * M_PI_2 - yaw)), (int) (540 + 340 * cos(3 * M_PI_2 - yaw)),
-                 50, 6, kYellow, kAdd);
-    }
-    last_hurt_armor1_ = now;
-    armor1_update_flag_ = true;
-    referee_data_.robot_hurt_.hurt_type = 0x9;
-    referee_data_.robot_hurt_.armor_id = 9;
-  }
-  if (referee_data_.robot_hurt_.armor_id == 2) {
-    if (referee_data_.robot_hurt_.hurt_type == 0x0) { // bullet damage
-      drawCircle((int) (960 + 340 * sin(M_PI - yaw)), (int) (540 + 340 * cos(M_PI - yaw)), 50, 7, kPurple, kAdd);
-    } else if (referee_data_.robot_hurt_.hurt_type == 0x5) { // hit damage
-      drawCircle((int) (960 + 340 * sin(M_PI - yaw)), (int) (540 + 340 * cos(M_PI - yaw)), 50, 7, kYellow, kAdd);
-    }
-    last_hurt_armor2_ = now;
-    armor2_update_flag_ = true;
-    referee_data_.robot_hurt_.hurt_type = 0x9;
-    referee_data_.robot_hurt_.armor_id = 9;
-  }
-  if (referee_data_.robot_hurt_.armor_id == 3) {
-    if (referee_data_.robot_hurt_.hurt_type == 0x0) {
-      drawCircle((int) (960 + 340 * sin(M_PI_2 - yaw)), (int) (540 + 340 * cos(M_PI_2 - yaw)), 50, 8, kPurple, kAdd);
-    } else if (referee_data_.robot_hurt_.hurt_type == 0x5) {
-      drawCircle((int) (960 + 340 * sin(M_PI_2 - yaw)), (int) (540 + 340 * cos(M_PI_2 - yaw)), 50, 8, kYellow, kAdd);
-    }
-    last_hurt_armor3_ = now;
-    armor3_update_flag_ = true;
-    referee_data_.robot_hurt_.hurt_type = 0x9;
-    referee_data_.robot_hurt_.armor_id = 9;
-  }
-
-  if (now - last_hurt_armor0_ > ros::Duration(0.5) && armor0_update_flag_) {
-    drawCircle((int) (960 + 340 * sin(0 - yaw)), (int) (540 + 340 * cos(0 - yaw)),
-               50, 5, kGreen, kDelete);
-    armor0_update_flag_ = false;
-  }
-  if (now - last_hurt_armor1_ > ros::Duration(0.5) && armor1_update_flag_) {
-    drawCircle((int) (960 + 340 * sin(3 * M_PI_2 - yaw)), (int) (540 + 340 * cos(3 * M_PI_2 - yaw)),
-               50, 6, kGreen, kDelete);
-    armor1_update_flag_ = false;
-  }
-  if (now - last_hurt_armor2_ > ros::Duration(0.5) && armor2_update_flag_) {
-    drawCircle((int) (960 + 340 * sin(M_PI - yaw)), (int) (540 + 340 * cos(M_PI - yaw)),
-               50, 7, kGreen, kDelete);
-    armor2_update_flag_ = false;
-  }
-  if (now - last_hurt_armor3_ > ros::Duration(0.5) && armor3_update_flag_) {
-    drawCircle((int) (960 + 340 * sin(M_PI_2 - yaw)), (int) (540 + 340 * cos(M_PI_2 - yaw)),
-               50, 8, kGreen, kDelete);
-    armor3_update_flag_ = false;
-  }
-}
-
-void Referee::displayCapInfo(uint8_t graph_operate_type) {
-  char power_string[30];
-  float power_float;
-
-  power_float = power_manager_data_.parameters[3] * 100;
-  sprintf(power_string, "Cap: %1.0f%%", power_float);
-  if (power_float >= 60)
-    drawString(910, 100, 0, power_string, kGreen, graph_operate_type);
-  else if (power_float < 60 && power_float >= 30)
-    drawString(910, 100, 0, power_string, kYellow, graph_operate_type);
-  else if (power_float < 30)
-    drawString(910, 100, 0, power_string, kOrange, graph_operate_type);
-}
-
-void Referee::displayChassisInfo(uint8_t graph_operate_type) {
-  if (chassis_mode_ != "passive") {
-    if (twist_flag_)
-      chassis_mode_ = "twist";
-    else if (gyro_flag_)
-      chassis_mode_ = "gyro";
-    else
-      chassis_mode_ = "follow";
-  }
-  drawString(1470, 790, 1, "chassis:" + chassis_mode_, kYellow, graph_operate_type);
-}
-
-void Referee::displayGimbalInfo(uint8_t graph_operate_type) {
-  if (gimbal_mode_ != "passive") {
-    if (dbus_data_.p_r)
-      gimbal_mode_ = "track";
-    else
-      gimbal_mode_ = "rate";
-  }
-  drawString(1470, 740, 2, "gimbal:" + gimbal_mode_, kYellow, graph_operate_type);
-}
-
-void Referee::displayShooterInfo(uint8_t graph_operate_type) {
-  if (dbus_data_.key_f) {
-    shooter_mode_ = "estop";
-    burst_flag_ = false;
-  } else if (shooter_mode_ != "passive") {
-    if (burst_flag_)
-      shooter_mode_ = "burst";
-    else
-      shooter_mode_ = "normal";
-  }
-  drawString(1470, 690, 3, "shooter:" + shooter_mode_, kYellow, graph_operate_type);
-}
-
-void Referee::displayAttackTargetInfo(uint8_t graph_operate_type) {
-  if (only_attack_base_flag_) {
-    drawString(1470, 640, 4, "target:base", kYellow, graph_operate_type);
-  } else {
-    drawString(1470, 640, 4, "target:all", kYellow, graph_operate_type);
-  }
-}
-
 void Referee::drawCircle(int center_x, int center_y, int radius, int picture_id,
                          GraphicColorType color, uint8_t operate_type) {
   uint8_t tx_buffer[128] = {0};
-  DrawClientGraphicData send_data;
-  int index = 0;
-
-  // Frame header
-  send_data.tx_frame_header_.sof = 0xA5;
-  send_data.tx_frame_header_.seq = 0;
-  send_data.tx_frame_header_.data_length = sizeof(StudentInteractiveHeaderData) + sizeof(GraphicDataStruct);
-  memcpy(tx_buffer, &send_data.tx_frame_header_, kProtocolHeaderLength);
-  appendCRC8CheckSum(tx_buffer, kProtocolHeaderLength);
-  index += kProtocolHeaderLength;
-
-  // Command ID
-  send_data.cmd_id_ = kStudentInteractiveDataCmdId;
-  memcpy(tx_buffer + index, &send_data.cmd_id_, sizeof(kProtocolCmdIdLength));
-  index += kProtocolCmdIdLength;
+  uint8_t tx_data[sizeof(ClientGraphicData)] = {0};
+  auto client_graph_data = (ClientGraphicData *) tx_data;
+  int tx_len = kProtocolHeaderLength + kProtocolCmdIdLength + sizeof(ClientGraphicData) + kProtocolTailLength;
 
   // Data
   // Graph data header
-  send_data.student_interactive_header_data_.data_cmd_id = kClientGraphicSingleCmdId;
-  send_data.student_interactive_header_data_.send_ID = robot_id_;
-  send_data.student_interactive_header_data_.receiver_ID = client_id_;
-  memcpy(tx_buffer + index, &send_data.student_interactive_header_data_, sizeof(StudentInteractiveHeaderData));
-  index += sizeof(StudentInteractiveHeaderData);
+  client_graph_data->student_interactive_header_data_.data_cmd_id = kClientGraphicSingleCmdId;
+  client_graph_data->student_interactive_header_data_.send_ID = robot_id_;
+  client_graph_data->student_interactive_header_data_.receiver_ID = client_id_;
 
   // Graph data
+  client_graph_data->graphic_data_struct_.graphic_name[0] = (uint8_t) (picture_id & 0xff);
+  client_graph_data->graphic_data_struct_.graphic_name[1] = (uint8_t) ((picture_id >> 8) & 0xff);
+  client_graph_data->graphic_data_struct_.graphic_name[2] = (uint8_t) ((picture_id >> 16) & 0xff);
 
-  send_data.graphic_data_struct_.graphic_name[0] = (uint8_t) (picture_id & 0xff);
-  send_data.graphic_data_struct_.graphic_name[1] = (uint8_t) ((picture_id >> 8) & 0xff);
-  send_data.graphic_data_struct_.graphic_name[2] = (uint8_t) ((picture_id >> 16) & 0xff);
+  client_graph_data->graphic_data_struct_.start_x = center_x;
+  client_graph_data->graphic_data_struct_.start_y = center_y;
+  client_graph_data->graphic_data_struct_.radius = radius;
 
-  send_data.graphic_data_struct_.start_x = center_x;
-  send_data.graphic_data_struct_.start_y = center_y;
-  send_data.graphic_data_struct_.radius = radius;
+  client_graph_data->graphic_data_struct_.operate_type = operate_type;
+  client_graph_data->graphic_data_struct_.graphic_type = 2; // circle
+  client_graph_data->graphic_data_struct_.layer = 0;
+  client_graph_data->graphic_data_struct_.color = color;
+  client_graph_data->graphic_data_struct_.width = 3;
 
-  send_data.graphic_data_struct_.operate_type = operate_type;
-  send_data.graphic_data_struct_.graphic_type = 2; // circle
-  send_data.graphic_data_struct_.layer = 0;
-  send_data.graphic_data_struct_.color = color;
-  send_data.graphic_data_struct_.width = 3;
-  memcpy(tx_buffer + index, &send_data.graphic_data_struct_, sizeof(GraphicDataStruct));
-
-  // Frame tail
-  appendCRC16CheckSum(tx_buffer, sizeof(send_data));
-
-  // Send
-  try {
-    serial_.write(tx_buffer, sizeof(send_data));
-  } catch (serial::SerialException &e) {
-    ROS_ERROR("Referee system disconnect.");
-    is_open_ = false;
-    return;
-  }
-}
-
-void Referee::drawString(int x, int y, int picture_id, std::string data,
-                         GraphicColorType color, uint8_t operate_type) {
-  uint8_t tx_buffer[128] = {0};
-  DrawClientCharData send_data;
-  int index = 0;
-
-  // Frame header
-  send_data.tx_frame_header_.sof = 0xA5;
-  send_data.tx_frame_header_.seq = 1;
-  send_data.tx_frame_header_.data_length =
-      sizeof(StudentInteractiveHeaderData) + sizeof(GraphicDataStruct) + 30;
-  memcpy(tx_buffer, &send_data.tx_frame_header_, kProtocolHeaderLength);
-  appendCRC8CheckSum(tx_buffer, kProtocolHeaderLength);
-  index += kProtocolHeaderLength;
-
-  // Command ID
-  send_data.cmd_id_ = kStudentInteractiveDataCmdId;
-  memcpy(tx_buffer + index, &send_data.cmd_id_, sizeof(kProtocolCmdIdLength));
-  index += kProtocolCmdIdLength;
-
-  // Data
-  // Graph data header
-  send_data.student_interactive_header_data_.data_cmd_id = kClientCharacterCmdId;
-  send_data.student_interactive_header_data_.send_ID = robot_id_;
-  send_data.student_interactive_header_data_.receiver_ID = client_id_;
-  memcpy(tx_buffer + index, &send_data.student_interactive_header_data_, sizeof(StudentInteractiveHeaderData));
-  index += sizeof(StudentInteractiveHeaderData);
-
-  send_data.graphic_data_struct_.graphic_name[1] = (uint8_t) (picture_id & 0xff);
-  send_data.graphic_data_struct_.start_x = x;
-  send_data.graphic_data_struct_.start_y = y;
-
-  send_data.graphic_data_struct_.graphic_name[0] = (uint8_t) ((picture_id >> 8) & 0xff);
-  send_data.graphic_data_struct_.graphic_name[2] = (uint8_t) ((picture_id >> 16) & 0xff);
-  send_data.graphic_data_struct_.graphic_type = 7; // char
-  send_data.graphic_data_struct_.operate_type = operate_type;
-  send_data.graphic_data_struct_.start_angle = 20; // char size
-  send_data.graphic_data_struct_.end_angle = (int) data.size(); // string length
-  send_data.graphic_data_struct_.width = 5; // line width
-  send_data.graphic_data_struct_.layer = 0;
-  send_data.graphic_data_struct_.color = color;
-  memcpy(tx_buffer + index, &send_data.graphic_data_struct_, sizeof(GraphicDataStruct));
-  index += sizeof(GraphicDataStruct);
-
-  // Char data
-  for (int kI = 0; kI < 30; ++kI) {
-    if (kI < (int) data.size())
-      send_data.data_[kI] = data[kI];
-    else
-      send_data.data_[kI] = ' ';
-  }
-  memcpy(tx_buffer + index, send_data.data_, 30);
-
-  // Frame tail
-  appendCRC16CheckSum(tx_buffer, sizeof(send_data));
-
-  // Send
-  try {
-    serial_.write(tx_buffer, sizeof(send_data));
-  } catch (serial::SerialException &e) {
-    ROS_ERROR("Referee system disconnect.");
-    is_open_ = false;
-    return;
-  }
-}
-
-void Referee::sendInteractiveData(int data_cmd_id, int receiver_id, const std::vector<uint8_t> &data) {
-  uint8_t tx_buffer[128] = {0};
-  SendInteractiveData send_data;
-  int tx_len =
-      kProtocolHeaderLength + kProtocolCmdIdLength + sizeof(StudentInteractiveHeaderData) + 113 + kProtocolTailLength;
-  int index = 0;
-
-  // Frame header
-  send_data.tx_frame_header_.sof = 0xA5;
-  send_data.tx_frame_header_.seq = 0;
-  send_data.tx_frame_header_.data_length = sizeof(StudentInteractiveHeaderData) + data.size();
-  memcpy(tx_buffer, &send_data.tx_frame_header_, kProtocolHeaderLength);
-  appendCRC8CheckSum(tx_buffer, kProtocolHeaderLength);
-  index += kProtocolHeaderLength;
-
-  // Command ID
-  send_data.cmd_id_ = kStudentInteractiveDataCmdId;
-  memcpy(tx_buffer + index, &send_data.cmd_id_, sizeof(kProtocolCmdIdLength));
-  index += kProtocolCmdIdLength;
-
-  // Data
-  // Interactive data header
-  send_data.student_interactive_header_data_.data_cmd_id = data_cmd_id;
-  send_data.student_interactive_header_data_.send_ID = robot_id_;
-  send_data.student_interactive_header_data_.receiver_ID = receiver_id;
-  memcpy(tx_buffer + index, &send_data.student_interactive_header_data_, sizeof(StudentInteractiveHeaderData));
-  index += sizeof(StudentInteractiveHeaderData);
-  // Interactive data
-  for (int kI = 0; kI < 113; ++kI) {
-    if (kI < (int) data.size())
-      send_data.data_[kI] = data[kI];
-    else
-      send_data.data_[kI] = 0;
-  }
-  memcpy(tx_buffer + index, send_data.data_, 113);
-
-  // Frame tail
-  appendCRC16CheckSum(tx_buffer, tx_len);
+  pack(tx_buffer, tx_data, kStudentInteractiveDataCmdId, sizeof(ClientGraphicData));
 
   // Send
   try {
     serial_.write(tx_buffer, tx_len);
-  } catch (serial::SerialException &e) {
-    ROS_ERROR("Referee system disconnect.");
+  } catch (serial::PortNotOpenedException &e) {
+    ROS_ERROR("Cannot open referee port, fail to draw UI");
     is_open_ = false;
     return;
   }
 }
 
-/******************* CRC Verify *************************/
+void Referee::drawString(int x, int y, int picture_id, std::string data, GraphicColorType color, uint8_t operate_type) {
+  uint8_t tx_buffer[128] = {0};
+  uint8_t tx_data[sizeof(ClientCharData)] = {0};
+  auto client_char_data = (ClientCharData *) tx_data;
+  int tx_len = kProtocolHeaderLength + kProtocolCmdIdLength + sizeof(ClientCharData) + kProtocolTailLength;
+
+  // Data
+  client_char_data->student_interactive_header_data_.data_cmd_id = kClientCharacterCmdId;
+  client_char_data->student_interactive_header_data_.send_ID = robot_id_;
+  client_char_data->student_interactive_header_data_.receiver_ID = client_id_;
+
+  client_char_data->graphic_data_struct_.graphic_name[0] = (uint8_t) ((picture_id >> 8) & 0xff);
+  client_char_data->graphic_data_struct_.graphic_name[1] = (uint8_t) (picture_id & 0xff);
+  client_char_data->graphic_data_struct_.graphic_name[2] = (uint8_t) ((picture_id >> 16) & 0xff);
+
+  client_char_data->graphic_data_struct_.start_x = x;
+  client_char_data->graphic_data_struct_.start_y = y;
+  client_char_data->graphic_data_struct_.graphic_type = 7; // char
+  client_char_data->graphic_data_struct_.operate_type = operate_type;
+  client_char_data->graphic_data_struct_.start_angle = 20; // char size
+  client_char_data->graphic_data_struct_.end_angle = (int) data.size(); // string length
+  client_char_data->graphic_data_struct_.width = 5; // line width
+  client_char_data->graphic_data_struct_.layer = 0;
+  client_char_data->graphic_data_struct_.color = color;
+
+  // Char data
+  for (int kI = 0; kI < 30; ++kI) {
+    if (kI < (int) data.size())
+      client_char_data->data_[kI] = data[kI];
+    else
+      client_char_data->data_[kI] = ' ';
+  }
+
+  pack(tx_buffer, tx_data, kStudentInteractiveDataCmdId, sizeof(ClientCharData));
+
+  // Send
+  try {
+    serial_.write(tx_buffer, tx_len);
+  } catch (serial::PortNotOpenedException &e) {
+    ROS_ERROR("Cannot open referee port, fail to draw UI");
+    is_open_ = false;
+    return;
+  }
+}
+
+void Referee::sendInteractiveData(int data_cmd_id, int receiver_id, uint8_t data) {
+  uint8_t tx_buffer[128] = {0};
+  uint8_t tx_data[sizeof(InteractiveData)] = {0};
+  auto student_interactive_data = (InteractiveData *) tx_data;
+  int tx_len = kProtocolHeaderLength + kProtocolCmdIdLength + sizeof(InteractiveData) + kProtocolTailLength;
+
+  student_interactive_data->student_interactive_header_data_.data_cmd_id = data_cmd_id;
+  student_interactive_data->student_interactive_header_data_.send_ID = robot_id_;
+  student_interactive_data->student_interactive_header_data_.receiver_ID = receiver_id;
+
+  student_interactive_data->data = data;
+
+  pack(tx_buffer, tx_data, kStudentInteractiveDataCmdId, sizeof(InteractiveData));
+
+  // Send
+  try {
+    serial_.write(tx_buffer, tx_len);
+  } catch (serial::PortNotOpenedException &e) {
+    ROS_ERROR("Cannot open referee port, fail to send command to sentry");
+    is_open_ = false;
+    return;
+  }
+}
+
+void Referee::pack(uint8_t *tx_buffer, uint8_t *data, int cmd_id, int len) {
+  memset(tx_buffer, 0, kProtocolFrameLength);
+  auto *frame_header = (FrameHeaderStruct *) tx_buffer;
+
+  frame_header->sof = 0xA5;
+  frame_header->data_length = len;
+
+  memcpy(&tx_buffer[kProtocolHeaderLength], (uint8_t *) &cmd_id, kProtocolCmdIdLength);
+  appendCRC8CheckSum(tx_buffer, kProtocolHeaderLength);
+
+  memcpy(&tx_buffer[kProtocolHeaderLength + kProtocolCmdIdLength], data, len);
+  appendCRC16CheckSum(tx_buffer, kProtocolHeaderLength + kProtocolCmdIdLength + len + kProtocolTailLength);
+}
+
+// CRC verify
 uint8_t getCRC8CheckSum(unsigned char *pch_message, unsigned int dw_length, unsigned char ucCRC8) {
   unsigned char uc_index;
   while (dw_length--) {
@@ -801,11 +395,6 @@ uint8_t getCRC8CheckSum(unsigned char *pch_message, unsigned int dw_length, unsi
   return (ucCRC8);
 }
 
-/*
-** Descriptions: CRC8 Verify function
-** Input: Data to Verify,Stream length = Data + checksum
-** Output: True or False (CRC Verify Result)
-*/
 uint32_t verifyCRC8CheckSum(unsigned char *pch_message, unsigned int dw_length) {
   unsigned char ucExpected = 0;
   if ((pch_message == nullptr) || (dw_length <= 2)) {
@@ -815,11 +404,6 @@ uint32_t verifyCRC8CheckSum(unsigned char *pch_message, unsigned int dw_length) 
   return (ucExpected == pch_message[dw_length - 1]);
 }
 
-/*
-** Descriptions: append CRC8 to the end of data
-** Input: Data to CRC and append,Stream length = Data + checksum
-** Output: True or False (CRC Verify Result)
-*/
 void appendCRC8CheckSum(unsigned char *pchMessage, unsigned int dwLength) {
   unsigned char ucCRC = 0;
   if ((pchMessage == nullptr) || (dwLength <= 2)) return;
@@ -827,11 +411,6 @@ void appendCRC8CheckSum(unsigned char *pchMessage, unsigned int dwLength) {
   pchMessage[dwLength - 1] = ucCRC;
 }
 
-/*
-** Descriptions: CRC16 checksum function
-** Input: Data to check,Stream length, initialized checksum
-** Output: CRC checksum
-*/
 uint16_t getCRC16CheckSum(uint8_t *pchMessage, uint32_t dwLength, uint16_t wCRC) {
   uint8_t chData;
   if (pchMessage == nullptr) {
@@ -844,11 +423,6 @@ uint16_t getCRC16CheckSum(uint8_t *pchMessage, uint32_t dwLength, uint16_t wCRC)
   return wCRC;
 }
 
-/*
-** Descriptions: CRC16 Verify function
-** Input: Data to Verify,Stream length = Data + checksum
-** Output: True or False (CRC Verify Result)
-*/
 uint32_t verifyCRC16CheckSum(uint8_t *pchMessage, uint32_t dwLength) {
   uint16_t wExpected = 0;
   if ((pchMessage == nullptr) || (dwLength <= 2)) {
@@ -858,11 +432,6 @@ uint32_t verifyCRC16CheckSum(uint8_t *pchMessage, uint32_t dwLength) {
   return ((wExpected & 0xff) == pchMessage[dwLength - 2] && ((wExpected >> 8) & 0xff) == pchMessage[dwLength - 1]);
 }
 
-/*
-** Descriptions: append CRC16 to the end of data
-** Input: Data to CRC and append,Stream length = Data + checksum
-** Output: True or False (CRC Verify Result)
-*/
 void appendCRC16CheckSum(uint8_t *pchMessage, uint32_t dwLength) {
   uint16_t wCRC = 0;
   if ((pchMessage == nullptr) || (dwLength <= 2)) {
@@ -873,7 +442,6 @@ void appendCRC16CheckSum(uint8_t *pchMessage, uint32_t dwLength) {
   pchMessage[dwLength - 1] = (uint8_t) ((wCRC >> 8) & 0x00ff);
 }
 
-/***************************************** Power manager ****************************************************/
 void PowerManagerData::read(const std::vector<uint8_t> &rx_buffer) {
   int count = 0;
   memset(Receive_Buffer, 0x00, sizeof(Receive_Buffer));
@@ -984,3 +552,6 @@ float PowerManagerData::Int16ToFloat(unsigned short data0) {
   fp32 = (float *) &fInt32;
   return *fp32;
 }
+
+} // namespace rm_manual
+

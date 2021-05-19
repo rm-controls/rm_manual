@@ -20,6 +20,8 @@
 #include "rm_manual/common/shooter_heat_limit.h"
 #include "rm_manual/common/target_cost_function.h"
 
+namespace rm_manual {
+
 class Data {
  public:
   Data() = default;
@@ -52,12 +54,12 @@ class Data {
   geometry_msgs::TwistStamped arm_cmd_vel_;
   nav_msgs::Odometry odom_;
 
-  referee::Referee *referee_{};
+  Referee *referee_{};
 
   void init(ros::NodeHandle nh) {
     shooter_heat_limit_ = new ShooterHeatLimit();
     target_cost_function_ = new TargetCostFunction(nh);
-    referee_ = new referee::Referee(nh);
+    referee_ = new Referee(nh);
     // sub
     dbus_sub_ = nh.subscribe<rm_msgs::DbusData>(
         "/dbus_data", 10, &Data::dbusDataCallback, this);
@@ -93,4 +95,5 @@ class Data {
   }
 };
 
+}
 #endif //RM_MANUAL_INCLUDE_RM_MANUAL_DATA_H_

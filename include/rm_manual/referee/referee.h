@@ -1,8 +1,8 @@
 //
 // Created by peter on 2021/5/17.
 //
-#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_REFEREE_H_
-#define RM_MANUAL_INCLUDE_RM_MANUAL_REFEREE_H_
+#ifndef RM_MANUAL_REFEREE_H_
+#define RM_MANUAL_REFEREE_H_
 
 #include <cstdint>
 #include <serial/serial.h>
@@ -16,9 +16,9 @@
 #include <rm_msgs/GimbalCmd.h>
 #include <geometry_msgs/Twist.h>
 
-#include "protocol.h"
+#include "rm_manual/referee/protocol.h"
 
-namespace power_manager {
+namespace rm_manual {
 class PowerManagerData {
  public:
   void read(const std::vector<uint8_t> &rx_buffer);
@@ -35,9 +35,7 @@ class PowerManagerData {
   unsigned char PingPong_Buffer[1024] = {0};
   unsigned int Receive_BufCounter = 0;
 };
-} // namespace power_manager
 
-namespace referee {
 struct RefereeData {
   GameStatus game_status_;
   GameResult game_result_;
@@ -82,7 +80,7 @@ class Referee {
   rm_msgs::Referee referee_pub_data_;
   rm_msgs::PowerManagerData power_manager_pub_data_;
   RefereeData referee_data_{};
-  power_manager::PowerManagerData power_manager_data_;
+  PowerManagerData power_manager_data_;
 
   bool is_open_ = false;
 
@@ -116,6 +114,6 @@ void appendCRC8CheckSum(unsigned char *pchMessage, unsigned int dwLength);
 uint16_t getCRC16CheckSum(uint8_t *pchMessage, uint32_t dwLength, uint16_t wCRC);
 uint32_t verifyCRC16CheckSum(uint8_t *pchMessage, uint32_t dwLength);
 void appendCRC16CheckSum(unsigned char *pchMessage, unsigned int dwLength);
-} // namespace referee
+} // namespace rm_manual
 
-#endif //RM_MANUAL_INCLUDE_RM_MANUAL_REFEREE_H_
+#endif //RM_MANUAL_REFEREE_H_

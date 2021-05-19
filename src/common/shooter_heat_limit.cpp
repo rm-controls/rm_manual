@@ -3,8 +3,9 @@
 //
 
 #include "rm_manual/common/shooter_heat_limit.h"
+namespace rm_manual {
 
-void ShooterHeatLimit::input(referee::Referee *referee, double expect_shoot_hz, double safe_shoot_hz) {
+void ShooterHeatLimit::input(Referee *referee, double expect_shoot_hz, double safe_shoot_hz) {
   uint16_t cooling_limit;
   uint16_t cooling_rate;
   uint16_t shooter_heat;
@@ -52,4 +53,6 @@ void ShooterHeatLimit::input(referee::Referee *referee, double expect_shoot_hz, 
 
 double ShooterHeatLimit::output() const {
   return hz;
+}
+
 }

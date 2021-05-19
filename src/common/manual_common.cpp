@@ -3,6 +3,7 @@
 //
 
 #include "rm_manual/common/manual_common.h"
+namespace rm_manual {
 
 Manual::Manual(ros::NodeHandle &node_handle) : nh_(node_handle) {
   tf_listener_ = new tf2_ros::TransformListener(tf_);
@@ -32,7 +33,7 @@ void Manual::run() {
   // run referee system
   data_.referee_->read();
   if (data_.referee_->is_open_) {
-    data_.referee_->run();
+    data_.referee_->read();
   }
   loadParam();
   if (remote_control_is_open_ && ((now - data_.dbus_data_.stamp).toSec() > 0.1)) {
@@ -427,6 +428,5 @@ void Manual::remoteControlTurnOff() {
 void Manual::remoteControlTurnOn() {
   controller_manager_->startMovementControllers();
 }
-// RobotRunner a template
 
-class Manual;
+}

@@ -6,12 +6,12 @@
 
 int main(int argc, char **argv) {
   std::string robot;
-  Manual *manual_control;
+  rm_manual::Manual *manual_control;
   ros::init(argc, argv, "rm_manual");
   ros::NodeHandle nh("~");
   robot = getParam(nh, "robot_type", (std::string) "error");
   if (robot == "standard" || robot == "hero")
-    manual_control = new Manual(nh);
+    manual_control = new rm_manual::Manual(nh);
   else {
     ROS_ERROR("no robot type ");
     return 0;
