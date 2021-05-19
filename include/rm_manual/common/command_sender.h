@@ -94,10 +94,17 @@ class GimbalCommandSender : public CommandSenderBase<rm_msgs::GimbalCmd> {
     if (nh.getParam("max_pitch_vel", max_pitch_vel_))
       ROS_ERROR("Max pitch velocity no defined (namespace: %s)", nh.getNamespace().c_str());
   }
-  double setBulletSpeed(double speed) { msg_.bullet_speed = speed; }
-  double setTargetId(int id) { msg_.target_id = id; }
+  void setBulletSpeed(double speed) { msg_.bullet_speed = speed; }
+  void setTargetId(int id) { msg_.target_id = id; }
  private:
   double max_yaw_rate_{}, max_pitch_vel_{};
+};
+
+class ShooterCommandSender : public CommandSenderBase<rm_msgs::ShootCmd> {
+ public:
+  explicit ShooterCommandSender(ros::NodeHandle &nh) : CommandSenderBase<rm_msgs::ShootCmd>(nh) {}
+  void setSpeed(int speed) { msg_.speed = speed; }
+  void setHz(double hz) { msg_.hz = hz; }
 };
 
 }

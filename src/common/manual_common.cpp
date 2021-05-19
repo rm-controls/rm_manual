@@ -4,8 +4,7 @@
 
 #include "rm_manual/common/manual_common.h"
 
-Manual::Manual(ros::NodeHandle &node_handle) :
-    nh_(node_handle), chassis_command_sender_(node_handle) {
+Manual::Manual(ros::NodeHandle &node_handle) : nh_(node_handle) {
   tf_listener_ = new tf2_ros::TransformListener(tf_);
 
   data_.init(nh_);
