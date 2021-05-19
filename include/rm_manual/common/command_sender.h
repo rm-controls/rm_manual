@@ -10,6 +10,7 @@
 #include <rm_msgs/GimbalCmd.h>
 #include <rm_msgs/ShootCmd.h>
 #include <nav_msgs/Odometry.h>
+#include "heat_limit.h"
 
 namespace rm_manual {
 
@@ -41,16 +42,16 @@ class CommandSenderBase {
 class ChassisCommandSender : public CommandSenderBase<rm_msgs::ChassisCmd> {
  public:
   explicit ChassisCommandSender(ros::NodeHandle &nh) : CommandSenderBase<rm_msgs::ChassisCmd>(nh) {
-    double accel_x, accel_y, accel_angular;
+    double accel_x, accel_y, accel_w;
     if (nh.getParam("accel_x", accel_x))
       ROS_ERROR("Accel X no defined (namespace: %s)", nh.getNamespace().c_str());
     if (nh.getParam("accel_y", accel_y))
       ROS_ERROR("Accel Y no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (nh.getParam("accel_w", accel_angular))
+    if (nh.getParam("accel_w", accel_w))
       ROS_ERROR("Accel W no defined (namespace: %s)", nh.getNamespace().c_str());
     msg_.accel.linear.x = accel_x;
     msg_.accel.linear.x = accel_x;
-    msg_.accel.angular.z = accel_angular;
+    msg_.accel.angular.z = accel_w;
   }
   void setAccel(double x, double y, double angular) {
     msg_.accel.linear.x = x;
@@ -102,9 +103,16 @@ class GimbalCommandSender : public CommandSenderBase<rm_msgs::GimbalCmd> {
 
 class ShooterCommandSender : public CommandSenderBase<rm_msgs::ShootCmd> {
  public:
-  explicit ShooterCommandSender(ros::NodeHandle &nh) : CommandSenderBase<rm_msgs::ShootCmd>(nh) {}
+  explicit ShooterCommandSender(ros::NodeHandle &nh) : CommandSenderBase<rm_msgs::ShootCmd>(nh) {
+    if (nh.getParam("bullet_heat", bullet_heat_))
+      ROS_ERROR("Bullet Heat no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (nh.getParam("safe_shoot_frequency", safe_shoot_frequency_))
+      ROS_ERROR("Safe shoot frequency no defined (namespace: %s)", nh.getNamespace().c_str());
+  }
   void setSpeed(int speed) { msg_.speed = speed; }
   void setHz(double hz) { msg_.hz = hz; }
+ private:
+  double bullet_heat_{}, safe_shoot_frequency_{};
 };
 
 }
