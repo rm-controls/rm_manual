@@ -18,10 +18,12 @@ class CommandSenderBase {
  public:
   explicit CommandSenderBase(ros::NodeHandle &nh) {
     if (nh.getParam("topic", topic_))
-      ROS_ERROR("Topic name no defined");
+      ROS_ERROR("Topic name no defined (namespace: %s)", nh.getNamespace().c_str());
     queue_size_ = getParam(nh, "queue_size", 1);
     pub_ = nh.advertise<MsgType>(topic_, queue_size_);
   }
+
+  void setMode(int mode) { if (!std::is_same<MsgType, geometry_msgs::Twist>::value) msg_.mode = mode; }
 
   void sendCommand(ros::Time time) {
     if (!std::is_same<MsgType, geometry_msgs::Twist>::value)
@@ -41,16 +43,15 @@ class ChassisCommandSender : public CommandSenderBase<rm_msgs::ChassisCmd> {
   explicit ChassisCommandSender(ros::NodeHandle &nh) : CommandSenderBase<rm_msgs::ChassisCmd>(nh) {
     double accel_x, accel_y, accel_angular;
     if (nh.getParam("accel_x", accel_x))
-      ROS_ERROR("Accel X no defined");
+      ROS_ERROR("Accel X no defined (namespace: %s)", nh.getNamespace().c_str());
     if (nh.getParam("accel_y", accel_y))
-      ROS_ERROR("Accel Y no defined");
+      ROS_ERROR("Accel Y no defined (namespace: %s)", nh.getNamespace().c_str());
     if (nh.getParam("accel_w", accel_angular))
-      ROS_ERROR("Accel W no defined");
+      ROS_ERROR("Accel W no defined (namespace: %s)", nh.getNamespace().c_str());
     msg_.accel.linear.x = accel_x;
     msg_.accel.linear.x = accel_x;
     msg_.accel.angular.z = accel_angular;
   }
-  void setMode(int mode) { msg_.mode = mode; }
   void setAccel(double x, double y, double angular) {
     msg_.accel.linear.x = x;
     msg_.accel.linear.x = y;
@@ -64,11 +65,11 @@ class VelCommandSender : public CommandSenderBase<geometry_msgs::Twist> {
  public:
   explicit VelCommandSender(ros::NodeHandle &nh) : CommandSenderBase<geometry_msgs::Twist>(nh) {
     if (nh.getParam("max_vel_x", max_vel_x_))
-      ROS_ERROR("Coefficient of velocity X no defined");
+      ROS_ERROR("Max X velocity no defined (namespace: %s)", nh.getNamespace().c_str());
     if (nh.getParam("max_vel_y", max_vel_y_))
-      ROS_ERROR("Coefficient of velocity Y no defined");
+      ROS_ERROR("Max Y velocity no defined (namespace: %s)", nh.getNamespace().c_str());
     if (nh.getParam("max_vel_w", max_vel_w_))
-      ROS_ERROR("Coefficient of velocity W no defined");
+      ROS_ERROR("Max W velocity no defined (namespace: %s)", nh.getNamespace().c_str());
   }
 
   void setXVel(double scale) { msg_.linear.x = scale * max_vel_x_; };
@@ -83,6 +84,20 @@ class VelCommandSender : public CommandSenderBase<geometry_msgs::Twist> {
 
  private:
   double max_vel_x_{}, max_vel_y_{}, max_vel_w_{};
+};
+
+class GimbalCommandSender : public CommandSenderBase<rm_msgs::GimbalCmd> {
+ public:
+  explicit GimbalCommandSender(ros::NodeHandle &nh) : CommandSenderBase<rm_msgs::GimbalCmd>(nh) {
+    if (nh.getParam("max_yaw_vel", max_yaw_rate_))
+      ROS_ERROR("Max yaw velocity no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (nh.getParam("max_pitch_vel", max_pitch_vel_))
+      ROS_ERROR("Max pitch velocity no defined (namespace: %s)", nh.getNamespace().c_str());
+  }
+  double setBulletSpeed(double speed) { msg_.bullet_speed = speed; }
+  double setTargetId(int id) { msg_.target_id = id; }
+ private:
+  double max_yaw_rate_{}, max_pitch_vel_{};
 };
 
 }
