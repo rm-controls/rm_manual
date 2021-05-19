@@ -1,5 +1,5 @@
 //
-// Created by luohx on 20-2-20.
+// Created by peter on 2021/5/17.
 //
 
 #ifndef RM_MANUAL_INCLUDE_RM_MANUAL_PROTOCOL_H_
@@ -7,7 +7,6 @@
 #define __packed __attribute__((packed))
 #include <cstdint>
 
-// Interface Protocol
 typedef enum {
   kGameStatusCmdId = 0x0001,
   kGameResultCmdId = 0x0002,
@@ -33,31 +32,75 @@ typedef enum {
   kRobotCommandCmdId = 0x0303,
 } RefereeCmdId;
 
+typedef enum {
+  kRobotInteractiveCmdIdMin = 0x0200,
+  kRobotInteractiveCmdIdMax = 0x02FF,
+  kClientGraphicDeleteCmdId = 0x0100,
+  kClientGraphicSingleCmdId = 0x0101,
+  kClientGraphicDoubleCmdId = 0x0102,
+  kClientGraphicFiveCmdId = 0x0103,
+  kClientGraphicSevenCmdId = 0x0104,
+  kClientCharacterCmdId = 0x0110,
+} DataCmdId;
+
+typedef enum {
+  kRedHero = 1,
+  kRedEngineer = 2,
+  kRedStandard1 = 3,
+  kRedStandard2 = 4,
+  kRedStandard3 = 5,
+  kRedAerial = 6,
+  kRedSentry = 7,
+  kRedRadar = 9,
+  kBlueHero = 101,
+  kBlueEngineer = 102,
+  kBlueStandard1 = 103,
+  kBlueStandard2 = 104,
+  kBlueStandard3 = 105,
+  kBlueAerial = 106,
+  kBlueSentry = 107,
+  kBlueRadar = 109,
+} RobotId;
+
+typedef enum {
+  kRedHeroClientId = 0x0101,
+  kRedEngineerClientId = 0x0102,
+  kRedStandard1ClientId = 0x0103,
+  kRedStandard2ClientId = 0x0104,
+  kRedStandard3ClientId = 0x0105,
+  kRedAerialClientId = 0x0106,
+  kBlueHeroClientId = 0x0165,
+  kBlueEngineerClientId = 0x0166,
+  kBlueStandard1ClientId = 0x0167,
+  kBlueStandard2ClientId = 0x0168,
+  kBlueStandard3ClientId = 0x0169,
+  kBlueAerialClientId = 0x016A,
+} ClientId;
+
+typedef enum {
+  kAdd = 1,
+  kUpdate = 2,
+  kDelete = 3
+} GraphicOperateType;
+
+typedef enum {
+  kMainColor = 0,
+  kYellow = 1,
+  kGreen = 2,
+  kOrange = 3,
+  kPurple = 4,
+  kPink = 5,
+  kCyan = 6,
+  kBlack = 7,
+  kWhite = 8
+} GraphicColorType;
+
 typedef struct {
   uint8_t sof;
   uint16_t data_length;
   uint8_t seq;
   uint8_t crc8;
 } __packed FrameHeaderStruct;
-
-// Unpacking order
-typedef enum {
-  kStepHeaderSof = 0,
-  kStepLengthLow = 1,
-  kStepLengthHigh = 2,
-  kStepFrameSeq = 3,
-  kStepHeaderCrc8 = 4,
-  kStepDataCrc16 = 5,
-} UnpackStep;
-
-// Use to unpack data
-typedef struct {
-  FrameHeaderStruct *p_header;
-  uint16_t data_len;
-  uint8_t protocol_packet[128];
-  UnpackStep unpack_step;
-  uint16_t index;
-} UnpackObject;
 
 typedef struct {
   uint8_t game_type: 4;
@@ -213,69 +256,6 @@ typedef struct {
 } __packed DartClientCmd;
 
 /*********************** Interactive data between robots----0x0301 ********************/
-typedef enum {
-  kRobotInteractiveCmdIdMin = 0x0200,
-  kRobotInteractiveCmdIdMax = 0x02FF,
-  kClientGraphicDeleteCmdId = 0x0100,
-  kClientGraphicSingleCmdId = 0x0101,
-  kClientGraphicDoubleCmdId = 0x0102,
-  kClientGraphicFiveCmdId = 0x0103,
-  kClientGraphicSevenCmdId = 0x0104,
-  kClientCharacterCmdId = 0x0110,
-} DataCmdId;
-
-typedef enum {
-  kRedHero = 1,
-  kRedEngineer = 2,
-  kRedStandard1 = 3,
-  kRedStandard2 = 4,
-  kRedStandard3 = 5,
-  kRedAerial = 6,
-  kRedSentry = 7,
-  kRedRadar = 9,
-  kBlueHero = 101,
-  kBlueEngineer = 102,
-  kBlueStandard1 = 103,
-  kBlueStandard2 = 104,
-  kBlueStandard3 = 105,
-  kBlueAerial = 106,
-  kBlueSentry = 107,
-  kBlueRadar = 109,
-} RobotId;
-
-typedef enum {
-  kRedHeroClientId = 0x0101,
-  kRedEngineerClientId = 0x0102,
-  kRedStandard1ClientId = 0x0103,
-  kRedStandard2ClientId = 0x0104,
-  kRedStandard3ClientId = 0x0105,
-  kRedAerialClientId = 0x0106,
-  kBlueHeroClientId = 0x0165,
-  kBlueEngineerClientId = 0x0166,
-  kBlueStandard1ClientId = 0x0167,
-  kBlueStandard2ClientId = 0x0168,
-  kBlueStandard3ClientId = 0x0169,
-  kBlueAerialClientId = 0x016A,
-} ClientId;
-
-typedef enum {
-  kAdd = 1,
-  kUpdate = 2,
-  kDelete = 3
-} GraphicOperateType;
-
-typedef enum {
-  kMainColor = 0,
-  kYellow = 1,
-  kGreen = 2,
-  kOrange = 3,
-  kPurple = 4,
-  kPink = 5,
-  kCyan = 6,
-  kBlack = 7,
-  kWhite = 8
-} GraphicColorType;
-
 typedef struct {
   uint16_t data_cmd_id;
   uint16_t send_ID;
@@ -299,34 +279,20 @@ typedef struct {
 }__packed GraphicDataStruct;
 
 typedef struct {
-  FrameHeaderStruct tx_frame_header_;
-  uint16_t cmd_id_;
   StudentInteractiveHeaderData student_interactive_header_data_;
   GraphicDataStruct graphic_data_struct_;
-  uint16_t frame_tail_;
-}__packed DrawClientGraphicData;
+}__packed ClientGraphicData;
 
 typedef struct {
-  FrameHeaderStruct tx_frame_header_;
-  uint16_t cmd_id_;
   StudentInteractiveHeaderData student_interactive_header_data_;
   GraphicDataStruct graphic_data_struct_;
   uint8_t data_[30];
-  uint16_t frame_tail_;
-}__packed DrawClientCharData;
-
-typedef struct {
-  FrameHeaderStruct tx_frame_header_;
-  uint16_t cmd_id_;
-  StudentInteractiveHeaderData student_interactive_header_data_;
-  uint8_t data_[113];
-  uint16_t frame_tail_;
-}__packed SendInteractiveData;
+}__packed ClientCharData;
 
 typedef struct {
   StudentInteractiveHeaderData student_interactive_header_data_;
-  uint8_t data[113];
-}__packed StudentInteractiveData;
+  uint8_t data;
+}__packed InteractiveData;
 
 /********************** Robot Interactive data ----0x0302 *******************************************/
 typedef struct {

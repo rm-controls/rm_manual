@@ -11,7 +11,7 @@
 class ShooterHeatLimit {
  public:
   ShooterHeatLimit() = default;
-  void input(Referee *referee, double expect_shoot_hz, double safe_shoot_hz);
+  void input(referee::Referee *referee, double expect_shoot_hz, double safe_shoot_hz);
   double output() const;
 
  private:

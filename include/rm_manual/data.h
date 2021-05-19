@@ -52,12 +52,12 @@ class Data {
   geometry_msgs::TwistStamped arm_cmd_vel_;
   nav_msgs::Odometry odom_;
 
-  Referee *referee_{};
+  referee::Referee *referee_{};
 
   void init(ros::NodeHandle nh) {
     shooter_heat_limit_ = new ShooterHeatLimit();
     target_cost_function_ = new TargetCostFunction(nh);
-    referee_ = new Referee();
+    referee_ = new referee::Referee(nh);
     // sub
     dbus_sub_ = nh.subscribe<rm_msgs::DbusData>(
         "/dbus_data", 10, &Data::dbusDataCallback, this);
@@ -76,7 +76,7 @@ class Data {
     referee_->referee_pub_ = root_nh.advertise<rm_msgs::Referee>("/referee", 1);
     referee_->power_manager_pub_ = root_nh.advertise<rm_msgs::PowerManagerData>("/power_manager_data", 1);
     engineer_vel_cmd_pub_ = root_nh.advertise<geometry_msgs::TwistStamped>("/servo_server/delta_twist_cmds", 1);
-    referee_->init(nh);
+    referee_->init();
   }
 
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr &data) {

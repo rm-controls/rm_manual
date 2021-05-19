@@ -3,13 +3,6 @@
 //
 
 #include "rm_manual/manual_common.h"
-/**
- * Constructor for the Control FSM. Passes in all of the necessary
- * data and stores it in a struct. Initializes the FSM with a starting
- * state and operating mode.
- * @tparam T
- * @param nh
- */
 
 Manual::Manual(ros::NodeHandle &node_handle) : nh_(node_handle) {
   tf_listener_ = new tf2_ros::TransformListener(tf_);
@@ -38,9 +31,6 @@ void Manual::run() {
   ros::Time now = ros::Time::now();
   // run referee system
   data_.referee_->read();
-  if (data_.referee_->is_open_) {
-    data_.referee_->run();
-  }
   loadParam();
   if (remote_control_is_open_ && ((now - data_.dbus_data_.stamp).toSec() > 0.1)) {
     this->remoteControlTurnOff();
