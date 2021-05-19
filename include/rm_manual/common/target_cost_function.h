@@ -2,8 +2,8 @@
 // Created by kiana on 2021/3/22.
 //
 
-#ifndef SRC_RM_SOFTWARE_RM_FSM_INCLUDE_RM_FSM_TARGET_COST_FUNCTION_H_
-#define SRC_RM_SOFTWARE_RM_FSM_INCLUDE_RM_FSM_TARGET_COST_FUNCTION_H_
+#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_TARGET_COST_FUNCTION_H_
+#define RM_MANUAL_INCLUDE_RM_MANUAL_TARGET_COST_FUNCTION_H_
 
 #include <ros/ros.h>
 #include <tf2_ros/transform_listener.h>
@@ -32,4 +32,4 @@ class TargetCostFunction {
   ros::Time decide_old_target_time_, decide_new_target_time_;
 };
 
-#endif //SRC_RM_SOFTWARE_RM_FSM_INCLUDE_RM_FSM_TARGET_COST_FUNCTION_H_
+#endif //RM_MANUAL_INCLUDE_RM_MANUAL_TARGET_COST_FUNCTION_H_
