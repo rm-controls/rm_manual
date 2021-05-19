@@ -204,29 +204,31 @@ int Referee::unpack(uint8_t *rx_data) {
 
 void Referee::getRobotId() {
   robot_id_ = referee_data_.game_robot_status_.robot_id;
-  switch (robot_id_) {
-    case kBlueHero:client_id_ = kBlueHeroClientId;
-      break;
-    case kBlueEngineer:client_id_ = kBlueEngineerClientId;
-      break;
-    case kBlueStandard1:client_id_ = kBlueStandard1ClientId;
-      break;
-    case kBlueStandard2:client_id_ = kBlueStandard2ClientId;
-      break;
-    case kBlueStandard3:client_id_ = kBlueStandard3ClientId;
-      break;
-    case kRedHero:client_id_ = kRedHeroClientId;
-      break;
-    case kRedEngineer:client_id_ = kRedEngineerClientId;
-      break;
-    case kRedStandard1:client_id_ = kRedStandard1ClientId;
-      break;
-    case kRedStandard2:client_id_ = kRedStandard2ClientId;
-      break;
-    case kRedStandard3:client_id_ = kRedStandard3ClientId;
-      break;
-    default:ROS_WARN("Cannot get robot id");
-      break;
+  if (robot_id_ != kBlueSentry && robot_id_ != kRedSentry) {
+    switch (robot_id_) {
+      case kBlueHero:client_id_ = kBlueHeroClientId;
+        break;
+      case kBlueEngineer:client_id_ = kBlueEngineerClientId;
+        break;
+      case kBlueStandard1:client_id_ = kBlueStandard1ClientId;
+        break;
+      case kBlueStandard2:client_id_ = kBlueStandard2ClientId;
+        break;
+      case kBlueStandard3:client_id_ = kBlueStandard3ClientId;
+        break;
+      case kRedHero:client_id_ = kRedHeroClientId;
+        break;
+      case kRedEngineer:client_id_ = kRedEngineerClientId;
+        break;
+      case kRedStandard1:client_id_ = kRedStandard1ClientId;
+        break;
+      case kRedStandard2:client_id_ = kRedStandard2ClientId;
+        break;
+      case kRedStandard3:client_id_ = kRedStandard3ClientId;
+        break;
+      default:ROS_WARN("Cannot get robot id");
+        break;
+    }
   }
 }
 
