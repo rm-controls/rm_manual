@@ -48,29 +48,6 @@ class TimeStampCommandSenderBase : public CommandSenderBase<MsgType> {
   }
 };
 
-class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisCmd> {
- public:
-  explicit ChassisCommandSender(ros::NodeHandle &nh) : TimeStampCommandSenderBase<rm_msgs::ChassisCmd>(nh) {
-    double accel_x, accel_y, accel_w;
-    if (nh.getParam("accel_x", accel_x))
-      ROS_ERROR("Accel X no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (nh.getParam("accel_y", accel_y))
-      ROS_ERROR("Accel Y no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (nh.getParam("accel_w", accel_w))
-      ROS_ERROR("Accel W no defined (namespace: %s)", nh.getNamespace().c_str());
-    msg_.accel.linear.x = accel_x;
-    msg_.accel.linear.x = accel_x;
-    msg_.accel.angular.z = accel_w;
-  }
-  void setAccel(double x, double y, double angular) {
-    msg_.accel.linear.x = x;
-    msg_.accel.linear.x = y;
-    msg_.accel.angular.z = angular;
-  }
-
-  void setPowerLimit(double power_limit) { msg_.power_limit = power_limit; }
-};
-
 class VelCommandSender : public CommandSenderBase<geometry_msgs::Twist> {
  public:
   explicit VelCommandSender(ros::NodeHandle &nh) : CommandSenderBase<geometry_msgs::Twist>(nh) {
@@ -94,6 +71,29 @@ class VelCommandSender : public CommandSenderBase<geometry_msgs::Twist> {
 
  private:
   double max_vel_x_{}, max_vel_y_{}, max_vel_w_{};
+};
+
+class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisCmd> {
+ public:
+  explicit ChassisCommandSender(ros::NodeHandle &nh) : TimeStampCommandSenderBase<rm_msgs::ChassisCmd>(nh) {
+    double accel_x, accel_y, accel_w;
+    if (nh.getParam("accel_x", accel_x))
+      ROS_ERROR("Accel X no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (nh.getParam("accel_y", accel_y))
+      ROS_ERROR("Accel Y no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (nh.getParam("accel_w", accel_w))
+      ROS_ERROR("Accel W no defined (namespace: %s)", nh.getNamespace().c_str());
+    msg_.accel.linear.x = accel_x;
+    msg_.accel.linear.x = accel_x;
+    msg_.accel.angular.z = accel_w;
+  }
+  void setAccel(double x, double y, double angular) {
+    msg_.accel.linear.x = x;
+    msg_.accel.linear.x = y;
+    msg_.accel.angular.z = angular;
+  }
+
+  void setPowerLimit(double power_limit) { msg_.power_limit = power_limit; }
 };
 
 class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd> {

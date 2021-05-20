@@ -47,7 +47,6 @@ void TargetCostFunction::decideId(rm_msgs::TrackDataArray track_data_array,
       }
     }
 
-
     //maybe we can consider frequency at this part if did not enter attack base mode
     if (!only_attack_base && id_temp != id_) {
       decide_new_target_time_ = ros::Time::now();
