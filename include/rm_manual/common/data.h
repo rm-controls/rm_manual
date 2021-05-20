@@ -16,9 +16,11 @@
 #include <rm_msgs/ShootCmd.h>
 #include <rm_msgs/GimbalDesError.h>
 
-#include "rm_manual/referee.h"
-#include "rm_manual/shooter_heat_limit.h"
-#include "rm_manual/target_cost_function.h"
+#include "rm_manual/referee/referee.h"
+#include "rm_manual/common/shooter_heat_limit.h"
+#include "rm_manual/common/target_cost_function.h"
+
+namespace rm_manual {
 
 class Data {
  public:
@@ -57,7 +59,7 @@ class Data {
   void init(ros::NodeHandle nh) {
     shooter_heat_limit_ = new ShooterHeatLimit();
     target_cost_function_ = new TargetCostFunction(nh);
-    referee_ = new Referee();
+    referee_ = new Referee(nh);
     // sub
     dbus_sub_ = nh.subscribe<rm_msgs::DbusData>(
         "/dbus_data", 10, &Data::dbusDataCallback, this);
@@ -76,7 +78,7 @@ class Data {
     referee_->referee_pub_ = root_nh.advertise<rm_msgs::Referee>("/referee", 1);
     referee_->power_manager_pub_ = root_nh.advertise<rm_msgs::PowerManagerData>("/power_manager_data", 1);
     engineer_vel_cmd_pub_ = root_nh.advertise<geometry_msgs::TwistStamped>("/servo_server/delta_twist_cmds", 1);
-    referee_->init(nh);
+    referee_->init();
   }
 
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr &data) {
@@ -93,4 +95,5 @@ class Data {
   }
 };
 
+}
 #endif //RM_MANUAL_INCLUDE_RM_MANUAL_DATA_H_

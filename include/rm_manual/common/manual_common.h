@@ -13,9 +13,12 @@
 #include <controller_manager_msgs/SwitchController.h>
 
 #include <rm_common/ros_utilities.h>
-#include "rm_common/ori_tool.h"
-#include "rm_manual/data.h"
-#include "rm_manual/controller_manager.h"
+#include <rm_common/ori_tool.h>
+#include "data.h"
+#include "controller_manager.h"
+#include "command_sender.h"
+
+namespace rm_manual {
 
 class Manual {
  public:
@@ -123,4 +126,5 @@ class Manual {
   int last_target_id_ = 0;
 };
 
+}
 #endif //RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_

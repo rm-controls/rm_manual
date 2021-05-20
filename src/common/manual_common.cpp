@@ -2,14 +2,8 @@
 // Created by peter on 2020/12/3.
 //
 
-#include "rm_manual/manual_common.h"
-/**
- * Constructor for the Control FSM. Passes in all of the necessary
- * data and stores it in a struct. Initializes the FSM with a starting
- * state and operating mode.
- * @tparam T
- * @param nh
- */
+#include "rm_manual/common/manual_common.h"
+namespace rm_manual {
 
 Manual::Manual(ros::NodeHandle &node_handle) : nh_(node_handle) {
   tf_listener_ = new tf2_ros::TransformListener(tf_);
@@ -39,7 +33,7 @@ void Manual::run() {
   // run referee system
   data_.referee_->read();
   if (data_.referee_->is_open_) {
-    data_.referee_->run();
+    data_.referee_->read();
   }
   loadParam();
   if (remote_control_is_open_ && ((now - data_.dbus_data_.stamp).toSec() > 0.1)) {
@@ -128,9 +122,6 @@ void Manual::run() {
     this->shiftPress(now - last_press_shift_);
   }
   data_.chassis_cmd_.mode = current_chassis_mode_;
-  data_.chassis_cmd_.stamp = now;
-  data_.gimbal_cmd_.stamp = now;
-  data_.shoot_cmd_.stamp = now;
   if (emergency_stop_) {
     data_.chassis_cmd_.mode = rm_msgs::ChassisCmd::PASSIVE;
     data_.gimbal_cmd_.mode = rm_msgs::GimbalCmd::PASSIVE;
@@ -217,15 +208,16 @@ void Manual::leftSwitchUp() {
                                      data_.referee_->referee_data_.game_robot_hp_,
                                      false);
   target_id = data_.target_cost_function_->output();
+  actual_shoot_speed_ = data_.referee_->getActualBulletSpeed(actual_shoot_speed_);
 
   if (target_id == 0) {
     if (last_target_id_ != 0)
-      setGimbal(rm_msgs::GimbalCmd::TRACK, 0.0, 0.0, last_target_id_, ultimate_shoot_speed_);
+      setGimbal(rm_msgs::GimbalCmd::TRACK, 0.0, 0.0, last_target_id_, actual_shoot_speed_);
     else
       setGimbal(rm_msgs::GimbalCmd::RATE, -data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y, 0, 0.0);
   } else {
     last_target_id_ = target_id;
-    setGimbal(rm_msgs::GimbalCmd::TRACK, 0.0, 0.0, target_id, ultimate_shoot_speed_);
+    setGimbal(rm_msgs::GimbalCmd::TRACK, 0.0, 0.0, target_id, actual_shoot_speed_);
   }
   data_.shooter_heat_limit_->input(data_.referee_, expect_shoot_hz_, safe_shoot_hz_);
   shoot_hz = data_.shooter_heat_limit_->output();
@@ -436,6 +428,5 @@ void Manual::remoteControlTurnOff() {
 void Manual::remoteControlTurnOn() {
   controller_manager_->startMovementControllers();
 }
-// RobotRunner a template
 
-class Manual;
+}
