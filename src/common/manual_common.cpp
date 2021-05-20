@@ -20,7 +20,7 @@ Manual::Manual(ros::NodeHandle &node_handle) : nh_(node_handle) {
   safety_power_ = getParam(nh_, "power_limit/safety_power", 50);
   have_power_manager_ = getParam(nh_, "power_limit/have_power_manager", false);
   actual_shoot_speed_ = safe_shoot_speed_;
-  ultimate_shoot_speed_ = safe_shoot_speed_;
+  ultimate_shoot_speed_ = (int) safe_shoot_speed_;
   controller_manager_ = new ControllerManager(node_handle);
   current_chassis_mode_ = rm_msgs::ChassisCmd::FOLLOW;
   data_.dbus_data_.stamp = ros::Time::now();
@@ -107,6 +107,9 @@ void Manual::run() {
   if (data_.dbus_data_.key_v) {
     this->vPress(now - last_press_v_);
   }
+  if (data_.dbus_data_.key_b) {
+    this->bPress(now - last_press_b_);
+  }
   if (data_.dbus_data_.p_l) {
     if (data_.dbus_data_.p_r) {
       this->mouseLeftRightPress(now - last_press_mouse_right_left_);
@@ -187,7 +190,7 @@ void Manual::leftSwitchMid() {
                                      data_.referee_->referee_data_.game_robot_hp_,
                                      false);
   target_id = data_.target_cost_function_->output();
-  ultimate_shoot_speed_ = data_.referee_->getUltimateBulletSpeed(ultimate_shoot_speed_);
+  ultimate_shoot_speed_ = (int) data_.referee_->getUltimateBulletSpeed(ultimate_shoot_speed_);
   if (target_id == 0) {
     if (last_target_id_ != 0)
       setGimbal(rm_msgs::GimbalCmd::TRACK, 0.0, 0.0, last_target_id_, ultimate_shoot_speed_);
@@ -202,13 +205,13 @@ void Manual::leftSwitchMid() {
 
 void Manual::leftSwitchUp() {
   uint8_t target_id;
-  double shoot_hz = 0;
+  double shoot_hz;
   emergency_stop_ = false;
   data_.target_cost_function_->input(data_.track_data_array_,
                                      data_.referee_->referee_data_.game_robot_hp_,
                                      false);
   target_id = data_.target_cost_function_->output();
-  actual_shoot_speed_ = data_.referee_->getActualBulletSpeed(actual_shoot_speed_);
+  actual_shoot_speed_ = data_.referee_->getActualBulletSpeed((int) actual_shoot_speed_);
 
   if (target_id == 0) {
     if (last_target_id_ != 0)
@@ -348,7 +351,7 @@ void Manual::mouseLeftPress(ros::Duration period) {
 }
 
 void Manual::mouseRightPress(ros::Duration period) {
-  int target_id = 0;
+  int target_id;
   data_.target_cost_function_->input(data_.track_data_array_,
                                      data_.referee_->referee_data_.game_robot_hp_,
                                      only_attack_base_);
@@ -363,7 +366,7 @@ void Manual::mouseRightPress(ros::Duration period) {
 
 void Manual::mouseLeftRightPress(ros::Duration period) {
   ros::Time now = ros::Time::now();
-  int target_id = 0;
+  int target_id;
   data_.target_cost_function_->input(data_.track_data_array_,
                                      data_.referee_->referee_data_.game_robot_hp_,
                                      only_attack_base_);
