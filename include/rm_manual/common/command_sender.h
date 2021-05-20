@@ -4,6 +4,8 @@
 
 #ifndef RM_MANUAL_COMMON_COMMAND_SENDER_H_
 #define RM_MANUAL_COMMON_COMMAND_SENDER_H_
+#include <type_traits>
+
 #include <ros/ros.h>
 #include <rm_common/ros_utilities.h>
 #include <rm_msgs/ChassisCmd.h>
@@ -26,12 +28,9 @@ class CommandSenderBase {
 
   void setMode(int mode) { if (!std::is_same<MsgType, geometry_msgs::Twist>::value) msg_.mode = mode; }
 
-  void sendCommand(ros::Time time) {
-    if (!std::is_same<MsgType, geometry_msgs::Twist>::value)
-      msg_.stamp = time;
-    pub_.publish(msg_);
-  }
+  virtual void sendCommand(ros::Time time) { pub_.publish(msg_); }
 
+  MsgType *getMsg() { return &msg_; }
  protected:
   std::string topic_;
   uint32_t queue_size_;
@@ -39,9 +38,19 @@ class CommandSenderBase {
   MsgType msg_;
 };
 
-class ChassisCommandSender : public CommandSenderBase<rm_msgs::ChassisCmd> {
+template<class MsgType>
+class TimeStampCommandSenderBase : public CommandSenderBase<MsgType> {
  public:
-  explicit ChassisCommandSender(ros::NodeHandle &nh) : CommandSenderBase<rm_msgs::ChassisCmd>(nh) {
+  explicit TimeStampCommandSenderBase(ros::NodeHandle &nh) : CommandSenderBase<MsgType>(nh) {}
+  void sendCommand(ros::Time time) override {
+    CommandSenderBase<MsgType>::msg_.stamp = time;
+    CommandSenderBase<MsgType>::sendCommand(time);
+  }
+};
+
+class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisCmd> {
+ public:
+  explicit ChassisCommandSender(ros::NodeHandle &nh) : TimeStampCommandSenderBase<rm_msgs::ChassisCmd>(nh) {
     double accel_x, accel_y, accel_w;
     if (nh.getParam("accel_x", accel_x))
       ROS_ERROR("Accel X no defined (namespace: %s)", nh.getNamespace().c_str());
@@ -87,9 +96,9 @@ class VelCommandSender : public CommandSenderBase<geometry_msgs::Twist> {
   double max_vel_x_{}, max_vel_y_{}, max_vel_w_{};
 };
 
-class GimbalCommandSender : public CommandSenderBase<rm_msgs::GimbalCmd> {
+class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd> {
  public:
-  explicit GimbalCommandSender(ros::NodeHandle &nh) : CommandSenderBase<rm_msgs::GimbalCmd>(nh) {
+  explicit GimbalCommandSender(ros::NodeHandle &nh) : TimeStampCommandSenderBase<rm_msgs::GimbalCmd>(nh) {
     if (nh.getParam("max_yaw_vel", max_yaw_rate_))
       ROS_ERROR("Max yaw velocity no defined (namespace: %s)", nh.getNamespace().c_str());
     if (nh.getParam("max_pitch_vel", max_pitch_vel_))
@@ -101,18 +110,22 @@ class GimbalCommandSender : public CommandSenderBase<rm_msgs::GimbalCmd> {
   double max_yaw_rate_{}, max_pitch_vel_{};
 };
 
-class ShooterCommandSender : public CommandSenderBase<rm_msgs::ShootCmd> {
+class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd> {
  public:
-  explicit ShooterCommandSender(ros::NodeHandle &nh) : CommandSenderBase<rm_msgs::ShootCmd>(nh) {
-    if (nh.getParam("bullet_heat", bullet_heat_))
-      ROS_ERROR("Bullet Heat no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (nh.getParam("safe_shoot_frequency", safe_shoot_frequency_))
-      ROS_ERROR("Safe shoot frequency no defined (namespace: %s)", nh.getNamespace().c_str());
+  explicit ShooterCommandSender(ros::NodeHandle &nh, HeatLimit::Type type, Referee *referee)
+      : TimeStampCommandSenderBase<rm_msgs::ShootCmd>(nh), heat_limit_(nh, type, referee) {
   }
   void setSpeed(int speed) { msg_.speed = speed; }
-  void setHz(double hz) { msg_.hz = hz; }
+  void setHz(double hz) { expect_hz_ = hz; }
+
+  void sendCommand(ros::Time time) override {
+    msg_.hz = heat_limit_.getHz(expect_hz_);
+    TimeStampCommandSenderBase<rm_msgs::ShootCmd>::sendCommand(time);
+  }
+
  private:
-  double bullet_heat_{}, safe_shoot_frequency_{};
+  double bullet_heat_{}, safe_shoot_frequency_{}, expect_hz_{};
+  HeatLimit heat_limit_;
 };
 
 }

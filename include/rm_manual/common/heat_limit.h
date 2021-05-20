@@ -7,10 +7,10 @@
 namespace rm_manual {
 class HeatLimit {
  public:
-  typedef enum { ID1_17MM, ID2_17MM, ID1_42MM } type;
-  HeatLimit(ros::NodeHandle &nh, type t, Referee *referee) {
+  typedef enum { ID1_17MM, ID2_17MM, ID1_42MM } Type;
+  HeatLimit(ros::NodeHandle &nh, Type type, Referee *referee) {
     bullet_heat_ = 10.;
-    switch (t) {
+    switch (type) {
       case ID1_17MM: {
         cooling_limit_ = &referee->referee_data_.game_robot_status_.shooter_id1_17mm_cooling_limit;
         cooling_rate_ = &referee->referee_data_.game_robot_status_.shooter_id1_17mm_cooling_rate;
