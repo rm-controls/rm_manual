@@ -27,13 +27,13 @@ class PowerManagerData {
 
   ros::Time last_get_powermanager_data_ = ros::Time::now();
  private:
-  void DTP_Received_CallBack(unsigned char Receive_Byte);
-  void Receive_CallBack(unsigned char PID, unsigned char Data[8]);
-  static float Int16ToFloat(unsigned short data0);
+  void dtpReceivedCallBack(unsigned char receive_byte);
+  void receiveCallBack(unsigned char package_id, unsigned char *data);
+  static float int16ToFloat(unsigned short data0);
 
-  unsigned char Receive_Buffer[1024] = {0};
-  unsigned char PingPong_Buffer[1024] = {0};
-  unsigned int Receive_BufCounter = 0;
+  unsigned char receive_buffer_[1024] = {0};
+  unsigned char ping_pong_buffer_[1024] = {0};
+  unsigned int receive_buf_counter_ = 0;
 };
 
 struct RefereeData {

@@ -444,16 +444,16 @@ void appendCRC16CheckSum(uint8_t *pchMessage, uint32_t dwLength) {
 
 void PowerManagerData::read(const std::vector<uint8_t> &rx_buffer) {
   int count = 0;
-  memset(Receive_Buffer, 0x00, sizeof(Receive_Buffer));
-  memset(PingPong_Buffer, 0x00, sizeof(PingPong_Buffer));
-  Receive_BufCounter = 0;
+  memset(receive_buffer_, 0x00, sizeof(receive_buffer_));
+  memset(ping_pong_buffer_, 0x00, sizeof(ping_pong_buffer_));
+  receive_buf_counter_ = 0;
   for (unsigned char kI : rx_buffer) {
-    DTP_Received_CallBack(kI);
+    dtpReceivedCallBack(kI);
     count++;
-    if (count >= (int) sizeof(Receive_Buffer)) {
-      memset(Receive_Buffer, 0x00, sizeof(Receive_Buffer));
-      memset(PingPong_Buffer, 0x00, sizeof(PingPong_Buffer));
-      Receive_BufCounter = 0;
+    if (count >= (int) sizeof(receive_buffer_)) {
+      memset(receive_buffer_, 0x00, sizeof(receive_buffer_));
+      memset(ping_pong_buffer_, 0x00, sizeof(ping_pong_buffer_));
+      receive_buf_counter_ = 0;
     }
   }
   if (parameters[0] >= 120) parameters[0] = 120;
@@ -466,83 +466,81 @@ void PowerManagerData::read(const std::vector<uint8_t> &rx_buffer) {
   if (parameters[3] <= 0) parameters[3] = 0;
 }
 
-void PowerManagerData::Receive_CallBack(unsigned char PID, unsigned char Data[8]) {
-  if (PID == 0) {
+void PowerManagerData::receiveCallBack(unsigned char package_id, unsigned char *data) {
+  if (package_id == 0) {
     last_get_powermanager_data_ = ros::Time::now();
-    parameters[0] = Int16ToFloat((Data[0] << 8) | Data[1]);
-    parameters[1] = Int16ToFloat((Data[2] << 8) | Data[3]);
-    parameters[2] = Int16ToFloat((Data[4] << 8) | Data[5]);
-    parameters[3] = Int16ToFloat((Data[6] << 8) | Data[7]);
+    parameters[0] = int16ToFloat((data[0] << 8) | data[1]);
+    parameters[1] = int16ToFloat((data[2] << 8) | data[3]);
+    parameters[2] = int16ToFloat((data[4] << 8) | data[5]);
+    parameters[3] = int16ToFloat((data[6] << 8) | data[7]);
   }
 }
 
-void PowerManagerData::DTP_Received_CallBack(unsigned char Receive_Byte) {
+void PowerManagerData::dtpReceivedCallBack(unsigned char receive_byte) {
+  unsigned char check_flag;
+  unsigned int sof_pos, eof_pos, check_counter;
 
-  unsigned char CheckFlag;
-  unsigned int SOF_Pos, EOF_Pos, CheckCounter;
+  receive_buffer_[receive_buf_counter_] = receive_byte;
+  receive_buf_counter_ = receive_buf_counter_ + 1;
 
-  Receive_Buffer[Receive_BufCounter] = Receive_Byte;
-  Receive_BufCounter = Receive_BufCounter + 1;
-
-  CheckFlag = 0;
-  SOF_Pos = 0;
-  EOF_Pos = 0;
-  CheckCounter = 0;
+  check_flag = 0;
+  sof_pos = 0;
+  eof_pos = 0;
+  check_counter = 0;
   while (true) {
-    if (CheckFlag == 0 && Receive_Buffer[CheckCounter] == 0xff) {
-      CheckFlag = 1;
-      SOF_Pos = CheckCounter;
-    } else if (CheckFlag == 1 && Receive_Buffer[CheckCounter] == 0xff) {
-      EOF_Pos = CheckCounter;
+    if (check_flag == 0 && receive_buffer_[check_counter] == 0xff) {
+      check_flag = 1;
+      sof_pos = check_counter;
+    } else if (check_flag == 1 && receive_buffer_[check_counter] == 0xff) {
+      eof_pos = check_counter;
       break;
     }
-    if (CheckCounter >= (Receive_BufCounter - 1))
+    if (check_counter >= (receive_buf_counter_ - 1))
       break;
     else
-      CheckCounter++;
+      check_counter++;
   }                                                           //Find Package In Buffer
 
+  if ((eof_pos - sof_pos) == 11) {
+    unsigned int temp_var;
+    unsigned char data_buffer[8] = {0};
+    unsigned char valid_buffer[12] = {0};
 
-  if ((EOF_Pos - SOF_Pos) == 11) {
-    unsigned int Temp_Var;
-    unsigned char Data_Buffer[8] = {0};
-    unsigned char Valid_Buffer[12] = {0};
+    for (temp_var = 0; temp_var < 12; temp_var++)           //Copy Data To Another Buffer
+      valid_buffer[temp_var] = receive_buffer_[sof_pos + temp_var];
 
-    for (Temp_Var = 0; Temp_Var < 12; Temp_Var++)           //Copy Data To Another Buffer
-      Valid_Buffer[Temp_Var] = Receive_Buffer[SOF_Pos + Temp_Var];
+    eof_pos++;
+    memset(ping_pong_buffer_, 0x00, sizeof(ping_pong_buffer_));
+    for (temp_var = 0; temp_var < receive_buf_counter_ - eof_pos; temp_var++)
+      ping_pong_buffer_[temp_var] = receive_buffer_[eof_pos + temp_var];
+    receive_buf_counter_ = receive_buf_counter_ - eof_pos;
+    memset(receive_buffer_, 0x00, sizeof(receive_buffer_));
+    for (temp_var = 0; temp_var < receive_buf_counter_; temp_var++)
+      receive_buffer_[temp_var] = ping_pong_buffer_[temp_var];
 
-    EOF_Pos++;
-    memset(PingPong_Buffer, 0x00, sizeof(PingPong_Buffer));
-    for (Temp_Var = 0; Temp_Var < Receive_BufCounter - EOF_Pos; Temp_Var++)
-      PingPong_Buffer[Temp_Var] = Receive_Buffer[EOF_Pos + Temp_Var];
-    Receive_BufCounter = Receive_BufCounter - EOF_Pos;
-    memset(Receive_Buffer, 0x00, sizeof(Receive_Buffer));
-    for (Temp_Var = 0; Temp_Var < Receive_BufCounter; Temp_Var++)
-      Receive_Buffer[Temp_Var] = PingPong_Buffer[Temp_Var];
-
-    unsigned char PID_Bit = Valid_Buffer[1] >> 4;           //Get The PID Bit
-    if (PID_Bit == ((~(Valid_Buffer[1] & 0x0f)) & 0x0f))    //PID Verify
+    unsigned char pid_bit = valid_buffer[1] >> 4;           //Get The PID Bit
+    if (pid_bit == ((~(valid_buffer[1] & 0x0f)) & 0x0f))    //PID Verify
     {
-      for (Temp_Var = 0; Temp_Var < 8; ++Temp_Var)
-        Data_Buffer[Temp_Var] = Valid_Buffer[2 + Temp_Var];
-      if (Valid_Buffer[10] != 0x00)                       //Some Byte had been replace
+      for (temp_var = 0; temp_var < 8; ++temp_var)
+        data_buffer[temp_var] = valid_buffer[2 + temp_var];
+      if (valid_buffer[10] != 0x00)                       //Some Byte had been replace
       {
-        unsigned char Temp_Filter = 0x00;
-        for (Temp_Var = 0; Temp_Var < 8; ++Temp_Var)
-          if (((Valid_Buffer[10] & (Temp_Filter | (0x01 << Temp_Var))) >> Temp_Var)
+        unsigned char temp_filter = 0x00;
+        for (temp_var = 0; temp_var < 8; ++temp_var)
+          if (((valid_buffer[10] & (temp_filter | (0x01 << temp_var))) >> temp_var)
               == 1)                                   //This Byte Need To Adjust
-            Data_Buffer[Temp_Var] = 0xff;           //Adjust to 0xff
+            data_buffer[temp_var] = 0xff;           //Adjust to 0xff
       }
-      Receive_CallBack(PID_Bit, Data_Buffer);
+      receiveCallBack(pid_bit, data_buffer);
     }
-  } else if ((EOF_Pos - SOF_Pos) != 0 && EOF_Pos != 0) {
-    memset(Receive_Buffer, 0x00, sizeof(Receive_Buffer));
-    memset(PingPong_Buffer, 0x00, sizeof(PingPong_Buffer));
-    Receive_BufCounter = 0;
+  } else if ((eof_pos - sof_pos) != 0 && eof_pos != 0) {
+    memset(receive_buffer_, 0x00, sizeof(receive_buffer_));
+    memset(ping_pong_buffer_, 0x00, sizeof(ping_pong_buffer_));
+    receive_buf_counter_ = 0;
   }
 }
 
-float PowerManagerData::Int16ToFloat(unsigned short data0) {
+float PowerManagerData::int16ToFloat(unsigned short data0) {
   if (data0 == 0)
     return 0;
   float *fp32;
