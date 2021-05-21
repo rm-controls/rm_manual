@@ -84,16 +84,21 @@ class Referee {
   int robot_id_ = 0;
   int client_id_ = 0;
 
-  void drawCircle(int center_x, int center_y, int radius, int picture_id, GraphicColorType color, uint8_t operate_type);
-  void drawString(int x, int y, int picture_id, std::string data, GraphicColorType color, uint8_t operate_type);
+  void displayArmorInfo(double yaw, const ros::Time &now);
+  void displayCapInfo(uint8_t graph_operate_type);
+  void displayChassisInfo(uint8_t chassis_mode, bool unlimit_flag, uint8_t graph_operate_type);
+  void displayGimbalInfo(uint8_t gimbal_mode, uint8_t graph_operate_type);
+  void displayShooterInfo(uint8_t shooter_mode, bool burst_flag, uint8_t graph_operate_type);
+  void displayAttackTargetInfo(bool attack_base_flag, uint8_t graph_operate_type);
   void sendInteractiveData(int data_cmd_id, int receiver_id, unsigned char data);
 
-  void publishData();
  private:
   int unpack(uint8_t *rx_data);
   void pack(uint8_t *tx_buffer, uint8_t *data, int cmd_id, int len);
-
   void getRobotId();
+  void drawCircle(int center_x, int center_y, int radius, int picture_id, GraphicColorType color, uint8_t operate_type);
+  void drawString(int x, int y, int picture_id, std::string data, GraphicColorType color, uint8_t operate_type);
+  void publishData();
 
   serial::Serial serial_;
   const std::string serial_port_ = "/dev/usbReferee";
@@ -102,6 +107,7 @@ class Referee {
   std::vector<uint8_t> rx_data_;
 
   ros::Time last_get_referee_data_ = ros::Time::now();
+  ros::Time last_update_armor0_time_, last_update_armor1_time_, last_update_armor2_time_, last_update_armor3_time_;
 };
 
 // CRC verification

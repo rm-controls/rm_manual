@@ -208,6 +208,96 @@ void Referee::publishData() {
   power_manager_pub_.publish(power_manager_pub_data_);
 }
 
+void Referee::displayCapInfo(uint8_t graph_operate_type) {
+  char power_string[30];
+  float power_float;
+
+  power_float = power_manager_data_.parameters[3] * 100;
+  sprintf(power_string, "Cap: %1.0f%%", power_float);
+  if (power_float >= 60)
+    drawString(910, 100, 0, power_string, kGreen, graph_operate_type);
+  else if (power_float < 60 && power_float >= 30)
+    drawString(910, 100, 0, power_string, kYellow, graph_operate_type);
+  else if (power_float < 30)
+    drawString(910, 100, 0, power_string, kOrange, graph_operate_type);
+}
+
+void Referee::displayChassisInfo(uint8_t chassis_mode, bool unlimit_flag, uint8_t graph_operate_type) {
+  GraphicColorType color = unlimit_flag ? kOrange : kYellow;
+  if (chassis_mode == rm_msgs::ChassisCmd::PASSIVE)
+    drawString(1470, 790, 1, "chassis:passive", color, graph_operate_type);
+  else if (chassis_mode == rm_msgs::ChassisCmd::FOLLOW)
+    drawString(1470, 790, 1, "chassis:follow", color, graph_operate_type);
+  else if (chassis_mode == rm_msgs::ChassisCmd::GYRO)
+    drawString(1470, 790, 1, "chassis:gyro", color, graph_operate_type);
+}
+
+void Referee::displayGimbalInfo(uint8_t gimbal_mode, uint8_t graph_operate_type) {
+  if (gimbal_mode == rm_msgs::GimbalCmd::PASSIVE)
+    drawString(1470, 740, 2, "gimbal:passive", kYellow, graph_operate_type);
+  else if (gimbal_mode == rm_msgs::GimbalCmd::RATE)
+    drawString(1470, 740, 2, "gimbal:rate", kYellow, graph_operate_type);
+  else if (gimbal_mode == rm_msgs::GimbalCmd::TRACK)
+    drawString(1470, 740, 2, "gimbal:track", kYellow, graph_operate_type);
+}
+
+void Referee::displayShooterInfo(uint8_t shooter_mode, bool burst_flag, uint8_t graph_operate_type) {
+  GraphicColorType color = burst_flag ? kOrange : kYellow;
+  if (shooter_mode == rm_msgs::ShootCmd::PASSIVE)
+    drawString(1470, 690, 3, "shooter:passive", color, graph_operate_type);
+  else if (shooter_mode == rm_msgs::ShootCmd::READY)
+    drawString(1470, 690, 3, "shooter:ready", color, graph_operate_type);
+  else if (shooter_mode == rm_msgs::ShootCmd::PUSH)
+    drawString(1470, 690, 3, "shooter:push", color, graph_operate_type);
+  else if (shooter_mode == rm_msgs::ShootCmd::STOP)
+    drawString(1470, 690, 3, "shooter:stop", color, graph_operate_type);
+}
+
+void Referee::displayAttackTargetInfo(bool attack_base_flag, uint8_t graph_operate_type) {
+  if (attack_base_flag)
+    drawString(1470, 640, 4, "target:base", kYellow, graph_operate_type);
+  else
+    drawString(1470, 640, 4, "target:all", kYellow, graph_operate_type);
+}
+
+void Referee::displayArmorInfo(double yaw, const ros::Time &now) {
+  if (referee_data_.robot_hurt_.hurt_type == 0x0) {
+    if (referee_data_.robot_hurt_.armor_id == 0) {
+      drawCircle((int) (960 + 340 * sin(0 - yaw)), (int) (540 + 340 * cos(0 - yaw)), 50, 5, kYellow, kAdd);
+      last_update_armor0_time_ = now;
+    } else if (referee_data_.robot_hurt_.armor_id == 1) {
+      drawCircle((int) (960 + 340 * sin(3 * M_PI_2 - yaw)), (int) (540 + 340 * cos(3 * M_PI_2 - yaw)),
+                 50, 6, kYellow, kAdd);
+      last_update_armor1_time_ = now;
+    } else if (referee_data_.robot_hurt_.armor_id == 2) {
+      drawCircle((int) (960 + 340 * sin(M_PI - yaw)), (int) (540 + 340 * cos(M_PI - yaw)), 50, 7, kYellow, kAdd);
+      last_update_armor2_time_ = now;
+    } else if (referee_data_.robot_hurt_.armor_id == 3) {
+      drawCircle((int) (960 + 340 * sin(M_PI_2 - yaw)), (int) (540 + 340 * cos(M_PI_2 - yaw)), 50, 8, kYellow, kAdd);
+      last_update_armor3_time_ = now;
+    }
+    referee_data_.robot_hurt_.hurt_type = 0x9;
+    referee_data_.robot_hurt_.armor_id = 9;
+  }
+
+  if (now - last_update_armor0_time_ > ros::Duration(0.5)) {
+    drawCircle((int) (960 + 340 * sin(0 - yaw)), (int) (540 + 340 * cos(0 - yaw)),
+               50, 5, kGreen, kDelete);
+  }
+  if (now - last_update_armor1_time_ > ros::Duration(0.5)) {
+    drawCircle((int) (960 + 340 * sin(3 * M_PI_2 - yaw)), (int) (540 + 340 * cos(3 * M_PI_2 - yaw)),
+               50, 6, kGreen, kDelete);
+  }
+  if (now - last_update_armor2_time_ > ros::Duration(0.5)) {
+    drawCircle((int) (960 + 340 * sin(M_PI - yaw)), (int) (540 + 340 * cos(M_PI - yaw)),
+               50, 7, kGreen, kDelete);
+  }
+  if (now - last_update_armor3_time_ > ros::Duration(0.5)) {
+    drawCircle((int) (960 + 340 * sin(M_PI_2 - yaw)), (int) (540 + 340 * cos(M_PI_2 - yaw)),
+               50, 8, kGreen, kDelete);
+  }
+}
+
 void Referee::drawCircle(int center_x, int center_y, int radius, int picture_id,
                          GraphicColorType color, uint8_t operate_type) {
   uint8_t tx_buffer[128] = {0};
