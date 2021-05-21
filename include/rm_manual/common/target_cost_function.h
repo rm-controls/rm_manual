@@ -15,9 +15,9 @@
 
 namespace rm_manual {
 struct TargetState {
-  int id;
-  double pos_x, pos_y, pos_z;
-  double vel_x, vel_y, vel_z;
+  int id{};
+  double pos_x{}, pos_y{}, pos_z{};
+  double vel_x{}, vel_y{}, vel_z{};
   ros::Time last_receive_;
 };
 

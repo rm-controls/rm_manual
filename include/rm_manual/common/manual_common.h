@@ -23,13 +23,22 @@ namespace rm_manual {
 class Manual {
  public:
   explicit Manual(ros::NodeHandle &nh);
+  enum { PASSIVE, IDLE, RC, PC };
   void run();
  protected:
   void checkSwitch(const ros::Time &time);
   void checkKeyboard(const ros::Time &time);
+  virtual void sendCommand(const ros::Time &time) {};
+  virtual void drawUi() {};
   // Remote Controller
-  virtual void remoteControlTurnOff() {};
-  virtual void remoteControlTurnOn() {};
+  virtual void remoteControlTurnOff() {
+    controller_manager_->stopMovementControllers();
+    state_ = IDLE;
+  }
+  virtual void remoteControlTurnOn() {
+    controller_manager_->startMovementControllers();
+    state_ = PASSIVE;
+  }
   virtual void leftSwitchDown() {};
   virtual void leftSwitchMid() {};
   virtual void leftSwitchUp() {};
@@ -65,7 +74,7 @@ class Manual {
   ros::NodeHandle nh_;
   ControllerManager *controller_manager_;
   bool is_dbus_receive_ = false;
-
+  int state_ = PASSIVE;
   ros::Time last_release_q_, last_release_w_, last_release_e_, last_release_r_, last_release_t_, last_release_a_,
       last_release_s_, last_release_d_, last_release_f_, last_release_g_, last_release_z_, last_release_x_,
       last_release_c_, last_release_v_, last_release_b_, last_release_shift_, last_release_mouse_left_,

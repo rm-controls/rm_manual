@@ -13,6 +13,7 @@
 #include <rm_msgs/ShootCmd.h>
 #include <nav_msgs/Odometry.h>
 #include "heat_limit.h"
+#include "target_cost_function.h"
 
 namespace rm_manual {
 
@@ -98,21 +99,28 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
 
 class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd> {
  public:
-  explicit GimbalCommandSender(ros::NodeHandle &nh) : TimeStampCommandSenderBase<rm_msgs::GimbalCmd>(nh) {
+  explicit GimbalCommandSender(ros::NodeHandle &nh, const Referee &referee) :
+      TimeStampCommandSenderBase<rm_msgs::GimbalCmd>(nh) {
+    ros::NodeHandle cost_nh(nh, "cost_function");
     if (nh.getParam("max_yaw_vel", max_yaw_rate_))
       ROS_ERROR("Max yaw velocity no defined (namespace: %s)", nh.getNamespace().c_str());
     if (nh.getParam("max_pitch_vel", max_pitch_vel_))
       ROS_ERROR("Max pitch velocity no defined (namespace: %s)", nh.getNamespace().c_str());
+    cost_function_ = new TargetCostFunction(cost_nh, referee);
   }
-  void setBulletSpeed(double speed) { msg_.bullet_speed = speed; }
-  void setTargetId(int id) { msg_.target_id = id; }
+
+  void sendCommand(ros::Time time) override {
+//    msg_.target_id = cost_function_->costFunction();
+    TimeStampCommandSenderBase<rm_msgs::GimbalCmd>::sendCommand(time);
+  }
  private:
   double max_yaw_rate_{}, max_pitch_vel_{};
+  TargetCostFunction *cost_function_;
 };
 
 class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd> {
  public:
-  explicit ShooterCommandSender(ros::NodeHandle &nh, HeatLimit::Type type, Referee *referee)
+  explicit ShooterCommandSender(ros::NodeHandle &nh, HeatLimit::Type type, const Referee &referee)
       : TimeStampCommandSenderBase<rm_msgs::ShootCmd>(nh), heat_limit_(nh, type, referee) {
   }
   void setSpeed(int speed) { msg_.speed = speed; }

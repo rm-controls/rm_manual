@@ -5,18 +5,21 @@
 #include "rm_manual/common/manual_common.h"
 namespace rm_manual {
 
-Manual::Manual(ros::NodeHandle &node_handle) : nh_(node_handle) {
+Manual::Manual(ros::NodeHandle &nh) : nh_(nh) {
   data_.init(nh_);
-  controller_manager_ = new ControllerManager(node_handle);
+  ros::NodeHandle ctrl_handle(nh, "controller_manager");
+  controller_manager_ = new ControllerManager(ctrl_handle);
   controller_manager_->loadAllControllers();
   controller_manager_->startInformationControllers();
 }
 
 void Manual::run() {
   ros::Time time = ros::Time::now();
-  if (data_.referee_->is_open_) data_.referee_->read();
+  data_.referee_->read();
   checkSwitch(time);
   checkKeyboard(time);
+  sendCommand(time);
+  drawUi();
 }
 
 void Manual::checkSwitch(const ros::Time &time) {
