@@ -190,7 +190,7 @@ void Manual::leftSwitchMid() {
                                      data_.referee_->referee_data_.game_robot_hp_,
                                      false);
   target_id = data_.target_cost_function_->output();
-  ultimate_shoot_speed_ = (int) data_.referee_->getUltimateBulletSpeed(ultimate_shoot_speed_);
+  ultimate_shoot_speed_ = (int) data_.referee_->getShootSpeedLimit(ultimate_shoot_speed_);
   if (target_id == 0) {
     if (last_target_id_ != 0)
       setGimbal(rm_msgs::GimbalCmd::TRACK, 0.0, 0.0, last_target_id_, ultimate_shoot_speed_);
@@ -211,16 +211,15 @@ void Manual::leftSwitchUp() {
                                      data_.referee_->referee_data_.game_robot_hp_,
                                      false);
   target_id = data_.target_cost_function_->output();
-  actual_shoot_speed_ = data_.referee_->getActualBulletSpeed((int) actual_shoot_speed_);
 
   if (target_id == 0) {
     if (last_target_id_ != 0)
-      setGimbal(rm_msgs::GimbalCmd::TRACK, 0.0, 0.0, last_target_id_, actual_shoot_speed_);
+      setGimbal(rm_msgs::GimbalCmd::TRACK, 0.0, 0.0, last_target_id_, ultimate_shoot_speed_);
     else
       setGimbal(rm_msgs::GimbalCmd::RATE, -data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y, 0, 0.0);
   } else {
     last_target_id_ = target_id;
-    setGimbal(rm_msgs::GimbalCmd::TRACK, 0.0, 0.0, target_id, actual_shoot_speed_);
+    setGimbal(rm_msgs::GimbalCmd::TRACK, 0.0, 0.0, target_id, ultimate_shoot_speed_);
   }
   data_.shooter_heat_limit_->input(data_.referee_, expect_shoot_hz_, safe_shoot_hz_);
   shoot_hz = data_.shooter_heat_limit_->output();

@@ -6,15 +6,13 @@
 
 #include <cstdint>
 #include <serial/serial.h>
-#include <tf/transform_listener.h>
+#include <ros/ros.h>
 
-#include <rm_common/ori_tool.h>
 #include <rm_msgs/Referee.h>
 #include <rm_msgs/PowerManagerData.h>
-#include <rm_msgs/DbusData.h>
 #include <rm_msgs/ChassisCmd.h>
 #include <rm_msgs/GimbalCmd.h>
-#include <geometry_msgs/Twist.h>
+#include <rm_msgs/ShootCmd.h>
 
 #include "rm_manual/referee/protocol.h"
 
@@ -70,8 +68,7 @@ class Referee {
   void init();
   void read();
 
-  double getActualBulletSpeed(int shoot_speed) const;
-  double getUltimateBulletSpeed(int shoot_speed) const;
+  int getShootSpeedLimit(int shoot_speed) const;
 
   ros::NodeHandle nh_;
   ros::Publisher referee_pub_;
@@ -108,12 +105,12 @@ class Referee {
 };
 
 // CRC verification
-uint8_t getCRC8CheckSum(unsigned char *pch_message, unsigned int dw_length, unsigned char ucCRC8);
+uint8_t getCRC8CheckSum(unsigned char *pch_message, unsigned int dw_length, unsigned char uc_crc_8);
 uint32_t verifyCRC8CheckSum(unsigned char *pch_message, unsigned int dw_length);
-void appendCRC8CheckSum(unsigned char *pchMessage, unsigned int dwLength);
-uint16_t getCRC16CheckSum(uint8_t *pchMessage, uint32_t dwLength, uint16_t wCRC);
-uint32_t verifyCRC16CheckSum(uint8_t *pchMessage, uint32_t dwLength);
-void appendCRC16CheckSum(unsigned char *pchMessage, unsigned int dwLength);
+void appendCRC8CheckSum(unsigned char *pch_message, unsigned int dw_length);
+uint16_t getCRC16CheckSum(uint8_t *pch_message, uint32_t dw_length, uint16_t w_crc);
+uint32_t verifyCRC16CheckSum(uint8_t *pch_message, uint32_t dw_length);
+void appendCRC16CheckSum(unsigned char *pch_message, unsigned int dw_length);
 } // namespace rm_manual
 
 #endif //RM_MANUAL_REFEREE_H_
