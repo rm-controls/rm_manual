@@ -1,8 +1,8 @@
 //
 // Created by peter on 2021/5/17.
 //
-#ifndef RM_MANUAL_REFEREE_H_
-#define RM_MANUAL_REFEREE_H_
+#ifndef RM_MANUAL_REFEREE_REFEREE_H_
+#define RM_MANUAL_REFEREE_REFEREE_H_
 
 #include <cstdint>
 #include <serial/serial.h>

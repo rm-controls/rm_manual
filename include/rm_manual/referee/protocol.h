@@ -2,8 +2,8 @@
 // Created by peter on 2021/5/17.
 //
 
-#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_PROTOCOL_H_
-#define RM_MANUAL_INCLUDE_RM_MANUAL_PROTOCOL_H_
+#ifndef RM_MANUAL_REFEREE_PROTOCOL_H_
+#define RM_MANUAL_REFEREE_PROTOCOL_H_
 #define __packed __attribute__((packed))
 #include <cstdint>
 

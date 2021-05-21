@@ -2,8 +2,8 @@
 // Created by kiana on 2021/3/22.
 //
 
-#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_TARGET_COST_FUNCTION_H_
-#define RM_MANUAL_INCLUDE_RM_MANUAL_TARGET_COST_FUNCTION_H_
+#ifndef RM_MANUAL_COMMON_TARGET_COST_FUNCTION_H_
+#define RM_MANUAL_COMMON_TARGET_COST_FUNCTION_H_
 
 #include <ros/ros.h>
 #include <tf2_ros/transform_listener.h>

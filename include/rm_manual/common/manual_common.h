@@ -2,8 +2,8 @@
 // Created by peter on 2020/12/3.
 //
 
-#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
-#define RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
+#ifndef RM_MANUAL_COMMON_MANUAL_COMMON_H_
+#define RM_MANUAL_COMMON_MANUAL_COMMON_H_
 
 #include <iostream>
 #include <queue>

@@ -2,8 +2,8 @@
 // Created by luohx on 7/20/20.
 //
 
-#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_DATA_H_
-#define RM_MANUAL_INCLUDE_RM_MANUAL_DATA_H_
+#ifndef RM_MANUAL_COMMON_DATA_H_
+#define RM_MANUAL_COMMON_DATA_H_
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
