@@ -6,18 +6,11 @@
 #define RM_MANUAL_INCLUDE_RM_MANUAL_DATA_H_
 
 #include <ros/ros.h>
-#include <geometry_msgs/Twist.h>
-#include <geometry_msgs/TwistStamped.h>
-#include <geometry_msgs/Vector3.h>
-#include <nav_msgs/Odometry.h>
 #include <rm_msgs/DbusData.h>
-#include <rm_msgs/ChassisCmd.h>
-#include <rm_msgs/GimbalCmd.h>
-#include <rm_msgs/ShootCmd.h>
+#include <nav_msgs/Odometry.h>
 #include <rm_msgs/GimbalDesError.h>
 
 #include "rm_manual/referee/referee.h"
-#include "rm_manual/common/shooter_heat_limit.h"
 #include "rm_manual/common/target_cost_function.h"
 
 namespace rm_manual {
@@ -53,18 +46,10 @@ class Data {
     referee_->init();
   }
 
-  void dbusDataCallback(const rm_msgs::DbusData::ConstPtr &data) {
-    dbus_data_ = *data;
-  }
-  void trackCallback(const rm_msgs::TrackDataArray::ConstPtr &data) {
-    track_data_array_ = *data;
-  }
-  void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr &data) {
-    gimbal_des_error_ = *data;
-  }
-  void odomCallback(const nav_msgs::Odometry::ConstPtr &data) {
-    odom_ = *data;
-  }
+  void dbusDataCallback(const rm_msgs::DbusData::ConstPtr &data) { dbus_data_ = *data; }
+  void trackCallback(const rm_msgs::TrackDataArray::ConstPtr &data) { track_data_array_ = *data; }
+  void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr &data) { gimbal_des_error_ = *data; }
+  void odomCallback(const nav_msgs::Odometry::ConstPtr &data) { odom_ = *data; }
 };
 
 }

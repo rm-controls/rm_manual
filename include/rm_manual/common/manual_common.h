@@ -27,43 +27,49 @@ class Manual {
  protected:
   void checkSwitch(const ros::Time &time);
   void checkKeyboard(const ros::Time &time);
+  // Remote Controller
+  virtual void remoteControlTurnOff() {};
+  virtual void remoteControlTurnOn() {};
   virtual void leftSwitchDown() {};
   virtual void leftSwitchMid() {};
   virtual void leftSwitchUp() {};
   virtual void rightSwitchDown() {};
   virtual void rightSwitchMid() {};
   virtual void rightSwitchUp() {};
-  virtual void ctrlQPress() {};
+
+  // Keyboard
+  virtual void qPress() {};
+  virtual void wPress() {};
+  virtual void ePress() {};
+  virtual void rPress() {};
+  virtual void aPress() {};
+  virtual void sPress() {};
+  virtual void dPress() {};
+  virtual void fPress() {};
+  virtual void gPress() {};
+  virtual void zPress() {};
+  virtual void xPress() {};
+  virtual void cPress() {};
+  virtual void vPress() {};
+  virtual void bPress() {};
+  virtual void shiftPress() {};
+  virtual void mouseLeftPress() {};
+  virtual void mouseRightPress() {};
+
+  // Press in same time
+  virtual void mouseLeftRightPress() {};
+  virtual void ctrlZPress() {};
   virtual void ctrlWPress() {};
-  virtual void qPress(ros::Duration period) {};
-  virtual void wPress(ros::Duration period) {};
-  virtual void ePress(ros::Duration period) {};
-  virtual void rPress(ros::Duration period) {};
-  virtual void aPress(ros::Duration period) {};
-  virtual void sPress(ros::Duration period) {};
-  virtual void dPress(ros::Duration period) {};
-  virtual void fPress(ros::Duration period) {};
-  virtual void gPress(ros::Duration period) {};
-  virtual void zPress(ros::Duration period) {};
-  virtual void xPress(ros::Duration period) {};
-  virtual void cPress(ros::Duration period) {};
-  virtual void vPress(ros::Duration period) {};
-  virtual void bPress(ros::Duration period) {};
-  virtual void shiftPress(ros::Duration period) {};
-  virtual void mouseLeftPress(ros::Duration period) {};
-  virtual void mouseRightPress(ros::Duration period) {};
-  virtual void mouseLeftRightPress(ros::Duration period) {};
-  virtual void remoteControlTurnOff() {};
-  virtual void remoteControlTurnOn() {};
 
   Data data_;
   ros::NodeHandle nh_;
   ControllerManager *controller_manager_;
-  bool is_rc_opened_;
+  bool is_dbus_receive_ = false;
 
-  ros::Time last_press_q_, last_press_w_, last_press_e_, last_press_r_, last_press_t_, last_press_a_, last_press_s_,
-      last_press_d_, last_press_f_, last_press_g_, last_press_z_, last_press_x_, last_press_c_, last_press_v_,
-      last_press_b_, last_press_shift_, last_press_mouse_left_, last_press_mouse_right_, last_press_mouse_right_left_;
+  ros::Time last_release_q_, last_release_w_, last_release_e_, last_release_r_, last_release_t_, last_release_a_,
+      last_release_s_, last_release_d_, last_release_f_, last_release_g_, last_release_z_, last_release_x_,
+      last_release_c_, last_release_v_, last_release_b_, last_release_shift_, last_release_mouse_left_,
+      last_release_mouse_right_, last_release_mouse_right_left_, last_release_ctrl_z_, last_release_;
 };
 
 }
