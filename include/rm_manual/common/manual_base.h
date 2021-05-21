@@ -20,9 +20,10 @@
 
 namespace rm_manual {
 
-class Manual {
+class ManualBase {
  public:
-  explicit Manual(ros::NodeHandle &nh);
+  explicit ManualBase(ros::NodeHandle &nh);
+  ~ManualBase() { delete controller_manager_; }
   enum { PASSIVE, IDLE, RC, PC };
   void run();
  protected:
@@ -42,9 +43,9 @@ class Manual {
   virtual void leftSwitchDown() {};
   virtual void leftSwitchMid() {};
   virtual void leftSwitchUp() {};
-  virtual void rightSwitchDown() {};
-  virtual void rightSwitchMid() {};
-  virtual void rightSwitchUp() {};
+  virtual void rightSwitchDown() { state_ = IDLE; }
+  virtual void rightSwitchMid() { state_ = RC; }
+  virtual void rightSwitchUp() { state_ = PC; }
 
   // Keyboard
   virtual void qPress() {};

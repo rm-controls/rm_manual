@@ -88,12 +88,6 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
     msg_.accel.linear.x = accel_x;
     msg_.accel.angular.z = accel_w;
   }
-  void setAccel(double x, double y, double angular) {
-    msg_.accel.linear.x = x;
-    msg_.accel.linear.x = y;
-    msg_.accel.angular.z = angular;
-  }
-
   void setPowerLimit(double power_limit) { msg_.power_limit = power_limit; }
 };
 
@@ -132,7 +126,7 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
   }
 
  private:
-  double bullet_heat_{}, safe_shoot_frequency_{}, expect_hz_{};
+  double expect_hz_{};
   HeatLimit heat_limit_;
 };
 

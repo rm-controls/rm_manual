@@ -2,10 +2,10 @@
 // Created by peter on 2020/12/3.
 //
 
-#include "rm_manual/common/manual_common.h"
+#include "rm_manual/common/manual_base.h"
 namespace rm_manual {
 
-Manual::Manual(ros::NodeHandle &nh) : nh_(nh) {
+ManualBase::ManualBase(ros::NodeHandle &nh) : nh_(nh) {
   data_.init(nh_);
   ros::NodeHandle ctrl_handle(nh, "controller_manager");
   controller_manager_ = new ControllerManager(ctrl_handle);
@@ -13,16 +13,15 @@ Manual::Manual(ros::NodeHandle &nh) : nh_(nh) {
   controller_manager_->startInformationControllers();
 }
 
-void Manual::run() {
+void ManualBase::run() {
   ros::Time time = ros::Time::now();
   data_.referee_->read();
   checkSwitch(time);
   checkKeyboard(time);
   sendCommand(time);
-  drawUi();
 }
 
-void Manual::checkSwitch(const ros::Time &time) {
+void ManualBase::checkSwitch(const ros::Time &time) {
   if (is_dbus_receive_ && ((time - data_.dbus_data_.stamp).toSec() > 0.1)) {
     is_dbus_receive_ = false;
     this->remoteControlTurnOff();
@@ -39,7 +38,7 @@ void Manual::checkSwitch(const ros::Time &time) {
   else if (data_.dbus_data_.s_r == rm_msgs::DbusData::DOWN) this->rightSwitchDown();
 }
 
-void Manual::checkKeyboard(const ros::Time &time) {
+void ManualBase::checkKeyboard(const ros::Time &time) {
   if (data_.dbus_data_.key_a) this->aPress(); else last_release_a_ = time;
   if (data_.dbus_data_.key_b) this->bPress(); else last_release_b_ = time;
   if (data_.dbus_data_.key_c) this->cPress(); else last_release_c_ = time;
