@@ -103,6 +103,11 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
     cost_function_ = new TargetCostFunction(cost_nh, referee);
   }
 
+  void setRate(double scale_yaw, double scale_pitch) {
+    msg_.rate_yaw = scale_yaw * max_yaw_rate_;
+    msg_.rate_pitch = scale_pitch * max_pitch_vel_;
+  }
+
   void sendCommand(ros::Time time) override {
 //    msg_.target_id = cost_function_->costFunction();
     TimeStampCommandSenderBase<rm_msgs::GimbalCmd>::sendCommand(time);
@@ -114,8 +119,8 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
 
 class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd> {
  public:
-  explicit ShooterCommandSender(ros::NodeHandle &nh, HeatLimit::Type type, const Referee &referee)
-      : TimeStampCommandSenderBase<rm_msgs::ShootCmd>(nh), heat_limit_(nh, type, referee) {
+  explicit ShooterCommandSender(ros::NodeHandle &nh, const Referee &referee)
+      : TimeStampCommandSenderBase<rm_msgs::ShootCmd>(nh), heat_limit_(nh, referee) {
   }
   void setSpeed(int speed) { msg_.speed = speed; }
   void setHz(double hz) { expect_hz_ = hz; }
