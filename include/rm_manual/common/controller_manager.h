@@ -42,27 +42,17 @@ class ControllerManager {
     return switchController(std::vector<std::string>(), controllers);
   }
 
-  bool startMovementControllers() {
-    return startController(movement_controllers_);
-  }
-
-  bool stopInformationControllers() {
-    return stopController(information_controllers_);
-  }
-  bool startInformationControllers() {
-    return startController(information_controllers_);
-  }
-
-  bool stopMovementControllers() {
-    return stopController(movement_controllers_);
-  }
   bool startAllControllers() {
     return startController(information_controllers_) && startController(movement_controllers_);
   }
-
   bool stopAllControllers() {
     return stopController(information_controllers_) && stopController(movement_controllers_);
   }
+
+  bool startMovementControllers() { return startController(movement_controllers_); }
+  bool stopInformationControllers() { return stopController(information_controllers_); }
+  bool startInformationControllers() { return startController(information_controllers_); }
+  bool stopMovementControllers() { return stopController(movement_controllers_); }
 
  private:
   ros::ServiceClient switch_controller_client_;

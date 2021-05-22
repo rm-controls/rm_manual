@@ -6,11 +6,11 @@
 
 ControllerManager::ControllerManager(ros::NodeHandle &nh) {
   switch_controller_client_ =
-      nh.serviceClient<controller_manager_msgs::SwitchControllerRequest>("/controller_manager/switch_controller");
+      nh.serviceClient<controller_manager_msgs::SwitchController>("/controller_manager/switch_controller");
   load_controllers_client_ =
       nh.serviceClient<controller_manager_msgs::LoadController>("/controller_manager/load_controller");
   list_controllers_client_ =
-      nh.serviceClient<controller_manager_msgs::ListControllersRequest>("/controller_manager/list_controllers");
+      nh.serviceClient<controller_manager_msgs::ListControllers>("/controller_manager/list_controllers");
   XmlRpc::XmlRpcValue controllers;
   if (!nh.getParam("information_controllers", controllers))
     ROS_INFO("No information controllers defined");
@@ -36,6 +36,7 @@ bool ControllerManager::loadControllers(const std::vector<std::string> &controll
       is_success = false;
     }
   }
+
   return is_success;
 }
 

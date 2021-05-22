@@ -29,9 +29,7 @@ class CommandSenderBase {
   }
 
   void setMode(int mode) { if (!std::is_same<MsgType, geometry_msgs::Twist>::value) msg_.mode = mode; }
-
   virtual void sendCommand(ros::Time time) { pub_.publish(msg_); }
-
   MsgType *getMsg() { return &msg_; }
  protected:
   std::string topic_;
