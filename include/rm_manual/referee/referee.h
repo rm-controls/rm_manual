@@ -62,15 +62,12 @@ struct RefereeData {
 
 class Referee {
  public:
-  Referee(ros::NodeHandle nh) {
-    nh_ = nh;
-  }
+  Referee() = default;
   void init();
   void read();
 
   int getShootSpeedLimit(int shoot_speed) const;
 
-  ros::NodeHandle nh_;
   ros::Publisher referee_pub_;
   ros::Publisher power_manager_pub_;
 

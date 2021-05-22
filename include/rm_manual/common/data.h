@@ -59,7 +59,7 @@ class Data {
   void init(ros::NodeHandle nh) {
     shooter_heat_limit_ = new ShooterHeatLimit();
     target_cost_function_ = new TargetCostFunction(nh);
-    referee_ = new Referee(nh);
+    referee_ = new Referee();
     // sub
     dbus_sub_ = nh.subscribe<rm_msgs::DbusData>(
         "/dbus_data", 10, &Data::dbusDataCallback, this);
