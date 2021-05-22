@@ -129,6 +129,8 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
   }
   void updateCost(const rm_msgs::TrackDataArray &track_data_array, bool base_only = false) {
     msg_.target_id = cost_function_->costFunction(track_data_array, base_only);
+    if (msg_.target_id == 0)
+      setMode(rm_msgs::GimbalCmd::RATE);
   }
   TargetCostFunction *cost_function_;
  private:
@@ -143,11 +145,13 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
     heat_limit_ = new HeatLimit(limit_nh, referee_);
   }
   void setHz(double hz) { expect_hz_ = hz; }
+  void setMagazine(bool is_open) { msg_.magazine = is_open; }
   void sendCommand(ros::Time time) override {
     msg_.speed = heat_limit_->getSpeedLimit();
     msg_.hz = heat_limit_->getHz();
     TimeStampCommandSenderBase<rm_msgs::ShootCmd>::sendCommand(time);
   }
+
  private:
   double expect_hz_{};
   HeatLimit *heat_limit_{};

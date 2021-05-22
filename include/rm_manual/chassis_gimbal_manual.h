@@ -49,6 +49,13 @@ class ChassisGimbalManual : public ManualBase {
       gimbal_cmd_sender_->updateCost(data_.track_data_array_);
     }
   }
+  void leftSwitchUp() override {
+    ManualBase::leftSwitchUp();
+    if (state_ == RC) {
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+      gimbal_cmd_sender_->updateCost(data_.track_data_array_);
+    }
+  }
   void sendCommand(const ros::Time &time) override {
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
