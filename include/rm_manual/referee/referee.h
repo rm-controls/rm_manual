@@ -84,20 +84,22 @@ class Referee {
   int robot_id_ = 0;
   int client_id_ = 0;
 
-  void displayArmorInfo(double yaw, const ros::Time &now);
-  void displayCapInfo(uint8_t graph_operate_type);
-  void displayChassisInfo(uint8_t chassis_mode, bool unlimit_flag, uint8_t graph_operate_type);
-  void displayGimbalInfo(uint8_t gimbal_mode, uint8_t graph_operate_type);
-  void displayShooterInfo(uint8_t shooter_mode, bool burst_flag, uint8_t graph_operate_type);
-  void displayAttackTargetInfo(bool attack_base_flag, uint8_t graph_operate_type);
+  void displayArmorInfo(double yaw2baselink, const ros::Time &now);
+  void displayCapInfo(GraphicOperateType graph_operate_type);
+  void displayChassisInfo(uint8_t chassis_mode, bool unlimit_flag, GraphicOperateType graph_operate_type);
+  void displayGimbalInfo(uint8_t gimbal_mode, GraphicOperateType graph_operate_type);
+  void displayShooterInfo(uint8_t shooter_mode, bool burst_flag, GraphicOperateType graph_operate_type);
+  void displayAttackTargetInfo(bool attack_base_flag, GraphicOperateType graph_operate_type);
   void sendInteractiveData(int data_cmd_id, int receiver_id, unsigned char data);
 
  private:
   int unpack(uint8_t *rx_data);
   void pack(uint8_t *tx_buffer, uint8_t *data, int cmd_id, int len);
   void getRobotId();
-  void drawCircle(int center_x, int center_y, int radius, int picture_id, GraphicColorType color, uint8_t operate_type);
-  void drawString(int x, int y, int picture_id, std::string data, GraphicColorType color, uint8_t operate_type);
+  void drawCircle(int center_x, int center_y, int radius, int picture_id,
+                  GraphicColorType color, GraphicOperateType operate_type);
+  void drawString(int x, int y, int picture_id, std::string data,
+                  GraphicColorType color, GraphicOperateType operate_type);
   void publishData();
 
   serial::Serial serial_;
