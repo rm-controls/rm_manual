@@ -4,7 +4,7 @@
 
 #ifndef RM_MANUAL_CHASSIS_GIMBAL_SHOOTER_MANUAL_H_
 #define RM_MANUAL_CHASSIS_GIMBAL_SHOOTER_MANUAL_H_
-#include "chassis_gimbal_manual.h"
+#include "rm_manual/chassis_gimbal_manual.h"
 
 namespace rm_manual {
 class ChassisGimbalShooterManual : public ChassisGimbalManual {
