@@ -32,7 +32,7 @@ class Data {
   Referee *referee_{};
 
   void init(ros::NodeHandle nh) {
-    referee_ = new Referee(nh);
+    referee_ = new Referee();
     // sub
     dbus_sub_ = nh.subscribe<rm_msgs::DbusData>("/dbus_data", 10, &Data::dbusDataCallback, this);
     track_sub_ = nh.subscribe<rm_msgs::TrackDataArray>("/track", 10, &Data::trackCallback, this);

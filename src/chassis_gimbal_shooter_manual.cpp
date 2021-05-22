@@ -12,7 +12,7 @@ void rm_manual::ChassisGimbalShooterManual::leftSwitchMid() {
   if (state_ == RC) {
     uint8_t target_id;
     target_id = gimbal_cmd_sender_->cost_function_->costFunction(data_.track_data_array_, false);
-    shoot_speed_ = (int) data_.referee_->getUltimateBulletSpeed(shoot_speed_);
+    shoot_speed_ = (int) data_.referee_->getShootSpeedLimit(shoot_speed_);
     if (target_id == 0) {
       if (last_target_id_ != 0) {
         gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
@@ -37,7 +37,7 @@ void rm_manual::ChassisGimbalShooterManual::leftSwitchUp() {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
     uint8_t target_id;
     target_id = gimbal_cmd_sender_->cost_function_->costFunction(data_.track_data_array_, false);
-    shoot_speed_ = (int) data_.referee_->getUltimateBulletSpeed(shoot_speed_);
+    shoot_speed_ = (int) data_.referee_->getShootSpeedLimit(shoot_speed_);
     if (target_id == 0) {
       if (last_target_id_ != 0) {
         gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
