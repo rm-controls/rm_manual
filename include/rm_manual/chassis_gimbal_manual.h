@@ -20,15 +20,13 @@ class ChassisGimbalManual : public ManualBase {
  protected:
   void rightSwitchMid() override {
     ManualBase::rightSwitchMid();
-
-    if (data_.dbus_data_.wheel) {
+    if (std::abs(data_.dbus_data_.wheel) > 0.01) {
       vel_cmd_sender_->setWVel(data_.dbus_data_.wheel);
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
     } else
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setXVel(data_.dbus_data_.ch_r_y);
     vel_cmd_sender_->setYVel(data_.dbus_data_.ch_r_x);
-
   }
   void rightSwitchDown() override {
     ManualBase::rightSwitchDown();

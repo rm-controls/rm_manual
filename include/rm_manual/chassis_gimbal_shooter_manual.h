@@ -18,9 +18,23 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
       ROS_ERROR("gimbal error limit no defined (namespace: %s)", shooter_nh.getNamespace().c_str());
   }
  protected:
-  void leftSwitchDown() override;
-  void leftSwitchMid() override;
-  void leftSwitchUp() override;
+  void leftSwitchDown() override {
+    ChassisGimbalManual::leftSwitchDown();
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+  }
+  void leftSwitchMid() override {
+    rm_manual::ChassisGimbalManual::leftSwitchMid();
+    if (state_ == RC)
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+  }
+  void leftSwitchUp() override {
+    rm_manual::ChassisGimbalManual::leftSwitchUp();
+    if (state_ == RC) {
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+      if (data_.gimbal_des_error_.error < gimbal_error_limit_)
+        shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+    }
+  }
   void rightSwitchDown() override {
     ChassisGimbalManual::rightSwitchDown();
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
