@@ -100,6 +100,7 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
       msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit;
     else
       msg_.power_limit = safety_power_;
+    TimeStampCommandSenderBase<rm_msgs::ChassisCmd>::sendCommand(time);
   }
  private:
   double safety_power_{};
@@ -145,7 +146,7 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
   void setHz(double hz) { expect_hz_ = hz; }
   void sendCommand(ros::Time time) override {
     msg_.speed = heat_limit_->getSpeedLimit();
-    msg_.hz = heat_limit_->getHz(expect_hz_);
+    msg_.hz = heat_limit_->getHz();
     TimeStampCommandSenderBase<rm_msgs::ShootCmd>::sendCommand(time);
   }
  private:
