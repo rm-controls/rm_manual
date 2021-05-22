@@ -2,7 +2,7 @@ image: docker:git
 services:
   - docker:dind
 variables:
-  AFTER_SETUP_ROSDEP: 'apt install -y -qq curl && curl ${PACKAGE_SCRIPT_URL}/gitlab-ci/v2/init.sh | bash && apt install -y -qq ros-$ROS_DISTRO-serial'
+  AFTER_SETUP_ROSDEP: 'apt install -y -qq curl && curl ${PACKAGE_SCRIPT_URL}/gitlab-ci/v2/init.sh | bash'
   AFTER_SCRIPT:       'apt install -y -qq curl && curl ${PACKAGE_SCRIPT_URL}/gitlab-ci/v2/package.sh | bash'
 stages:
   - prepare
@@ -26,6 +26,8 @@ melodic:
     expire_in: 1 day
     paths:
     - ros-*deb
+  variables:
+    AFTER_INSTALL_TARGET_DEPENDENCIES: 'apt install -y -qq ros-melodic-serial'
   script:
     - apk add --update bash coreutils tar
     - .industrial_ci/gitlab.sh ROS_DISTRO=melodic
@@ -36,6 +38,8 @@ noetic:
     expire_in: 1 day
     paths:
     - ros-*deb
+  variables:
+    AFTER_INSTALL_TARGET_DEPENDENCIES: 'apt install -y -qq ros-noetic-serial'
   script:
     - apk add --update bash coreutils tar
     - .industrial_ci/gitlab.sh ROS_DISTRO=noetic
