@@ -3,6 +3,7 @@
 //
 
 #include "rm_manual/common/controller_manager.h"
+namespace rm_manual {
 
 ControllerManager::ControllerManager(ros::NodeHandle &nh) {
   switch_controller_client_ =
@@ -21,20 +22,19 @@ ControllerManager::ControllerManager(ros::NodeHandle &nh) {
 }
 
 bool ControllerManager::loadControllers(const std::vector<std::string> &controllers) {
-  if (!load_controllers_client_.waitForExistence(ros::Duration(1.5)))
-    return false;
+  !load_controllers_client_.waitForExistence();
   controller_manager_msgs::LoadController load_controller;
   bool is_success = true;
   for (auto &controller : controllers) {
     load_controller.request.name = controller;
-    if (load_controllers_client_.call(load_controller))
+    load_controllers_client_.call(load_controller);
+    if (load_controller.response.ok)
       ROS_INFO("loaded %s", controller.c_str());
     else {
-      ROS_INFO("fail to load %s", controller.c_str());
+      ROS_ERROR("fail to load %s", controller.c_str());
       is_success = false;
     }
   }
-
   return is_success;
 }
 
@@ -48,4 +48,6 @@ bool ControllerManager::switchController(const std::vector<std::string> &start, 
   for (auto &controller : stop)
     switch_controller.request.stop_controllers.push_back(controller);
   return switch_controller_client_.call(switch_controller);
+}
+
 }
