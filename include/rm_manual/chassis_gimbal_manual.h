@@ -42,7 +42,18 @@ class ChassisGimbalManual : public ManualBase {
       gimbal_cmd_sender_->setRate(-data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y);
     }
   }
-  void sendCommand(const ros::Time &time) override;
+  void leftSwitchMid() override {
+    ManualBase::leftSwitchMid();
+    if (state_ == RC) {
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+      gimbal_cmd_sender_->updateCost(data_.track_data_array_);
+    }
+  }
+  void sendCommand(const ros::Time &time) override {
+    chassis_cmd_sender_->sendCommand(time);
+    vel_cmd_sender_->sendCommand(time);
+    gimbal_cmd_sender_->sendCommand(time);
+  }
   void wPress() override { if (state_ == PC) vel_cmd_sender_->setXVel(1.); }
   void aPress() override { if (state_ == PC) vel_cmd_sender_->setYVel(1.); }
   void sPress() override { if (state_ == PC) vel_cmd_sender_->setXVel(-1.); }

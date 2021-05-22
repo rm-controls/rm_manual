@@ -3,12 +3,14 @@
 //
 #ifndef RM_MANUAL_INCLUDE_RM_MANUAL_CONTROLLER_MANAGER_H_
 #define RM_MANUAL_INCLUDE_RM_MANUAL_CONTROLLER_MANAGER_H_
+#include "rm_manual/common/service_caller.h"
+
 #include <ros/ros.h>
 #include <controller_manager_msgs/LoadController.h>
 #include <controller_manager_msgs/ListControllers.h>
 #include <controller_manager_msgs/SwitchController.h>
-
 #include <rm_common/ros_utilities.h>
+
 class ControllerManager {
  public:
   explicit ControllerManager(ros::NodeHandle &nh);

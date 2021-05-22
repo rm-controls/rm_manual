@@ -5,6 +5,10 @@
 #ifndef RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
 #define RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
 
+#include "rm_manual/common/data.h"
+#include "rm_manual/common/command_sender.h"
+#include "rm_manual/common/controller_manager.h"
+
 #include <iostream>
 #include <queue>
 #include <utility>
@@ -14,9 +18,6 @@
 
 #include <rm_common/ros_utilities.h>
 #include <rm_common/ori_tool.h>
-#include "data.h"
-#include "controller_manager.h"
-#include "command_sender.h"
 
 namespace rm_manual {
 
