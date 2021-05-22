@@ -46,6 +46,31 @@ class HeatLimit {
     else
       return cooling_rate / cooling_heat;
   }
+
+  int getSpeedLimit() {
+    if (type_ == "ID1_17MM")
+      switch (referee_.referee_data_.game_robot_status_.shooter_id1_17mm_speed_limit) {
+        case 15: return rm_msgs::ShootCmd::SPEED_15M_PER_SECOND;
+        case 18: return rm_msgs::ShootCmd::SPEED_18M_PER_SECOND;
+        case 30: return rm_msgs::ShootCmd::SPEED_30M_PER_SECOND;
+        default: return rm_msgs::ShootCmd::SPEED_15M_PER_SECOND;  // Safety speed
+      }
+    else if (type_ == "ID2_17MM")
+      switch (referee_.referee_data_.game_robot_status_.shooter_id2_17mm_speed_limit) {
+        case 15: return rm_msgs::ShootCmd::SPEED_15M_PER_SECOND;
+        case 18: return rm_msgs::ShootCmd::SPEED_18M_PER_SECOND;
+        case 30: return rm_msgs::ShootCmd::SPEED_30M_PER_SECOND;
+        default: return rm_msgs::ShootCmd::SPEED_15M_PER_SECOND;  // Safety speed
+      }
+    else if (type_ == "ID1_42MM")
+      switch (referee_.referee_data_.game_robot_status_.shooter_id1_42mm_speed_limit) {
+        case 10: return rm_msgs::ShootCmd::SPEED_10M_PER_SECOND;
+        case 16: return rm_msgs::ShootCmd::SPEED_16M_PER_SECOND;
+        default: return rm_msgs::ShootCmd::SPEED_10M_PER_SECOND;  // Safety speed
+      }
+    return -1;    // TODO unsafe!
+  }
+
  private:
   std::string type_{};
   const Referee &referee_;
