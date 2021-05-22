@@ -22,7 +22,7 @@ class SuperCapacitor {
   void read(const std::vector<uint8_t> &rx_buffer);
 
   float parameters[4] = {0};
-
+  bool is_online_ = true;
   ros::Time last_get_capacitor_data_ = ros::Time::now();
  private:
   void dtpReceivedCallBack(unsigned char receive_byte);
@@ -76,7 +76,7 @@ class Referee {
   RefereeData referee_data_{};
   SuperCapacitor super_capacitor_;
 
-  bool is_open_ = false;
+  bool is_online_ = false;
 
   int robot_id_ = 0;
   int client_id_ = 0;

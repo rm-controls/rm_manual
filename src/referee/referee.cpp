@@ -19,12 +19,12 @@ void Referee::init() {
   if (!serial_.isOpen()) {
     try {
       serial_.open();
-      is_open_ = true;
+      is_online_ = true;
     } catch (serial::IOException &e) {
       ROS_ERROR("Cannot open referee port");
     }
   }
-  if (is_open_) ROS_INFO("Referee system connect successfully");
+  if (is_online_) ROS_INFO("Referee system connect successfully");
 }
 
 // read data from referee
@@ -33,7 +33,8 @@ void Referee::read() {
   std::vector<uint8_t> temp_buffer;
   int rx_len, frame_len;
 
-  if (is_open_) {
+  if (ros::Time::now() - last_get_referee_data_ > ros::Duration(0.1)) is_online_ = false;
+  if (is_online_) {
     if (serial_.waitReadable()) {
       try {
         rx_len = serial_.available();
@@ -67,7 +68,7 @@ void Referee::read() {
 }
 
 int Referee::getShootSpeedLimit(int shoot_speed) const {
-  if (is_open_) {
+  if (is_online_) {
     if (robot_id_ == kBlueHero || robot_id_ == kRedHero) { // 42mm
       if (referee_data_.game_robot_status_.shooter_id1_42mm_speed_limit != 0)
         return referee_data_.game_robot_status_.shooter_id1_42mm_speed_limit;
@@ -145,6 +146,7 @@ int Referee::unpack(uint8_t *rx_data) {
         default:ROS_WARN("Referee command ID not found.");
           break;
       }
+      is_online_ = true;
       last_get_referee_data_ = ros::Time::now();
       return frame_len;
     }
@@ -318,7 +320,7 @@ void Referee::drawCircle(int center_x, int center_y, int radius, int picture_id,
     serial_.write(tx_buffer, tx_len);
   } catch (serial::PortNotOpenedException &e) {
     ROS_ERROR("Cannot open referee port, fail to draw UI");
-    is_open_ = false;
+    is_online_ = false;
     return;
   }
 }
@@ -357,7 +359,7 @@ void Referee::drawString(int x, int y, int picture_id, std::string data,
     serial_.write(tx_buffer, tx_len);
   } catch (serial::PortNotOpenedException &e) {
     ROS_ERROR("Cannot open referee port, fail to draw UI");
-    is_open_ = false;
+    is_online_ = false;
     return;
   }
 }
@@ -378,7 +380,7 @@ void Referee::sendInteractiveData(int data_cmd_id, int receiver_id, uint8_t data
     serial_.write(tx_buffer, tx_len);
   } catch (serial::PortNotOpenedException &e) {
     ROS_ERROR("Cannot open referee port, fail to send command to sentry");
-    is_open_ = false;
+    is_online_ = false;
     return;
   }
 }
@@ -464,6 +466,7 @@ void SuperCapacitor::read(const std::vector<uint8_t> &rx_buffer) {
   if (parameters[2] <= 0) parameters[2] = 0;
   if (parameters[3] >= 1) parameters[3] = 1;
   if (parameters[3] <= 0) parameters[3] = 0;
+  if (ros::Time::now() - last_get_capacitor_data_ > ros::Duration(0.1)) is_online_ = false;
 }
 
 void SuperCapacitor::receiveCallBack(unsigned char package_id, unsigned char *data) {

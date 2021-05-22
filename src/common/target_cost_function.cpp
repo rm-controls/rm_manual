@@ -54,7 +54,7 @@ double TargetCostFunction::costFunction(const TargetState &target_state, bool on
   // TODO Finish Vel cost
   double velocity = 0.;
   double hp_cost = 0.;
-  if (referee_.is_open_) {
+  if (referee_.is_online_) {
     if (referee_.referee_data_.game_robot_status_.robot_id <= kRedRadar) {  // The enemy color is blue
       if (target_state.id == 1) hp_cost = referee_.referee_data_.game_robot_hp_.blue_1_robot_HP;
       else if (target_state.id == 2) hp_cost = referee_.referee_data_.game_robot_hp_.blue_2_robot_HP;
