@@ -114,7 +114,7 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
       ROS_ERROR("Max pitch velocity no defined (namespace: %s)", nh.getNamespace().c_str());
     cost_function_ = new TargetCostFunction(nh, referee);
   }
-
+  ~GimbalCommandSender() { delete cost_function_; };
   void setRate(double scale_yaw, double scale_pitch) {
     msg_.rate_yaw = scale_yaw * max_yaw_rate_;
     msg_.rate_pitch = scale_pitch * max_pitch_vel_;
@@ -142,6 +142,7 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
     ros::NodeHandle limit_nh(nh, "heat_limit");
     heat_limit_ = new HeatLimit(limit_nh, referee_);
   }
+  ~ShooterCommandSender() { delete heat_limit_; }
   void setHz(double hz) { expect_hz_ = hz; }
   void setMagazine(bool is_open) { msg_.magazine = is_open; }
   void sendCommand(ros::Time time) override {

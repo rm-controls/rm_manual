@@ -9,8 +9,6 @@ ControllerManager::ControllerManager(ros::NodeHandle &nh) {
       nh.serviceClient<controller_manager_msgs::SwitchController>("/controller_manager/switch_controller");
   load_controllers_client_ =
       nh.serviceClient<controller_manager_msgs::LoadController>("/controller_manager/load_controller");
-  list_controllers_client_ =
-      nh.serviceClient<controller_manager_msgs::ListControllers>("/controller_manager/list_controllers");
   XmlRpc::XmlRpcValue controllers;
   if (!nh.getParam("information_controllers", controllers))
     ROS_INFO("No information controllers defined");

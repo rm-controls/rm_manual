@@ -7,7 +7,6 @@
 
 #include <ros/ros.h>
 #include <controller_manager_msgs/LoadController.h>
-#include <controller_manager_msgs/ListControllers.h>
 #include <controller_manager_msgs/SwitchController.h>
 #include <rm_common/ros_utilities.h>
 
@@ -56,7 +55,6 @@ class ControllerManager {
 
  private:
   ros::ServiceClient switch_controller_client_;
-  ros::ServiceClient list_controllers_client_;
   ros::ServiceClient load_controllers_client_;
   std::vector<std::string> information_controllers_;
   std::vector<std::string> movement_controllers_;
