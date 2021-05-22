@@ -13,7 +13,7 @@ class ChassisGimbalManual : public ManualBase {
     ros::NodeHandle chassis_nh(nh, "chassis");
     chassis_cmd_sender_ = new ChassisCommandSender(chassis_nh);
     ros::NodeHandle vel_nh(nh, "vel");
-    vel_cmd_sender_ = new VelCommandSender(chassis_nh);
+    vel_cmd_sender_ = new VelCommandSender(vel_nh);
     ros::NodeHandle gimbal_nh(nh, "gimbal");
     gimbal_cmd_sender_ = new GimbalCommandSender(gimbal_nh, *data_.referee_);
   }
@@ -25,6 +25,11 @@ class ChassisGimbalManual : public ManualBase {
     vel_cmd_sender_->setYVel(data_.dbus_data_.ch_r_x);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     gimbal_cmd_sender_->setRate(-data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y);
+  }
+  void sendCommand(const ros::Time &time) override {
+    chassis_cmd_sender_->sendCommand(time);
+    vel_cmd_sender_->sendCommand(time);
+    gimbal_cmd_sender_->sendCommand(time);
   }
   void wPress() override { if (state_ == PC) vel_cmd_sender_->setXVel(1.); }
   void aPress() override { if (state_ == PC) vel_cmd_sender_->setYVel(1.); }

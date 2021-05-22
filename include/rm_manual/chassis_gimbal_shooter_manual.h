@@ -10,14 +10,17 @@ namespace rm_manual {
 class ChassisGimbalShooterManual : public ChassisGimbalManual {
  public:
   explicit ChassisGimbalShooterManual(ros::NodeHandle &nh) : ChassisGimbalManual(nh) {
-    shooter_cmd_sender_ = new ShooterCommandSender(nh, *data_.referee_);
+    ros::NodeHandle shooter_nh(nh, "shooter");
+    shooter_cmd_sender_ = new ShooterCommandSender(shooter_nh, *data_.referee_);
   }
  protected:
-
   void leftSwitchDown() override {}
   void leftSwitchMid() override {}
   void leftSwitchUp() override {}
-
+  void sendCommand(const ros::Time &time) override {
+    ChassisGimbalManual::sendCommand(time);
+    shooter_cmd_sender_->sendCommand(time);
+  }
   ShooterCommandSender *shooter_cmd_sender_;
 };
 }

@@ -21,10 +21,11 @@ template<class MsgType>
 class CommandSenderBase {
  public:
   explicit CommandSenderBase(ros::NodeHandle &nh) {
-    if (nh.getParam("topic", topic_))
+    if (!nh.getParam("topic", topic_))
       ROS_ERROR("Topic name no defined (namespace: %s)", nh.getNamespace().c_str());
     queue_size_ = getParam(nh, "queue_size", 1);
-    pub_ = nh.advertise<MsgType>(topic_, queue_size_);
+    ros::NodeHandle root_nh;
+    pub_ = root_nh.advertise<MsgType>(topic_, queue_size_);
   }
 
   void setMode(int mode) { if (!std::is_same<MsgType, geometry_msgs::Twist>::value) msg_.mode = mode; }
@@ -52,11 +53,11 @@ class TimeStampCommandSenderBase : public CommandSenderBase<MsgType> {
 class VelCommandSender : public CommandSenderBase<geometry_msgs::Twist> {
  public:
   explicit VelCommandSender(ros::NodeHandle &nh) : CommandSenderBase<geometry_msgs::Twist>(nh) {
-    if (nh.getParam("max_vel_x", max_vel_x_))
+    if (!nh.getParam("max_vel_x", max_vel_x_))
       ROS_ERROR("Max X velocity no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (nh.getParam("max_vel_y", max_vel_y_))
+    if (!nh.getParam("max_vel_y", max_vel_y_))
       ROS_ERROR("Max Y velocity no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (nh.getParam("max_vel_w", max_vel_w_))
+    if (!nh.getParam("max_vel_w", max_vel_w_))
       ROS_ERROR("Max W velocity no defined (namespace: %s)", nh.getNamespace().c_str());
   }
 
@@ -78,11 +79,11 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
  public:
   explicit ChassisCommandSender(ros::NodeHandle &nh) : TimeStampCommandSenderBase<rm_msgs::ChassisCmd>(nh) {
     double accel_x, accel_y, accel_w;
-    if (nh.getParam("accel_x", accel_x))
+    if (!nh.getParam("accel_x", accel_x))
       ROS_ERROR("Accel X no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (nh.getParam("accel_y", accel_y))
+    if (!nh.getParam("accel_y", accel_y))
       ROS_ERROR("Accel Y no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (nh.getParam("accel_w", accel_w))
+    if (!nh.getParam("accel_w", accel_w))
       ROS_ERROR("Accel W no defined (namespace: %s)", nh.getNamespace().c_str());
     msg_.accel.linear.x = accel_x;
     msg_.accel.linear.x = accel_x;
@@ -96,9 +97,9 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
   explicit GimbalCommandSender(ros::NodeHandle &nh, const Referee &referee) :
       TimeStampCommandSenderBase<rm_msgs::GimbalCmd>(nh) {
     ros::NodeHandle cost_nh(nh, "cost_function");
-    if (nh.getParam("max_yaw_vel", max_yaw_rate_))
+    if (!nh.getParam("max_yaw_vel", max_yaw_rate_))
       ROS_ERROR("Max yaw velocity no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (nh.getParam("max_pitch_vel", max_pitch_vel_))
+    if (!nh.getParam("max_pitch_vel", max_pitch_vel_))
       ROS_ERROR("Max pitch velocity no defined (namespace: %s)", nh.getNamespace().c_str());
     cost_function_ = new TargetCostFunction(cost_nh, referee);
   }

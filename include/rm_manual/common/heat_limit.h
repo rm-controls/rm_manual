@@ -9,11 +9,11 @@ class HeatLimit {
  public:
   HeatLimit(ros::NodeHandle &nh, const Referee &referee) : referee_(referee) {
 
-    if (nh.getParam("safe_shoot_frequency", safe_shoot_frequency_))
+    if (!nh.getParam("safe_shoot_frequency", safe_shoot_frequency_))
       ROS_ERROR("Safe shoot frequency no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (nh.getParam("heat_coeff", heat_coeff_))
+    if (!nh.getParam("heat_coeff", heat_coeff_))
       ROS_ERROR("Safe shoot heat coeff frequency no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (nh.getParam("type", type_))
+    if (!nh.getParam("type", type_))
       ROS_ERROR("Shooter type no defined (namespace: %s)", nh.getNamespace().c_str());
 
     if (type_ == "ID2_17MM")
