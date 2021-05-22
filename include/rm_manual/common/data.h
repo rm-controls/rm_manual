@@ -42,7 +42,7 @@ class Data {
     // pub
     ros::NodeHandle root_nh;
     referee_->referee_pub_ = root_nh.advertise<rm_msgs::Referee>("/referee", 1);
-    referee_->power_manager_pub_ = root_nh.advertise<rm_msgs::PowerManagerData>("/power_manager_data", 1);
+    referee_->super_capacitor_pub_ = root_nh.advertise<rm_msgs::SuperCapacitor>("/super_capacitor", 1);
     referee_->init();
   }
 

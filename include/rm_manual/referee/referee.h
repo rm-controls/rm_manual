@@ -9,7 +9,7 @@
 #include <ros/ros.h>
 
 #include <rm_msgs/Referee.h>
-#include <rm_msgs/PowerManagerData.h>
+#include <rm_msgs/SuperCapacitor.h>
 #include <rm_msgs/ChassisCmd.h>
 #include <rm_msgs/GimbalCmd.h>
 #include <rm_msgs/ShootCmd.h>
@@ -17,13 +17,13 @@
 #include "rm_manual/referee/protocol.h"
 
 namespace rm_manual {
-class PowerManagerData {
+class SuperCapacitor {
  public:
   void read(const std::vector<uint8_t> &rx_buffer);
 
   float parameters[4] = {0};
 
-  ros::Time last_get_powermanager_data_ = ros::Time::now();
+  ros::Time last_get_capacitor_data_ = ros::Time::now();
  private:
   void dtpReceivedCallBack(unsigned char receive_byte);
   void receiveCallBack(unsigned char package_id, unsigned char *data);
@@ -69,12 +69,12 @@ class Referee {
   int getShootSpeedLimit(int shoot_speed) const;
 
   ros::Publisher referee_pub_;
-  ros::Publisher power_manager_pub_;
+  ros::Publisher super_capacitor_pub_;
 
   rm_msgs::Referee referee_pub_data_;
-  rm_msgs::PowerManagerData power_manager_pub_data_;
+  rm_msgs::SuperCapacitor super_capacitor_pub_data_;
   RefereeData referee_data_{};
-  PowerManagerData power_manager_data_;
+  SuperCapacitor super_capacitor_;
 
   bool is_open_ = false;
 

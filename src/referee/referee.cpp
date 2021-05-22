@@ -40,7 +40,7 @@ void Referee::read() {
         serial_.read(rx_buffer, rx_len);
       } catch (serial::IOException &e) {
         ROS_ERROR("Referee system disconnect, cannot read referee data");
-        is_open_ = false;
+        is_online_ = false;
         return;
       }
 
@@ -57,7 +57,7 @@ void Referee::read() {
           if (frame_len != -1) kI += frame_len;
         }
       }
-      power_manager_data_.read(rx_buffer);
+      super_capacitor_.read(rx_buffer);
       getRobotId();
     }
   } else {
@@ -198,21 +198,21 @@ void Referee::publishData() {
   referee_pub_data_.bullet_speed = referee_data_.shoot_data_.bullet_speed;
   referee_pub_data_.stamp = last_get_referee_data_;
 
-  power_manager_pub_data_.capacity = power_manager_data_.parameters[3] * 100;
-  power_manager_pub_data_.chassis_power_buffer = power_manager_data_.parameters[2];
-  power_manager_pub_data_.limit_power = power_manager_data_.parameters[1];
-  power_manager_pub_data_.chassis_power = power_manager_data_.parameters[0];
-  power_manager_pub_data_.stamp = power_manager_data_.last_get_powermanager_data_;
+  super_capacitor_pub_data_.capacity = super_capacitor_.parameters[3] * 100;
+  super_capacitor_pub_data_.chassis_power_buffer = super_capacitor_.parameters[2];
+  super_capacitor_pub_data_.limit_power = super_capacitor_.parameters[1];
+  super_capacitor_pub_data_.chassis_power = super_capacitor_.parameters[0];
+  super_capacitor_pub_data_.stamp = super_capacitor_.last_get_capacitor_data_;
 
   referee_pub_.publish(referee_pub_data_);
-  power_manager_pub_.publish(power_manager_pub_data_);
+  super_capacitor_pub_.publish(super_capacitor_pub_data_);
 }
 
 void Referee::displayCapInfo(GraphicOperateType graph_operate_type) {
   char power_string[30];
   float power_float;
 
-  power_float = power_manager_data_.parameters[3] * 100;
+  power_float = super_capacitor_.parameters[3] * 100;
   sprintf(power_string, "Cap: %1.0f%%", power_float);
   if (power_float >= 60)
     drawString(910, 100, 0, power_string, kGreen, graph_operate_type);
@@ -444,7 +444,7 @@ void appendCRC16CheckSum(uint8_t *pch_message, uint32_t dw_length) {
   pch_message[dw_length - 1] = (uint8_t) ((wCRC >> 8) & 0x00ff);
 }
 
-void PowerManagerData::read(const std::vector<uint8_t> &rx_buffer) {
+void SuperCapacitor::read(const std::vector<uint8_t> &rx_buffer) {
   int count = 0;
   memset(receive_buffer_, 0x00, sizeof(receive_buffer_));
   memset(ping_pong_buffer_, 0x00, sizeof(ping_pong_buffer_));
@@ -466,9 +466,9 @@ void PowerManagerData::read(const std::vector<uint8_t> &rx_buffer) {
   if (parameters[3] <= 0) parameters[3] = 0;
 }
 
-void PowerManagerData::receiveCallBack(unsigned char package_id, unsigned char *data) {
+void SuperCapacitor::receiveCallBack(unsigned char package_id, unsigned char *data) {
   if (package_id == 0) {
-    last_get_powermanager_data_ = ros::Time::now();
+    last_get_capacitor_data_ = ros::Time::now();
     parameters[0] = int16ToFloat((data[0] << 8) | data[1]);
     parameters[1] = int16ToFloat((data[2] << 8) | data[3]);
     parameters[2] = int16ToFloat((data[4] << 8) | data[5]);
@@ -476,7 +476,7 @@ void PowerManagerData::receiveCallBack(unsigned char package_id, unsigned char *
   }
 }
 
-void PowerManagerData::dtpReceivedCallBack(unsigned char receive_byte) {
+void SuperCapacitor::dtpReceivedCallBack(unsigned char receive_byte) {
   unsigned char check_flag;
   unsigned int sof_pos, eof_pos, check_counter;
 
@@ -535,7 +535,7 @@ void PowerManagerData::dtpReceivedCallBack(unsigned char receive_byte) {
   }
 }
 
-float PowerManagerData::int16ToFloat(unsigned short data0) {
+float SuperCapacitor::int16ToFloat(unsigned short data0) {
   if (data0 == 0) return 0;
   float *fp32;
   unsigned int fInt32 = ((data0 & 0x8000) << 16) |
