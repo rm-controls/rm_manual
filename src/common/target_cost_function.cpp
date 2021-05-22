@@ -8,16 +8,16 @@ namespace rm_manual {
 TargetCostFunction::TargetCostFunction(ros::NodeHandle &nh, const Referee &referee) :
     referee_{referee}, optimal_id_(0) {
   ros::NodeHandle cost_nh = ros::NodeHandle(nh, "target_cost_function");
-  if (nh.getParam("k_pos", k_pos_))
-    ROS_ERROR("K position no defined (namespace: %s)", nh.getNamespace().c_str());
-  if (nh.getParam("k_vel", k_vel_))
-    ROS_ERROR("K velocity  no defined (namespace: %s)", nh.getNamespace().c_str());
-  if (nh.getParam("k_hp", k_hp_))
-    ROS_ERROR("K velocity no defined (namespace: %s)", nh.getNamespace().c_str());
-  if (nh.getParam("k_freq", k_freq_))
-    ROS_ERROR("K frequency no defined (namespace: %s)", nh.getNamespace().c_str());
-  if (nh.getParam("timeout", timeout_))
-    ROS_ERROR("Timeout no defined (namespace: %s)", nh.getNamespace().c_str());
+  if (!cost_nh.getParam("k_pos", k_pos_))
+    ROS_ERROR("K position no defined (namespace: %s)", cost_nh.getNamespace().c_str());
+  if (!cost_nh.getParam("k_vel", k_vel_))
+    ROS_ERROR("K velocity  no defined (namespace: %s)", cost_nh.getNamespace().c_str());
+  if (!cost_nh.getParam("k_hp", k_hp_))
+    ROS_ERROR("K velocity no defined (namespace: %s)", cost_nh.getNamespace().c_str());
+  if (!cost_nh.getParam("k_freq", k_freq_))
+    ROS_ERROR("K frequency no defined (namespace: %s)", cost_nh.getNamespace().c_str());
+  if (!cost_nh.getParam("timeout", timeout_))
+    ROS_ERROR("Timeout no defined (namespace: %s)", cost_nh.getNamespace().c_str());
 }
 
 int TargetCostFunction::costFunction(const rm_msgs::TrackDataArray &track_data_array, bool only_attack_base) {

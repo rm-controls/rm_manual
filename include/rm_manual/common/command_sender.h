@@ -86,7 +86,7 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
     if (!nh.getParam("accel_w", accel_w))
       ROS_ERROR("Accel W no defined (namespace: %s)", nh.getNamespace().c_str());
     msg_.accel.linear.x = accel_x;
-    msg_.accel.linear.x = accel_x;
+    msg_.accel.linear.y = accel_y;
     msg_.accel.angular.z = accel_w;
   }
   void setPowerLimit(double power_limit) { msg_.power_limit = power_limit; }
@@ -96,26 +96,31 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
  public:
   explicit GimbalCommandSender(ros::NodeHandle &nh, const Referee &referee) :
       TimeStampCommandSenderBase<rm_msgs::GimbalCmd>(nh) {
-    ros::NodeHandle cost_nh(nh, "cost_function");
     if (!nh.getParam("max_yaw_vel", max_yaw_rate_))
       ROS_ERROR("Max yaw velocity no defined (namespace: %s)", nh.getNamespace().c_str());
     if (!nh.getParam("max_pitch_vel", max_pitch_vel_))
       ROS_ERROR("Max pitch velocity no defined (namespace: %s)", nh.getNamespace().c_str());
-    cost_function_ = new TargetCostFunction(cost_nh, referee);
+    cost_function_ = new TargetCostFunction(nh, referee);
   }
 
   void setRate(double scale_yaw, double scale_pitch) {
     msg_.rate_yaw = scale_yaw * max_yaw_rate_;
     msg_.rate_pitch = scale_pitch * max_pitch_vel_;
   }
-
+  void setId(int id) {
+    msg_.target_id = id;
+  }
+  void setBulletSpeed(int bullet_speed) {
+    msg_.bullet_speed = bullet_speed;
+  }
   void sendCommand(ros::Time time) override {
 //    msg_.target_id = cost_function_->costFunction();
     TimeStampCommandSenderBase<rm_msgs::GimbalCmd>::sendCommand(time);
   }
+  TargetCostFunction *cost_function_;
  private:
   double max_yaw_rate_{}, max_pitch_vel_{};
-  TargetCostFunction *cost_function_;
+
 };
 
 class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd> {

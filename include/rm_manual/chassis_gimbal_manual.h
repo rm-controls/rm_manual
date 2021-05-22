@@ -16,6 +16,10 @@ class ChassisGimbalManual : public ManualBase {
     vel_cmd_sender_ = new VelCommandSender(vel_nh);
     ros::NodeHandle gimbal_nh(nh, "gimbal");
     gimbal_cmd_sender_ = new GimbalCommandSender(gimbal_nh, *data_.referee_);
+    if (!chassis_nh.getParam("have_power_manager", have_power_manager_))
+      ROS_ERROR("have power manager no defined (namespace: %s)", chassis_nh.getNamespace().c_str());
+    if (!chassis_nh.getParam("safety_power", safety_power_))
+      ROS_ERROR("safety power no defined (namespace: %s)", chassis_nh.getNamespace().c_str());
   }
  protected:
   void rightSwitchMid() override {
@@ -23,10 +27,27 @@ class ChassisGimbalManual : public ManualBase {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setXVel(data_.dbus_data_.ch_r_y);
     vel_cmd_sender_->setYVel(data_.dbus_data_.ch_r_x);
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-    gimbal_cmd_sender_->setRate(-data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y);
+  }
+  void rightSwitchDown() override {
+    ManualBase::rightSwitchDown();
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::PASSIVE);
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::PASSIVE);
+  }
+  void leftSwitchDown() override {
+    ManualBase::leftSwitchDown();
+    if (state_ == RC) {
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+      gimbal_cmd_sender_->setRate(-data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y);
+    }
   }
   void sendCommand(const ros::Time &time) override {
+    if (have_power_manager_)
+      chassis_cmd_sender_->setPowerLimit(data_.referee_->power_manager_data_.parameters[1]);
+    else if (!(have_power_manager_)
+        && data_.referee_->referee_data_.game_robot_status_.max_HP != 0)
+      chassis_cmd_sender_->setPowerLimit(data_.referee_->referee_data_.game_robot_status_.chassis_power_limit);
+    else
+      chassis_cmd_sender_->setPowerLimit(safety_power_);
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
     gimbal_cmd_sender_->sendCommand(time);
@@ -38,6 +59,8 @@ class ChassisGimbalManual : public ManualBase {
   ChassisCommandSender *chassis_cmd_sender_;
   VelCommandSender *vel_cmd_sender_;
   GimbalCommandSender *gimbal_cmd_sender_;
+  bool have_power_manager_{};
+  double safety_power_{};
 };
 }
 
