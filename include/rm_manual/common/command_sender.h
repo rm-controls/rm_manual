@@ -94,7 +94,7 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
     msg_.accel.angular.z = accel_w;
   }
   void sendCommand(ros::Time time) override {
-    if (referee_.is_open_)
+    if (referee_.is_online_)
       msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit;
     else
       msg_.power_limit = safety_power_;
