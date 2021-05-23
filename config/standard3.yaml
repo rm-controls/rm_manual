@@ -1,20 +1,11 @@
 rm_manual:
   robot_type: "standard"
-  controller_manager:
-    information_controllers:
-      - controllers/robot_state_controller
-      - controllers/joint_state_controller
-      - controllers/imu_sensor_controller
-    movement_controllers:
-      - controllers/chassis_controller
-      - controllers/gimbal_controller
-      - controllers/shooter_controller
+
   chassis:
     topic: "cmd_chassis"
     accel_x: 10.0
     accel_y: 10.0
     accel_w: 20.0
-    have_power_manager: false
     safety_power: 50.0
   vel:
     topic: "cmd_vel"
@@ -40,3 +31,21 @@ rm_manual:
       heat_coeff: 1.5
       safety_speed: 15.0
       type: "ID1_17MM"
+
+  controller_manager:
+    information_controllers:
+      - controllers/robot_state_controller
+      - controllers/joint_state_controller
+      - controllers/imu_sensor_controller
+    movement_controllers:
+      - controllers/chassis_controller
+      - controllers/gimbal_controller
+      - controllers/shooter_controller
+      - controllers/trigger_calibration_controller
+  calibration_manager:
+    trigger:
+      switch:
+        service_name: /controller_manager/switch_controller
+        start_controllers: /controllers/trigger_calibration_controller
+      query:
+        service_name: /controllers/trigger_calibration_controller/is_calibrated

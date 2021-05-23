@@ -13,6 +13,7 @@ ControllerManager::ControllerManager(ros::NodeHandle &nh) {
   XmlRpc::XmlRpcValue controllers;
   if (!nh.getParam("information_controllers", controllers))
     ROS_INFO("No information controllers defined");
+  ROS_ASSERT(controllers.getType() == XmlRpc::XmlRpcValue::TypeArray);
   for (int i = 0; i < controllers.size(); ++i)
     information_controllers_.push_back(controllers[i]);
   if (!nh.getParam("movement_controllers", controllers))
