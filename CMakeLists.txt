@@ -23,6 +23,7 @@ find_package(catkin REQUIRED
         serial
         control_toolbox
         dynamic_reconfigure
+        control_msgs
         )
 
 ## Find system libraries
@@ -50,6 +51,7 @@ catkin_package(
         tf
         control_toolbox
         dynamic_reconfigure
+        control_msgs
         DEPENDS
 )
 

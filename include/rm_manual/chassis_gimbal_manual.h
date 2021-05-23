@@ -66,8 +66,6 @@ class ChassisGimbalManual : public ManualBase {
   ChassisCommandSender *chassis_cmd_sender_;
   VelCommandSender *vel_cmd_sender_;
   GimbalCommandSender *gimbal_cmd_sender_;
-  bool have_power_manager_{};
-  double safety_power_{};
 };
 }
 
