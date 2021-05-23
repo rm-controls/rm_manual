@@ -1,42 +1,36 @@
 rm_manual:
   robot_type: "hero"
-  information_controllers:
-    - controllers/robot_state_controller
-    - controllers/joint_state_controller
-    - controllers/imu_sensor_controller
-  movement_controllers:
-    - controllers/chassis_controller
-    - controllers/gimbal_controller
-    - controllers/shooter_controller
-  control_param:
-    accel_x: 10.0
-    accel_y: 10.0
-    accel_angular: 6.0
-    brake_multiple: 2
-    expect_shoot_hz: 1
-    safe_shoot_hz: 1
-    safe_shoot_speed: 10
-    gimbal_error_limit: 0.02
-    rc_param:
-      coefficient_x: 4
-      coefficient_y: 4
-      coefficient_angular: 5.0
-      coefficient_yaw: 12.56
-      coefficient_pitch: 12.56
-    pc_param:
-      coefficient_x: 3.5
-      coefficient_y: 3.5
-      coefficient_angular: 1.0
-      coefficient_yaw: 750.0
-      coefficient_pitch: 750.0
-      normal_critical_speed: 1
-      burst_critical_speed: 2
-      normal_angular: 1
-      burst_angular: 2
-      spin_sin_amplitude: 3.0
-      spin_sin_frequency: 6.28
-  power_limit:
-    safety_power: 50
-    have_power_manager: false
-
-
+  controller_manager:
+    information_controllers:
+      - controllers/robot_state_controller
+      - controllers/joint_state_controller
+      - controllers/imu_sensor_controller
+    movement_controllers:
+      - controllers/chassis_controller
+      - controllers/gimbal_controller
+      - controllers/shooter_controller
+    chassis:
+      topic: "cmd_chassis"
+      accel_x: 10.0
+      accel_y: 10.0
+      accel_w: 6.0
+    vel:
+      topic: "cmd_vel"
+      max_vel_x: 4.0
+      max_vel_y: 4.0
+      max_vel_w: 5.0
+    gimbal:
+      topic: "cmd_gimbal"
+      max_yaw_vel: 12.56
+      max_pitch_vel: 12.56
+    target_cost_function:
+      k_pos: 1.0
+      k_vel: 1.0
+      k_hp: 1.0
+      k_freq: 1.0
+      timeout: 0.05
+    shooter:
+      topic: "cmd_shoot"
+      safe_shoot_frequency: 10.0
+      heat_coeff: 1.0
+      type: "ID1_17MM"
