@@ -26,9 +26,9 @@ int TargetCostFunction::costFunction(const rm_msgs::TrackDataArray &track_data_a
     if (id2target_states_.find(track.id) == id2target_states_.end())
       id2target_states_.insert(std::make_pair(track.id, TargetState{.id= track.id}));
     TargetState &target_state = id2target_states_.find(track.id)->second;
-    target_state.pos_x = track.camera2detection.position.x;
-    target_state.pos_y = track.camera2detection.position.y;
-    target_state.pos_z = track.camera2detection.position.z;
+    target_state.pos_x = track.camera2detection.x;
+    target_state.pos_y = track.camera2detection.y;
+    target_state.pos_z = track.camera2detection.z;
     // TODO Add Vel to msg
     target_state.vel_x = 0.;
     target_state.vel_y = 0.;
