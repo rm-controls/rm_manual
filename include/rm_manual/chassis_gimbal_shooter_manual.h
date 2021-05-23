@@ -37,12 +37,24 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ChassisGimbalManual::rightSwitchDown();
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   }
+  void rightSwitchUp() override {
+    ChassisGimbalManual::rightSwitchUp();
+    shooter_cmd_sender_->setMode(pc_shooter_mode_);
+  }
+  void fPress() override { if (state_ == PC) pc_shooter_mode_ = rm_msgs::ShootCmd::STOP; }
+  void mouseLeftPress() override {
+    if (state_ == PC) {
+      pc_shooter_mode_ = rm_msgs::ShootCmd::READY;
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+    }
+  }
   void sendCommand(const ros::Time &time) override {
     ChassisGimbalManual::sendCommand(time);
     shooter_cmd_sender_->sendCommand(time);
   }
   ShooterCommandSender *shooter_cmd_sender_;
   double gimbal_error_limit_{};
+  int pc_shooter_mode_ = rm_msgs::ShootCmd::STOP;
 };
 }
 

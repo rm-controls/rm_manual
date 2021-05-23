@@ -33,6 +33,12 @@ class ChassisGimbalManual : public ManualBase {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::PASSIVE);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::PASSIVE);
   }
+  void rightSwitchUp() override {
+    ManualBase::rightSwitchUp();
+    gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
+    gimbal_cmd_sender_->setMode(pc_gimbal_mode_);
+    chassis_cmd_sender_->setMode(pc_chassis_mode_);
+  }
   void leftSwitchDown() override {
     ManualBase::leftSwitchDown();
     if (state_ == RC) {
@@ -54,18 +60,43 @@ class ChassisGimbalManual : public ManualBase {
       gimbal_cmd_sender_->updateCost(data_.track_data_array_);
     }
   }
+  void wPress() override { if (state_ == PC) vel_cmd_sender_->setXVel(1.); }
+  void aPress() override { if (state_ == PC) vel_cmd_sender_->setYVel(1.); }
+  void sPress() override { if (state_ == PC) vel_cmd_sender_->setXVel(-1.); }
+  void dPress() override { if (state_ == PC) vel_cmd_sender_->setYVel(-1.); }
+  void gPress() override {
+    if (state_ == PC && ros::Time::now() - last_release_g_ < ros::Duration(0.1)) {
+      pc_chassis_mode_ =
+          (pc_chassis_mode_ == rm_msgs::ChassisCmd::FOLLOW) ? rm_msgs::ChassisCmd::GYRO : rm_msgs::ChassisCmd::FOLLOW;
+    }
+  }
+  void mouseRightPress() override {
+    if (state_ == PC) {
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+      gimbal_cmd_sender_->updateCost(data_.track_data_array_);
+    }
+  }
+  void ctrlZPress() override {
+    if (state_ == PC) {
+      pc_chassis_mode_ = rm_msgs::ChassisCmd::PASSIVE;
+      pc_gimbal_mode_ = rm_msgs::GimbalCmd::PASSIVE;
+    }
+  }
+  void ctrlWPress() override {
+    if (state_ == PC) {
+      pc_chassis_mode_ = rm_msgs::ChassisCmd::FOLLOW;
+      pc_gimbal_mode_ = rm_msgs::GimbalCmd::RATE;
+    }
+  }
   void sendCommand(const ros::Time &time) override {
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
     gimbal_cmd_sender_->sendCommand(time);
   }
-  void wPress() override { if (state_ == PC) vel_cmd_sender_->setXVel(1.); }
-  void aPress() override { if (state_ == PC) vel_cmd_sender_->setYVel(1.); }
-  void sPress() override { if (state_ == PC) vel_cmd_sender_->setXVel(-1.); }
-  void dPress() override { if (state_ == PC) vel_cmd_sender_->setYVel(-1.); }
   ChassisCommandSender *chassis_cmd_sender_;
   VelCommandSender *vel_cmd_sender_;
   GimbalCommandSender *gimbal_cmd_sender_;
+  int pc_chassis_mode_ = rm_msgs::ChassisCmd::FOLLOW, pc_gimbal_mode_ = rm_msgs::GimbalCmd::RATE;
 };
 }
 
