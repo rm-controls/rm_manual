@@ -76,9 +76,9 @@ typedef enum {
 } ClientId;
 
 typedef enum {
-  ADD_GRAPH = 1,
-  UPDATE_GRAPH = 2,
-  DELETE_GRAPH = 3
+  ADD = 1,
+  UPDATE = 2,
+  DELETE = 3
 } GraphicOperateType;
 
 typedef enum {

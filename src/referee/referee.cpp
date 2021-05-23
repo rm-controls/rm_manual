@@ -262,19 +262,19 @@ void Referee::displayArmorInfo(double yaw2baselink, const ros::Time &time) {
   if (referee_data_.robot_hurt_.hurt_type_ == 0x0) {
     if (referee_data_.robot_hurt_.armor_id_ == 0) {
       drawCircle((int) (960 + 340 * sin(0 + yaw2baselink)), (int) (540 + 340 * cos(0 + yaw2baselink)),
-                 50, 5, YELLOW, ADD_GRAPH);
+                 50, 5, YELLOW, ADD);
       last_update_armor0_time_ = time;
     } else if (referee_data_.robot_hurt_.armor_id_ == 1) {
       drawCircle((int) (960 + 340 * sin(3 * M_PI_2 + yaw2baselink)), (int) (540 + 340 * cos(3 * M_PI_2 + yaw2baselink)),
-                 50, 6, YELLOW, ADD_GRAPH);
+                 50, 6, YELLOW, ADD);
       last_update_armor1_time_ = time;
     } else if (referee_data_.robot_hurt_.armor_id_ == 2) {
       drawCircle((int) (960 + 340 * sin(M_PI + yaw2baselink)), (int) (540 + 340 * cos(M_PI + yaw2baselink)),
-                 50, 7, YELLOW, ADD_GRAPH);
+                 50, 7, YELLOW, ADD);
       last_update_armor2_time_ = time;
     } else if (referee_data_.robot_hurt_.armor_id_ == 3) {
       drawCircle((int) (960 + 340 * sin(M_PI_2 + yaw2baselink)), (int) (540 + 340 * cos(M_PI_2 + yaw2baselink)),
-                 50, 8, YELLOW, ADD_GRAPH);
+                 50, 8, YELLOW, ADD);
       last_update_armor3_time_ = time;
     }
     referee_data_.robot_hurt_.hurt_type_ = 0x9;
@@ -282,13 +282,13 @@ void Referee::displayArmorInfo(double yaw2baselink, const ros::Time &time) {
   }
 
   if (time - last_update_armor0_time_ > ros::Duration(0.5))
-    drawCircle(0, 0, 0, 5, YELLOW, DELETE_GRAPH);
+    drawCircle(0, 0, 0, 5, YELLOW, DELETE);
   if (time - last_update_armor1_time_ > ros::Duration(0.5))
-    drawCircle(0, 0, 0, 6, YELLOW, DELETE_GRAPH);
+    drawCircle(0, 0, 0, 6, YELLOW, DELETE);
   if (time - last_update_armor2_time_ > ros::Duration(0.5))
-    drawCircle(0, 0, 0, 7, YELLOW, DELETE_GRAPH);
+    drawCircle(0, 0, 0, 7, YELLOW, DELETE);
   if (time - last_update_armor3_time_ > ros::Duration(0.5))
-    drawCircle(0, 0, 0, 8, YELLOW, DELETE_GRAPH);
+    drawCircle(0, 0, 0, 8, YELLOW, DELETE);
 }
 
 void Referee::drawCircle(int center_x, int center_y, int radius, int picture_id,
@@ -333,8 +333,8 @@ void Referee::drawString(int x, int y, int picture_id, std::string data,
   client_char_data->student_interactive_header_data_.data_cmd_id_ = CLIENT_CHARACTER_CMD;
   client_char_data->student_interactive_header_data_.sender_id_ = robot_id_;
   client_char_data->student_interactive_header_data_.receiver_id_ = client_id_;
-  client_char_data->graphic_data_struct_.graphic_name_[0] = (uint8_t) ((picture_id >> 8) & 0xff);
-  client_char_data->graphic_data_struct_.graphic_name_[1] = (uint8_t) (picture_id & 0xff);
+  client_char_data->graphic_data_struct_.graphic_name_[0] = (uint8_t) (picture_id & 0xff);
+  client_char_data->graphic_data_struct_.graphic_name_[1] = (uint8_t) ((picture_id >> 8) & 0xff);
   client_char_data->graphic_data_struct_.graphic_name_[2] = (uint8_t) ((picture_id >> 16) & 0xff);
   client_char_data->graphic_data_struct_.start_x_ = x;
   client_char_data->graphic_data_struct_.start_y_ = y;
