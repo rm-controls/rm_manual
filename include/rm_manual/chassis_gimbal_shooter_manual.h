@@ -41,8 +41,10 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     shooter_cmd_sender_->setBurst(shooter_burst_flag_);
   }
   void qPress() override {
-    if (state_ == PC && ros::Time::now() - last_release_q_ < ros::Duration(0.1))
+    if (state_ == PC && ros::Time::now() - last_release_q_ < ros::Duration(0.1)) {
       shooter_burst_flag_ = !shooter_burst_flag_;
+      referee_ui_->displayShooterInfo(pc_shooter_mode_, shooter_burst_flag_, graphic_operate_type_);
+    }
   }
   void mouseLeftPress() override {
     if (state_ == PC) {

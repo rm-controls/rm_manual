@@ -9,6 +9,7 @@
 #include "rm_manual/common/command_sender.h"
 #include "rm_manual/common/controller_manager.h"
 #include "rm_manual/common/calibration_manager.h"
+#include "rm_manual/referee/referee_ui.h"
 
 #include <iostream>
 #include <queue>
@@ -78,10 +79,12 @@ class ManualBase {
   virtual void ctrlWPress() {};
 
   Data data_;
+  RefereeUi *referee_ui_;
   ros::NodeHandle nh_;
   ControllerManager *controller_manager_;
   CalibrationManager *calibration_manager_;
   int state_ = PASSIVE;
+  GraphicOperateType graphic_operate_type_;
   ros::Time last_release_q_, last_release_w_, last_release_e_, last_release_r_, last_release_a_,
       last_release_s_, last_release_d_, last_release_f_, last_release_g_, last_release_z_, last_release_x_,
       last_release_c_, last_release_v_, last_release_b_, last_release_shift_, last_release_mouse_left_,

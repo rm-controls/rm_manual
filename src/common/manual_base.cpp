@@ -7,6 +7,7 @@ namespace rm_manual {
 
 ManualBase::ManualBase(ros::NodeHandle &nh) : nh_(nh) {
   data_.init(nh_);
+  referee_ui_ = new RefereeUi(data_.referee_);
   ros::NodeHandle ctrl_handle(nh, "controller_manager");
   controller_manager_ = new ControllerManager(ctrl_handle);
   controller_manager_->loadAllControllers();
@@ -18,6 +19,7 @@ ManualBase::ManualBase(ros::NodeHandle &nh) : nh_(nh) {
 void ManualBase::run() {
   ros::Time time = ros::Time::now();
   data_.referee_->read();
+  drawUi();
   checkSwitch(time);
   checkKeyboard(time);
   sendCommand(time);
