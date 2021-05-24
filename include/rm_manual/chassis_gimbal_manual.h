@@ -38,6 +38,7 @@ class ChassisGimbalManual : public ManualBase {
     gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
     gimbal_cmd_sender_->setMode(pc_gimbal_mode_);
     chassis_cmd_sender_->setMode(pc_chassis_mode_);
+    vel_cmd_sender_->setVel(0., 0., 1.);
   }
   void leftSwitchDown() override {
     ManualBase::leftSwitchDown();
