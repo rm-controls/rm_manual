@@ -144,7 +144,7 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
     ros::NodeHandle limit_nh(nh, "heat_limit");
     heat_limit_ = new HeatLimit(limit_nh, referee_);
     if (!nh.getParam("gimbal_error_limit", gimbal_error_limit_))
-      ROS_ERROR("gimbal error limit no defined (namespace: %s)", nh.getNamespace().c_str());
+      ROS_ERROR("Gimbal error limit no defined (namespace: %s)", nh.getNamespace().c_str());
   }
   ~ShooterCommandSender() { delete heat_limit_; }
   void setHz(double hz) { expect_hz_ = hz; }
@@ -154,7 +154,7 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
     msg_.hz = heat_limit_->getHz();
     TimeStampCommandSenderBase<rm_msgs::ShootCmd>::sendCommand(time);
   }
-
+  void setBurst(bool burst_flag) { heat_limit_->burst_flag_ = burst_flag; }
  private:
   double expect_hz_{};
   double gimbal_error_limit_{};

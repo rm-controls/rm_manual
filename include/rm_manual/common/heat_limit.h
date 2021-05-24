@@ -25,6 +25,7 @@ class HeatLimit {
   }
 
   double getHz() const {
+    if (burst_flag_) return expect_shoot_frequency_;
     if (!referee_.is_online_) return safe_shoot_frequency_;
     double cooling_limit, cooling_rate, cooling_heat;
     if (type_ == "ID1_17MM") {
@@ -73,6 +74,7 @@ class HeatLimit {
     return -1;    // TODO unsafe!
   }
   int expect_shoot_frequency_{};
+  bool burst_flag_ = false;
  private:
   std::string type_{};
   const Referee &referee_;
