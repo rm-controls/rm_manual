@@ -2,10 +2,10 @@
 // Created by peter on 2021/5/24.
 //
 
-#include "rm_manual/referee/referee_ui.h"
+#include "rm_manual/referee/ui.h"
 
 namespace rm_manual {
-void RefereeUi::displayCapInfo(GraphicOperateType graph_operate_type) {
+void Ui::displayCapInfo(GraphicOperateType graph_operate_type) {
   if (ros::Time::now() - last_update_cap_time_ > ros::Duration(0.5)) return;
   float cap_power = referee_->super_capacitor_.parameters[3] * 100;
   char power_string[30];
@@ -19,7 +19,7 @@ void RefereeUi::displayCapInfo(GraphicOperateType graph_operate_type) {
   last_update_cap_time_ = ros::Time::now();
 }
 
-void RefereeUi::displayChassisInfo(uint8_t chassis_mode, bool burst_flag, GraphicOperateType graph_operate_type) {
+void Ui::displayChassisInfo(uint8_t chassis_mode, bool burst_flag, GraphicOperateType graph_operate_type) {
   GraphicColorType color = burst_flag ? ORANGE : YELLOW;
   if (chassis_mode == rm_msgs::ChassisCmd::PASSIVE)
     referee_->drawString(1470, 790, 1, "chassis:passive", color, graph_operate_type);
@@ -31,7 +31,7 @@ void RefereeUi::displayChassisInfo(uint8_t chassis_mode, bool burst_flag, Graphi
     referee_->drawString(1470, 790, 1, "chassis:twist", color, graph_operate_type);
 }
 
-void RefereeUi::displayGimbalInfo(uint8_t gimbal_mode, GraphicOperateType graph_operate_type) {
+void Ui::displayGimbalInfo(uint8_t gimbal_mode, GraphicOperateType graph_operate_type) {
   if (gimbal_mode == rm_msgs::GimbalCmd::PASSIVE)
     referee_->drawString(1470, 740, 2, "gimbal:passive", YELLOW, graph_operate_type);
   else if (gimbal_mode == rm_msgs::GimbalCmd::RATE)
@@ -40,7 +40,7 @@ void RefereeUi::displayGimbalInfo(uint8_t gimbal_mode, GraphicOperateType graph_
     referee_->drawString(1470, 740, 2, "gimbal:track", YELLOW, graph_operate_type);
 }
 
-void RefereeUi::displayShooterInfo(uint8_t shooter_mode, bool burst_flag, GraphicOperateType graph_operate_type) {
+void Ui::displayShooterInfo(uint8_t shooter_mode, bool burst_flag, GraphicOperateType graph_operate_type) {
   GraphicColorType color = burst_flag ? ORANGE : YELLOW;
   if (shooter_mode == rm_msgs::ShootCmd::PASSIVE)
     referee_->drawString(1470, 690, 3, "shooter:passive", color, graph_operate_type);
@@ -52,12 +52,12 @@ void RefereeUi::displayShooterInfo(uint8_t shooter_mode, bool burst_flag, Graphi
     referee_->drawString(1470, 690, 3, "shooter:stop", color, graph_operate_type);
 }
 
-void RefereeUi::displayAttackTargetInfo(bool attack_base_flag, GraphicOperateType graph_operate_type) {
+void Ui::displayAttackTargetInfo(bool attack_base_flag, GraphicOperateType graph_operate_type) {
   if (attack_base_flag) referee_->drawString(1470, 640, 4, "target:base", YELLOW, graph_operate_type);
   else referee_->drawString(1470, 640, 4, "target:all", YELLOW, graph_operate_type);
 }
 
-void RefereeUi::displayArmorInfo(const ros::Time &time) {
+void Ui::displayArmorInfo(const ros::Time &time) {
   if (referee_->referee_data_.robot_hurt_.hurt_type_ == 0x0) {
     double yaw = getArmorPosition();
     if (referee_->referee_data_.robot_hurt_.armor_id_ == 0) {
@@ -91,7 +91,7 @@ void RefereeUi::displayArmorInfo(const ros::Time &time) {
     referee_->drawCircle(0, 0, 0, 8, YELLOW, DELETE);
 }
 
-double RefereeUi::getArmorPosition() {
+double Ui::getArmorPosition() {
   geometry_msgs::TransformStamped gimbal_transformStamped;
   double roll, pitch, yaw;
 

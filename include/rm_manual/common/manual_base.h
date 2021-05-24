@@ -2,14 +2,14 @@
 // Created by peter on 2020/12/3.
 //
 
-#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
-#define RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
+#ifndef RM_MANUAL_MANUAL_BASE_H_
+#define RM_MANUAL_MANUAL_BASE_H_
 
 #include "rm_manual/common/data.h"
 #include "rm_manual/common/command_sender.h"
 #include "rm_manual/common/controller_manager.h"
 #include "rm_manual/common/calibration_manager.h"
-#include "rm_manual/referee/referee_ui.h"
+#include "rm_manual/referee/ui.h"
 
 #include <iostream>
 #include <queue>
@@ -79,7 +79,7 @@ class ManualBase {
   virtual void ctrlWPress() {};
 
   Data data_;
-  RefereeUi *ui_;
+  Ui *ui_;
   ros::NodeHandle nh_;
   ControllerManager *controller_manager_;
   CalibrationManager *calibration_manager_;
@@ -92,4 +92,4 @@ class ManualBase {
 };
 
 }
-#endif //RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
+#endif //RM_MANUAL_MANUAL_BASE_H_

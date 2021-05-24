@@ -2,17 +2,17 @@
 // Created by peter on 2021/5/24.
 //
 
-#ifndef RM_MANUAL_REFEREE_REFEREE_UI_H_
-#define RM_MANUAL_REFEREE_REFEREE_UI_H_
+#ifndef RM_MANUAL_REFEREE_UI_H_
+#define RM_MANUAL_REFEREE_UI_H_
 
 #include <tf/transform_listener.h>
 #include <rm_common/ori_tool.h>
 #include "rm_manual/referee/referee.h"
 
 namespace rm_manual {
-class RefereeUi {
+class Ui {
  public:
-  RefereeUi(Referee *referee) : referee_(referee) {};
+  Ui(Referee *referee) : referee_(referee) {};
   void displayArmorInfo(const ros::Time &now);
   void displayCapInfo(GraphicOperateType graph_operate_type);
   void displayChassisInfo(uint8_t chassis_mode, bool burst_flag, GraphicOperateType graph_operate_type);
@@ -30,4 +30,4 @@ class RefereeUi {
       last_update_cap_time_;
 };
 } // namespace rm_manual
-#endif //RM_MANUAL_REFEREE_REFEREE_UI_H_
+#endif //RM_MANUAL_REFEREE_UI_H_

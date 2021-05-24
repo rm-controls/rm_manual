@@ -1,8 +1,8 @@
 //
 // Created by astro on 2021/5/15.
 //
-#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_CONTROLLER_MANAGER_H_
-#define RM_MANUAL_INCLUDE_RM_MANUAL_CONTROLLER_MANAGER_H_
+#ifndef RM_MANUAL_CONTROLLER_MANAGER_H_
+#define RM_MANUAL_CONTROLLER_MANAGER_H_
 
 #include <ros/ros.h>
 #include <controller_manager_msgs/LoadController.h>
@@ -56,4 +56,4 @@ class ControllerManager {
 };
 
 }
-#endif //RM_MANUAL_INCLUDE_RM_MANUAL_CONTROLLER_MANAGER_H_
+#endif //RM_MANUAL_CONTROLLER_MANAGER_H_
