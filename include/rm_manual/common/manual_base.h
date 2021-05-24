@@ -79,7 +79,7 @@ class ManualBase {
   virtual void ctrlWPress() {};
 
   Data data_;
-  RefereeUi *referee_ui_;
+  RefereeUi *ui_;
   ros::NodeHandle nh_;
   ControllerManager *controller_manager_;
   CalibrationManager *calibration_manager_;

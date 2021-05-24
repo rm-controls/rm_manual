@@ -19,8 +19,8 @@ class ChassisGimbalManual : public ManualBase {
   }
  protected:
   void drawUi() override {
-    referee_ui_->displayCapInfo(graphic_operate_type_);
-    referee_ui_->displayArmorInfo(ros::Time::now());
+    ui_->displayCapInfo(graphic_operate_type_);
+    ui_->displayArmorInfo(ros::Time::now());
     graphic_operate_type_ = UPDATE;
   }
   void rightSwitchMid() override {
@@ -40,10 +40,18 @@ class ChassisGimbalManual : public ManualBase {
   }
   void rightSwitchUp() override {
     ManualBase::rightSwitchUp();
+    vel_cmd_sender_->setVel(0., 0., 1.);
+    chassis_cmd_sender_->setMode(pc_chassis_mode_);
     gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
     gimbal_cmd_sender_->setMode(pc_gimbal_mode_);
-    chassis_cmd_sender_->setMode(pc_chassis_mode_);
-    vel_cmd_sender_->setVel(0., 0., 1.);
+    if (shift_pressing_flag_ && ros::Time::now() - last_release_shift_ < ros::Duration(0.02)) {
+      shift_pressing_flag_ = false;
+      ui_->displayChassisInfo(pc_chassis_mode_, shift_pressing_flag_, graphic_operate_type_);
+    }
+    if (mouse_right_pressing_flag_ && ros::Time::now() - last_release_mouse_right_ < ros::Duration(0.02)) {
+      mouse_right_pressing_flag_ = false;
+      ui_->displayGimbalInfo(pc_gimbal_mode_, graphic_operate_type_);
+    }
   }
   void leftSwitchDown() override {
     ManualBase::leftSwitchDown();
@@ -72,39 +80,49 @@ class ChassisGimbalManual : public ManualBase {
   void dPress() override { if (state_ == PC) vel_cmd_sender_->setYVel(-1.); }
   void xPress() override { if (state_ == PC) graphic_operate_type_ = ADD; }
   void ePress() override {
-    if (state_ == PC && ros::Time::now() - last_release_e_ < ros::Duration(0.1)) {
+    if (state_ == PC && ros::Time::now() - last_release_e_ < ros::Duration(0.02)) {
       pc_chassis_mode_ =
           (pc_chassis_mode_ == rm_msgs::ChassisCmd::GYRO) ? rm_msgs::ChassisCmd::FOLLOW : rm_msgs::ChassisCmd::GYRO;
-      referee_ui_->displayChassisInfo(pc_chassis_mode_, chassis_burst_flag_, graphic_operate_type_);
+      ui_->displayChassisInfo(pc_chassis_mode_, shift_pressing_flag_, graphic_operate_type_);
     }
   }
   void rPress() override {
-    if (state_ == PC && ros::Time::now() - last_release_r_ < ros::Duration(0.1)) {
+    if (state_ == PC && ros::Time::now() - last_release_r_ < ros::Duration(0.02)) {
       pc_chassis_mode_ =
           (pc_chassis_mode_ == rm_msgs::ChassisCmd::TWIST) ? rm_msgs::ChassisCmd::FOLLOW : rm_msgs::ChassisCmd::TWIST;
-      referee_ui_->displayChassisInfo(pc_chassis_mode_, chassis_burst_flag_, graphic_operate_type_);
+      ui_->displayChassisInfo(pc_chassis_mode_, shift_pressing_flag_, graphic_operate_type_);
+    }
+  }
+  void shiftPress() override {
+    if (state_ == PC && !shift_pressing_flag_) {
+      shift_pressing_flag_ = true;
+      ui_->displayChassisInfo(pc_chassis_mode_, shift_pressing_flag_, graphic_operate_type_);
     }
   }
   void mouseRightPress() override {
     if (state_ == PC) {
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
       gimbal_cmd_sender_->updateCost(data_.track_data_array_);
+      if (!mouse_right_pressing_flag_) {
+        mouse_right_pressing_flag_ = true;
+        ui_->displayGimbalInfo(rm_msgs::GimbalCmd::TRACK, graphic_operate_type_);
+      }
     }
   }
   void ctrlZPress() override {
     if (state_ == PC) {
       pc_chassis_mode_ = rm_msgs::ChassisCmd::PASSIVE;
       pc_gimbal_mode_ = rm_msgs::GimbalCmd::PASSIVE;
-      referee_ui_->displayChassisInfo(pc_chassis_mode_, chassis_burst_flag_, graphic_operate_type_);
-      referee_ui_->displayGimbalInfo(pc_gimbal_mode_, graphic_operate_type_);
+      ui_->displayChassisInfo(pc_chassis_mode_, shift_pressing_flag_, graphic_operate_type_);
+      ui_->displayGimbalInfo(pc_gimbal_mode_, graphic_operate_type_);
     }
   }
   void ctrlWPress() override {
     if (state_ == PC) {
       pc_chassis_mode_ = rm_msgs::ChassisCmd::FOLLOW;
       pc_gimbal_mode_ = rm_msgs::GimbalCmd::RATE;
-      referee_ui_->displayChassisInfo(pc_chassis_mode_, chassis_burst_flag_, graphic_operate_type_);
-      referee_ui_->displayGimbalInfo(pc_gimbal_mode_, graphic_operate_type_);
+      ui_->displayChassisInfo(pc_chassis_mode_, shift_pressing_flag_, graphic_operate_type_);
+      ui_->displayGimbalInfo(pc_gimbal_mode_, graphic_operate_type_);
     }
   }
   void sendCommand(const ros::Time &time) override {
@@ -116,7 +134,7 @@ class ChassisGimbalManual : public ManualBase {
   VelCommandSender *vel_cmd_sender_;
   GimbalCommandSender *gimbal_cmd_sender_;
   int pc_chassis_mode_ = rm_msgs::ChassisCmd::FOLLOW, pc_gimbal_mode_ = rm_msgs::GimbalCmd::RATE;
-  bool chassis_burst_flag_ = false;
+  bool shift_pressing_flag_ = false, mouse_right_pressing_flag_ = false;
 };
 }
 

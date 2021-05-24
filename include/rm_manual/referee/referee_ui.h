@@ -15,7 +15,7 @@ class RefereeUi {
   RefereeUi(Referee *referee) : referee_(referee) {};
   void displayArmorInfo(const ros::Time &now);
   void displayCapInfo(GraphicOperateType graph_operate_type);
-  void displayChassisInfo(uint8_t chassis_mode, bool unlimit_flag, GraphicOperateType graph_operate_type);
+  void displayChassisInfo(uint8_t chassis_mode, bool burst_flag, GraphicOperateType graph_operate_type);
   void displayGimbalInfo(uint8_t gimbal_mode, GraphicOperateType graph_operate_type);
   void displayShooterInfo(uint8_t shooter_mode, bool burst_flag, GraphicOperateType graph_operate_type);
   void displayAttackTargetInfo(bool attack_base_flag, GraphicOperateType graph_operate_type);

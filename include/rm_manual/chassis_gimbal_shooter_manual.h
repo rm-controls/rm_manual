@@ -39,23 +39,36 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ChassisGimbalManual::rightSwitchUp();
     shooter_cmd_sender_->setMode(pc_shooter_mode_);
     shooter_cmd_sender_->setBurst(shooter_burst_flag_);
+    if (mouse_left_pressing_flag_ && ros::Time::now() - last_release_mouse_left_ < ros::Duration(0.02)) {
+      mouse_left_pressing_flag_ = false;
+      ui_->displayShooterInfo(pc_chassis_mode_, shooter_burst_flag_, graphic_operate_type_);
+    }
   }
   void qPress() override {
-    if (state_ == PC && ros::Time::now() - last_release_q_ < ros::Duration(0.1)) {
+    if (state_ == PC && ros::Time::now() - last_release_q_ < ros::Duration(0.02)) {
       shooter_burst_flag_ = !shooter_burst_flag_;
-      referee_ui_->displayShooterInfo(pc_shooter_mode_, shooter_burst_flag_, graphic_operate_type_);
+      ui_->displayShooterInfo(pc_shooter_mode_, shooter_burst_flag_, graphic_operate_type_);
     }
   }
   void mouseLeftPress() override {
     if (state_ == PC) {
       pc_shooter_mode_ = rm_msgs::ShootCmd::READY;
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+      if (!mouse_left_pressing_flag_) {
+        mouse_left_pressing_flag_ = true;
+        ui_->displayShooterInfo(rm_msgs::ShootCmd::PUSH, shooter_burst_flag_, graphic_operate_type_);
+      }
     }
+  }
+  void ctrlWPress() override {
+    ChassisGimbalManual::ctrlWPress();
+    if (state_ == PC) ui_->displayShooterInfo(pc_shooter_mode_, shooter_burst_flag_, graphic_operate_type_);
   }
   void ctrlZPress() override {
     ChassisGimbalManual::ctrlZPress();
     pc_shooter_mode_ = rm_msgs::ShootCmd::STOP;
     shooter_burst_flag_ = false;
+    ui_->displayShooterInfo(pc_shooter_mode_, shooter_burst_flag_, graphic_operate_type_);
   }
   void sendCommand(const ros::Time &time) override {
     ChassisGimbalManual::sendCommand(time);
@@ -64,7 +77,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   ShooterCommandSender *shooter_cmd_sender_;
   double gimbal_error_limit_{};
   int pc_shooter_mode_ = rm_msgs::ShootCmd::STOP;
-  bool shooter_burst_flag_ = false;
+  bool shooter_burst_flag_ = false, mouse_left_pressing_flag_ = false;
 };
 }
 
