@@ -64,11 +64,15 @@ class ChassisGimbalManual : public ManualBase {
   void aPress() override { if (state_ == PC) vel_cmd_sender_->setYVel(1.); }
   void sPress() override { if (state_ == PC) vel_cmd_sender_->setXVel(-1.); }
   void dPress() override { if (state_ == PC) vel_cmd_sender_->setYVel(-1.); }
-  void gPress() override {
-    if (state_ == PC && ros::Time::now() - last_release_g_ < ros::Duration(0.1)) {
+  void ePress() override {
+    if (state_ == PC && ros::Time::now() - last_release_e_ < ros::Duration(0.1))
       pc_chassis_mode_ =
-          (pc_chassis_mode_ == rm_msgs::ChassisCmd::FOLLOW) ? rm_msgs::ChassisCmd::GYRO : rm_msgs::ChassisCmd::FOLLOW;
-    }
+          (pc_chassis_mode_ == rm_msgs::ChassisCmd::GYRO) ? rm_msgs::ChassisCmd::FOLLOW : rm_msgs::ChassisCmd::GYRO;
+  }
+  void rPress() override {
+    if (state_ == PC && ros::Time::now() - last_release_r_ < ros::Duration(0.1))
+      pc_chassis_mode_ =
+          (pc_chassis_mode_ == rm_msgs::ChassisCmd::TWIST) ? rm_msgs::ChassisCmd::FOLLOW : rm_msgs::ChassisCmd::TWIST;
   }
   void mouseRightPress() override {
     if (state_ == PC) {
