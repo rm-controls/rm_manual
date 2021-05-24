@@ -67,19 +67,6 @@ void Referee::read() {
   publishData();
 }
 
-int Referee::getShootSpeedLimit(int shoot_speed) const {
-  if (is_online_) {
-    if (robot_id_ == BLUE_HERO || robot_id_ == RED_HERO) { // 42mm
-      if (referee_data_.game_robot_status_.shooter_id_1_42_mm_speed_limit_ != 0)
-        return referee_data_.game_robot_status_.shooter_id_1_42_mm_speed_limit_;
-    } else { // 17mm
-      if (referee_data_.game_robot_status_.shooter_id_1_17_mm_speed_limit_ != 0)
-        return referee_data_.game_robot_status_.shooter_id_1_17_mm_speed_limit_;
-    }
-  }
-  return shoot_speed;
-}
-
 int Referee::unpack(uint8_t *rx_data) {
   uint16_t cmd_id;
   int frame_len;
@@ -208,89 +195,6 @@ void Referee::publishData() {
   super_capacitor_pub_.publish(super_capacitor_pub_data_);
 }
 
-void Referee::displayCapInfo(GraphicOperateType graph_operate_type) {
-  char power_string[30];
-  float power_float;
-
-  power_float = super_capacitor_.parameters[3] * 100;
-  sprintf(power_string, "Cap: %1.0f%%", power_float);
-  if (power_float >= 60)
-    drawString(910, 100, 0, power_string, GREEN, graph_operate_type);
-  else if (power_float < 60 && power_float >= 30)
-    drawString(910, 100, 0, power_string, YELLOW, graph_operate_type);
-  else if (power_float < 30)
-    drawString(910, 100, 0, power_string, ORANGE, graph_operate_type);
-}
-
-void Referee::displayChassisInfo(uint8_t chassis_mode, bool unlimit_flag, GraphicOperateType graph_operate_type) {
-  GraphicColorType color = unlimit_flag ? ORANGE : YELLOW;
-  if (chassis_mode == rm_msgs::ChassisCmd::PASSIVE)
-    drawString(1470, 790, 1, "chassis:passive", color, graph_operate_type);
-  else if (chassis_mode == rm_msgs::ChassisCmd::FOLLOW)
-    drawString(1470, 790, 1, "chassis:follow", color, graph_operate_type);
-  else if (chassis_mode == rm_msgs::ChassisCmd::GYRO)
-    drawString(1470, 790, 1, "chassis:gyro", color, graph_operate_type);
-}
-
-void Referee::displayGimbalInfo(uint8_t gimbal_mode, GraphicOperateType graph_operate_type) {
-  if (gimbal_mode == rm_msgs::GimbalCmd::PASSIVE)
-    drawString(1470, 740, 2, "gimbal:passive", YELLOW, graph_operate_type);
-  else if (gimbal_mode == rm_msgs::GimbalCmd::RATE)
-    drawString(1470, 740, 2, "gimbal:rate", YELLOW, graph_operate_type);
-  else if (gimbal_mode == rm_msgs::GimbalCmd::TRACK)
-    drawString(1470, 740, 2, "gimbal:track", YELLOW, graph_operate_type);
-}
-
-void Referee::displayShooterInfo(uint8_t shooter_mode, bool burst_flag, GraphicOperateType graph_operate_type) {
-  GraphicColorType color = burst_flag ? ORANGE : YELLOW;
-  if (shooter_mode == rm_msgs::ShootCmd::PASSIVE)
-    drawString(1470, 690, 3, "shooter:passive", color, graph_operate_type);
-  else if (shooter_mode == rm_msgs::ShootCmd::READY)
-    drawString(1470, 690, 3, "shooter:ready", color, graph_operate_type);
-  else if (shooter_mode == rm_msgs::ShootCmd::PUSH)
-    drawString(1470, 690, 3, "shooter:push", color, graph_operate_type);
-  else if (shooter_mode == rm_msgs::ShootCmd::STOP)
-    drawString(1470, 690, 3, "shooter:stop", color, graph_operate_type);
-}
-
-void Referee::displayAttackTargetInfo(bool attack_base_flag, GraphicOperateType graph_operate_type) {
-  if (attack_base_flag) drawString(1470, 640, 4, "target:base", YELLOW, graph_operate_type);
-  else drawString(1470, 640, 4, "target:all", YELLOW, graph_operate_type);
-}
-
-void Referee::displayArmorInfo(double yaw2baselink, const ros::Time &time) {
-  if (referee_data_.robot_hurt_.hurt_type_ == 0x0) {
-    if (referee_data_.robot_hurt_.armor_id_ == 0) {
-      drawCircle((int) (960 + 340 * sin(0 + yaw2baselink)), (int) (540 + 340 * cos(0 + yaw2baselink)),
-                 50, 5, YELLOW, ADD);
-      last_update_armor0_time_ = time;
-    } else if (referee_data_.robot_hurt_.armor_id_ == 1) {
-      drawCircle((int) (960 + 340 * sin(3 * M_PI_2 + yaw2baselink)), (int) (540 + 340 * cos(3 * M_PI_2 + yaw2baselink)),
-                 50, 6, YELLOW, ADD);
-      last_update_armor1_time_ = time;
-    } else if (referee_data_.robot_hurt_.armor_id_ == 2) {
-      drawCircle((int) (960 + 340 * sin(M_PI + yaw2baselink)), (int) (540 + 340 * cos(M_PI + yaw2baselink)),
-                 50, 7, YELLOW, ADD);
-      last_update_armor2_time_ = time;
-    } else if (referee_data_.robot_hurt_.armor_id_ == 3) {
-      drawCircle((int) (960 + 340 * sin(M_PI_2 + yaw2baselink)), (int) (540 + 340 * cos(M_PI_2 + yaw2baselink)),
-                 50, 8, YELLOW, ADD);
-      last_update_armor3_time_ = time;
-    }
-    referee_data_.robot_hurt_.hurt_type_ = 0x9;
-    referee_data_.robot_hurt_.armor_id_ = 9;
-  }
-
-  if (time - last_update_armor0_time_ > ros::Duration(0.5))
-    drawCircle(0, 0, 0, 5, YELLOW, DELETE);
-  if (time - last_update_armor1_time_ > ros::Duration(0.5))
-    drawCircle(0, 0, 0, 6, YELLOW, DELETE);
-  if (time - last_update_armor2_time_ > ros::Duration(0.5))
-    drawCircle(0, 0, 0, 7, YELLOW, DELETE);
-  if (time - last_update_armor3_time_ > ros::Duration(0.5))
-    drawCircle(0, 0, 0, 8, YELLOW, DELETE);
-}
-
 void Referee::drawCircle(int center_x, int center_y, int radius, int picture_id,
                          GraphicColorType color, GraphicOperateType operate_type) {
   uint8_t tx_buffer[128] = {0};
@@ -371,7 +275,7 @@ void Referee::sendInteractiveData(int data_cmd_id, int receiver_id, uint8_t data
   student_interactive_data->student_interactive_header_data_.data_cmd_id_ = data_cmd_id;
   student_interactive_data->student_interactive_header_data_.sender_id_ = robot_id_;
   student_interactive_data->student_interactive_header_data_.receiver_id_ = receiver_id;
-  student_interactive_data->data = data;
+  student_interactive_data->data_ = data;
   pack(tx_buffer, tx_data, STUDENT_INTERACTIVE_DATA_CMD, sizeof(InteractiveData));
 
   try {

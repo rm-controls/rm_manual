@@ -289,22 +289,8 @@ typedef struct {
 
 typedef struct {
   StudentInteractiveHeaderData student_interactive_header_data_;
-  uint8_t data;
+  uint8_t data_;
 }__packed InteractiveData;
-
-/********************** Robot Interactive data ----0x0302 *******************************************/
-typedef struct {
-  uint8_t *data;
-}__packed RobotInteractiveData;
-
-/********************** Robot command data ----0x0303 ***********************************************/
-typedef struct {
-  float target_position_x;
-  float target_position_y;
-  float target_position_z;
-  uint8_t command_keyboard;
-  uint16_t target_robot_ID;
-}__packed RobotCommand;
 
 /***********************Frame tail(CRC8_CRC16)********************************************/
 const uint8_t kCrc8Init = 0xff;
