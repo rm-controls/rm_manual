@@ -2,18 +2,18 @@ rm_manual:
   robot_type: "standard"
 
   chassis:
-    topic: "cmd_chassis"
+    topic: "/cmd_chassis"
     accel_x: 10.0
     accel_y: 10.0
-    accel_w: 20.0
+    accel_z: 20.0
     safety_power: 50.0
   vel:
-    topic: "cmd_vel"
-    max_vel_x: 4.0
-    max_vel_y: 4.0
-    max_vel_w: 5.0
+    topic: "/cmd_vel"
+    max_linear_x: 4.0
+    max_linear_y: 4.0
+    max_angluar_z: 10.0
   gimbal:
-    topic: "cmd_gimbal"
+    topic: "/cmd_gimbal"
     max_yaw_vel: 12.56
     max_pitch_vel: 12.56
     target_cost_function:
@@ -23,7 +23,7 @@ rm_manual:
       k_freq: 1.0
       timeout: 0.05
   shooter:
-    topic: "cmd_shoot"
+    topic: "/cmd_shoot"
     gimbal_error_limit: 0.05
     heat_limit:
       expect_shoot_frequency: 10

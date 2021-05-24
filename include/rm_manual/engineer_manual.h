@@ -11,7 +11,7 @@ namespace rm_manual {
 class EngineerManual : public ChassisGimbalManual {
  public:
  private:
-  VelCommandSender vel_command_sender_;
+  Vel2DCommandSender vel_command_sender_;
 };
 
 }

@@ -13,7 +13,7 @@ class ChassisGimbalManual : public ManualBase {
     ros::NodeHandle chassis_nh(nh, "chassis");
     chassis_cmd_sender_ = new ChassisCommandSender(chassis_nh, *data_.referee_);
     ros::NodeHandle vel_nh(nh, "vel");
-    vel_cmd_sender_ = new VelCommandSender(vel_nh);
+    vel_cmd_sender_ = new Vel2DCommandSender(vel_nh);
     ros::NodeHandle gimbal_nh(nh, "gimbal");
     gimbal_cmd_sender_ = new GimbalCommandSender(gimbal_nh, *data_.referee_);
   }
@@ -21,12 +21,12 @@ class ChassisGimbalManual : public ManualBase {
   void rightSwitchMid() override {
     ManualBase::rightSwitchMid();
     if (std::abs(data_.dbus_data_.wheel) > 0.01) {
-      vel_cmd_sender_->setWVel(data_.dbus_data_.wheel);
+      vel_cmd_sender_->setAngularZVel(data_.dbus_data_.wheel);
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
     } else
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    vel_cmd_sender_->setXVel(data_.dbus_data_.ch_r_y);
-    vel_cmd_sender_->setYVel(data_.dbus_data_.ch_r_x);
+    vel_cmd_sender_->setLinearXVel(data_.dbus_data_.ch_r_y);
+    vel_cmd_sender_->setLinearYVel(data_.dbus_data_.ch_r_x);
   }
   void rightSwitchDown() override {
     ManualBase::rightSwitchDown();
@@ -59,12 +59,12 @@ class ChassisGimbalManual : public ManualBase {
     vel_cmd_sender_->sendCommand(time);
     gimbal_cmd_sender_->sendCommand(time);
   }
-  void wPress() override { if (state_ == PC) vel_cmd_sender_->setXVel(1.); }
-  void aPress() override { if (state_ == PC) vel_cmd_sender_->setYVel(1.); }
-  void sPress() override { if (state_ == PC) vel_cmd_sender_->setXVel(-1.); }
-  void dPress() override { if (state_ == PC) vel_cmd_sender_->setYVel(-1.); }
+  void wPress() override { if (state_ == PC) vel_cmd_sender_->setLinearXVel(1.); }
+  void aPress() override { if (state_ == PC) vel_cmd_sender_->setLinearYVel(1.); }
+  void sPress() override { if (state_ == PC) vel_cmd_sender_->setLinearXVel(-1.); }
+  void dPress() override { if (state_ == PC) vel_cmd_sender_->setLinearYVel(-1.); }
   ChassisCommandSender *chassis_cmd_sender_;
-  VelCommandSender *vel_cmd_sender_;
+  Vel2DCommandSender *vel_cmd_sender_;
   GimbalCommandSender *gimbal_cmd_sender_;
 };
 }

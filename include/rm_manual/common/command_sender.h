@@ -24,8 +24,7 @@ class CommandSenderBase {
     if (!nh.getParam("topic", topic_))
       ROS_ERROR("Topic name no defined (namespace: %s)", nh.getNamespace().c_str());
     queue_size_ = getParam(nh, "queue_size", 1);
-    ros::NodeHandle root_nh;
-    pub_ = root_nh.advertise<MsgType>(topic_, queue_size_);
+    pub_ = nh.advertise<MsgType>(topic_, queue_size_);
   }
 
   void setMode(int mode) { if (!std::is_same<MsgType, geometry_msgs::Twist>::value) msg_.mode = mode; }
@@ -51,47 +50,47 @@ class TimeStampCommandSenderBase : public CommandSenderBase<MsgType> {
   const Referee &referee_;
 };
 
-class VelCommandSender : public CommandSenderBase<geometry_msgs::Twist> {
+class Vel2DCommandSender : public CommandSenderBase<geometry_msgs::Twist> {
  public:
-  explicit VelCommandSender(ros::NodeHandle &nh) : CommandSenderBase<geometry_msgs::Twist>(nh) {
-    if (!nh.getParam("max_vel_x", max_vel_x_))
-      ROS_ERROR("Max X velocity no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (!nh.getParam("max_vel_y", max_vel_y_))
-      ROS_ERROR("Max Y velocity no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (!nh.getParam("max_vel_w", max_vel_w_))
-      ROS_ERROR("Max W velocity no defined (namespace: %s)", nh.getNamespace().c_str());
+  explicit Vel2DCommandSender(ros::NodeHandle &nh) : CommandSenderBase<geometry_msgs::Twist>(nh) {
+    if (!nh.getParam("max_linear_x", max_linear_x_))
+      ROS_ERROR("Max X linear velocity no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (!nh.getParam("max_linear_y", max_linear_y_))
+      ROS_ERROR("Max Y linear velocity no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (!nh.getParam("max_angular_z", max_angular_z_))
+      ROS_ERROR("Max Z angular velocity no defined (namespace: %s)", nh.getNamespace().c_str());
   }
 
-  void setXVel(double scale) { msg_.linear.x = scale * max_vel_x_; };
-  void setYVel(double scale) { msg_.linear.y = scale * max_vel_y_; };
-  void setWVel(double scale) { msg_.angular.z = scale * max_vel_w_; };
+  void setLinearXVel(double scale) { msg_.linear.x = scale * max_linear_x_; };
+  void setLinearYVel(double scale) { msg_.linear.y = scale * max_linear_y_; };
+  void setAngularZVel(double scale) { msg_.angular.z = scale * max_angular_z_; };
 
-  void setVel(double scale_x, double scale_y, double scale_w) {
-    setXVel(scale_x);
-    setYVel(scale_y);
-    setWVel(scale_w);
+  void set2DVel(double scale_x, double scale_y, double scale_z) {
+    setLinearXVel(scale_x);
+    setLinearYVel(scale_y);
+    setAngularZVel(scale_z);
   }
 
- private:
-  double max_vel_x_{}, max_vel_y_{}, max_vel_w_{};
+ protected:
+  double max_linear_x_{}, max_linear_y_{}, max_angular_z_{};
 };
 
 class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisCmd> {
  public:
   explicit ChassisCommandSender(ros::NodeHandle &nh, const Referee &referee)
       : TimeStampCommandSenderBase<rm_msgs::ChassisCmd>(nh, referee) {
-    double accel_x, accel_y, accel_w;
+    double accel_x, accel_y, accel_z;
     if (!nh.getParam("accel_x", accel_x))
       ROS_ERROR("Accel X no defined (namespace: %s)", nh.getNamespace().c_str());
     if (!nh.getParam("accel_y", accel_y))
       ROS_ERROR("Accel Y no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (!nh.getParam("accel_w", accel_w))
-      ROS_ERROR("Accel W no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (!nh.getParam("accel_z", accel_z))
+      ROS_ERROR("Accel Z no defined (namespace: %s)", nh.getNamespace().c_str());
     if (!nh.getParam("safety_power", safety_power_))
       ROS_ERROR("safety power no defined (namespace: %s)", nh.getNamespace().c_str());
     msg_.accel.linear.x = accel_x;
     msg_.accel.linear.y = accel_y;
-    msg_.accel.angular.z = accel_w;
+    msg_.accel.angular.z = accel_z;
   }
   void sendCommand(ros::Time time) override {
     if (referee_.is_open_)
@@ -144,7 +143,7 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
   }
   ~ShooterCommandSender() { delete heat_limit_; }
   void setHz(double hz) { expect_hz_ = hz; }
-  void setMagazine(bool is_open) { msg_.magazine = is_open; }
+  void setCover(bool is_open) { msg_.magazine = is_open; }
   void sendCommand(ros::Time time) override {
     msg_.speed = heat_limit_->getSpeedLimit();
     msg_.hz = heat_limit_->getHz();
@@ -154,6 +153,20 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
  private:
   double expect_hz_{};
   HeatLimit *heat_limit_{};
+};
+
+class Vel3DCommandSender : public Vel2DCommandSender {
+ public:
+  explicit Vel3DCommandSender(ros::NodeHandle &nh) : Vel2DCommandSender(nh) {
+    if (!nh.getParam("max_linear_z", max_linear_z_))
+      ROS_ERROR("Max Z linear velocity no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (!nh.getParam("max_angular_x", max_angular_x_))
+      ROS_ERROR("Max X linear velocity no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (!nh.getParam("max_angular_y", max_angular_y_))
+      ROS_ERROR("Max Y angular velocity no defined (namespace: %s)", nh.getNamespace().c_str());
+  }
+ private:
+  double max_linear_z_{}, max_angular_x_{}, max_angular_y_{};
 };
 
 }
