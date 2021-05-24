@@ -29,9 +29,7 @@ class CommandSenderBase {
   }
 
   void setMode(int mode) { if (!std::is_same<MsgType, geometry_msgs::Twist>::value) msg_.mode = mode; }
-
   virtual void sendCommand(ros::Time time) { pub_.publish(msg_); }
-
   MsgType *getMsg() { return &msg_; }
  protected:
   std::string topic_;
@@ -116,7 +114,7 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
       ROS_ERROR("Max pitch velocity no defined (namespace: %s)", nh.getNamespace().c_str());
     cost_function_ = new TargetCostFunction(nh, referee);
   }
-
+  ~GimbalCommandSender() { delete cost_function_; };
   void setRate(double scale_yaw, double scale_pitch) {
     msg_.rate_yaw = scale_yaw * max_yaw_rate_;
     msg_.rate_pitch = scale_pitch * max_pitch_vel_;
@@ -129,6 +127,8 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
   }
   void updateCost(const rm_msgs::TrackDataArray &track_data_array, bool base_only = false) {
     msg_.target_id = cost_function_->costFunction(track_data_array, base_only);
+    if (msg_.target_id == 0)
+      setMode(rm_msgs::GimbalCmd::RATE);
   }
   TargetCostFunction *cost_function_;
  private:
@@ -142,12 +142,15 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
     ros::NodeHandle limit_nh(nh, "heat_limit");
     heat_limit_ = new HeatLimit(limit_nh, referee_);
   }
+  ~ShooterCommandSender() { delete heat_limit_; }
   void setHz(double hz) { expect_hz_ = hz; }
+  void setMagazine(bool is_open) { msg_.magazine = is_open; }
   void sendCommand(ros::Time time) override {
     msg_.speed = heat_limit_->getSpeedLimit();
     msg_.hz = heat_limit_->getHz();
     TimeStampCommandSenderBase<rm_msgs::ShootCmd>::sendCommand(time);
   }
+
  private:
   double expect_hz_{};
   HeatLimit *heat_limit_{};

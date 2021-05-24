@@ -8,6 +8,7 @@
 #include "rm_manual/common/data.h"
 #include "rm_manual/common/command_sender.h"
 #include "rm_manual/common/controller_manager.h"
+#include "rm_manual/common/calibration_manager.h"
 
 #include <iostream>
 #include <queue>
@@ -32,14 +33,18 @@ class ManualBase {
   void checkKeyboard(const ros::Time &time);
   virtual void sendCommand(const ros::Time &time) {};
   virtual void drawUi() {};
+
   // Remote Controller
   virtual void remoteControlTurnOff() {
     controller_manager_->stopMovementControllers();
-    state_ = IDLE;
+    calibration_manager_->reset();
+    state_ = PASSIVE;
   }
   virtual void remoteControlTurnOn() {
-    controller_manager_->startMovementControllers();
-    state_ = PASSIVE;
+    calibration_manager_->reset();
+    if (calibration_manager_->isCalibrated())
+      controller_manager_->startMovementControllers();
+    state_ = IDLE;
   }
   virtual void leftSwitchDown() {};
   virtual void leftSwitchMid() {};
@@ -75,7 +80,7 @@ class ManualBase {
   Data data_;
   ros::NodeHandle nh_;
   ControllerManager *controller_manager_;
-  bool is_dbus_receive_ = false;
+  CalibrationManager *calibration_manager_;
   int state_ = PASSIVE;
   ros::Time last_release_q_, last_release_w_, last_release_e_, last_release_r_, last_release_t_, last_release_a_,
       last_release_s_, last_release_d_, last_release_f_, last_release_g_, last_release_z_, last_release_x_,

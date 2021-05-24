@@ -20,15 +20,13 @@ class ChassisGimbalManual : public ManualBase {
  protected:
   void rightSwitchMid() override {
     ManualBase::rightSwitchMid();
-
-    if (data_.dbus_data_.wheel) {
+    if (std::abs(data_.dbus_data_.wheel) > 0.01) {
       vel_cmd_sender_->setWVel(data_.dbus_data_.wheel);
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
     } else
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setXVel(data_.dbus_data_.ch_r_y);
     vel_cmd_sender_->setYVel(data_.dbus_data_.ch_r_x);
-
   }
   void rightSwitchDown() override {
     ManualBase::rightSwitchDown();
@@ -49,6 +47,13 @@ class ChassisGimbalManual : public ManualBase {
       gimbal_cmd_sender_->updateCost(data_.track_data_array_);
     }
   }
+  void leftSwitchUp() override {
+    ManualBase::leftSwitchUp();
+    if (state_ == RC) {
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+      gimbal_cmd_sender_->updateCost(data_.track_data_array_);
+    }
+  }
   void sendCommand(const ros::Time &time) override {
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
@@ -61,8 +66,6 @@ class ChassisGimbalManual : public ManualBase {
   ChassisCommandSender *chassis_cmd_sender_;
   VelCommandSender *vel_cmd_sender_;
   GimbalCommandSender *gimbal_cmd_sender_;
-  bool have_power_manager_{};
-  double safety_power_{};
 };
 }
 
