@@ -10,8 +10,10 @@
 namespace rm_manual {
 class EngineerManual : public ChassisGimbalManual {
  public:
+  EngineerManual(ros::NodeHandle &nh) : ChassisGimbalManual(nh) {
+  }
  private:
-  Vel2DCommandSender vel_command_sender_;
+  Vel3DCommandSender *vel_command_sender_{};
 };
 
 }

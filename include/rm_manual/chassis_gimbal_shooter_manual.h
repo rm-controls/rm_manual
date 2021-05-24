@@ -11,7 +11,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
  public:
   explicit ChassisGimbalShooterManual(ros::NodeHandle &nh) : ChassisGimbalManual(nh) {
     ros::NodeHandle shooter_nh(nh, "shooter");
-    shooter_cmd_sender_ = new ShooterCommandSender(shooter_nh, *data_.referee_);
+    shooter_cmd_sender_ = new ShooterCommandSender(shooter_nh, data_.referee_);
     if (!shooter_nh.getParam("gimbal_error_limit", gimbal_error_limit_))
       ROS_ERROR("gimbal error limit no defined (namespace: %s)", shooter_nh.getNamespace().c_str());
   }

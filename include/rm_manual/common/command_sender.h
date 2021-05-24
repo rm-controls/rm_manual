@@ -118,9 +118,6 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
     msg_.rate_yaw = scale_yaw * max_yaw_rate_;
     msg_.rate_pitch = scale_pitch * max_pitch_vel_;
   }
-  void setId(int id) {
-    msg_.target_id = id;
-  }
   void setBulletSpeed(int bullet_speed) {
     msg_.bullet_speed = bullet_speed;
   }

@@ -11,11 +11,11 @@ class ChassisGimbalManual : public ManualBase {
  public:
   explicit ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
     ros::NodeHandle chassis_nh(nh, "chassis");
-    chassis_cmd_sender_ = new ChassisCommandSender(chassis_nh, *data_.referee_);
+    chassis_cmd_sender_ = new ChassisCommandSender(chassis_nh, data_.referee_);
     ros::NodeHandle vel_nh(nh, "vel");
     vel_cmd_sender_ = new Vel2DCommandSender(vel_nh);
     ros::NodeHandle gimbal_nh(nh, "gimbal");
-    gimbal_cmd_sender_ = new GimbalCommandSender(gimbal_nh, *data_.referee_);
+    gimbal_cmd_sender_ = new GimbalCommandSender(gimbal_nh, data_.referee_);
   }
  protected:
   void rightSwitchMid() override {
