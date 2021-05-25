@@ -37,13 +37,15 @@ class ManualBase {
   // Remote Controller
   virtual void remoteControlTurnOff() {
     controller_manager_->stopMovementControllers();
-    calibration_manager_->reset();
+    //calibration_manager_->reset();
     state_ = PASSIVE;
   }
   virtual void remoteControlTurnOn() {
-    calibration_manager_->reset();
-    if (calibration_manager_->isCalibrated())
-      controller_manager_->startMovementControllers();
+/*    if (calibration_manager_->isCalibrated()) {*/
+    //controller_manager_->stopCalibrationControllers();
+    controller_manager_->startMovementControllers();
+    /*} else
+      ROS_INFO("not calibrated yet");*/
     state_ = IDLE;
   }
   virtual void leftSwitchDown() {};
@@ -78,6 +80,7 @@ class ManualBase {
   virtual void ctrlWPress() {};
 
   Data data_;
+  bool remote_is_open_{};
   ros::NodeHandle nh_;
   ControllerManager *controller_manager_;
   CalibrationManager *calibration_manager_;

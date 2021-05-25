@@ -37,22 +37,26 @@ class ControllerManager {
     return loadControllers(information_controllers_) && loadControllers(movement_controllers_);
   }
   bool startAllControllers() {
-    return startController(information_controllers_) && startController(movement_controllers_);
+    return startController(information_controllers_) && startController(movement_controllers_)
+        && startController(calibration_controllers_);
   }
   bool stopAllControllers() {
-    return stopController(information_controllers_) && stopController(movement_controllers_);
+    return stopController(information_controllers_) && stopController(movement_controllers_)
+        && stopController(calibration_controllers_);
   }
 
   bool startMovementControllers() { return startController(movement_controllers_); }
-  bool stopInformationControllers() { return stopController(information_controllers_); }
-  bool startInformationControllers() { return startController(information_controllers_); }
   bool stopMovementControllers() { return stopController(movement_controllers_); }
-
+  bool startInformationControllers() { return startController(information_controllers_); }
+  bool stopInformationControllers() { return stopController(information_controllers_); }
+  bool startCalibrationControllers() { return startController(calibration_controllers_); }
+  bool stopCalibrationControllers() { return stopController(calibration_controllers_); }
  private:
   ros::ServiceClient switch_controller_client_;
   ros::ServiceClient load_controllers_client_;
   std::vector<std::string> information_controllers_;
   std::vector<std::string> movement_controllers_;
+  std::vector<std::string> calibration_controllers_;
 };
 
 }
