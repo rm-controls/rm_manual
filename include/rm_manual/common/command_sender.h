@@ -149,12 +149,15 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
   ~ShooterCommandSender() { delete heat_limit_; }
   void setHz(double hz) { expect_hz_ = hz; }
   void setMagazine(bool is_open) { msg_.magazine = is_open; }
+  void setBurst(bool burst_flag) { heat_limit_->burst_flag_ = burst_flag; }
+  void checkGimbalError(int track_error) {
+    if (track_error > gimbal_error_limit_) setMode(rm_msgs::ShootCmd::READY);
+  }
   void sendCommand(ros::Time time) override {
     msg_.speed = heat_limit_->getSpeedLimit();
     msg_.hz = heat_limit_->getHz();
     TimeStampCommandSenderBase<rm_msgs::ShootCmd>::sendCommand(time);
   }
-  void setBurst(bool burst_flag) { heat_limit_->burst_flag_ = burst_flag; }
  private:
   double expect_hz_{};
   double gimbal_error_limit_{};

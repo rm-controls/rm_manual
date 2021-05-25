@@ -26,9 +26,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void leftSwitchUp() override {
     rm_manual::ChassisGimbalManual::leftSwitchUp();
     if (state_ == RC) {
-      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
-      if (data_.gimbal_des_error_.error < gimbal_error_limit_)
-        shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+      shooter_cmd_sender_->checkGimbalError(data_.gimbal_des_error_.error);
     }
   }
   void rightSwitchDown() override {
@@ -54,6 +53,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     if (state_ == PC) {
       pc_shooter_mode_ = rm_msgs::ShootCmd::READY;
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+      shooter_cmd_sender_->checkGimbalError(data_.gimbal_des_error_.error);
       if (!mouse_left_pressing_flag_) {
         mouse_left_pressing_flag_ = true;
         ui_->displayShooterInfo(rm_msgs::ShootCmd::PUSH, shooter_burst_flag_, graphic_operate_type_);
@@ -75,7 +75,6 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     shooter_cmd_sender_->sendCommand(time);
   }
   ShooterCommandSender *shooter_cmd_sender_;
-  double gimbal_error_limit_{};
   int pc_shooter_mode_ = rm_msgs::ShootCmd::STOP;
   bool shooter_burst_flag_ = false, mouse_left_pressing_flag_ = false;
 };

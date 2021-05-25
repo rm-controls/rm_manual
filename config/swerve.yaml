@@ -32,7 +32,6 @@ rm_manual:
       timeout: 0.05
   shooter:
     topic: "cmd_shoot"
-    shoot_speed: 15.0
     gimbal_error_limit: 0.05
     heat_limit:
       expect_shoot_frequency: 10

@@ -16,8 +16,6 @@ class HeatLimit {
       ROS_ERROR("Safe shoot heat coeff frequency no defined (namespace: %s)", nh.getNamespace().c_str());
     if (!nh.getParam("type", type_))
       ROS_ERROR("Shooter type no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (!nh.getParam("safety_speed", safety_speed_))
-      ROS_ERROR("Shooter safety speed no defined (namespace: %s)", nh.getNamespace().c_str());
     if (type_ == "ID2_17MM")
       bullet_heat_ = 100.;
     else
@@ -79,7 +77,6 @@ class HeatLimit {
   std::string type_{};
   const Referee &referee_;
   double bullet_heat_, safe_shoot_frequency_{}, heat_coeff_{};
-  int safety_speed_{};
 };
 
 }
