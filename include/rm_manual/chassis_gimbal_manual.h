@@ -18,6 +18,16 @@ class ChassisGimbalManual : public ManualBase {
     gimbal_cmd_sender_ = new GimbalCommandSender(gimbal_nh, data_.referee_);
   }
  protected:
+  void sendCommand(const ros::Time &time) override {
+    chassis_cmd_sender_->sendCommand(time);
+    vel_cmd_sender_->sendCommand(time);
+    gimbal_cmd_sender_->sendCommand(time);
+  }
+  void setZero() override {
+    chassis_cmd_sender_->setZero();
+    vel_cmd_sender_->setZero();
+    gimbal_cmd_sender_->setZero();
+  }
   void rightSwitchMid() override {
     ManualBase::rightSwitchMid();
     if (std::abs(data_.dbus_data_.wheel) > 0.01) {
@@ -76,11 +86,6 @@ class ChassisGimbalManual : public ManualBase {
   void ctrlWPress() override {
     if (state_ == PC) {
     }
-  }
-  void sendCommand(const ros::Time &time) override {
-    chassis_cmd_sender_->sendCommand(time);
-    vel_cmd_sender_->sendCommand(time);
-    gimbal_cmd_sender_->sendCommand(time);
   }
   ChassisCommandSender *chassis_cmd_sender_{};
   Vel2DCommandSender *vel_cmd_sender_;

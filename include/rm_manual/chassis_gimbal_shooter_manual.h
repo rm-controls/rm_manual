@@ -16,6 +16,14 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
       ROS_ERROR("gimbal error limit no defined (namespace: %s)", shooter_nh.getNamespace().c_str());
   }
  protected:
+  void setZero() override {
+    ChassisGimbalManual::setZero();
+    shooter_cmd_sender_->setZero();
+  }
+  void sendCommand(const ros::Time &time) override {
+    ChassisGimbalManual::sendCommand(time);
+    shooter_cmd_sender_->sendCommand(time);
+  }
   void leftSwitchDown() override {
     ChassisGimbalManual::leftSwitchDown();
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
@@ -45,10 +53,6 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     if (state_ == PC) {
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
     }
-  }
-  void sendCommand(const ros::Time &time) override {
-    ChassisGimbalManual::sendCommand(time);
-    shooter_cmd_sender_->sendCommand(time);
   }
   ShooterCommandSender *shooter_cmd_sender_{};
   double gimbal_error_limit_{};

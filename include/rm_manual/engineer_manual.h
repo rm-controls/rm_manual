@@ -14,6 +14,12 @@ class EngineerManual : public ChassisGimbalManual {
 
   }
  private:
+  void sendCommand(const ros::Time &time) override {
+    ChassisGimbalManual::sendCommand(time);
+  }
+  void setZero() override {
+    ChassisGimbalManual::setZero();
+  }
   Vel3DCommandSender *arm_servo_sender_{};
 };
 

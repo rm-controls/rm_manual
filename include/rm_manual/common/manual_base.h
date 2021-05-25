@@ -31,7 +31,8 @@ class ManualBase {
  protected:
   void checkSwitch(const ros::Time &time);
   void checkKeyboard(const ros::Time &time);
-  virtual void sendCommand(const ros::Time &time) {};
+  virtual void setZero() = 0;
+  virtual void sendCommand(const ros::Time &time) = 0;
   virtual void drawUi() {};
 
   // Remote Controller
