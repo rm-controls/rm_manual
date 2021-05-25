@@ -1,13 +1,9 @@
 <launch>
     <arg name="robot_type" default="$(env ROBOT_TYPE)" doc="Robot type [standard, hero, engineer]"/>
-    <arg name="enemy_color" default="$(env ENEMY_COLOR)" doc="Enemy Color [blue, red]"/>
 
-    <rosparam file="$(find rm_dbus)/config/dbus.yaml" command="load"/>
     <rosparam file="$(find rm_manual)/config/$(arg robot_type).yaml" command="load"/>
 
-    <node name="rm_dbus" pkg="rm_dbus" type="rm_dbus" respawn="false"/>
-    <node name="rm_manual" pkg="rm_manual" type="rm_manual" respawn="false">
-        <param name="target_cost_function/enemy_color" value="$(arg enemy_color)"/>
-    </node>
+
+    <node name="rm_manual" pkg="rm_manual" type="rm_manual" respawn="false"/>
 
 </launch>

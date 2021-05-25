@@ -147,7 +147,7 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
     heat_limit_ = new HeatLimit(limit_nh, referee_);
   }
   ~ShooterCommandSender() { delete heat_limit_; }
-  void setCover(bool is_open) { msg_.magazine = is_open; }
+  void setCover(bool is_open) { msg_.cover = is_open; }
   void sendCommand(const ros::Time &time) override {
     msg_.speed = heat_limit_->getSpeedLimit();
     msg_.hz = heat_limit_->getHz();

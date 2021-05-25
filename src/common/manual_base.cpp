@@ -16,10 +16,10 @@ ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh) {
 
 void ManualBase::run() {
   ros::Time time = ros::Time::now();
-  data_.referee_.read();
+//  data_.referee_.read();
   checkSwitch(time);
   checkKeyboard(time);
-//  calibration_manager_->checkCalibrate(time);
+  calibration_manager_->checkCalibrate(time);
   sendCommand(time);
 }
 
