@@ -37,13 +37,15 @@ class ManualBase {
   // Remote Controller
   virtual void remoteControlTurnOff() {
     controller_manager_->stopMovementControllers();
-    calibration_manager_->reset();
+    //calibration_manager_->reset();
     state_ = PASSIVE;
   }
   virtual void remoteControlTurnOn() {
-    calibration_manager_->reset();
-    if (calibration_manager_->isCalibrated())
-      controller_manager_->startMovementControllers();
+/*    if (calibration_manager_->isCalibrated()) {*/
+    //controller_manager_->stopCalibrationControllers();
+    controller_manager_->startMovementControllers();
+    /*} else
+      ROS_INFO("not calibrated yet");*/
     state_ = IDLE;
   }
   virtual void leftSwitchDown() {};
@@ -78,6 +80,7 @@ class ManualBase {
   virtual void ctrlWPress() {};
 
   Data data_;
+  bool remote_is_open_{};
   ros::NodeHandle nh_;
   ControllerManager *controller_manager_;
   CalibrationManager *calibration_manager_;
@@ -85,7 +88,7 @@ class ManualBase {
   ros::Time last_release_q_, last_release_w_, last_release_e_, last_release_r_, last_release_t_, last_release_a_,
       last_release_s_, last_release_d_, last_release_f_, last_release_g_, last_release_z_, last_release_x_,
       last_release_c_, last_release_v_, last_release_b_, last_release_shift_, last_release_mouse_left_,
-      last_release_mouse_right_, last_release_mouse_right_left_, last_release_ctrl_z_, last_release_;
+      last_release_mouse_right_, last_release_mouse_right_left_, last_release_ctrl_z_, last_release_ctrl_w_;
 };
 
 }

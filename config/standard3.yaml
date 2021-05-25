@@ -1,6 +1,5 @@
 rm_manual:
   robot_type: "standard"
-
   chassis:
     topic: "/cmd_chassis"
     accel_x: 10.0
@@ -36,16 +35,17 @@ rm_manual:
     information_controllers:
       - controllers/robot_state_controller
       - controllers/joint_state_controller
-      - controllers/imu_sensor_controller
     movement_controllers:
       - controllers/chassis_controller
       - controllers/gimbal_controller
       - controllers/shooter_controller
+    calibration_controllers:
       - controllers/trigger_calibration_controller
   calibration_manager:
     trigger:
       switch:
         service_name: /controller_manager/switch_controller
-        start_controllers: /controllers/trigger_calibration_controller
+        start_controllers:
+          - controllers/trigger_calibration_controller
       query:
         service_name: /controllers/trigger_calibration_controller/is_calibrated

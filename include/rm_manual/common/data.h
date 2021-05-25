@@ -2,8 +2,8 @@
 // Created by luohx on 7/20/20.
 //
 
-#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_DATA_H_
-#define RM_MANUAL_INCLUDE_RM_MANUAL_DATA_H_
+#ifndef RM_MANUAL_COMMON_DATA_H_
+#define RM_MANUAL_COMMON_DATA_H_
 
 #include <ros/ros.h>
 #include <rm_msgs/DbusData.h>
@@ -27,9 +27,9 @@ class Data {
     // pub
     ros::NodeHandle root_nh;
     referee_.referee_pub_ = root_nh.advertise<rm_msgs::Referee>("/referee", 1);
-    referee_.power_manager_pub_ = root_nh.advertise<rm_msgs::PowerManagerData>("/power_manager_data", 1);
+    referee_.super_capacitor_pub_ = root_nh.advertise<rm_msgs::SuperCapacitor>("/super_capacitor", 1);
     referee_.init();
-  };
+  }
 
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr &data) { dbus_data_ = *data; }
   void trackCallback(const rm_msgs::TrackDataArray::ConstPtr &data) { track_data_array_ = *data; }

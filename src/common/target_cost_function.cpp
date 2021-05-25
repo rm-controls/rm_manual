@@ -54,21 +54,21 @@ double TargetCostFunction::costFunction(const TargetState &target_state, bool on
   // TODO Finish Vel cost
   double velocity = 0.;
   double hp_cost = 0.;
-  if (referee_.is_open_) {
-    if (referee_.referee_data_.game_robot_status_.robot_id <= kRedRadar) {  // The enemy color is blue
-      if (target_state.id == 1) hp_cost = referee_.referee_data_.game_robot_hp_.blue_1_robot_HP;
-      else if (target_state.id == 2) hp_cost = referee_.referee_data_.game_robot_hp_.blue_2_robot_HP;
-      else if (target_state.id == 3) hp_cost = referee_.referee_data_.game_robot_hp_.blue_3_robot_HP;
-      else if (target_state.id == 4) hp_cost = referee_.referee_data_.game_robot_hp_.blue_4_robot_HP;
-      else if (target_state.id == 5) hp_cost = referee_.referee_data_.game_robot_hp_.blue_5_robot_HP;
-      else if (target_state.id == 7) hp_cost = referee_.referee_data_.game_robot_hp_.blue_7_robot_HP;
+  if (referee_.is_online_) {
+    if (referee_.referee_data_.game_robot_status_.robot_id_ <= RED_RADAR) {  // The enemy color is blue
+      if (target_state.id == 1) hp_cost = referee_.referee_data_.game_robot_hp_.blue_1_robot_hp_;
+      else if (target_state.id == 2) hp_cost = referee_.referee_data_.game_robot_hp_.blue_2_robot_hp_;
+      else if (target_state.id == 3) hp_cost = referee_.referee_data_.game_robot_hp_.blue_3_robot_hp_;
+      else if (target_state.id == 4) hp_cost = referee_.referee_data_.game_robot_hp_.blue_4_robot_hp_;
+      else if (target_state.id == 5) hp_cost = referee_.referee_data_.game_robot_hp_.blue_5_robot_hp_;
+      else if (target_state.id == 7) hp_cost = referee_.referee_data_.game_robot_hp_.blue_7_robot_hp_;
     } else {    // The enemy color is red
-      if (target_state.id == 1) hp_cost = referee_.referee_data_.game_robot_hp_.red_1_robot_HP;
-      else if (target_state.id == 2) hp_cost = referee_.referee_data_.game_robot_hp_.red_2_robot_HP;
-      else if (target_state.id == 3) hp_cost = referee_.referee_data_.game_robot_hp_.red_3_robot_HP;
-      else if (target_state.id == 4) hp_cost = referee_.referee_data_.game_robot_hp_.red_4_robot_HP;
-      else if (target_state.id == 5) hp_cost = referee_.referee_data_.game_robot_hp_.red_5_robot_HP;
-      else if (target_state.id == 7) hp_cost = referee_.referee_data_.game_robot_hp_.red_7_robot_HP;
+      if (target_state.id == 1) hp_cost = referee_.referee_data_.game_robot_hp_.red_1_robot_hp_;
+      else if (target_state.id == 2) hp_cost = referee_.referee_data_.game_robot_hp_.red_2_robot_hp_;
+      else if (target_state.id == 3) hp_cost = referee_.referee_data_.game_robot_hp_.red_3_robot_hp_;
+      else if (target_state.id == 4) hp_cost = referee_.referee_data_.game_robot_hp_.red_4_robot_hp_;
+      else if (target_state.id == 5) hp_cost = referee_.referee_data_.game_robot_hp_.red_5_robot_hp_;
+      else if (target_state.id == 7) hp_cost = referee_.referee_data_.game_robot_hp_.red_7_robot_hp_;
     }
   }
   double frequency =

@@ -20,6 +20,10 @@ ControllerManager::ControllerManager(ros::NodeHandle &nh) {
     ROS_INFO("No movement controllers defined");
   for (int i = 0; i < controllers.size(); ++i)
     movement_controllers_.push_back(controllers[i]);
+  if (!nh.getParam("calibration_controllers", controllers))
+    ROS_INFO("No calibration controllers defined");
+  for (int i = 0; i < controllers.size(); ++i)
+    calibration_controllers_.push_back(controllers[i]);
 }
 
 bool ControllerManager::loadControllers(const std::vector<std::string> &controllers) {

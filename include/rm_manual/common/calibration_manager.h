@@ -15,11 +15,15 @@ class CalibrationManager {
  public:
   explicit CalibrationManager(ros::NodeHandle &nh) {
     XmlRpc::XmlRpcValue rpc_value;
+    calibration_finish_ = true;
+    ros::NodeHandle cali_handle(nh, "calibration_manager");
+    if (!nh.getParam("calibration_manager", rpc_value))
+      ROS_INFO("No trigger calibration controllers defined");
     ROS_ASSERT(rpc_value.getType() == XmlRpc::XmlRpcValue::TypeStruct);
-    for (int i = 0; i < rpc_value.size(); ++i) {
-      std::string value = rpc_value[i];
-      ros::NodeHandle switch_nh(nh, value + "/switch");
-      ros::NodeHandle query_nh(nh, value + "/query");
+    for (XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = rpc_value.begin(); it != rpc_value.end(); ++it) {
+      std::string value = it->first;
+      ros::NodeHandle switch_nh(cali_handle, value + "/switch");
+      ros::NodeHandle query_nh(cali_handle, value + "/query");
       calibration_services_.push_back(CalibrationService{
           .switch_services_ = new SwitchControllerService(switch_nh),
           .query_services_ = new QueryCalibrationService(query_nh)});
@@ -29,11 +33,16 @@ class CalibrationManager {
   void calibrate() {
     if (isCalibrated())
       return;
-    if (calibration_itr_->switch_services_->getOk() && calibration_itr_->query_services_->getIsCalibrated())
+    if (calibration_itr_->switch_services_->getOk() && calibration_itr_->query_services_->getIsCalibrated()) {
       calibration_itr_++;
-    else {
-      calibration_itr_->switch_services_->callService();
-      calibration_itr_->query_services_->callService();
+      ROS_INFO("calibrated success");
+      calibration_finish_ = true;
+    } else {
+      if (calibration_finish_) {
+        calibration_itr_->switch_services_->callService();
+        calibration_itr_->query_services_->callService();
+        calibration_finish_ = false;
+      }
     }
   }
   bool isCalibrated() { return calibration_itr_ == calibration_services_.end(); }
@@ -45,6 +54,7 @@ class CalibrationManager {
     }
   }
  private:
+  bool calibration_finish_{};
   std::vector<CalibrationService> calibration_services_;
   std::vector<CalibrationService>::iterator calibration_itr_;
 };

@@ -23,11 +23,15 @@ void ManualBase::run() {
 }
 
 void ManualBase::checkSwitch(const ros::Time &time) {
-  if ((time - data_.dbus_data_.stamp).toSec() > 0.1) {
+  if (remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() > 0.1) {
     remoteControlTurnOff();
+    remote_is_open_ = false;
+    ROS_INFO("remote off");
   }
-  if ((time - data_.dbus_data_.stamp).toSec() < 0.1) {
+  if (!remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() < 0.1) {
     remoteControlTurnOn();
+    remote_is_open_ = true;
+    ROS_INFO("remote on");
   }
   if (data_.dbus_data_.s_l == rm_msgs::DbusData::UP) leftSwitchUp();
   else if (data_.dbus_data_.s_l == rm_msgs::DbusData::MID) leftSwitchMid();
@@ -56,7 +60,7 @@ void ManualBase::checkKeyboard(const ros::Time &time) {
   if (data_.dbus_data_.p_l) mouseLeftPress(); else last_release_mouse_left_ = time;
   if (data_.dbus_data_.p_r) mouseRightPress(); else last_release_mouse_right_ = time;
   if (data_.dbus_data_.key_ctrl && data_.dbus_data_.key_z) ctrlZPress(); else last_release_ctrl_z_ = time;
-  if (data_.dbus_data_.key_ctrl && data_.dbus_data_.key_w) ctrlWPress(); else last_release_w_ = time;
+  if (data_.dbus_data_.key_ctrl && data_.dbus_data_.key_w) ctrlWPress(); else last_release_ctrl_w_ = time;
 }
 
 }
