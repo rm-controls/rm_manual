@@ -29,14 +29,23 @@ class CalibrationManager {
     }
     reset();
   }
-  void calibrate() {
+  void checkCalibrate(const ros::Time &time) {
     if (isCalibrated())
       return;
-    if (calibration_itr_->switch_services_->getOk() && calibration_itr_->query_services_->getIsCalibrated()) {
-      calibration_itr_++;
+    if (calibration_itr_->switch_services_->getOk()) {
+      if (calibration_itr_->query_services_->getIsCalibrated()) {
+        calibration_itr_++;
+        calibration_itr_->switch_services_->flipControllers();
+        calibration_itr_->switch_services_->callService();
+      } else if ((time - last_query_).toSec() > 0.1) {
+        last_query_ = time;
+        calibration_itr_->query_services_->callService();
+      }
+    } else {
+      calibration_itr_->switch_services_->switchControllers();
+      calibration_itr_->switch_services_->callService();
     }
   }
-  bool isCalibrated() { return calibration_itr_ == calibration_services_.end(); }
   void reset() {
     calibration_itr_ = calibration_services_.begin();
     for (auto service:calibration_services_) {
@@ -45,6 +54,8 @@ class CalibrationManager {
     }
   }
  private:
+  bool isCalibrated() { return calibration_itr_ == calibration_services_.end(); }
+  ros::Time last_query_;
   std::vector<CalibrationService> calibration_services_;
   std::vector<CalibrationService>::iterator calibration_itr_;
 };

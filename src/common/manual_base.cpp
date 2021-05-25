@@ -19,6 +19,7 @@ void ManualBase::run() {
   data_.referee_.read();
   checkSwitch(time);
   checkKeyboard(time);
+  calibration_manager_->checkCalibrate(time);
   sendCommand(time);
 }
 

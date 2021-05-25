@@ -28,7 +28,7 @@ class CommandSenderBase {
   }
 
   void setMode(int mode) { if (!std::is_same<MsgType, geometry_msgs::Twist>::value) msg_.mode = mode; }
-  virtual void sendCommand(ros::Time time) { pub_.publish(msg_); }
+  virtual void sendCommand(const ros::Time &time) { pub_.publish(msg_); }
   MsgType *getMsg() { return &msg_; }
  protected:
   std::string topic_;
@@ -42,7 +42,7 @@ class TimeStampCommandSenderBase : public CommandSenderBase<MsgType> {
  public:
   explicit TimeStampCommandSenderBase(ros::NodeHandle &nh, const Referee &referee) :
       CommandSenderBase<MsgType>(nh), referee_(referee) {}
-  void sendCommand(ros::Time time) override {
+  void sendCommand(const ros::Time &time) override {
     CommandSenderBase<MsgType>::msg_.stamp = time;
     CommandSenderBase<MsgType>::sendCommand(time);
   }
@@ -92,7 +92,7 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
     msg_.accel.linear.y = accel_y;
     msg_.accel.angular.z = accel_z;
   }
-  void sendCommand(ros::Time time) override {
+  void sendCommand(const ros::Time &time) override {
     if (referee_.is_online_)
       msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit_;
     else
@@ -142,7 +142,7 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
   ~ShooterCommandSender() { delete heat_limit_; }
   void setHz(double hz) { expect_hz_ = hz; }
   void setCover(bool is_open) { msg_.magazine = is_open; }
-  void sendCommand(ros::Time time) override {
+  void sendCommand(const ros::Time &time) override {
     msg_.speed = heat_limit_->getSpeedLimit();
     msg_.hz = heat_limit_->getHz();
     TimeStampCommandSenderBase<rm_msgs::ShootCmd>::sendCommand(time);

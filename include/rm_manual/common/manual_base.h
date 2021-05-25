@@ -37,15 +37,10 @@ class ManualBase {
   // Remote Controller
   virtual void remoteControlTurnOff() {
     controller_manager_->stopMovementControllers();
-    //calibration_manager_->reset();
     state_ = PASSIVE;
   }
   virtual void remoteControlTurnOn() {
-/*    if (calibration_manager_->isCalibrated()) {*/
-    //controller_manager_->stopCalibrationControllers();
     controller_manager_->startMovementControllers();
-    /*} else
-      ROS_INFO("not calibrated yet");*/
     state_ = IDLE;
   }
   virtual void leftSwitchDown() {};
