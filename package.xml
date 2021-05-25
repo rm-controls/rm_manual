@@ -18,5 +18,6 @@
   <depend>rm_common</depend>
   <depend>tf</depend>
   <depend>control_toolbox</depend>
+  <depend>controller_manager</depend>
   <depend>dynamic_reconfigure</depend>
 </package>
