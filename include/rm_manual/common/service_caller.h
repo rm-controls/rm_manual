@@ -57,15 +57,29 @@ class SwitchControllerService : public ServiceCallerBase<controller_manager_msgs
     XmlRpc::XmlRpcValue controllers;
     if (nh.getParam("start_controllers", controllers))
       for (int i = 0; i < controllers.size(); ++i)
-        service_.request.start_controllers.push_back(controllers[i]);
+        start_controllers_.push_back(controllers[i]);
     if (nh.getParam("stop_controllers", controllers))
       for (int i = 0; i < controllers.size(); ++i)
-        service_.request.stop_controllers.push_back(controllers[i]);
-    if (service_.request.start_controllers.empty() && service_.request.stop_controllers.empty())
+        stop_controllers_.push_back(controllers[i]);
+    if (start_controllers_.empty() && stop_controllers_.empty())
       ROS_ERROR("No start/stop controllers specified (namespace: %s)", nh.getNamespace().c_str());
     service_.request.strictness = service_.request.STRICT;
   }
+  void startControllersOnly() {
+    service_.request.start_controllers = start_controllers_;
+    service_.request.stop_controllers.clear();
+  }
+  void stopControllersOnly() {
+    service_.request.stop_controllers = stop_controllers_;
+    service_.request.start_controllers.clear();
+  }
+  void switchControllers() {
+    service_.request.start_controllers = start_controllers_;
+    service_.request.stop_controllers = stop_controllers_;
+  };
   bool getOk() { return service_.response.ok; }
+ private:
+  std::vector<std::string> start_controllers_, stop_controllers_;
 };
 
 class QueryCalibrationService : public ServiceCallerBase<control_msgs::QueryCalibrationState> {
@@ -78,7 +92,6 @@ class QueryCalibrationService : public ServiceCallerBase<control_msgs::QueryCali
       return;
     thread_ = new std::thread(&QueryCalibrationService::callingThread, this);
     thread_->detach();
-
   }
  protected:
   void callingThread() override {
