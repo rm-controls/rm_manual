@@ -38,6 +38,7 @@ class ManualBase {
   // Remote Controller
   virtual void remoteControlTurnOff() {
     controller_manager_->stopMovementControllers();
+    calibration_manager_->reset();
     state_ = PASSIVE;
   }
   virtual void remoteControlTurnOn() {

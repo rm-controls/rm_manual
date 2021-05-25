@@ -34,7 +34,8 @@ class ControllerManager {
     return switchController(std::vector<std::string>(), controllers);
   }
   bool loadAllControllers() {
-    return loadControllers(information_controllers_) && loadControllers(movement_controllers_);
+    return loadControllers(information_controllers_) && loadControllers(movement_controllers_)
+        && loadControllers(calibration_controllers_);
   }
   bool startAllControllers() {
     return startController(information_controllers_) && startController(movement_controllers_)

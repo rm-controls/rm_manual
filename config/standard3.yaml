@@ -47,5 +47,7 @@ rm_manual:
         service_name: /controller_manager/switch_controller
         start_controllers:
           - controllers/trigger_calibration_controller
+        stop_controllers:
+          - controllers/shooter_controller
       query:
         service_name: /controllers/trigger_calibration_controller/is_calibrated
