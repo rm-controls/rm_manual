@@ -27,7 +27,7 @@ ControllerManager::ControllerManager(ros::NodeHandle &nh) {
 }
 
 bool ControllerManager::loadControllers(const std::vector<std::string> &controllers) {
-  !load_controllers_client_.waitForExistence();
+  load_controllers_client_.waitForExistence();
   controller_manager_msgs::LoadController load_controller;
   bool is_success = true;
   for (auto &controller : controllers) {
