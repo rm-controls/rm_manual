@@ -10,7 +10,7 @@ rm_manual:
     topic: "/cmd_vel"
     max_linear_x: 4.0
     max_linear_y: 4.0
-    max_angluar_z: 10.0
+    max_angular_z: 10.0
   gimbal:
     topic: "/cmd_gimbal"
     max_yaw_vel: 12.56
