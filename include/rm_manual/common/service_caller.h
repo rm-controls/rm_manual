@@ -23,21 +23,18 @@ class ServiceCallerBase {
     client_ = nh.serviceClient<ServiceType>(service_name_);
   }
   ~ServiceCallerBase() { delete thread_; }
-  virtual void callService() {
-    std::unique_lock<std::mutex> guard(mutex_, std::try_to_lock);
-    if (!guard.owns_lock())
-      return;
+  void callService() {
+    if (isCalling()) return;
     thread_ = new std::thread(&ServiceCallerBase::callingThread, this);
     thread_->detach();
   }
-
   ServiceType &getService() { return service_; }
   bool isCalling() {
     std::unique_lock<std::mutex> guard(mutex_, std::try_to_lock);
     return !guard.owns_lock();
   }
  protected:
-  virtual void callingThread() {
+  void callingThread() {
     std::lock_guard<std::mutex> guard(mutex_);
     if (!client_.call(service_))
       ROS_ERROR("Failed to call service %s on %s", typeid(ServiceType).name(), service_name_.c_str());
@@ -77,7 +74,10 @@ class SwitchControllerService : public ServiceCallerBase<controller_manager_msgs
     service_.request.start_controllers = start_controllers_;
     service_.request.stop_controllers = stop_controllers_;
   };
-  bool getOk() { return service_.response.ok; }
+  bool getOk() {
+    if (isCalling()) return false;
+    return service_.response.ok;
+  }
  private:
   std::vector<std::string> start_controllers_, stop_controllers_;
 };
@@ -85,23 +85,9 @@ class SwitchControllerService : public ServiceCallerBase<controller_manager_msgs
 class QueryCalibrationService : public ServiceCallerBase<control_msgs::QueryCalibrationState> {
  public:
   explicit QueryCalibrationService(ros::NodeHandle &nh) : ServiceCallerBase<control_msgs::QueryCalibrationState>(nh) {}
-  bool getIsCalibrated() { return service_.response.is_calibrated; }
-  void callService() override {
-    std::unique_lock<std::mutex> guard(mutex_, std::try_to_lock);
-    if (!guard.owns_lock())
-      return;
-    thread_ = new std::thread(&QueryCalibrationService::callingThread, this);
-    thread_->detach();
-  }
- protected:
-  void callingThread() override {
-    std::lock_guard<std::mutex> guard(mutex_);
-    while (!service_.response.is_calibrated) {
-      if (!client_.call(service_))
-        ROS_ERROR("Failed to call service %s on %s",
-                  typeid(control_msgs::QueryCalibrationState).name(),
-                  service_name_.c_str());
-    }
+  bool getIsCalibrated() {
+    if (isCalling()) return false;
+    return service_.response.is_calibrated;
   }
 };
 

@@ -15,7 +15,6 @@ class CalibrationManager {
  public:
   explicit CalibrationManager(ros::NodeHandle &nh) {
     XmlRpc::XmlRpcValue rpc_value;
-    calibration_finish_ = true;
     ros::NodeHandle cali_handle(nh, "calibration_manager");
     if (!nh.getParam("calibration_manager", rpc_value))
       ROS_INFO("No trigger calibration controllers defined");
@@ -35,14 +34,6 @@ class CalibrationManager {
       return;
     if (calibration_itr_->switch_services_->getOk() && calibration_itr_->query_services_->getIsCalibrated()) {
       calibration_itr_++;
-      ROS_INFO("calibrated success");
-      calibration_finish_ = true;
-    } else {
-      if (calibration_finish_) {
-        calibration_itr_->switch_services_->callService();
-        calibration_itr_->query_services_->callService();
-        calibration_finish_ = false;
-      }
     }
   }
   bool isCalibrated() { return calibration_itr_ == calibration_services_.end(); }
@@ -54,10 +45,9 @@ class CalibrationManager {
     }
   }
  private:
-  bool calibration_finish_{};
   std::vector<CalibrationService> calibration_services_;
   std::vector<CalibrationService>::iterator calibration_itr_;
 };
 }
 
-#endif //RM_MANUAL_CALIBRATION_MANAGER_H_
+#endif // RM_MANUAL_CALIBRATION_MANAGER_H_
