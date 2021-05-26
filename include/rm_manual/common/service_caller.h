@@ -17,6 +17,7 @@ namespace rm_manual {
 template<class ServiceType>
 class ServiceCallerBase {
  public:
+  ServiceCallerBase() = default;
   explicit ServiceCallerBase(ros::NodeHandle &nh) {
     if (!nh.getParam("service_name", service_name_))
       ROS_ERROR("Service name no defined (namespace: %s)", nh.getNamespace().c_str());
@@ -52,8 +53,9 @@ class ServiceCallerBase {
 
 class SwitchControllerService : public ServiceCallerBase<controller_manager_msgs::SwitchController> {
  public:
-  explicit SwitchControllerService(ros::NodeHandle &nh) :
-      ServiceCallerBase<controller_manager_msgs::SwitchController>(nh) {
+  explicit SwitchControllerService(ros::NodeHandle &nh) {
+    service_name_ = "/controller_manager/switch_controller";
+    client_ = nh.serviceClient<controller_manager_msgs::SwitchController>(service_name_);
     XmlRpc::XmlRpcValue controllers;
     if (nh.getParam("start_controllers", controllers))
       for (int i = 0; i < controllers.size(); ++i)

@@ -44,7 +44,6 @@ rm_manual:
   calibration_manager:
     trigger:
       switch:
-        service_name: /controller_manager/switch_controller
         start_controllers:
           - controllers/trigger_calibration_controller
         stop_controllers:
