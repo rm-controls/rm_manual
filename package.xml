@@ -19,5 +19,6 @@
   <depend>tf</depend>
   <depend>control_toolbox</depend>
   <depend>controller_manager</depend>
+  <depend>control_msgs</depend>
   <depend>dynamic_reconfigure</depend>
 </package>
