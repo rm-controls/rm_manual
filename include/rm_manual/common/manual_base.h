@@ -38,11 +38,11 @@ class ManualBase {
   virtual void remoteControlTurnOff() {
     controller_manager_->stopMovementControllers();
     controller_manager_->stopCalibrationControllers();
-    controller_manager_->reset();
     state_ = PASSIVE;
   }
   virtual void remoteControlTurnOn() {
     controller_manager_->startMovementControllers();
+    controller_manager_->reset();
     state_ = IDLE;
   }
   virtual void leftSwitchDown() {};
