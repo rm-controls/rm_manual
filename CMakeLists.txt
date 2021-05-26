@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ## By adding -Wall and -Werror, the compiler does not ignore warnings anymore,
 ## enforcing cleaner code.
-add_definitions(-Wall -Werror)
+add_definitions(-Wall -Werror -Wno-address-of-packed-member)
 
 ## Find catkin macros and libraries
 find_package(serial REQUIRED)
@@ -24,6 +24,7 @@ find_package(catkin REQUIRED
         control_toolbox
         controller_manager
         dynamic_reconfigure
+        control_msgs
         )
 
 ## Find system libraries
@@ -52,6 +53,7 @@ catkin_package(
         control_toolbox
         controller_manager
         dynamic_reconfigure
+        control_msgs
         DEPENDS
 )
 
