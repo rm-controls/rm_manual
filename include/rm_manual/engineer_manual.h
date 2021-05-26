@@ -11,15 +11,45 @@ namespace rm_manual {
 class EngineerManual : public ChassisGimbalManual {
  public:
   explicit EngineerManual(ros::NodeHandle &nh) : ChassisGimbalManual(nh) {
-
+    ros::NodeHandle arm_servo(nh, "arm_servo");
+    arm_servo_sender_ = new Vel3DCommandSender(arm_servo);
   }
  private:
   void sendCommand(const ros::Time &time) override {
     ChassisGimbalManual::sendCommand(time);
+    arm_servo_sender_->sendCommand(time);
   }
   void setZero() override {
     ChassisGimbalManual::setZero();
+    arm_servo_sender_->setZero();
   }
+  void rightSwitchMid() override {
+    if (data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN)
+      ChassisGimbalManual::rightSwitchMid();
+    else if (data_.dbus_data_.s_l == rm_msgs::DbusData::MID) {
+
+    }
+  }
+  void leftSwitchMid() override {
+    ManualBase::leftSwitchMid();
+    if (state_ == RC) {
+      geometry_msgs::Twist scale;   // velocity under base_link frame
+      scale.linear.x = data_.dbus_data_.ch_r_y;
+      scale.linear.y = -data_.dbus_data_.ch_r_y;
+      scale.linear.x = data_.dbus_data_.ch_l_y;
+      //TODO: Add frame names to params server
+      try { tf2::doTransform(scale, scale, data_.tf_buffer_.lookupTransform("link5", "base_link", ros::Time(0))); }
+      catch (tf2::TransformException &ex) {
+        ROS_WARN("%s", ex.what());
+        return;
+      }
+      arm_servo_sender_->setLinearVel(scale.linear.x, scale.linear.y, scale.linear.z);
+    }
+  }
+  void leftSwitchUp() override {
+    ManualBase::leftSwitchUp();
+  }
+
   Vel3DCommandSender *arm_servo_sender_{};
 };
 
