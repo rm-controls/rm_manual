@@ -26,9 +26,9 @@ class Data {
     odom_sub_ = nh.subscribe<nav_msgs::Odometry>("/odom", 10, &Data::odomCallback, this);
     // pub
     ros::NodeHandle root_nh;
-//    referee_.referee_pub_ = root_nh.advertise<rm_msgs::Referee>("/referee", 1);
-//    referee_.super_capacitor_pub_ = root_nh.advertise<rm_msgs::SuperCapacitor>("/super_capacitor", 1);
-//    referee_.init();
+    referee_.referee_pub_ = root_nh.advertise<rm_msgs::Referee>("/referee", 1);
+    referee_.super_capacitor_pub_ = root_nh.advertise<rm_msgs::SuperCapacitor>("/super_capacitor", 1);
+    referee_.init();
   }
 
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr &data) { dbus_data_ = *data; }
