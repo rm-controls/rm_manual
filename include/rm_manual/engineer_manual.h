@@ -26,12 +26,8 @@ class EngineerManual : public ChassisGimbalManual {
   void rightSwitchMid() override {
     if (data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN)
       ChassisGimbalManual::rightSwitchMid();
-    else if (data_.dbus_data_.s_l == rm_msgs::DbusData::MID) {
-
-    }
   }
   void leftSwitchMid() override {
-    ManualBase::leftSwitchMid();
     if (state_ == RC) {
       geometry_msgs::Twist scale;   // velocity under base_link frame
       scale.linear.x = data_.dbus_data_.ch_r_y;
@@ -47,7 +43,6 @@ class EngineerManual : public ChassisGimbalManual {
     }
   }
   void leftSwitchUp() override {
-    ManualBase::leftSwitchUp();
   }
 
   Vel3DCommandSender *arm_servo_sender_{};
