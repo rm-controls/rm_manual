@@ -122,7 +122,7 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
     msg_.rate_yaw = scale_yaw * max_yaw_rate_;
     msg_.rate_pitch = scale_pitch * max_pitch_vel_;
   }
-  void setBulletSpeed(int bullet_speed) {
+  void setBulletSpeed(double bullet_speed) {
     msg_.bullet_speed = bullet_speed;
   }
   void updateCost(const rm_msgs::TrackDataArray &track_data_array, bool base_only = false) {
@@ -130,7 +130,7 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
     if (msg_.target_id == 0)
       setMode(rm_msgs::GimbalCmd::RATE);
   }
-  void setZero() {
+  void setZero() override {
     msg_.rate_yaw = 0.;
     msg_.rate_pitch = 0.;
   }
@@ -153,9 +153,18 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
     msg_.hz = heat_limit_->getHz();
     TimeStampCommandSenderBase<rm_msgs::ShootCmd>::sendCommand(time);
   }
+  double getSpeed() {
+    switch (msg_.speed) {
+      case rm_msgs::ShootCmd::SPEED_10M_PER_SECOND: return 10.;
+      case rm_msgs::ShootCmd::SPEED_15M_PER_SECOND: return 15.;
+      case rm_msgs::ShootCmd::SPEED_16M_PER_SECOND: return 16.;
+      case rm_msgs::ShootCmd::SPEED_18M_PER_SECOND: return 18.;
+      case rm_msgs::ShootCmd::SPEED_30M_PER_SECOND: return 30.;
+    }
+    return 0.;
+  }
   void setZero() override {};
  private:
-  double expect_hz_{};
   HeatLimit *heat_limit_{};
 };
 
