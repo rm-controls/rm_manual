@@ -31,38 +31,36 @@ void Referee::init() {
 void Referee::read() {
   std::vector<uint8_t> rx_buffer;
   std::vector<uint8_t> temp_buffer;
-  int rx_len, frame_len;
+  int rx_len = 0, frame_len;
 
   if (ros::Time::now() - last_get_referee_data_ > ros::Duration(0.1)) is_online_ = false;
-  if (is_online_) {
+
+  try {
     if (serial_.waitReadable()) {
-      try {
-        rx_len = serial_.available();
-        serial_.read(rx_buffer, rx_len);
-      } catch (serial::IOException &e) {
-        ROS_ERROR("Referee system disconnect, cannot read referee data");
-        is_online_ = false;
-        return;
-      }
-
-      for (int kI = kUnpackLength; kI > rx_len; --kI) {
-        temp_buffer.insert(temp_buffer.begin(), rx_data_[kI - 1]);
-      }
-      temp_buffer.insert(temp_buffer.end(), rx_buffer.begin(), rx_buffer.end());
-      rx_data_.clear();
-      rx_data_.insert(rx_data_.begin(), temp_buffer.begin(), temp_buffer.end());
-
-      for (int kI = 0; kI < kUnpackLength; ++kI) {
-        if (rx_data_[kI] == 0xA5) {
-          frame_len = unpack(&rx_data_[kI]);
-          if (frame_len != -1) kI += frame_len;
-        }
-      }
-      super_capacitor_.read(rx_buffer);
-      getRobotId();
+      rx_len = serial_.available();
+      serial_.read(rx_buffer, rx_len);
     }
-  } else {
-    init();
+  } catch (serial::IOException &e) {
+    ROS_ERROR("Referee system disconnect, cannot read referee data");
+    is_online_ = false;
+    return;
+  }
+
+  for (int kI = kUnpackLength; kI > rx_len; --kI) {
+    temp_buffer.insert(temp_buffer.begin(), rx_data_[kI - 1]);
+  }
+  temp_buffer.insert(temp_buffer.end(), rx_buffer.begin(), rx_buffer.end());
+  rx_data_.clear();
+  rx_data_.insert(rx_data_.begin(), temp_buffer.begin(), temp_buffer.end());
+
+  for (int kI = 0; kI < kUnpackLength; ++kI) {
+    if (rx_data_[kI] == 0xA5) {
+      frame_len = unpack(&rx_data_[kI]);
+      if (frame_len != -1) kI += frame_len;
+    }
+
+    super_capacitor_.read(rx_buffer);
+    getRobotId();
   }
   publishData();
 }

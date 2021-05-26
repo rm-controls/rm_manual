@@ -11,47 +11,37 @@ class ChassisGimbalManual : public ManualBase {
  public:
   explicit ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
     ros::NodeHandle chassis_nh(nh, "chassis");
-    chassis_cmd_sender_ = new ChassisCommandSender(chassis_nh, *data_.referee_);
+    chassis_cmd_sender_ = new ChassisCommandSender(chassis_nh, data_.referee_);
     ros::NodeHandle vel_nh(nh, "vel");
-    vel_cmd_sender_ = new VelCommandSender(vel_nh);
+    vel_cmd_sender_ = new Vel2DCommandSender(vel_nh);
     ros::NodeHandle gimbal_nh(nh, "gimbal");
-    gimbal_cmd_sender_ = new GimbalCommandSender(gimbal_nh, *data_.referee_);
+    gimbal_cmd_sender_ = new GimbalCommandSender(gimbal_nh, data_.referee_);
   }
  protected:
-  void drawUi() override {
-    ui_->displayCapInfo(graphic_operate_type_);
-    ui_->displayArmorInfo(ros::Time::now());
-    graphic_operate_type_ = UPDATE;
+  void sendCommand(const ros::Time &time) override {
+    chassis_cmd_sender_->sendCommand(time);
+    vel_cmd_sender_->sendCommand(time);
+    gimbal_cmd_sender_->sendCommand(time);
+  }
+  void setZero() override {
+    chassis_cmd_sender_->setZero();
+    vel_cmd_sender_->setZero();
+    gimbal_cmd_sender_->setZero();
   }
   void rightSwitchMid() override {
     ManualBase::rightSwitchMid();
     if (std::abs(data_.dbus_data_.wheel) > 0.01) {
-      vel_cmd_sender_->setWVel(data_.dbus_data_.wheel);
+      vel_cmd_sender_->setAngularZVel(data_.dbus_data_.wheel);
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
     } else
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    vel_cmd_sender_->setXVel(data_.dbus_data_.ch_r_y);
-    vel_cmd_sender_->setYVel(data_.dbus_data_.ch_r_x);
+    vel_cmd_sender_->setLinearXVel(data_.dbus_data_.ch_r_y);
+    vel_cmd_sender_->setLinearYVel(data_.dbus_data_.ch_r_x);
   }
   void rightSwitchDown() override {
     ManualBase::rightSwitchDown();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::PASSIVE);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::PASSIVE);
-  }
-  void rightSwitchUp() override {
-    ManualBase::rightSwitchUp();
-    vel_cmd_sender_->setVel(0., 0., 1.);
-    chassis_cmd_sender_->setMode(pc_chassis_mode_);
-    gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
-    gimbal_cmd_sender_->setMode(pc_gimbal_mode_);
-    if (shift_pressing_flag_ && ros::Time::now() - last_release_shift_ < ros::Duration(0.02)) {
-      shift_pressing_flag_ = false;
-      ui_->displayChassisInfo(pc_chassis_mode_, shift_pressing_flag_, graphic_operate_type_);
-    }
-    if (mouse_right_pressing_flag_ && ros::Time::now() - last_release_mouse_right_ < ros::Duration(0.02)) {
-      mouse_right_pressing_flag_ = false;
-      ui_->displayGimbalInfo(pc_gimbal_mode_, graphic_operate_type_);
-    }
   }
   void leftSwitchDown() override {
     ManualBase::leftSwitchDown();
@@ -74,67 +64,32 @@ class ChassisGimbalManual : public ManualBase {
       gimbal_cmd_sender_->updateCost(data_.track_data_array_);
     }
   }
-  void wPress() override { if (state_ == PC) vel_cmd_sender_->setXVel(1.); }
-  void aPress() override { if (state_ == PC) vel_cmd_sender_->setYVel(1.); }
-  void sPress() override { if (state_ == PC) vel_cmd_sender_->setXVel(-1.); }
-  void dPress() override { if (state_ == PC) vel_cmd_sender_->setYVel(-1.); }
-  void xPress() override { if (state_ == PC) graphic_operate_type_ = ADD; }
-  void ePress() override {
-    if (state_ == PC && ros::Time::now() - last_release_e_ < ros::Duration(0.02)) {
-      pc_chassis_mode_ =
-          (pc_chassis_mode_ == rm_msgs::ChassisCmd::GYRO) ? rm_msgs::ChassisCmd::FOLLOW : rm_msgs::ChassisCmd::GYRO;
-      ui_->displayChassisInfo(pc_chassis_mode_, shift_pressing_flag_, graphic_operate_type_);
-    }
-  }
-  void rPress() override {
-    if (state_ == PC && ros::Time::now() - last_release_r_ < ros::Duration(0.02)) {
-      pc_chassis_mode_ =
-          (pc_chassis_mode_ == rm_msgs::ChassisCmd::TWIST) ? rm_msgs::ChassisCmd::FOLLOW : rm_msgs::ChassisCmd::TWIST;
-      ui_->displayChassisInfo(pc_chassis_mode_, shift_pressing_flag_, graphic_operate_type_);
-    }
-  }
-  void shiftPress() override {
-    if (state_ == PC && !shift_pressing_flag_) {
-      shift_pressing_flag_ = true;
-      ui_->displayChassisInfo(pc_chassis_mode_, shift_pressing_flag_, graphic_operate_type_);
+  void wPress() override { if (state_ == PC) vel_cmd_sender_->setLinearXVel(1.); }
+  void aPress() override { if (state_ == PC) vel_cmd_sender_->setLinearYVel(1.); }
+  void sPress() override { if (state_ == PC) vel_cmd_sender_->setLinearXVel(-1.); }
+  void dPress() override { if (state_ == PC) vel_cmd_sender_->setLinearYVel(-1.); }
+  void gPress() override {
+    if (state_ == PC && ros::Time::now() - last_release_g_ < ros::Duration(0.1)) {
+
     }
   }
   void mouseRightPress() override {
     if (state_ == PC) {
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
       gimbal_cmd_sender_->updateCost(data_.track_data_array_);
-      if (!mouse_right_pressing_flag_) {
-        mouse_right_pressing_flag_ = true;
-        ui_->displayGimbalInfo(rm_msgs::GimbalCmd::TRACK, graphic_operate_type_);
-      }
     }
   }
   void ctrlZPress() override {
     if (state_ == PC) {
-      pc_chassis_mode_ = rm_msgs::ChassisCmd::PASSIVE;
-      pc_gimbal_mode_ = rm_msgs::GimbalCmd::PASSIVE;
-      ui_->displayChassisInfo(pc_chassis_mode_, shift_pressing_flag_, graphic_operate_type_);
-      ui_->displayGimbalInfo(pc_gimbal_mode_, graphic_operate_type_);
     }
   }
   void ctrlWPress() override {
     if (state_ == PC) {
-      pc_chassis_mode_ = rm_msgs::ChassisCmd::FOLLOW;
-      pc_gimbal_mode_ = rm_msgs::GimbalCmd::RATE;
-      ui_->displayChassisInfo(pc_chassis_mode_, shift_pressing_flag_, graphic_operate_type_);
-      ui_->displayGimbalInfo(pc_gimbal_mode_, graphic_operate_type_);
     }
   }
-  void sendCommand(const ros::Time &time) override {
-    chassis_cmd_sender_->sendCommand(time);
-    vel_cmd_sender_->sendCommand(time);
-    gimbal_cmd_sender_->sendCommand(time);
-  }
-  ChassisCommandSender *chassis_cmd_sender_;
-  VelCommandSender *vel_cmd_sender_;
-  GimbalCommandSender *gimbal_cmd_sender_;
-  int pc_chassis_mode_ = rm_msgs::ChassisCmd::FOLLOW, pc_gimbal_mode_ = rm_msgs::GimbalCmd::RATE;
-  bool shift_pressing_flag_ = false, mouse_right_pressing_flag_ = false;
+  ChassisCommandSender *chassis_cmd_sender_{};
+  Vel2DCommandSender *vel_cmd_sender_;
+  GimbalCommandSender *gimbal_cmd_sender_{};
 };
 }
 

@@ -4,6 +4,8 @@
 
 #include "rm_manual/common/manual_base.h"
 #include "rm_manual/chassis_gimbal_shooter_manual.h"
+#include "rm_manual/engineer_manual.h"
+
 int main(int argc, char **argv) {
   std::string robot;
   rm_manual::ManualBase *manual_control;
