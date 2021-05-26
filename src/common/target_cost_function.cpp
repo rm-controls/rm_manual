@@ -3,107 +3,77 @@
 //
 
 #include "rm_manual/common/target_cost_function.h"
+namespace rm_manual {
 
-TargetCostFunction::TargetCostFunction(ros::NodeHandle &nh) {
+TargetCostFunction::TargetCostFunction(ros::NodeHandle &nh, const Referee &referee) :
+    referee_{referee}, optimal_id_(0) {
   ros::NodeHandle cost_nh = ros::NodeHandle(nh, "target_cost_function");
-  cost_nh.param("k_f", k_f_, 0.0);
-  cost_nh.param("k_hp", k_hp_, 0.01);
-  cost_nh.param("track_msg_timeout", track_msg_timeout_, 1.0);
-  cost_nh.param("enemy_group", enemy_color_, std::string("error"));
-  id_ = 0;
-  time_interval_ = 0.01;
+  if (!cost_nh.getParam("k_pos", k_pos_))
+    ROS_ERROR("K position no defined (namespace: %s)", cost_nh.getNamespace().c_str());
+  if (!cost_nh.getParam("k_vel", k_vel_))
+    ROS_ERROR("K velocity  no defined (namespace: %s)", cost_nh.getNamespace().c_str());
+  if (!cost_nh.getParam("k_hp", k_hp_))
+    ROS_ERROR("K velocity no defined (namespace: %s)", cost_nh.getNamespace().c_str());
+  if (!cost_nh.getParam("k_freq", k_freq_))
+    ROS_ERROR("K frequency no defined (namespace: %s)", cost_nh.getNamespace().c_str());
+  if (!cost_nh.getParam("timeout", timeout_))
+    ROS_ERROR("Timeout no defined (namespace: %s)", cost_nh.getNamespace().c_str());
 }
 
-void TargetCostFunction::input(rm_msgs::TrackDataArray track_data_array, GameRobotHp robot_hp, bool only_attack_base) {
-  double timeout_judge = (ros::Time::now() - track_data_array.header.stamp).toSec();
-  if (timeout_judge > track_msg_timeout_) id_ = 0;
-  else decideId(track_data_array, robot_hp, only_attack_base);
-}
-
-void TargetCostFunction::decideId(rm_msgs::TrackDataArray track_data_array,
-                                  GameRobotHp robot_hp,
-                                  bool only_attack_base) {
-  int target_numbers = track_data_array.tracks.size();
-  int id_temp;
-  double cost_temp;
-  decide_old_target_time_ = ros::Time::now();
-
-  if (target_numbers) {
-    for (int i = 0; i < target_numbers; i++) {
-      cost_temp = calculateCost(track_data_array.tracks[i], robot_hp);
-      if (cost_temp <= calculate_cost_) {
-        // detective a target near than last target,change target
-        calculate_cost_ = cost_temp;
-        id_temp = track_data_array.tracks[i].id;
-      }
-      if (only_attack_base && track_data_array.tracks[i].id == 8) {
-        // enter only attack base mode,can not detective base,choose to attack sentry if we can detective
-        id_ = 8;
-      }
-      if (only_attack_base && track_data_array.tracks[i].id == 9) {
-        // enter only attack base mode, detective base
-        id_ = 9;
-        break;
-      }
+int TargetCostFunction::costFunction(const rm_msgs::TrackDataArray &track_data_array, bool only_attack_base) {
+  double optimal_cost = 1e9;
+  for (const auto &track:track_data_array.tracks) {
+    if (id2target_states_.find(track.id) == id2target_states_.end())
+      id2target_states_.insert(std::make_pair(track.id, TargetState{.id= track.id}));
+    TargetState &target_state = id2target_states_.find(track.id)->second;
+    target_state.pos_x = track.camera2detection.x;
+    target_state.pos_y = track.camera2detection.y;
+    target_state.pos_z = track.camera2detection.z;
+    // TODO Add Vel to msg
+    target_state.vel_x = 0.;
+    target_state.vel_y = 0.;
+    target_state.vel_z = 0.;
+    target_state.last_receive_ = track_data_array.header.stamp;
+  }
+  for (const auto &target_state: id2target_states_) {
+    if ((ros::Time::now() - target_state.second.last_receive_).toSec() > timeout_)
+      continue;
+    double cost = costFunction(target_state.second, only_attack_base);
+    if (cost <= optimal_cost) {
+      optimal_cost = cost;
+      optimal_id_ = target_state.first;
+      last_switch_target_ = ros::Time::now();
     }
+  }
+  return optimal_cost == 1e9 ? 0 : optimal_id_;
+}
 
-
-    //maybe we can consider frequency at this part if did not enter attack base mode
-    if (!only_attack_base && id_temp != id_) {
-      decide_new_target_time_ = ros::Time::now();
-      time_interval_ = time_interval_ + (decide_new_target_time_ - decide_old_target_time_).toSec();
-      double judge = calculate_cost_ + k_f_ / time_interval_;
-      if (judge <= choose_cost_) {
-        id_ = id_temp;
-        time_interval_ = 0.0;
-      }
-      if (id_ == 0) id_ = id_temp;
+double TargetCostFunction::costFunction(const TargetState &target_state, bool only_attack_base) {
+  if (only_attack_base) return 0.;
+  double distance = sqrt(pow(target_state.pos_x, 2) + pow(target_state.pos_y, 2) + pow(target_state.pos_z, 2));
+  // TODO Finish Vel cost
+  double velocity = 0.;
+  double hp_cost = 0.;
+  if (referee_.is_online_) {
+    if (referee_.referee_data_.game_robot_status_.robot_id_ <= RED_RADAR) {  // The enemy color is blue
+      if (target_state.id == 1) hp_cost = referee_.referee_data_.game_robot_hp_.blue_1_robot_hp_;
+      else if (target_state.id == 2) hp_cost = referee_.referee_data_.game_robot_hp_.blue_2_robot_hp_;
+      else if (target_state.id == 3) hp_cost = referee_.referee_data_.game_robot_hp_.blue_3_robot_hp_;
+      else if (target_state.id == 4) hp_cost = referee_.referee_data_.game_robot_hp_.blue_4_robot_hp_;
+      else if (target_state.id == 5) hp_cost = referee_.referee_data_.game_robot_hp_.blue_5_robot_hp_;
+      else if (target_state.id == 7) hp_cost = referee_.referee_data_.game_robot_hp_.blue_7_robot_hp_;
+    } else {    // The enemy color is red
+      if (target_state.id == 1) hp_cost = referee_.referee_data_.game_robot_hp_.red_1_robot_hp_;
+      else if (target_state.id == 2) hp_cost = referee_.referee_data_.game_robot_hp_.red_2_robot_hp_;
+      else if (target_state.id == 3) hp_cost = referee_.referee_data_.game_robot_hp_.red_3_robot_hp_;
+      else if (target_state.id == 4) hp_cost = referee_.referee_data_.game_robot_hp_.red_4_robot_hp_;
+      else if (target_state.id == 5) hp_cost = referee_.referee_data_.game_robot_hp_.red_5_robot_hp_;
+      else if (target_state.id == 7) hp_cost = referee_.referee_data_.game_robot_hp_.red_7_robot_hp_;
     }
-    calculate_cost_ = 1000000.0;
-    choose_cost_ = (!only_attack_base && id_ == id_temp) ? calculate_cost_ : choose_cost_;
-
-  } else id_ = 0;
-
+  }
+  double frequency =
+      (target_state.id == optimal_id_ || optimal_id_ == 0) ? 0. : 1. / (ros::Time::now() - last_switch_target_).toSec();
+  return k_pos_ * distance + k_vel_ * velocity + k_hp_ * hp_cost + k_freq_ * frequency; //TODO velocity
 }
 
-double TargetCostFunction::calculateCost(rm_msgs::TrackData track_data, GameRobotHp robot_hp) {
-  /*
-  double delta_x_2 = pow(track_data.pose.position.x + time_interval_ * track_data.speed.linear.x, 2);
-  double delta_y_2 = pow(track_data.pose.position.y + time_interval_ * track_data.speed.linear.y, 2);
-  double delta_z_2 = pow(track_data.pose.position.z + time_interval_ * track_data.speed.linear.z, 2);
-   */
-
-  //not speed
-  double delta_x_2 = pow(track_data.camera2detection.x, 2);
-  double delta_y_2 = pow(track_data.camera2detection.y, 2);
-  double delta_z_2 = pow(track_data.camera2detection.z, 2);
-  double distance = sqrt(delta_x_2 + delta_y_2 + delta_z_2);
-
-  //Hp
-  double hp_cost;
-  if (enemy_color_ == "red") {
-    if (track_data.id == 1) hp_cost = robot_hp.red_1_robot_HP;
-    else if (track_data.id == 2) hp_cost = robot_hp.red_2_robot_HP;
-    else if (track_data.id == 3) hp_cost = robot_hp.red_3_robot_HP;
-    else if (track_data.id == 4) hp_cost = robot_hp.red_4_robot_HP;
-    else if (track_data.id == 5) hp_cost = robot_hp.red_5_robot_HP;
-    else if (track_data.id == 7) hp_cost = robot_hp.red_7_robot_HP;
-    else hp_cost = 0.0;
-  } else if (enemy_color_ == "blue") {
-    if (track_data.id == 1) hp_cost = robot_hp.blue_1_robot_HP;
-    else if (track_data.id == 2) hp_cost = robot_hp.blue_2_robot_HP;
-    else if (track_data.id == 3) hp_cost = robot_hp.blue_3_robot_HP;
-    else if (track_data.id == 4) hp_cost = robot_hp.blue_4_robot_HP;
-    else if (track_data.id == 5) hp_cost = robot_hp.blue_5_robot_HP;
-    else if (track_data.id == 7) hp_cost = robot_hp.blue_7_robot_HP;
-    else hp_cost = 0.0;
-  } else hp_cost = 0.0;
-
-  double cost = distance - k_hp_ * hp_cost;
-
-  return cost;
-}
-
-int TargetCostFunction::output() const {
-  return id_;
 }
