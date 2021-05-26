@@ -8,8 +8,13 @@
 #include <controller_manager_msgs/LoadController.h>
 #include <controller_manager_msgs/SwitchController.h>
 #include <rm_common/ros_utilities.h>
-namespace rm_manual {
 
+#include "service_caller.h"
+namespace rm_manual {
+struct CalibrationService {
+  SwitchControllerService *switch_services_;
+  QueryCalibrationService *query_services_;
+};
 class ControllerManager {
  public:
   explicit ControllerManager(ros::NodeHandle &nh);
@@ -52,12 +57,18 @@ class ControllerManager {
   bool stopInformationControllers() { return stopController(information_controllers_); }
   bool startCalibrationControllers() { return startController(calibration_controllers_); }
   bool stopCalibrationControllers() { return stopController(calibration_controllers_); }
+  void checkCalibrate(const ros::Time &time);
+  void reset();
  private:
   ros::ServiceClient switch_controller_client_;
   ros::ServiceClient load_controllers_client_;
   std::vector<std::string> information_controllers_;
   std::vector<std::string> movement_controllers_;
   std::vector<std::string> calibration_controllers_;
+  bool isCalibrated() { return calibration_itr_ == calibration_services_.end(); }
+  ros::Time last_query_;
+  std::vector<CalibrationService> calibration_services_;
+  std::vector<CalibrationService>::iterator calibration_itr_;
 };
 
 }

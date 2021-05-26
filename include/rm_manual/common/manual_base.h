@@ -8,7 +8,6 @@
 #include "rm_manual/common/data.h"
 #include "rm_manual/common/command_sender.h"
 #include "rm_manual/common/controller_manager.h"
-#include "rm_manual/common/calibration_manager.h"
 
 #include <iostream>
 #include <queue>
@@ -38,7 +37,7 @@ class ManualBase {
   // Remote Controller
   virtual void remoteControlTurnOff() {
     controller_manager_->stopMovementControllers();
-    calibration_manager_->reset();
+    controller_manager_->reset();
     state_ = PASSIVE;
   }
   virtual void remoteControlTurnOn() {
@@ -80,7 +79,6 @@ class ManualBase {
   bool remote_is_open_{};
   ros::NodeHandle nh_;
   ControllerManager *controller_manager_;
-  CalibrationManager *calibration_manager_;
   int state_ = PASSIVE;
   ros::Time last_release_q_, last_release_w_, last_release_e_, last_release_r_, last_release_t_, last_release_a_,
       last_release_s_, last_release_d_, last_release_f_, last_release_g_, last_release_z_, last_release_x_,

@@ -63,7 +63,7 @@ class SwitchControllerService : public ServiceCallerBase<controller_manager_msgs
         stop_controllers_.push_back(controllers[i]);
     if (start_controllers_.empty() && stop_controllers_.empty())
       ROS_ERROR("No start/stop controllers specified (namespace: %s)", nh.getNamespace().c_str());
-    service_.request.strictness = service_.request.STRICT;
+    service_.request.strictness = service_.request.BEST_EFFORT;
   }
   void startControllersOnly() {
     service_.request.start_controllers = start_controllers_;
