@@ -24,7 +24,6 @@ find_package(catkin REQUIRED
         control_toolbox
         controller_manager
         dynamic_reconfigure
-        control_msgs
         )
 
 ## Find system libraries
@@ -53,7 +52,6 @@ catkin_package(
         control_toolbox
         controller_manager
         dynamic_reconfigure
-        control_msgs
         DEPENDS
 )
 
