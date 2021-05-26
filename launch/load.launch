@@ -3,7 +3,6 @@
 
     <rosparam file="$(find rm_manual)/config/$(arg robot_type).yaml" command="load"/>
 
-
     <node name="rm_manual" pkg="rm_manual" type="rm_manual" respawn="false"/>
 
 </launch>

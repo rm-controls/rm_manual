@@ -40,12 +40,10 @@ class CalibrationManager {
         calibration_itr_++;
         ROS_INFO("calibration finish");
       } else if ((time - last_query_).toSec() > 1.) {
-        ROS_INFO("query once");
         last_query_ = time;
         calibration_itr_->query_services_->callService();
       }
     } else {
-      ROS_INFO("call service");
       calibration_itr_->switch_services_->switchControllers();
       calibration_itr_->switch_services_->callService();
     }
