@@ -17,20 +17,24 @@ namespace rm_manual {
 template<class ServiceType>
 class ServiceCallerBase {
  public:
-  explicit ServiceCallerBase(ros::NodeHandle &nh) {
-    if (!nh.getParam("service_name", service_name_))
-      ROS_ERROR("Service name no defined (namespace: %s)", nh.getNamespace().c_str());
+  ServiceCallerBase() = default;
+  explicit ServiceCallerBase(ros::NodeHandle &nh, const std::string &service_name = "") {
+    if (!nh.param("service_name", service_name_, service_name))
+      if (service_name.empty()) {
+        ROS_ERROR("Service name no defined (namespace: %s)", nh.getNamespace().c_str());
+        return;
+      }
     client_ = nh.serviceClient<ServiceType>(service_name_);
   }
   ~ServiceCallerBase() { delete thread_; }
   void callService() {
-    std::unique_lock<std::mutex> guard(mutex_, std::try_to_lock);
-    if (!guard.owns_lock())
+    if (isCalling()) {
+      ROS_INFO("is calling");
       return;
+    }
     thread_ = new std::thread(&ServiceCallerBase::callingThread, this);
     thread_->detach();
   }
-
   ServiceType &getService() { return service_; }
   bool isCalling() {
     std::unique_lock<std::mutex> guard(mutex_, std::try_to_lock);
@@ -52,25 +56,51 @@ class ServiceCallerBase {
 
 class SwitchControllerService : public ServiceCallerBase<controller_manager_msgs::SwitchController> {
  public:
-  explicit SwitchControllerService(ros::NodeHandle &nh) :
-      ServiceCallerBase<controller_manager_msgs::SwitchController>(nh) {
+  explicit SwitchControllerService(ros::NodeHandle &nh) : ServiceCallerBase<controller_manager_msgs::SwitchController>(
+      nh, "/controller_manager/switch_controller") {
     XmlRpc::XmlRpcValue controllers;
     if (nh.getParam("start_controllers", controllers))
       for (int i = 0; i < controllers.size(); ++i)
-        service_.request.start_controllers.push_back(controllers[i]);
+        start_controllers_.push_back(controllers[i]);
     if (nh.getParam("stop_controllers", controllers))
       for (int i = 0; i < controllers.size(); ++i)
-        service_.request.stop_controllers.push_back(controllers[i]);
-    if (service_.request.start_controllers.empty() && service_.request.stop_controllers.empty())
+        stop_controllers_.push_back(controllers[i]);
+    if (start_controllers_.empty() && stop_controllers_.empty())
       ROS_ERROR("No start/stop controllers specified (namespace: %s)", nh.getNamespace().c_str());
+    service_.request.strictness = service_.request.BEST_EFFORT;
+    service_.request.start_asap = true;
   }
-  bool getOk() { return service_.response.ok; }
+  void startControllersOnly() {
+    service_.request.start_controllers = start_controllers_;
+    service_.request.stop_controllers.clear();
+  }
+  void stopControllersOnly() {
+    service_.request.stop_controllers = stop_controllers_;
+    service_.request.start_controllers.clear();
+  }
+  void switchControllers() {
+    service_.request.start_controllers = start_controllers_;
+    service_.request.stop_controllers = stop_controllers_;
+  };
+  void flipControllers() {
+    service_.request.start_controllers = stop_controllers_;
+    service_.request.stop_controllers = start_controllers_;
+  };
+  bool getOk() {
+    if (isCalling()) return false;
+    return service_.response.ok;
+  }
+ private:
+  std::vector<std::string> start_controllers_, stop_controllers_;
 };
 
 class QueryCalibrationService : public ServiceCallerBase<control_msgs::QueryCalibrationState> {
  public:
   explicit QueryCalibrationService(ros::NodeHandle &nh) : ServiceCallerBase<control_msgs::QueryCalibrationState>(nh) {}
-  bool getIsCalibrated() { return service_.response.is_calibrated; }
+  bool getIsCalibrated() {
+    if (isCalling()) return false;
+    return service_.response.is_calibrated;
+  }
 };
 
 }

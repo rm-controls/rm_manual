@@ -25,20 +25,20 @@ class HeatLimit {
   }
 
   double getHz() const {
-    if (!referee_.is_open_) return safe_shoot_frequency_;
+    if (!referee_.is_online_) return safe_shoot_frequency_;
     double cooling_limit, cooling_rate, cooling_heat;
     if (type_ == "ID1_17MM") {
-      cooling_limit = referee_.referee_data_.game_robot_status_.shooter_id1_17mm_cooling_limit;
-      cooling_rate = referee_.referee_data_.game_robot_status_.shooter_id1_17mm_cooling_rate;
-      cooling_heat = referee_.referee_data_.power_heat_data_.shooter_id1_17mm_cooling_heat;
+      cooling_limit = referee_.referee_data_.game_robot_status_.shooter_id_1_17_mm_cooling_limit_;
+      cooling_rate = referee_.referee_data_.game_robot_status_.shooter_id_1_17_mm_cooling_rate_;
+      cooling_heat = referee_.referee_data_.power_heat_data_.shooter_id_1_17_mm_cooling_heat_;
     } else if (type_ == "ID2_17MM") {
-      cooling_limit = referee_.referee_data_.game_robot_status_.shooter_id2_17mm_cooling_limit;
-      cooling_rate = referee_.referee_data_.game_robot_status_.shooter_id2_17mm_cooling_rate;
-      cooling_heat = referee_.referee_data_.power_heat_data_.shooter_id2_17mm_cooling_heat;
+      cooling_limit = referee_.referee_data_.game_robot_status_.shooter_id_2_17_mm_cooling_limit_;
+      cooling_rate = referee_.referee_data_.game_robot_status_.shooter_id_2_17_mm_cooling_rate_;
+      cooling_heat = referee_.referee_data_.power_heat_data_.shooter_id_2_17_mm_cooling_heat_;
     } else if (type_ == "ID1_42MM") {
-      cooling_limit = referee_.referee_data_.game_robot_status_.shooter_id1_42mm_cooling_limit;
-      cooling_rate = referee_.referee_data_.game_robot_status_.shooter_id1_42mm_cooling_rate;
-      cooling_heat = referee_.referee_data_.power_heat_data_.shooter_id1_42mm_cooling_heat;
+      cooling_limit = referee_.referee_data_.game_robot_status_.shooter_id_1_42_mm_cooling_limit_;
+      cooling_rate = referee_.referee_data_.game_robot_status_.shooter_id_1_42_mm_cooling_rate_;
+      cooling_heat = referee_.referee_data_.power_heat_data_.shooter_id_1_42_mm_cooling_heat_;
     }
 
     if (cooling_heat < cooling_limit - bullet_heat_ * heat_coeff_)
@@ -51,21 +51,21 @@ class HeatLimit {
 
   int getSpeedLimit() {
     if (type_ == "ID1_17MM")
-      switch (referee_.referee_data_.game_robot_status_.shooter_id1_17mm_speed_limit) {
+      switch (referee_.referee_data_.game_robot_status_.shooter_id_1_17_mm_speed_limit_) {
         case 15: return rm_msgs::ShootCmd::SPEED_15M_PER_SECOND;
         case 18: return rm_msgs::ShootCmd::SPEED_18M_PER_SECOND;
         case 30: return rm_msgs::ShootCmd::SPEED_30M_PER_SECOND;
         default: return rm_msgs::ShootCmd::SPEED_15M_PER_SECOND;  // Safety speed
       }
     else if (type_ == "ID2_17MM")
-      switch (referee_.referee_data_.game_robot_status_.shooter_id2_17mm_speed_limit) {
+      switch (referee_.referee_data_.game_robot_status_.shooter_id_2_17_mm_speed_limit_) {
         case 15: return rm_msgs::ShootCmd::SPEED_15M_PER_SECOND;
         case 18: return rm_msgs::ShootCmd::SPEED_18M_PER_SECOND;
         case 30: return rm_msgs::ShootCmd::SPEED_30M_PER_SECOND;
         default: return rm_msgs::ShootCmd::SPEED_15M_PER_SECOND;  // Safety speed
       }
     else if (type_ == "ID1_42MM")
-      switch (referee_.referee_data_.game_robot_status_.shooter_id1_42mm_speed_limit) {
+      switch (referee_.referee_data_.game_robot_status_.shooter_id_1_42_mm_speed_limit_) {
         case 10: return rm_msgs::ShootCmd::SPEED_10M_PER_SECOND;
         case 16: return rm_msgs::ShootCmd::SPEED_16M_PER_SECOND;
         default: return rm_msgs::ShootCmd::SPEED_10M_PER_SECOND;  // Safety speed

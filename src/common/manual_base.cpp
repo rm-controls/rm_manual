@@ -5,30 +5,31 @@
 #include "rm_manual/common/manual_base.h"
 namespace rm_manual {
 
-ManualBase::ManualBase(ros::NodeHandle &nh) : nh_(nh) {
-  data_.init(nh_);
-  ros::NodeHandle ctrl_handle(nh, "controller_manager");
-  controller_manager_ = new ControllerManager(ctrl_handle);
-  controller_manager_->loadAllControllers();
-  controller_manager_->startInformationControllers();
-  ros::NodeHandle cali_handle(nh, "calibration_manager");
-  calibration_manager_ = new CalibrationManager(cali_handle);
+ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh) {
+  controller_loader_ = new ControllerLoader(nh);
+  controller_loader_->loadControllers();
+  calibration_manager_ = new CalibrationManager(nh);
 }
 
 void ManualBase::run() {
   ros::Time time = ros::Time::now();
-  data_.referee_->read();
+  data_.referee_.read();
   checkSwitch(time);
   checkKeyboard(time);
+  calibration_manager_->checkCalibrate(time);
   sendCommand(time);
 }
 
 void ManualBase::checkSwitch(const ros::Time &time) {
-  if ((time - data_.dbus_data_.stamp).toSec() > 0.1) {
+  if (remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() > 0.1) {
     remoteControlTurnOff();
+    remote_is_open_ = false;
+    ROS_INFO("remote off");
   }
-  if ((time - data_.dbus_data_.stamp).toSec() < 0.1) {
+  if (!remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() < 0.1) {
     remoteControlTurnOn();
+    remote_is_open_ = true;
+    ROS_INFO("remote on");
   }
   if (data_.dbus_data_.s_l == rm_msgs::DbusData::UP) leftSwitchUp();
   else if (data_.dbus_data_.s_l == rm_msgs::DbusData::MID) leftSwitchMid();
@@ -57,7 +58,7 @@ void ManualBase::checkKeyboard(const ros::Time &time) {
   if (data_.dbus_data_.p_l) mouseLeftPress(); else last_release_mouse_left_ = time;
   if (data_.dbus_data_.p_r) mouseRightPress(); else last_release_mouse_right_ = time;
   if (data_.dbus_data_.key_ctrl && data_.dbus_data_.key_z) ctrlZPress(); else last_release_ctrl_z_ = time;
-  if (data_.dbus_data_.key_ctrl && data_.dbus_data_.key_w) ctrlWPress(); else last_release_w_ = time;
+  if (data_.dbus_data_.key_ctrl && data_.dbus_data_.key_w) ctrlWPress(); else last_release_ctrl_w_ = time;
 }
 
 }

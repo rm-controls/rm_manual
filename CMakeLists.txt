@@ -22,6 +22,7 @@ find_package(catkin REQUIRED
         tf
         serial
         control_toolbox
+        controller_manager
         dynamic_reconfigure
         control_msgs
         )
@@ -50,6 +51,7 @@ catkin_package(
         rm_common
         tf
         control_toolbox
+        controller_manager
         dynamic_reconfigure
         control_msgs
         DEPENDS

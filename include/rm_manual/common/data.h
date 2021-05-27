@@ -2,8 +2,8 @@
 // Created by luohx on 7/20/20.
 //
 
-#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_DATA_H_
-#define RM_MANUAL_INCLUDE_RM_MANUAL_DATA_H_
+#ifndef RM_MANUAL_COMMON_DATA_H_
+#define RM_MANUAL_COMMON_DATA_H_
 
 #include <ros/ros.h>
 #include <rm_msgs/DbusData.h>
@@ -17,7 +17,24 @@ namespace rm_manual {
 
 class Data {
  public:
-  Data() = default;
+  explicit Data(ros::NodeHandle &nh) : tf_listener_(tf_buffer_) {
+    // sub
+    dbus_sub_ = nh.subscribe<rm_msgs::DbusData>("/dbus_data", 10, &Data::dbusDataCallback, this);
+    track_sub_ = nh.subscribe<rm_msgs::TrackDataArray>("/track", 10, &Data::trackCallback, this);
+    gimbal_des_error_sub_ =
+        nh.subscribe<rm_msgs::GimbalDesError>("/error_des", 10, &Data::gimbalDesErrorCallback, this);
+    odom_sub_ = nh.subscribe<nav_msgs::Odometry>("/odom", 10, &Data::odomCallback, this);
+    // pub
+    ros::NodeHandle root_nh;
+    referee_.referee_pub_ = root_nh.advertise<rm_msgs::Referee>("/referee", 1);
+    referee_.super_capacitor_pub_ = root_nh.advertise<rm_msgs::SuperCapacitor>("/super_capacitor", 1);
+    referee_.init();
+  }
+
+  void dbusDataCallback(const rm_msgs::DbusData::ConstPtr &data) { dbus_data_ = *data; }
+  void trackCallback(const rm_msgs::TrackDataArray::ConstPtr &data) { track_data_array_ = *data; }
+  void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr &data) { gimbal_des_error_ = *data; }
+  void odomCallback(const nav_msgs::Odometry::ConstPtr &data) { odom_ = *data; }
 
   ros::Subscriber dbus_sub_;
   ros::Subscriber track_sub_;
@@ -29,27 +46,11 @@ class Data {
   rm_msgs::GimbalDesError gimbal_des_error_;
   nav_msgs::Odometry odom_;
 
-  Referee *referee_{};
+  Referee referee_;
 
-  void init(ros::NodeHandle nh) {
-    referee_ = new Referee();
-    // sub
-    dbus_sub_ = nh.subscribe<rm_msgs::DbusData>("/dbus_data", 10, &Data::dbusDataCallback, this);
-    track_sub_ = nh.subscribe<rm_msgs::TrackDataArray>("/track", 10, &Data::trackCallback, this);
-    gimbal_des_error_sub_ =
-        nh.subscribe<rm_msgs::GimbalDesError>("/error_des", 10, &Data::gimbalDesErrorCallback, this);
-    odom_sub_ = nh.subscribe<nav_msgs::Odometry>("/odom", 10, &Data::odomCallback, this);
-    // pub
-    ros::NodeHandle root_nh;
-    referee_->referee_pub_ = root_nh.advertise<rm_msgs::Referee>("/referee", 1);
-    referee_->power_manager_pub_ = root_nh.advertise<rm_msgs::PowerManagerData>("/power_manager_data", 1);
-    referee_->init();
-  }
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
 
-  void dbusDataCallback(const rm_msgs::DbusData::ConstPtr &data) { dbus_data_ = *data; }
-  void trackCallback(const rm_msgs::TrackDataArray::ConstPtr &data) { track_data_array_ = *data; }
-  void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr &data) { gimbal_des_error_ = *data; }
-  void odomCallback(const nav_msgs::Odometry::ConstPtr &data) { odom_ = *data; }
 };
 
 }

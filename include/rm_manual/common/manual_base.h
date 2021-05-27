@@ -7,7 +7,7 @@
 
 #include "rm_manual/common/data.h"
 #include "rm_manual/common/command_sender.h"
-#include "rm_manual/common/controller_manager.h"
+#include "rm_manual/common/controller_loader.h"
 #include "rm_manual/common/calibration_manager.h"
 
 #include <iostream>
@@ -25,25 +25,26 @@ namespace rm_manual {
 class ManualBase {
  public:
   explicit ManualBase(ros::NodeHandle &nh);
-  ~ManualBase() { delete controller_manager_; }
+  ~ManualBase() {
+    delete controller_loader_;
+    delete calibration_manager_;
+  }
   enum { PASSIVE, IDLE, RC, PC };
   void run();
  protected:
   void checkSwitch(const ros::Time &time);
   void checkKeyboard(const ros::Time &time);
-  virtual void sendCommand(const ros::Time &time) {};
+  virtual void setZero() = 0;
+  virtual void sendCommand(const ros::Time &time) = 0;
   virtual void drawUi() {};
 
   // Remote Controller
   virtual void remoteControlTurnOff() {
-    controller_manager_->stopMovementControllers();
-    calibration_manager_->reset();
+
     state_ = PASSIVE;
   }
   virtual void remoteControlTurnOn() {
-    calibration_manager_->reset();
-    if (calibration_manager_->isCalibrated())
-      controller_manager_->startMovementControllers();
+
     state_ = IDLE;
   }
   virtual void leftSwitchDown() {};
@@ -78,14 +79,17 @@ class ManualBase {
   virtual void ctrlWPress() {};
 
   Data data_;
-  ros::NodeHandle nh_;
-  ControllerManager *controller_manager_;
+  ControllerLoader *controller_loader_;
   CalibrationManager *calibration_manager_;
+
+  bool remote_is_open_{};
+  ros::NodeHandle nh_;
   int state_ = PASSIVE;
   ros::Time last_release_q_, last_release_w_, last_release_e_, last_release_r_, last_release_t_, last_release_a_,
       last_release_s_, last_release_d_, last_release_f_, last_release_g_, last_release_z_, last_release_x_,
       last_release_c_, last_release_v_, last_release_b_, last_release_shift_, last_release_mouse_left_,
-      last_release_mouse_right_, last_release_mouse_right_left_, last_release_ctrl_z_, last_release_;
+      last_release_mouse_right_, last_release_mouse_right_left_, last_release_ctrl_z_, last_release_ctrl_w_;
+
 };
 
 }

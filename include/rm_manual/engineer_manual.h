@@ -10,8 +10,17 @@
 namespace rm_manual {
 class EngineerManual : public ChassisGimbalManual {
  public:
+  explicit EngineerManual(ros::NodeHandle &nh) : ChassisGimbalManual(nh) {
+
+  }
  private:
-  VelCommandSender vel_command_sender_;
+  void sendCommand(const ros::Time &time) override {
+    ChassisGimbalManual::sendCommand(time);
+  }
+  void setZero() override {
+    ChassisGimbalManual::setZero();
+  }
+  Vel3DCommandSender *arm_servo_sender_{};
 };
 
 }
