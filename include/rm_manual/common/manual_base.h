@@ -40,11 +40,13 @@ class ManualBase {
 
   // Remote Controller
   virtual void remoteControlTurnOff() {
-
+    switch_base_ctrl_srv_->flipControllers();
+    switch_base_ctrl_srv_->callService();
     state_ = PASSIVE;
   }
   virtual void remoteControlTurnOn() {
-
+    switch_base_ctrl_srv_->switchControllers();
+    switch_base_ctrl_srv_->callService();
     state_ = IDLE;
   }
   virtual void leftSwitchDown() {};
@@ -81,6 +83,7 @@ class ManualBase {
   Data data_;
   ControllerLoader *controller_loader_;
   CalibrationManager *calibration_manager_;
+  SwitchControllersService *switch_state_ctrl_srv_, *switch_base_ctrl_srv_{};
 
   bool remote_is_open_{};
   ros::NodeHandle nh_;

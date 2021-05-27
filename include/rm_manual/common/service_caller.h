@@ -54,9 +54,9 @@ class ServiceCallerBase {
   std::mutex mutex_;
 };
 
-class SwitchControllerService : public ServiceCallerBase<controller_manager_msgs::SwitchController> {
+class SwitchControllersService : public ServiceCallerBase<controller_manager_msgs::SwitchController> {
  public:
-  explicit SwitchControllerService(ros::NodeHandle &nh) : ServiceCallerBase<controller_manager_msgs::SwitchController>(
+  explicit SwitchControllersService(ros::NodeHandle &nh) : ServiceCallerBase<controller_manager_msgs::SwitchController>(
       nh, "/controller_manager/switch_controller") {
     XmlRpc::XmlRpcValue controllers;
     if (nh.getParam("start_controllers", controllers))

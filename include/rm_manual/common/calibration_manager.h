@@ -8,7 +8,7 @@
 
 namespace rm_manual {
 struct CalibrationService {
-  SwitchControllerService *switch_services_;
+  SwitchControllersService *switch_services_;
   QueryCalibrationService *query_services_;
 };
 
@@ -24,7 +24,7 @@ class CalibrationManager {
       ros::NodeHandle switch_nh(nh, value + "/switch");
       ros::NodeHandle query_nh(nh, value + "/query");
       calibration_services_.push_back(CalibrationService{
-          .switch_services_ = new SwitchControllerService(switch_nh),
+          .switch_services_ = new SwitchControllersService(switch_nh),
           .query_services_ = new QueryCalibrationService(query_nh)});
     }
     last_query_ = ros::Time::now();
