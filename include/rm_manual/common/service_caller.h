@@ -18,9 +18,12 @@ template<class ServiceType>
 class ServiceCallerBase {
  public:
   ServiceCallerBase() = default;
-  explicit ServiceCallerBase(ros::NodeHandle &nh) {
-    if (!nh.getParam("service_name", service_name_))
-      ROS_ERROR("Service name no defined (namespace: %s)", nh.getNamespace().c_str());
+  explicit ServiceCallerBase(ros::NodeHandle &nh, const std::string &service_name = "") {
+    if (!nh.param("service_name", service_name_, service_name))
+      if (service_name.empty()) {
+        ROS_ERROR("Service name no defined (namespace: %s)", nh.getNamespace().c_str());
+        return;
+      }
     client_ = nh.serviceClient<ServiceType>(service_name_);
   }
   ~ServiceCallerBase() { delete thread_; }
@@ -51,11 +54,26 @@ class ServiceCallerBase {
   std::mutex mutex_;
 };
 
+class LoadControllerService : public ServiceCallerBase<controller_manager_msgs::LoadController> {
+ public:
+  explicit LoadControllerService(ros::NodeHandle &nh) : ServiceCallerBase<controller_manager_msgs::LoadController>(
+      nh, "/controller_manager/load_controller") {
+    XmlRpc::XmlRpcValue controllers;
+    if (nh.getParam("controllers_list", controllers))
+      for (int i = 0; i < controllers.size(); ++i) {
+        std::string controller = controllers[i];
+      }
+  }
+  bool getOk() {
+    if (isCalling()) return false;
+    return service_.response.ok;
+  }
+};
+
 class SwitchControllerService : public ServiceCallerBase<controller_manager_msgs::SwitchController> {
  public:
-  explicit SwitchControllerService(ros::NodeHandle &nh) {
-    service_name_ = "/controller_manager/switch_controller";
-    client_ = nh.serviceClient<controller_manager_msgs::SwitchController>(service_name_);
+  explicit SwitchControllerService(ros::NodeHandle &nh) : ServiceCallerBase<controller_manager_msgs::SwitchController>(
+      nh, "/controller_manager/switch_controller") {
     XmlRpc::XmlRpcValue controllers;
     if (nh.getParam("start_controllers", controllers))
       for (int i = 0; i < controllers.size(); ++i)
