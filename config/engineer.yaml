@@ -29,6 +29,8 @@ rm_manual:
     max_angular_x: 0.5
     max_angular_y: 0.5
     max_angular_z: 0.5
+    source_frame: "base_link"
+    target_frame: "palm"
   controller_manager:
     information_controllers:
       - controllers/robot_state_controller
