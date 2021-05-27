@@ -14,6 +14,8 @@ int main(int argc, char **argv) {
   robot = getParam(nh, "robot_type", (std::string) "error");
   if (robot == "standard" || robot == "hero")
     manual_control = new rm_manual::ChassisGimbalShooterManual(nh);
+  else if (robot == "engineer")
+    manual_control = new rm_manual::EngineerManual(nh);
   else {
     ROS_ERROR("no robot type ");
     return 0;
