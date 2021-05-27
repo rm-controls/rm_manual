@@ -30,17 +30,17 @@ class EngineerManual : public ChassisGimbalManual {
   }
   void leftSwitchMid() override {
     if (state_ == RC) {
-      geometry_msgs::Twist scale;   // velocity under base_link frame
-      scale.linear.x = data_.dbus_data_.ch_r_y;
-      scale.linear.y = -data_.dbus_data_.ch_r_y;
-      scale.linear.x = data_.dbus_data_.ch_l_y;
+      geometry_msgs::Vector3 scale;   // velocity under base_link frame
+      scale.x = data_.dbus_data_.ch_r_y;
+      scale.y = -data_.dbus_data_.ch_r_y;
+      scale.z = data_.dbus_data_.ch_l_y;
       //TODO: Add frame names to params server
       try { tf2::doTransform(scale, scale, data_.tf_buffer_.lookupTransform("link5", "base_link", ros::Time(0))); }
       catch (tf2::TransformException &ex) {
         ROS_WARN("%s", ex.what());
         return;
       }
-      arm_servo_sender_->setLinearVel(scale.linear.x, scale.linear.y, scale.linear.z);
+      arm_servo_sender_->setLinearVel(scale.x, scale.y, scale.z);
     }
   }
   void leftSwitchUp() override {

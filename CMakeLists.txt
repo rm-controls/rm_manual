@@ -19,12 +19,9 @@ find_package(catkin REQUIRED
         roslint
         rm_msgs
         rm_common
-        tf
-        serial
-        control_toolbox
-        controller_manager
-        dynamic_reconfigure
+        tf2_geometry_msgs
         control_msgs
+        controller_manager_msgs
         )
 
 ## Find system libraries
@@ -49,11 +46,9 @@ catkin_package(
         roslint
         rm_msgs
         rm_common
-        tf
-        control_toolbox
-        controller_manager
-        dynamic_reconfigure
+        tf2_geometry_msgs
         control_msgs
+        controller_manager_msgs
         DEPENDS
 )
 
