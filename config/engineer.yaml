@@ -1,0 +1,39 @@
+rm_manual:
+  robot_type: "engineer"
+  chassis:
+    topic: "/cmd_chassis"
+    accel_x: 10.0
+    accel_y: 10.0
+    accel_z: 20.0
+    safety_power: 50.0
+  vel:
+    topic: "/cmd_vel"
+    max_linear_x: 4.0
+    max_linear_y: 4.0
+    max_angular_z: 10.0
+  gimbal:
+    topic: "/cmd_gimbal"
+    max_yaw_vel: 12.56
+    max_pitch_vel: 12.56
+    target_cost_function:
+      k_pos: 1.0
+      k_vel: 1.0
+      k_hp: 1.0
+      k_freq: 1.0
+      timeout: 0.05
+  arm_servo:
+    topic: "/servo_server/delta_twist_cmds"
+    max_linear_x: 0.5
+    max_linear_y: 0.5
+    max_linear_z: 0.5
+    max_angular_x: 0.5
+    max_angular_y: 0.5
+    max_angular_z: 0.5
+  controller_manager:
+    information_controllers:
+      - controllers/robot_state_controller
+      - controllers/joint_state_controller
+    movement_controllers:
+      - controllers/chassis_controller
+      - controllers/engineer_arm_position_controller
+      - controllers/engineer_hand_controller

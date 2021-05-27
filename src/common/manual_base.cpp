@@ -16,7 +16,7 @@ void ManualBase::run() {
   data_.referee_.read();
   checkSwitch(time);
   checkKeyboard(time);
-  controller_manager_->checkCalibrate(time);
+  //controller_manager_->checkCalibrate(time);
   sendCommand(time);
 }
 

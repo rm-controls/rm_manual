@@ -26,7 +26,7 @@ ControllerManager::ControllerManager(ros::NodeHandle &nh) {
   for (int i = 0; i < controllers.size(); ++i)
     calibration_controllers_.push_back(controllers[i]);
 
-  ros::NodeHandle cali_handle(nh, "calibration_manager");
+/*  ros::NodeHandle cali_handle(nh, "calibration_manager");
   XmlRpc::XmlRpcValue rpc_value;
   if (!nh.getParam("calibration_manager", rpc_value))
     ROS_INFO("No trigger calibration controllers defined");
@@ -40,7 +40,7 @@ ControllerManager::ControllerManager(ros::NodeHandle &nh) {
         .query_services_ = new QueryCalibrationService(query_nh)});
   }
   last_query_ = ros::Time::now();
-  reset();
+  reset();*/
 }
 
 bool ControllerManager::loadControllers(const std::vector<std::string> &controllers) {

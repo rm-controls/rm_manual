@@ -11,6 +11,7 @@
 #include <rm_msgs/ChassisCmd.h>
 #include <rm_msgs/GimbalCmd.h>
 #include <rm_msgs/ShootCmd.h>
+#include <geometry_msgs/TwistStamped.h>
 #include <nav_msgs/Odometry.h>
 #include "heat_limit.h"
 #include "target_cost_function.h"
@@ -50,6 +51,16 @@ class TimeStampCommandSenderBase : public CommandSenderBase<MsgType> {
   const Referee &referee_;
 };
 
+template<class MsgType>
+class HeaderStampCommandSenderBase : public CommandSenderBase<MsgType> {
+ public:
+  explicit HeaderStampCommandSenderBase(ros::NodeHandle &nh) :
+      CommandSenderBase<MsgType>(nh) {}
+  void sendCommand(const ros::Time &time) override {
+    CommandSenderBase<MsgType>::msg_.header.stamp = time;
+    CommandSenderBase<MsgType>::sendCommand(time);
+  }
+};
 class Vel2DCommandSender : public CommandSenderBase<geometry_msgs::Twist> {
  public:
   explicit Vel2DCommandSender(ros::NodeHandle &nh) : CommandSenderBase<geometry_msgs::Twist>(nh) {
@@ -74,6 +85,7 @@ class Vel2DCommandSender : public CommandSenderBase<geometry_msgs::Twist> {
     msg_.linear.y = 0.;
     msg_.angular.z = 0.;
   }
+
  protected:
   double max_linear_x_{}, max_linear_y_{}, max_angular_z_{};
 };
@@ -168,34 +180,42 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
   HeatLimit *heat_limit_{};
 };
 
-class Vel3DCommandSender : public Vel2DCommandSender {
+class Vel3DCommandSender : public HeaderStampCommandSenderBase<geometry_msgs::TwistStamped> {
  public:
-  explicit Vel3DCommandSender(ros::NodeHandle &nh) : Vel2DCommandSender(nh) {
+  explicit Vel3DCommandSender(ros::NodeHandle &nh) : HeaderStampCommandSenderBase(nh) {
+    if (!nh.getParam("max_linear_x", max_linear_x_))
+      ROS_ERROR("Max X linear velocity no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (!nh.getParam("max_linear_y", max_linear_y_))
+      ROS_ERROR("Max Y linear velocity no defined (namespace: %s)", nh.getNamespace().c_str());
     if (!nh.getParam("max_linear_z", max_linear_z_))
       ROS_ERROR("Max Z linear velocity no defined (namespace: %s)", nh.getNamespace().c_str());
     if (!nh.getParam("max_angular_x", max_angular_x_))
       ROS_ERROR("Max X linear velocity no defined (namespace: %s)", nh.getNamespace().c_str());
     if (!nh.getParam("max_angular_y", max_angular_y_))
       ROS_ERROR("Max Y angular velocity no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (!nh.getParam("max_angular_z", max_angular_z_))
+      ROS_ERROR("Max Z angular velocity no defined (namespace: %s)", nh.getNamespace().c_str());
   }
   void setLinearVel(double scale_x, double scale_y, double scale_z) {
-    msg_.linear.x = max_linear_x_ * scale_x;
-    msg_.linear.y = max_linear_y_ * scale_y;
-    msg_.linear.z = max_linear_z_ * scale_z;
+    msg_.twist.linear.x = max_linear_x_ * scale_x;
+    msg_.twist.linear.y = max_linear_y_ * scale_y;
+    msg_.twist.linear.z = max_linear_z_ * scale_z;
   }
   void setAngularVel(double scale_x, double scale_y, double scale_z) {
-    msg_.angular.x = max_angular_x_ * scale_x;
-    msg_.angular.y = max_angular_y_ * scale_y;
-    msg_.angular.z = max_angular_z_ * scale_z;
+    msg_.twist.angular.x = max_angular_x_ * scale_x;
+    msg_.twist.angular.y = max_angular_y_ * scale_y;
+    msg_.twist.angular.z = max_angular_z_ * scale_z;
   }
   void setZero() override {
-    Vel2DCommandSender::setZero();
-    msg_.linear.z = 0.;
-    msg_.angular.x = 0.;
-    msg_.angular.y = 0.;
+    msg_.twist.linear.x = 0.;
+    msg_.twist.linear.y = 0.;
+    msg_.twist.linear.z = 0.;
+    msg_.twist.angular.x = 0.;
+    msg_.twist.angular.y = 0.;
+    msg_.twist.angular.z = 0.;
   }
  private:
-  double max_linear_z_{}, max_angular_x_{}, max_angular_y_{};
+  double max_linear_x_{}, max_linear_y_{}, max_linear_z_{}, max_angular_x_{}, max_angular_y_{}, max_angular_z_{};
 };
 
 }
