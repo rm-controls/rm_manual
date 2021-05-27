@@ -55,6 +55,7 @@ class ChassisGimbalManual : public ManualBase {
     if (state_ == RC) {
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
       gimbal_cmd_sender_->updateCost(data_.track_data_array_);
+      gimbal_cmd_sender_->setRate(-data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y);
     }
   }
   void leftSwitchUp() override {
