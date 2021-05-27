@@ -6,6 +6,7 @@
 #define RM_MANUAL_ENGINEER_MANUAL_H_
 
 #include "rm_manual/chassis_gimbal_manual.h"
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 namespace rm_manual {
 class EngineerManual : public ChassisGimbalManual {
