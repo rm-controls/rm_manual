@@ -6,9 +6,9 @@
 namespace rm_manual {
 
 ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh) {
-  controller_manager_ = new ControllerManager(nh);
-  controller_manager_->loadAllControllers();
-  controller_manager_->startInformationControllers();
+  controller_loader_ = new ControllerLoader(nh);
+  controller_loader_->loadControllers();
+  calibration_manager_ = new CalibrationManager(nh);
 }
 
 void ManualBase::run() {
@@ -16,7 +16,7 @@ void ManualBase::run() {
   data_.referee_.read();
   checkSwitch(time);
   checkKeyboard(time);
-  controller_manager_->checkCalibrate(time);
+  calibration_manager_->checkCalibrate(time);
   sendCommand(time);
 }
 

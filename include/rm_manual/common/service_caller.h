@@ -54,22 +54,6 @@ class ServiceCallerBase {
   std::mutex mutex_;
 };
 
-class LoadControllerService : public ServiceCallerBase<controller_manager_msgs::LoadController> {
- public:
-  explicit LoadControllerService(ros::NodeHandle &nh) : ServiceCallerBase<controller_manager_msgs::LoadController>(
-      nh, "/controller_manager/load_controller") {
-    XmlRpc::XmlRpcValue controllers;
-    if (nh.getParam("controllers_list", controllers))
-      for (int i = 0; i < controllers.size(); ++i) {
-        std::string controller = controllers[i];
-      }
-  }
-  bool getOk() {
-    if (isCalling()) return false;
-    return service_.response.ok;
-  }
-};
-
 class SwitchControllerService : public ServiceCallerBase<controller_manager_msgs::SwitchController> {
  public:
   explicit SwitchControllerService(ros::NodeHandle &nh) : ServiceCallerBase<controller_manager_msgs::SwitchController>(
@@ -84,6 +68,7 @@ class SwitchControllerService : public ServiceCallerBase<controller_manager_msgs
     if (start_controllers_.empty() && stop_controllers_.empty())
       ROS_ERROR("No start/stop controllers specified (namespace: %s)", nh.getNamespace().c_str());
     service_.request.strictness = service_.request.BEST_EFFORT;
+    service_.request.start_asap = true;
   }
   void startControllersOnly() {
     service_.request.start_controllers = start_controllers_;
