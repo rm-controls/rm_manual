@@ -21,6 +21,7 @@ find_package(catkin REQUIRED
         rm_common
         tf2_geometry_msgs
         control_msgs
+        serial
         controller_manager_msgs
         )
 
