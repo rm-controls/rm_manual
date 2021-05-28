@@ -46,7 +46,10 @@ class ChassisGimbalManual : public ManualBase {
   void rightSwitchUp() override {
     ManualBase::rightSwitchUp();
     setZero();
-    gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
+    if (gimbal_cmd_sender_->getMsg()->mode == rm_msgs::GimbalCmd::RATE)
+      gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
+    if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
+      vel_cmd_sender_->setAngularZVel(1.);
   }
   void leftSwitchDown() override {
     ManualBase::leftSwitchDown();
@@ -74,8 +77,14 @@ class ChassisGimbalManual : public ManualBase {
   void sPress() override { if (state_ == PC) vel_cmd_sender_->setLinearXVel(-1.); }
   void dPress() override { if (state_ == PC) vel_cmd_sender_->setLinearYVel(-1.); }
   void gPress() override {
-    if (state_ == PC && ros::Time::now() - last_release_g_ < ros::Duration(0.1)) {
-
+    if (state_ == PC) {
+      ros::Duration period = ros::Time::now() - last_release_g_;
+      if (period > ros::Duration(0.1) && period < ros::Duration(0.15)
+          && chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::PASSIVE) {
+        if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
+          chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+        else chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+      }
     }
   }
   void mouseRightPress() override {

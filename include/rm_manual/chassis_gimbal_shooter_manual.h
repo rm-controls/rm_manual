@@ -44,7 +44,6 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void rightSwitchUp() override {
     ChassisGimbalManual::rightSwitchUp();
-    setZero();
     if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
   }
