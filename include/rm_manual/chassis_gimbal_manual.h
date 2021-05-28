@@ -33,10 +33,9 @@ class ChassisGimbalManual : public ManualBase {
     if (std::abs(data_.dbus_data_.wheel) > 0.01) {
       vel_cmd_sender_->setAngularZVel(data_.dbus_data_.wheel);
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
-    } else {
-      vel_cmd_sender_->setAngularZVel(0.);
+    } else
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    }
+
     vel_cmd_sender_->setLinearXVel(data_.dbus_data_.ch_r_y);
     vel_cmd_sender_->setLinearYVel(-data_.dbus_data_.ch_r_x);
   }

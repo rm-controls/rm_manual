@@ -11,6 +11,8 @@ ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh) {
   calibration_manager_ = new CalibrationManager(nh);
   ros::NodeHandle state_ctrl_nh(nh, "state_controllers_switch");
   switch_state_ctrl_srv_ = new SwitchControllersService(state_ctrl_nh);
+  switch_state_ctrl_srv_->switchControllers();
+  switch_state_ctrl_srv_->callService();
   ros::NodeHandle base_ctrl_nh(nh, "base_controllers_switch");
   switch_base_ctrl_srv_ = new SwitchControllersService(base_ctrl_nh);
 }
@@ -18,6 +20,7 @@ ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh) {
 void ManualBase::run() {
   ros::Time time = ros::Time::now();
   data_.referee_.read();
+  setZero();
   checkSwitch(time);
   checkKeyboard(time);
   calibration_manager_->checkCalibrate(time);
