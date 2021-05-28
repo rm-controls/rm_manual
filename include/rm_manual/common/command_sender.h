@@ -147,9 +147,8 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
       : TimeStampCommandSenderBase<rm_msgs::ShootCmd>(nh, referee) {
     ros::NodeHandle limit_nh(nh, "heat_limit");
     heat_limit_ = new HeatLimit(limit_nh, referee_);
-    ros::NodeHandle shooter_nh(nh, "shooter");
-    if (!shooter_nh.getParam("gimbal_error_limit", gimbal_error_limit_))
-      ROS_ERROR("gimbal error limit no defined (namespace: %s)", shooter_nh.getNamespace().c_str());
+    if (!nh.getParam("gimbal_error_limit", gimbal_error_limit_))
+      ROS_ERROR("gimbal error limit no defined (namespace: %s)", nh.getNamespace().c_str());
   }
   ~ShooterCommandSender() { delete heat_limit_; }
   void setCover(bool is_open) { msg_.cover = is_open; }

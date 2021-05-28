@@ -44,12 +44,21 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void rightSwitchUp() override {
     ChassisGimbalManual::rightSwitchUp();
+    setZero();
     if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
   }
   void fPress() override { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
   void mouseLeftPress() override {
     if (state_ == PC) { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH); }
+  }
+  void ctrlWPress() override {
+    ChassisGimbalManual::ctrlWPress();
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+  }
+  void ctrlZPress() override {
+    ChassisGimbalManual::ctrlZPress();
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PASSIVE);
   }
   ShooterCommandSender *shooter_cmd_sender_{};
 };
