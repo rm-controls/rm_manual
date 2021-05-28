@@ -2,8 +2,8 @@
 // Created by peter on 2020/12/3.
 //
 
-#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
-#define RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
+#ifndef RM_MANUAL_COMMON_MANUAL_BASE_H_
+#define RM_MANUAL_COMMON_MANUAL_BASE_H_
 
 #include "rm_manual/common/data.h"
 #include "rm_manual/common/command_sender.h"
@@ -89,4 +89,4 @@ class ManualBase {
 };
 
 }
-#endif //RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
+#endif // RM_MANUAL_COMMON_MANUAL_BASE_H_

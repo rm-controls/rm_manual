@@ -19,7 +19,6 @@ void Referee::init() {
   if (!serial_.isOpen()) {
     try {
       serial_.open();
-      is_online_ = true;
     } catch (serial::IOException &e) {
       ROS_ERROR("Cannot open referee port");
     }
@@ -220,7 +219,6 @@ void Referee::drawCircle(int center_x, int center_y, int radius, int picture_id,
     serial_.write(tx_buffer, tx_len);
   } catch (serial::PortNotOpenedException &e) {
     ROS_ERROR("Cannot open referee port, fail to draw UI");
-    is_online_ = false;
     return;
   }
 }
@@ -259,7 +257,6 @@ void Referee::drawString(int x, int y, int picture_id, std::string data,
     serial_.write(tx_buffer, tx_len);
   } catch (serial::PortNotOpenedException &e) {
     ROS_ERROR("Cannot open referee port, fail to draw UI");
-    is_online_ = false;
     return;
   }
 }
@@ -280,7 +277,6 @@ void Referee::sendInteractiveData(int data_cmd_id, int receiver_id, uint8_t data
     serial_.write(tx_buffer, tx_len);
   } catch (serial::PortNotOpenedException &e) {
     ROS_ERROR("Cannot open referee port, fail to send command to sentry");
-    is_online_ = false;
     return;
   }
 }

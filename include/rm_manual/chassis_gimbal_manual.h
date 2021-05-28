@@ -43,6 +43,11 @@ class ChassisGimbalManual : public ManualBase {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::PASSIVE);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::PASSIVE);
   }
+  void rightSwitchUp() override {
+    ManualBase::rightSwitchUp();
+    setZero();
+    gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
+  }
   void leftSwitchDown() override {
     ManualBase::leftSwitchDown();
     if (state_ == RC) {
@@ -81,10 +86,14 @@ class ChassisGimbalManual : public ManualBase {
   }
   void ctrlZPress() override {
     if (state_ == PC) {
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::PASSIVE);
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::PASSIVE);
     }
   }
   void ctrlWPress() override {
     if (state_ == PC) {
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     }
   }
   ChassisCommandSender *chassis_cmd_sender_{};

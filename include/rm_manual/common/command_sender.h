@@ -96,7 +96,9 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
     msg_.accel.angular.z = accel_z;
   }
   void sendCommand(const ros::Time &time) override {
-    if (referee_.is_online_)
+    if (referee_.super_capacitor_.is_online_)
+      msg_.power_limit = referee_.super_capacitor_.parameters[1];
+    else if (referee_.is_online_)
       msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit_;
     else
       msg_.power_limit = safety_power_;
@@ -145,9 +147,15 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
       : TimeStampCommandSenderBase<rm_msgs::ShootCmd>(nh, referee) {
     ros::NodeHandle limit_nh(nh, "heat_limit");
     heat_limit_ = new HeatLimit(limit_nh, referee_);
+    ros::NodeHandle shooter_nh(nh, "shooter");
+    if (!shooter_nh.getParam("gimbal_error_limit", gimbal_error_limit_))
+      ROS_ERROR("gimbal error limit no defined (namespace: %s)", shooter_nh.getNamespace().c_str());
   }
   ~ShooterCommandSender() { delete heat_limit_; }
   void setCover(bool is_open) { msg_.cover = is_open; }
+  void checkError(int track_error) {
+    if (msg_.mode == rm_msgs::ShootCmd::PUSH && track_error > gimbal_error_limit_) setMode(rm_msgs::ShootCmd::READY);
+  }
   void sendCommand(const ros::Time &time) override {
     msg_.speed = heat_limit_->getSpeedLimit();
     msg_.hz = heat_limit_->getHz();
@@ -155,7 +163,7 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
   }
   void setZero() override {};
  private:
-  double expect_hz_{};
+  double gimbal_error_limit_{};
   HeatLimit *heat_limit_{};
 };
 
