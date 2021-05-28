@@ -14,6 +14,10 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     shooter_cmd_sender_ = new ShooterCommandSender(shooter_nh, data_.referee_);
   }
  protected:
+  void drawUi() override {
+    ChassisGimbalManual::drawUi();
+    ui_->displayShooterInfo(chassis_cmd_sender_->getMsg()->mode, false);
+  }
   void setZero() override {
     ChassisGimbalManual::setZero();
     shooter_cmd_sender_->setZero();

@@ -6,6 +6,7 @@
 namespace rm_manual {
 
 ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh) {
+  ui_ = new Ui(&data_.referee_);
   ros::NodeHandle ctrl_handle(nh, "controller_manager");
   controller_manager_ = new ControllerManager(ctrl_handle);
   controller_manager_->loadAllControllers();
@@ -21,6 +22,7 @@ void ManualBase::run() {
   checkKeyboard(time);
   calibration_manager_->checkCalibrate(time);
   sendCommand(time);
+  drawUi();
 }
 
 void ManualBase::checkSwitch(const ros::Time &time) {

@@ -18,6 +18,12 @@ class ChassisGimbalManual : public ManualBase {
     gimbal_cmd_sender_ = new GimbalCommandSender(gimbal_nh, data_.referee_);
   }
  protected:
+  void drawUi() override {
+    ui_->displayCapInfo();
+    ui_->displayArmorInfo(ros::Time::now());
+    ui_->displayChassisInfo(chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
+    ui_->displayGimbalInfo(chassis_cmd_sender_->getMsg()->mode);
+  }
   void sendCommand(const ros::Time &time) override {
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
@@ -50,6 +56,7 @@ class ChassisGimbalManual : public ManualBase {
       gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
     if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
       vel_cmd_sender_->setAngularZVel(1.);
+    ui_->setOperateType(UPDATE);
   }
   void leftSwitchDown() override {
     ManualBase::leftSwitchDown();
@@ -76,6 +83,7 @@ class ChassisGimbalManual : public ManualBase {
   void aPress() override { if (state_ == PC) vel_cmd_sender_->setLinearYVel(1.); }
   void sPress() override { if (state_ == PC) vel_cmd_sender_->setLinearXVel(-1.); }
   void dPress() override { if (state_ == PC) vel_cmd_sender_->setLinearYVel(-1.); }
+  void xPress() override { if (state_ == PC) ui_->setOperateType(ADD); }
   void gPress() override {
     if (state_ == PC) {
       ros::Duration period = ros::Time::now() - last_release_g_;
