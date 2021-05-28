@@ -17,9 +17,13 @@ namespace rm_manual {
 template<class ServiceType>
 class ServiceCallerBase {
  public:
-  explicit ServiceCallerBase(ros::NodeHandle &nh) {
-    if (!nh.getParam("service_name", service_name_))
-      ROS_ERROR("Service name no defined (namespace: %s)", nh.getNamespace().c_str());
+  ServiceCallerBase() = default;
+  explicit ServiceCallerBase(ros::NodeHandle &nh, const std::string &service_name = "") {
+    if (!nh.param("service_name", service_name_, service_name))
+      if (service_name.empty()) {
+        ROS_ERROR("Service name no defined (namespace: %s)", nh.getNamespace().c_str());
+        return;
+      }
     client_ = nh.serviceClient<ServiceType>(service_name_);
   }
   ~ServiceCallerBase() { delete thread_; }
@@ -50,10 +54,10 @@ class ServiceCallerBase {
   std::mutex mutex_;
 };
 
-class SwitchControllerService : public ServiceCallerBase<controller_manager_msgs::SwitchController> {
+class SwitchControllersService : public ServiceCallerBase<controller_manager_msgs::SwitchController> {
  public:
-  explicit SwitchControllerService(ros::NodeHandle &nh) :
-      ServiceCallerBase<controller_manager_msgs::SwitchController>(nh) {
+  explicit SwitchControllersService(ros::NodeHandle &nh) : ServiceCallerBase<controller_manager_msgs::SwitchController>(
+      nh, "/controller_manager/switch_controller") {
     XmlRpc::XmlRpcValue controllers;
     if (nh.getParam("start_controllers", controllers))
       for (int i = 0; i < controllers.size(); ++i)
@@ -64,6 +68,7 @@ class SwitchControllerService : public ServiceCallerBase<controller_manager_msgs
     if (start_controllers_.empty() && stop_controllers_.empty())
       ROS_ERROR("No start/stop controllers specified (namespace: %s)", nh.getNamespace().c_str());
     service_.request.strictness = service_.request.BEST_EFFORT;
+    service_.request.start_asap = true;
   }
   void startControllersOnly() {
     service_.request.start_controllers = start_controllers_;

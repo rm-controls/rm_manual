@@ -39,10 +39,10 @@ int TargetCostFunction::costFunction(const rm_msgs::TrackDataArray &track_data_a
     if ((ros::Time::now() - target_state.second.last_receive_).toSec() > timeout_)
       continue;
     double cost = costFunction(target_state.second, only_attack_base);
-    if (cost <= optimal_cost) {
+    if (cost < optimal_cost) {
       optimal_cost = cost;
+      if (optimal_id_ != target_state.first) last_switch_target_ = ros::Time::now();
       optimal_id_ = target_state.first;
-      last_switch_target_ = ros::Time::now();
     }
   }
   return optimal_cost == 1e9 ? 0 : optimal_id_;

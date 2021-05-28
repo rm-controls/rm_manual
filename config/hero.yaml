@@ -17,9 +17,9 @@ rm_manual:
     max_pitch_vel: 12.56
     target_cost_function:
       k_pos: 1.0
-      k_vel: 1.0
-      k_hp: 1.0
-      k_freq: 1.0
+      k_vel: 0.0
+      k_hp: 0.0
+      k_freq: 99.0
       timeout: 0.05
   shooter:
     topic: "/cmd_shoot"
@@ -44,7 +44,6 @@ rm_manual:
   calibration_manager:
     trigger:
       switch:
-        service_name: /controller_manager/switch_controller
         start_controllers:
           - controllers/trigger_calibration_controller
         stop_controllers:
