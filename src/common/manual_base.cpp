@@ -15,6 +15,7 @@ ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh) {
   switch_state_ctrl_srv_->callService();
   ros::NodeHandle base_ctrl_nh(nh, "base_controllers_switch");
   switch_base_ctrl_srv_ = new SwitchControllersService(base_ctrl_nh);
+  ui_ = new Ui(&data_.referee_);
 }
 
 void ManualBase::run() {
@@ -25,6 +26,7 @@ void ManualBase::run() {
   checkKeyboard(time);
   calibration_manager_->checkCalibrate(time);
   sendCommand(time);
+  drawUi();
 }
 
 void ManualBase::checkSwitch(const ros::Time &time) {

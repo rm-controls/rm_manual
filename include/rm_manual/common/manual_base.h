@@ -9,6 +9,7 @@
 #include "rm_manual/common/command_sender.h"
 #include "rm_manual/common/controller_loader.h"
 #include "rm_manual/common/calibration_manager.h"
+#include "rm_manual/referee/ui.h"
 
 #include <iostream>
 #include <queue>
@@ -81,6 +82,7 @@ class ManualBase {
   virtual void ctrlWPress() {};
 
   Data data_;
+  Ui *ui_;
   ControllerLoader *controller_loader_;
   CalibrationManager *calibration_manager_;
   SwitchControllersService *switch_state_ctrl_srv_, *switch_base_ctrl_srv_{};
@@ -96,4 +98,4 @@ class ManualBase {
 };
 
 }
-#endif //RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
+#endif // RM_MANUAL_MANUAL_COMMON_H_
