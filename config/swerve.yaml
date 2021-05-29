@@ -30,24 +30,20 @@ rm_manual:
       heat_coeff: 1.5
       safety_speed: 15.0
       type: "ID1_17MM"
-
-  controller_manager:
-    information_controllers:
+  controllers_list:
+    - controllers/robot_state_controller
+    - controllers/joint_state_controller
+    - controllers/chassis_controller
+    - controllers/orientation_controller
+  state_controllers_switch:
+    start_controllers:
       - controllers/robot_state_controller
       - controllers/joint_state_controller
-    movement_controllers:
+  base_controllers_switch:
+    start_controllers:
       - controllers/chassis_controller
       - controllers/gimbal_controller
       - controllers/shooter_controller
-    calibration_controllers:
-      - controllers/trigger_calibration_controller
+      - controllers/orientation_controller
   calibration_manager:
-    trigger:
-      switch:
-        service_name: /controller_manager/switch_controller
-        start_controllers:
-          - controllers/trigger_calibration_controller
-        stop_controllers:
-          - controllers/shooter_controller
-      query:
-        service_name: /controllers/trigger_calibration_controller/is_calibrated
+
