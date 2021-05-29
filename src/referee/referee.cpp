@@ -57,10 +57,9 @@ void Referee::read() {
       frame_len = unpack(&rx_data_[kI]);
       if (frame_len != -1) kI += frame_len;
     }
-
-    super_capacitor_.read(rx_buffer);
-    getRobotId();
   }
+  super_capacitor_.read(rx_buffer);
+  getRobotId();
   publishData();
 }
 
