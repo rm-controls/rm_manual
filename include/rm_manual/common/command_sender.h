@@ -170,6 +170,8 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
     }
     return 0.;
   }
+  void setBurstMode(bool burst_flag) { heat_limit_->setMode(burst_flag); }
+  bool getBurstMode() { return heat_limit_->getMode(); }
   void setZero() override {};
  private:
   double gimbal_error_limit_{};

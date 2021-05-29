@@ -71,12 +71,15 @@ class HeatLimit {
       }
     return -1;    // TODO unsafe!
   }
-  int expect_shoot_frequency_{};
-  bool burst_flag_ = false;
+
+  void setMode(bool burst_flag) { burst_flag_ = burst_flag; }
+  bool getMode() { return burst_flag_; }
  private:
   std::string type_{};
   const Referee &referee_;
   double bullet_heat_, safe_shoot_frequency_{}, heat_coeff_{};
+  int expect_shoot_frequency_{};
+  bool burst_flag_ = false;
 };
 
 }

@@ -19,10 +19,12 @@ class ChassisGimbalManual : public ManualBase {
   }
  protected:
   void drawUi() override {
-    ui_->displayCapInfo();
-    ui_->displayArmorInfo(ros::Time::now());
-    ui_->displayChassisInfo(chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
-    ui_->displayGimbalInfo(chassis_cmd_sender_->getMsg()->mode);
+    if (state_ == PC) {
+      ui_->displayCapInfo();
+      ui_->displayArmorInfo(ros::Time::now());
+      ui_->displayChassisInfo(chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
+      ui_->displayGimbalInfo(chassis_cmd_sender_->getMsg()->mode);
+    }
   }
   void sendCommand(const ros::Time &time) override {
     chassis_cmd_sender_->sendCommand(time);
@@ -52,7 +54,6 @@ class ChassisGimbalManual : public ManualBase {
   }
   void rightSwitchUp() override {
     ManualBase::rightSwitchUp();
-    setZero();
     if (gimbal_cmd_sender_->getMsg()->mode == rm_msgs::GimbalCmd::RATE)
       gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
     if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
