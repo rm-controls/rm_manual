@@ -39,10 +39,11 @@ class ChassisGimbalManual : public ManualBase {
     if (std::abs(data_.dbus_data_.wheel) > 0.01) {
       vel_cmd_sender_->setAngularZVel(data_.dbus_data_.wheel);
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
-    } else
+    } else {
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    }
     vel_cmd_sender_->setLinearXVel(data_.dbus_data_.ch_r_y);
-    vel_cmd_sender_->setLinearYVel(data_.dbus_data_.ch_r_x);
+    vel_cmd_sender_->setLinearYVel(-data_.dbus_data_.ch_r_x);
   }
   void rightSwitchDown() override {
     ManualBase::rightSwitchDown();
@@ -70,6 +71,7 @@ class ChassisGimbalManual : public ManualBase {
     if (state_ == RC) {
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
       gimbal_cmd_sender_->updateCost(data_.track_data_array_);
+      gimbal_cmd_sender_->setRate(-data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y);
     }
   }
   void leftSwitchUp() override {

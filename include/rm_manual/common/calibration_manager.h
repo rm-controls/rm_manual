@@ -1,36 +1,49 @@
 //
-// Created by qiayuan on 5/23/21.
+// Created by qiayuan on 5/27/21.
 //
 
 #ifndef RM_MANUAL_CALIBRATION_MANAGER_H_
 #define RM_MANUAL_CALIBRATION_MANAGER_H_
-#include "rm_manual/common/service_caller.h"
+#include "service_caller.h"
+
 namespace rm_manual {
 struct CalibrationService {
-  SwitchControllerService *switch_services_;
+  SwitchControllersService *switch_services_;
   QueryCalibrationService *query_services_;
 };
 
 class CalibrationManager {
  public:
   explicit CalibrationManager(ros::NodeHandle &nh) {
+    ros::NodeHandle cali_nh(nh, "calibration_manager");
     XmlRpc::XmlRpcValue rpc_value;
-    ros::NodeHandle rm_manual_handle("~");
-    if (!rm_manual_handle.getParam("calibration_manager", rpc_value))
-      ROS_INFO("No trigger calibration controllers defined");
-    ROS_ASSERT(rpc_value.getType() == XmlRpc::XmlRpcValue::TypeStruct);
+    if (!nh.getParam("calibration_manager", rpc_value) || rpc_value.getType() != XmlRpc::XmlRpcValue::TypeStruct) {
+      ROS_INFO("No calibration controllers defined");
+      return;
+    }
     for (XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = rpc_value.begin(); it != rpc_value.end(); ++it) {
       std::string value = it->first;
-      ros::NodeHandle switch_nh(nh, value + "/switch");
-      ros::NodeHandle query_nh(nh, value + "/query");
+      ros::NodeHandle switch_nh(cali_nh, value + "/switch");
+      ros::NodeHandle query_nh(cali_nh, value + "/query");
       calibration_services_.push_back(CalibrationService{
-          .switch_services_ = new SwitchControllerService(switch_nh),
+          .switch_services_ = new SwitchControllersService(switch_nh),
           .query_services_ = new QueryCalibrationService(query_nh)});
     }
     last_query_ = ros::Time::now();
     reset();
   }
+  void reset() {
+    if (calibration_services_.empty())
+      return;
+    calibration_itr_ = calibration_services_.begin();
+    for (auto service:calibration_services_) {
+      service.switch_services_->getService().response.ok = false;
+      service.query_services_->getService().response.is_calibrated = false;
+    }
+  }
   void checkCalibrate(const ros::Time &time) {
+    if (calibration_services_.empty())
+      return;
     if (isCalibrated())
       return;
     if (calibration_itr_->switch_services_->getOk()) {
@@ -38,21 +51,13 @@ class CalibrationManager {
         calibration_itr_->switch_services_->flipControllers();
         calibration_itr_->switch_services_->callService();
         calibration_itr_++;
-        ROS_INFO("calibration finish");
-      } else if ((time - last_query_).toSec() > 1.) {
+      } else if ((time - last_query_).toSec() > .2) {
         last_query_ = time;
         calibration_itr_->query_services_->callService();
       }
     } else {
       calibration_itr_->switch_services_->switchControllers();
       calibration_itr_->switch_services_->callService();
-    }
-  }
-  void reset() {
-    calibration_itr_ = calibration_services_.begin();
-    for (auto service:calibration_services_) {
-      service.switch_services_->getService().response.ok = false;
-      service.query_services_->getService().response.is_calibrated = false;
     }
   }
  private:
@@ -63,4 +68,4 @@ class CalibrationManager {
 };
 }
 
-#endif // RM_MANUAL_CALIBRATION_MANAGER_H_
+#endif //RM_MANUAL_CALIBRATION_MANAGER_H_

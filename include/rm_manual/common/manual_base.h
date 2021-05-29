@@ -2,14 +2,13 @@
 // Created by peter on 2020/12/3.
 //
 
-#ifndef RM_MANUAL_COMMON_MANUAL_BASE_H_
-#define RM_MANUAL_COMMON_MANUAL_BASE_H_
+#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
+#define RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
 
 #include "rm_manual/common/data.h"
 #include "rm_manual/common/command_sender.h"
-#include "rm_manual/common/controller_manager.h"
+#include "rm_manual/common/controller_loader.h"
 #include "rm_manual/common/calibration_manager.h"
-#include "rm_manual/referee/ui.h"
 
 #include <iostream>
 #include <queue>
@@ -26,7 +25,10 @@ namespace rm_manual {
 class ManualBase {
  public:
   explicit ManualBase(ros::NodeHandle &nh);
-  ~ManualBase() { delete controller_manager_; }
+  ~ManualBase() {
+    delete controller_loader_;
+    delete calibration_manager_;
+  }
   enum { PASSIVE, IDLE, RC, PC };
   void run();
  protected:
@@ -38,12 +40,13 @@ class ManualBase {
 
   // Remote Controller
   virtual void remoteControlTurnOff() {
-    controller_manager_->stopMovementControllers();
-    calibration_manager_->reset();
+    switch_base_ctrl_srv_->flipControllers();
+    switch_base_ctrl_srv_->callService();
     state_ = PASSIVE;
   }
   virtual void remoteControlTurnOn() {
-    controller_manager_->startMovementControllers();
+    switch_base_ctrl_srv_->switchControllers();
+    switch_base_ctrl_srv_->callService();
     state_ = IDLE;
   }
   virtual void leftSwitchDown() {};
@@ -78,17 +81,19 @@ class ManualBase {
   virtual void ctrlWPress() {};
 
   Data data_;
-  Ui *ui_;
-  ros::NodeHandle nh_;
-  ControllerManager *controller_manager_;
+  ControllerLoader *controller_loader_;
   CalibrationManager *calibration_manager_;
-  int state_ = PASSIVE;
+  SwitchControllersService *switch_state_ctrl_srv_, *switch_base_ctrl_srv_{};
+
   bool remote_is_open_{};
+  ros::NodeHandle nh_;
+  int state_ = PASSIVE;
   ros::Time last_release_q_, last_release_w_, last_release_e_, last_release_r_, last_release_t_, last_release_a_,
       last_release_s_, last_release_d_, last_release_f_, last_release_g_, last_release_z_, last_release_x_,
       last_release_c_, last_release_v_, last_release_b_, last_release_shift_, last_release_mouse_left_,
       last_release_mouse_right_, last_release_mouse_right_left_, last_release_ctrl_z_, last_release_ctrl_w_;
+
 };
 
 }
-#endif // RM_MANUAL_COMMON_MANUAL_BASE_H_
+#endif //RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
