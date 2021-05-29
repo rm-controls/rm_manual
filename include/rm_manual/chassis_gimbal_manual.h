@@ -95,6 +95,17 @@ class ChassisGimbalManual : public ManualBase {
       }
     }
   }
+  void ePress() override {
+    if (state_ == PC) {
+      ros::Duration period = ros::Time::now() - last_release_e_;
+      if (period > ros::Duration(0.1) && period < ros::Duration(0.15)) {
+        if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::TWIST)
+          chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+        else if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW)
+          chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
+      }
+    }
+  }
   void mouseRightPress() override {
     if (state_ == PC) {
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
