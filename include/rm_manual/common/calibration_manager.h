@@ -15,14 +15,16 @@ struct CalibrationService {
 class CalibrationManager {
  public:
   explicit CalibrationManager(ros::NodeHandle &nh) {
+    ros::NodeHandle cali_nh(nh, "calibration_manager");
     XmlRpc::XmlRpcValue rpc_value;
-    if (!nh.getParam("calibration_manager", rpc_value))
+    if (!nh.getParam("calibration_manager", rpc_value) || rpc_value.getType() != XmlRpc::XmlRpcValue::TypeStruct) {
       ROS_INFO("No calibration controllers defined");
-    ROS_ASSERT(rpc_value.getType() == XmlRpc::XmlRpcValue::TypeStruct);
+      return;
+    }
     for (XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = rpc_value.begin(); it != rpc_value.end(); ++it) {
       std::string value = it->first;
-      ros::NodeHandle switch_nh(nh, value + "/switch");
-      ros::NodeHandle query_nh(nh, value + "/query");
+      ros::NodeHandle switch_nh(cali_nh, value + "/switch");
+      ros::NodeHandle query_nh(cali_nh, value + "/query");
       calibration_services_.push_back(CalibrationService{
           .switch_services_ = new SwitchControllersService(switch_nh),
           .query_services_ = new QueryCalibrationService(query_nh)});
@@ -31,6 +33,8 @@ class CalibrationManager {
     reset();
   }
   void reset() {
+    if (calibration_services_.empty())
+      return;
     calibration_itr_ = calibration_services_.begin();
     for (auto service:calibration_services_) {
       service.switch_services_->getService().response.ok = false;
@@ -38,6 +42,8 @@ class CalibrationManager {
     }
   }
   void checkCalibrate(const ros::Time &time) {
+    if (calibration_services_.empty())
+      return;
     if (isCalibrated())
       return;
     if (calibration_itr_->switch_services_->getOk()) {

@@ -29,7 +29,7 @@ class ServiceCallerBase {
   ~ServiceCallerBase() { delete thread_; }
   void callService() {
     if (isCalling()) {
-      ROS_INFO("is calling");
+      ROS_INFO("is calling %s", service_name_.c_str());
       return;
     }
     thread_ = new std::thread(&ServiceCallerBase::callingThread, this);

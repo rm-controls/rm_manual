@@ -6,20 +6,21 @@
 namespace rm_manual {
 
 ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh) {
-  ros::NodeHandle ctrl_nh(nh, "controllers_list");
-  controller_loader_ = new ControllerLoader(ctrl_nh);
+  controller_loader_ = new ControllerLoader(nh);
   controller_loader_->loadControllers();
-  ros::NodeHandle cali_nh(nh, "calibration_manager");
-  calibration_manager_ = new CalibrationManager(cali_nh);
+  calibration_manager_ = new CalibrationManager(nh);
   ros::NodeHandle state_ctrl_nh(nh, "state_controllers_switch");
   switch_state_ctrl_srv_ = new SwitchControllersService(state_ctrl_nh);
+  switch_state_ctrl_srv_->startControllersOnly();
+  switch_state_ctrl_srv_->callService();
   ros::NodeHandle base_ctrl_nh(nh, "base_controllers_switch");
-  switch_state_ctrl_srv_ = new SwitchControllersService(base_ctrl_nh);
+  switch_base_ctrl_srv_ = new SwitchControllersService(base_ctrl_nh);
 }
 
 void ManualBase::run() {
   ros::Time time = ros::Time::now();
   data_.referee_.read();
+  setZero();
   checkSwitch(time);
   checkKeyboard(time);
   calibration_manager_->checkCalibrate(time);
@@ -28,14 +29,14 @@ void ManualBase::run() {
 
 void ManualBase::checkSwitch(const ros::Time &time) {
   if (remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() > 0.1) {
+    ROS_INFO("Remote off");
     remoteControlTurnOff();
     remote_is_open_ = false;
-    ROS_INFO("remote off");
   }
   if (!remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() < 0.1) {
+    ROS_INFO("Remote on");
     remoteControlTurnOn();
     remote_is_open_ = true;
-    ROS_INFO("remote on");
   }
   if (data_.dbus_data_.s_l == rm_msgs::DbusData::UP) leftSwitchUp();
   else if (data_.dbus_data_.s_l == rm_msgs::DbusData::MID) leftSwitchMid();
