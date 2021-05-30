@@ -6,7 +6,7 @@
 
 namespace rm_manual {
 void Ui::displayCapInfo() {
-  if (ros::Time::now() - last_update_cap_time_ > ros::Duration(0.5)) return;
+  if (graphic_operate_type_ != ADD && ros::Time::now() - last_update_cap_time_ < ros::Duration(0.5)) return;
   float cap_power = referee_->super_capacitor_.parameters[3] * 100;
   char power_string[30];
   sprintf(power_string, "Cap: %1.0f%%", cap_power);
@@ -20,7 +20,9 @@ void Ui::displayCapInfo() {
 }
 
 void Ui::displayChassisInfo(uint8_t chassis_mode, bool burst_flag) {
-  if (last_chassis_burst_flag_ == burst_flag && last_chassis_mode_ == chassis_mode) return;
+  if (graphic_operate_type_ != ADD && last_chassis_burst_flag_ == burst_flag
+      && last_chassis_mode_ == chassis_mode)
+    return;
   GraphicColorType color = burst_flag ? ORANGE : YELLOW;
   if (chassis_mode == rm_msgs::ChassisCmd::PASSIVE)
     referee_->drawString(1470, 790, 1, "chassis:passive", color, graphic_operate_type_);
@@ -35,7 +37,7 @@ void Ui::displayChassisInfo(uint8_t chassis_mode, bool burst_flag) {
 }
 
 void Ui::displayGimbalInfo(uint8_t gimbal_mode) {
-  if (last_gimbal_mode_ == gimbal_mode) return;
+  if (graphic_operate_type_ != ADD && last_gimbal_mode_ == gimbal_mode) return;
   if (gimbal_mode == rm_msgs::GimbalCmd::PASSIVE)
     referee_->drawString(1470, 740, 2, "gimbal:passive", YELLOW, graphic_operate_type_);
   else if (gimbal_mode == rm_msgs::GimbalCmd::RATE)
@@ -46,7 +48,9 @@ void Ui::displayGimbalInfo(uint8_t gimbal_mode) {
 }
 
 void Ui::displayShooterInfo(uint8_t shooter_mode, bool burst_flag) {
-  if (last_shooter_burst_flag_ == burst_flag && last_shooter_mode_ == shooter_mode) return;
+  if (graphic_operate_type_ != ADD && last_shooter_burst_flag_ == burst_flag
+      && last_shooter_mode_ == shooter_mode)
+    return;
   GraphicColorType color = burst_flag ? ORANGE : YELLOW;
   if (shooter_mode == rm_msgs::ShootCmd::PASSIVE)
     referee_->drawString(1470, 690, 3, "shooter:passive", color, graphic_operate_type_);

@@ -28,9 +28,10 @@ class Ui {
   tf2_ros::Buffer tf_;
   tf2_ros::TransformListener *tf_listener_{};
   ros::Time last_update_armor0_time_, last_update_armor1_time_, last_update_armor2_time_, last_update_armor3_time_,
-      last_update_cap_time_;
-  GraphicOperateType graphic_operate_type_;
-  int last_chassis_mode_, last_gimbal_mode_, last_shooter_mode_;
+      last_update_cap_time_ = ros::Time::now();
+  GraphicOperateType graphic_operate_type_ = UPDATE;
+  int last_chassis_mode_ = rm_msgs::ChassisCmd::FOLLOW, last_gimbal_mode_ = rm_msgs::GimbalCmd::RATE,
+      last_shooter_mode_ = rm_msgs::ShootCmd::STOP;
   bool last_chassis_burst_flag_ = false, last_shooter_burst_flag_ = false;
 };
 } // namespace rm_manual

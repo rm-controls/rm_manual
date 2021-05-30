@@ -89,8 +89,7 @@ class ChassisGimbalManual : public ManualBase {
   void xPress() override { if (state_ == PC) ui_->setOperateType(ADD); }
   void gPress() override {
     if (state_ == PC) {
-      ros::Duration period = ros::Time::now() - last_release_g_;
-      if (period > ros::Duration(0.1) && period < ros::Duration(0.15)
+      if (ros::Time::now() - last_release_g_ < ros::Duration(0.05)
           && chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::PASSIVE) {
         if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
           chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
@@ -100,8 +99,7 @@ class ChassisGimbalManual : public ManualBase {
   }
   void ePress() override {
     if (state_ == PC) {
-      ros::Duration period = ros::Time::now() - last_release_e_;
-      if (period > ros::Duration(0.1) && period < ros::Duration(0.15)) {
+      if (ros::Time::now() - last_release_e_ < ros::Duration(0.05)) {
         if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::TWIST)
           chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
         else if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW)

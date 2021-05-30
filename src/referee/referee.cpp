@@ -55,7 +55,7 @@ void Referee::read() {
   for (int kI = 0; kI < kUnpackLength; ++kI) {
     if (rx_data_[kI] == 0xA5) {
       frame_len = unpack(&rx_data_[kI]);
-      if (frame_len != -1) kI += frame_len;
+      if (frame_len != -1 && kI + frame_len < kUnpackLength) kI += frame_len;
     }
   }
   super_capacitor_.read(rx_buffer);
