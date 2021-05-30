@@ -34,7 +34,10 @@ rm_manual:
     - controllers/robot_state_controller
     - controllers/joint_state_controller
     - controllers/chassis_controller
+    - controllers/gimbal_controller
+    - controllers/shooter_controller
     - controllers/orientation_controller
+    - controllers/trigger_calibration_controller
   state_controllers_switch:
     start_controllers:
       - controllers/robot_state_controller
@@ -45,5 +48,15 @@ rm_manual:
       - controllers/gimbal_controller
       - controllers/shooter_controller
       - controllers/orientation_controller
+    stop_controllers:
+      - controllers/trigger_calibration_controller
   calibration_manager:
+    trigger:
+      switch:
+        start_controllers:
+          - controllers/trigger_calibration_controller
+        stop_controllers:
+          - controllers/shooter_controller
+      query:
+        service_name: /controllers/trigger_calibration_controller/is_calibrated
 
