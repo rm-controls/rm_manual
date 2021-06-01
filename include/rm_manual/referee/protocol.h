@@ -289,22 +289,8 @@ typedef struct {
 
 typedef struct {
   StudentInteractiveHeaderData student_interactive_header_data_;
-  uint8_t data;
+  uint8_t data_;
 }__packed InteractiveData;
-
-/********************** Robot Interactive data ----0x0302 *******************************************/
-typedef struct {
-  uint8_t *data;
-}__packed RobotInteractiveData;
-
-/********************** Robot command data ----0x0303 ***********************************************/
-typedef struct {
-  float target_position_x;
-  float target_position_y;
-  float target_position_z;
-  uint8_t command_keyboard;
-  uint16_t target_robot_ID;
-}__packed RobotCommand;
 
 /***********************Frame tail(CRC8_CRC16)********************************************/
 const uint8_t kCrc8Init = 0xff;
@@ -364,4 +350,4 @@ const uint16_t wCRC_table[256] =
         0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78
     };
 
-#endif //RM_MANUAL_INCLUDE_RM_MANUAL_PROTOCOL_H_
+#endif // RM_MANUAL_REFEREE_PROTOCOL_H_

@@ -12,10 +12,12 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   explicit ChassisGimbalShooterManual(ros::NodeHandle &nh) : ChassisGimbalManual(nh) {
     ros::NodeHandle shooter_nh(nh, "shooter");
     shooter_cmd_sender_ = new ShooterCommandSender(shooter_nh, data_.referee_);
-    if (!shooter_nh.getParam("gimbal_error_limit", gimbal_error_limit_))
-      ROS_ERROR("gimbal error limit no defined (namespace: %s)", shooter_nh.getNamespace().c_str());
   }
  protected:
+  void drawUi() override {
+    ChassisGimbalManual::drawUi();
+    if (state_ == PC) ui_->displayShooterInfo(shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
+  }
   void setZero() override {
     ChassisGimbalManual::setZero();
     shooter_cmd_sender_->setZero();
@@ -38,10 +40,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void leftSwitchUp() override {
     rm_manual::ChassisGimbalManual::leftSwitchUp();
     if (state_ == RC) {
-      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
-      gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
-      if (data_.gimbal_des_error_.error < gimbal_error_limit_)
-        shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+      shooter_cmd_sender_->checkError(data_.gimbal_des_error_.error);
     }
   }
   void rightSwitchDown() override {
@@ -50,15 +50,39 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void rightSwitchUp() override {
     ChassisGimbalManual::rightSwitchUp();
+    if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
   }
-  void fPress() override { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
-  void mouseLeftPress() override {
+  void fPress() override { if (state_ == PC) shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
+  void qPress() override {
     if (state_ == PC) {
-      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+      ros::Duration period = ros::Time::now() - last_release_q_;
+      if (period > ros::Duration(0.1) && period < ros::Duration(0.15))
+        shooter_cmd_sender_->setBurstMode(!shooter_cmd_sender_->getBurstMode());
+    }
+  }
+  void mouseLeftPress() override {
+    if (state_ == PC) { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH); }
+  }
+  void mouseRightPress() override {
+    ChassisGimbalManual::mouseRightPress();
+    if (state_ == PC) { gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed()); }
+  }
+  void ctrlWPress() override {
+    ChassisGimbalManual::ctrlWPress();
+    if (state_ == PC) {
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+      shooter_cmd_sender_->setBurstMode(false);
+    }
+  }
+  void ctrlZPress() override {
+    ChassisGimbalManual::ctrlZPress();
+    if (state_ == PC) {
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PASSIVE);
+      shooter_cmd_sender_->setBurstMode(false);
     }
   }
   ShooterCommandSender *shooter_cmd_sender_{};
-  double gimbal_error_limit_{};
 };
 }
 

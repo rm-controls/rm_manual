@@ -54,4 +54,4 @@ class Data {
 };
 
 }
-#endif //RM_MANUAL_INCLUDE_RM_MANUAL_DATA_H_
+#endif // RM_MANUAL_COMMON_DATA_H_

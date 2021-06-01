@@ -18,6 +18,14 @@ class ChassisGimbalManual : public ManualBase {
     gimbal_cmd_sender_ = new GimbalCommandSender(gimbal_nh, data_.referee_);
   }
  protected:
+  void drawUi() override {
+    if (state_ == PC) {
+      ui_->displayCapInfo();
+      ui_->displayArmorInfo(ros::Time::now());
+      ui_->displayChassisInfo(chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
+      ui_->displayGimbalInfo(chassis_cmd_sender_->getMsg()->mode);
+    }
+  }
   void sendCommand(const ros::Time &time) override {
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
@@ -43,6 +51,14 @@ class ChassisGimbalManual : public ManualBase {
     ManualBase::rightSwitchDown();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::PASSIVE);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::PASSIVE);
+  }
+  void rightSwitchUp() override {
+    ManualBase::rightSwitchUp();
+    if (gimbal_cmd_sender_->getMsg()->mode == rm_msgs::GimbalCmd::RATE)
+      gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
+    if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
+      vel_cmd_sender_->setAngularZVel(1.);
+    ui_->setOperateType(UPDATE);
   }
   void leftSwitchDown() override {
     ManualBase::leftSwitchDown();
@@ -70,9 +86,25 @@ class ChassisGimbalManual : public ManualBase {
   void aPress() override { if (state_ == PC) vel_cmd_sender_->setLinearYVel(1.); }
   void sPress() override { if (state_ == PC) vel_cmd_sender_->setLinearXVel(-1.); }
   void dPress() override { if (state_ == PC) vel_cmd_sender_->setLinearYVel(-1.); }
+  void xPress() override { if (state_ == PC) ui_->setOperateType(ADD); }
   void gPress() override {
-    if (state_ == PC && ros::Time::now() - last_release_g_ < ros::Duration(0.1)) {
-
+    if (state_ == PC) {
+      if (ros::Time::now() - last_release_g_ < ros::Duration(0.05)
+          && chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::PASSIVE) {
+        if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
+          chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+        else chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+      }
+    }
+  }
+  void ePress() override {
+    if (state_ == PC) {
+      if (ros::Time::now() - last_release_e_ < ros::Duration(0.05)) {
+        if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::TWIST)
+          chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+        else if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW)
+          chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
+      }
     }
   }
   void mouseRightPress() override {
@@ -83,10 +115,14 @@ class ChassisGimbalManual : public ManualBase {
   }
   void ctrlZPress() override {
     if (state_ == PC) {
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::PASSIVE);
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::PASSIVE);
     }
   }
   void ctrlWPress() override {
     if (state_ == PC) {
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     }
   }
   ChassisCommandSender *chassis_cmd_sender_{};
