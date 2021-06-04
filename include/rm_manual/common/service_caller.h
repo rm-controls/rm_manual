@@ -28,10 +28,8 @@ class ServiceCallerBase {
   }
   ~ServiceCallerBase() { delete thread_; }
   void callService() {
-    if (isCalling()) {
-      ROS_INFO("is calling %s", service_name_.c_str());
+    if (isCalling())
       return;
-    }
     thread_ = new std::thread(&ServiceCallerBase::callingThread, this);
     thread_->detach();
   }
@@ -81,11 +79,11 @@ class SwitchControllersService : public ServiceCallerBase<controller_manager_msg
   void switchControllers() {
     service_.request.start_controllers = start_controllers_;
     service_.request.stop_controllers = stop_controllers_;
-  };
+  }
   void flipControllers() {
     service_.request.start_controllers = stop_controllers_;
     service_.request.stop_controllers = start_controllers_;
-  };
+  }
   bool getOk() {
     if (isCalling()) return false;
     return service_.response.ok;
