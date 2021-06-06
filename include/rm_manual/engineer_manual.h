@@ -5,21 +5,25 @@
 #ifndef RM_MANUAL_ENGINEER_MANUAL_H_
 #define RM_MANUAL_ENGINEER_MANUAL_H_
 #include <std_srvs/Empty.h>
+#include <actionlib/client/simple_action_client.h>
+
+#include <rm_msgs/EngineerAction.h>
 #include "rm_manual/chassis_gimbal_manual.h"
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 namespace rm_manual {
 class EngineerManual : public ChassisGimbalManual {
  public:
-  explicit EngineerManual(ros::NodeHandle &nh) : ChassisGimbalManual(nh) {
+  explicit EngineerManual(ros::NodeHandle &nh)
+      : ChassisGimbalManual(nh), action_client_("/engineer_middleware/move_arm", true) {
     ros::NodeHandle arm_servo(nh, "arm_servo");
     arm_servo_sender_ = new Vel3DCommandSender(arm_servo);
     reset_servo_server_ =
         nh.serviceClient<std_srvs::Empty>("/servo_server/reset_servo_status");
-    if (!nh.getParam("target_frame", target_frame_))
-      ROS_ERROR("Target frame no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (!nh.getParam("source_frame", source_frame_))
-      ROS_ERROR("Source frame no defined (namespace: %s)", nh.getNamespace().c_str());
+    ROS_INFO("Waiting for move arm server to start.");
+    // wait for the action server to start
+    action_client_.waitForServer(); //will wait for infinite time
+    ROS_INFO("Move arm server started.");
   }
  private:
   void sendCommand(const ros::Time &time) override {
@@ -35,24 +39,21 @@ class EngineerManual : public ChassisGimbalManual {
       ChassisGimbalManual::rightSwitchMid();
   }
   void leftSwitchMid() override {
+    rm_msgs::EngineerActionGoal goal;
+    goal.goal.step = "grasp_small_resource";
     if (state_ == RC) {
-      geometry_msgs::Vector3 scale;   // velocity under base_link frame
-      scale.x = data_.dbus_data_.ch_r_x;
-      scale.y = -data_.dbus_data_.ch_r_y;
-      scale.z = data_.dbus_data_.ch_l_y;
-/*      //TODO: Add frame names to params server
-      try { tf2::doTransform(scale, scale, data_.tf_buffer_.lookupTransform("link5", "base_link", ros::Time(0))); }
-      catch (tf2::TransformException &ex) {
-        ROS_WARN("%s", ex.what());
-        return;
-      }*/
-      arm_servo_sender_->setLinearVel(scale.x, scale.y, scale.z);
+      if (action_client_.isServerConnected()) {
+        action_client_.sendGoal(goal.goal);
+        if (action_client_.waitForResult(ros::Duration(30.0)))
+          ROS_INFO("finish grasp_small_resource");
+      } else
+        ROS_WARN("Can not connected with move arm server");
     }
+
   }
   void leftSwitchUp() override {
-    if (state_ == RC) {
+    if (state_ == RC)
       arm_servo_sender_->setAngularVel(data_.dbus_data_.ch_l_x, data_.dbus_data_.ch_l_y, data_.dbus_data_.ch_r_y);
-    }
   }
   void remoteControlTurnOn() override {
     std_srvs::Empty srv;
@@ -63,6 +64,7 @@ class EngineerManual : public ChassisGimbalManual {
   Vel3DCommandSender *arm_servo_sender_{};
   ros::ServiceClient reset_servo_server_;
   std::string target_frame_, source_frame_;
+  actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 };
 
 }
