@@ -11,6 +11,8 @@
 #include "rm_manual/chassis_gimbal_manual.h"
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
+#include <utility>
+
 namespace rm_manual {
 class EngineerManual : public ChassisGimbalManual {
  public:
@@ -21,8 +23,7 @@ class EngineerManual : public ChassisGimbalManual {
     reset_servo_server_ =
         nh.serviceClient<std_srvs::Empty>("/servo_server/reset_servo_status");
     ROS_INFO("Waiting for move arm server to start.");
-    // wait for the action server to start
-    action_client_.waitForServer(); //will wait for infinite time
+    action_client_.waitForServer();
     ROS_INFO("Move arm server started.");
   }
  private:
@@ -38,18 +39,15 @@ class EngineerManual : public ChassisGimbalManual {
     if (data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN)
       ChassisGimbalManual::rightSwitchMid();
   }
-  void leftSwitchMid() override {
-    rm_msgs::EngineerActionGoal goal;
-    goal.goal.step = "grasp_small_resource";
-    if (state_ == RC) {
-      if (action_client_.isServerConnected()) {
-        action_client_.sendGoal(goal.goal);
-        if (action_client_.waitForResult(ros::Duration(30.0)))
-          ROS_INFO("finish grasp_small_resource");
-      } else
-        ROS_WARN("Can not connected with move arm server");
+  void rightSwitchDown() override {
+    ChassisGimbalManual::rightSwitchDown();
+    if (has_send_step_list_) {
+      ROS_INFO("cancel goal");
+      action_client_.cancelAllGoals();
     }
-
+  }
+  void leftSwitchMid() override {
+    sendStepList("grasp_small_resource");
   }
   void leftSwitchUp() override {
     if (state_ == RC)
@@ -59,11 +57,26 @@ class EngineerManual : public ChassisGimbalManual {
     std_srvs::Empty srv;
     ManualBase::remoteControlTurnOn();
     reset_servo_server_.call(srv);
-    ROS_INFO("reset arm");
+  }
+  void sendStepList(std::string step_list) {
+    rm_msgs::EngineerActionGoal goal;
+    goal.goal.step = std::move(step_list);
+    if (state_ == RC) {
+      if (action_client_.isServerConnected()) {
+        if (!has_send_step_list_) {
+          action_client_.sendGoal(goal.goal);
+          has_send_step_list_ = true;
+        } else if (has_send_step_list_ && action_client_.getResult()->finish) {
+          has_send_step_list_ = false;
+        }
+      } else
+        ROS_WARN("Can not connected with move arm server");
+    }
   }
   Vel3DCommandSender *arm_servo_sender_{};
   ros::ServiceClient reset_servo_server_;
   std::string target_frame_, source_frame_;
+  bool has_send_step_list_{};
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 };
 
