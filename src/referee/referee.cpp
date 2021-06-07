@@ -6,7 +6,6 @@
 namespace rm_manual {
 void Referee::init() {
   serial::Timeout timeout = serial::Timeout::simpleTimeout(50);
-  unpack_buffer_.insert(unpack_buffer_.begin(), k_unpack_buffer_length_, 0);
   try {
     serial_.setPort(serial_port_);
     serial_.setBaudrate(115200);
@@ -29,11 +28,10 @@ void Referee::init() {
 // read data from referee
 void Referee::read() {
   std::vector<uint8_t> rx_buffer;
-  std::vector<uint8_t> temp_buffer;
+  uint8_t temp_buffer[k_unpack_buffer_length_] = {0};
   int rx_len = 0, frame_len;
 
   if (ros::Time::now() - last_get_referee_data_ > ros::Duration(0.1)) is_online_ = false;
-
   try {
     if (serial_.waitReadable()) {
       rx_len = serial_.available();
@@ -44,16 +42,13 @@ void Referee::read() {
     is_online_ = false;
     return;
   }
-
-  for (int kI = k_unpack_buffer_length_; kI > rx_len; --kI) {
-    temp_buffer.insert(temp_buffer.begin(), unpack_buffer_[kI - 1]);
+  if (rx_len < k_unpack_buffer_length_) {
+    for (int kI = 0; kI < k_unpack_buffer_length_ - rx_len; ++kI) temp_buffer[kI] = unpack_buffer_[kI + rx_len];
+    for (int kI = 0; kI < rx_len; ++kI) temp_buffer[kI + k_unpack_buffer_length_ - rx_len] = rx_buffer[kI];
+    for (int kI = 0; kI < k_unpack_buffer_length_; ++kI) unpack_buffer_[kI] = temp_buffer[kI];
   }
-  temp_buffer.insert(temp_buffer.end(), rx_buffer.begin(), rx_buffer.end());
-  unpack_buffer_.clear();
-  unpack_buffer_.insert(unpack_buffer_.begin(), temp_buffer.begin(), temp_buffer.end());
-
-  for (int kI = 0; kI < k_unpack_buffer_length_; ++kI) {
-    if (unpack_buffer_[kI] == 0xA5 && kI + k_frame_length_ < k_unpack_buffer_length_) {
+  for (int kI = 0; kI < k_unpack_buffer_length_ - k_frame_length_; ++kI) {
+    if (unpack_buffer_[kI] == 0xA5) {
       frame_len = unpack(&unpack_buffer_[kI]);
       if (frame_len != -1) kI += frame_len;
     }
@@ -441,4 +436,3 @@ float SuperCapacitor::int16ToFloat(unsigned short data0) {
 }
 
 } // namespace rm_manual
-
