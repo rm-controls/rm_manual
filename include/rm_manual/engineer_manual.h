@@ -42,7 +42,6 @@ class EngineerManual : public ChassisGimbalManual {
   void rightSwitchDown() override {
     ChassisGimbalManual::rightSwitchDown();
     if (has_send_step_list_) {
-      ROS_INFO("cancel goal");
       action_client_.cancelAllGoals();
     }
   }
