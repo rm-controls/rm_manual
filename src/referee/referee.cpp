@@ -6,7 +6,7 @@
 namespace rm_manual {
 void Referee::init() {
   serial::Timeout timeout = serial::Timeout::simpleTimeout(50);
-  rx_data_.insert(rx_data_.begin(), kUnpackLength, 0);
+  unpack_buffer_.insert(unpack_buffer_.begin(), k_unpack_buffer_length_, 0);
   try {
     serial_.setPort(serial_port_);
     serial_.setBaudrate(115200);
@@ -45,17 +45,17 @@ void Referee::read() {
     return;
   }
 
-  for (int kI = kUnpackLength; kI > rx_len; --kI) {
-    temp_buffer.insert(temp_buffer.begin(), rx_data_[kI - 1]);
+  for (int kI = k_unpack_buffer_length_; kI > rx_len; --kI) {
+    temp_buffer.insert(temp_buffer.begin(), unpack_buffer_[kI - 1]);
   }
   temp_buffer.insert(temp_buffer.end(), rx_buffer.begin(), rx_buffer.end());
-  rx_data_.clear();
-  rx_data_.insert(rx_data_.begin(), temp_buffer.begin(), temp_buffer.end());
+  unpack_buffer_.clear();
+  unpack_buffer_.insert(unpack_buffer_.begin(), temp_buffer.begin(), temp_buffer.end());
 
-  for (int kI = 0; kI < kUnpackLength; ++kI) {
-    if (rx_data_[kI] == 0xA5) {
-      frame_len = unpack(&rx_data_[kI]);
-      if (frame_len != -1 && kI + frame_len < kUnpackLength) kI += frame_len;
+  for (int kI = 0; kI < k_unpack_buffer_length_; ++kI) {
+    if (unpack_buffer_[kI] == 0xA5 && kI + k_frame_length_ < k_unpack_buffer_length_) {
+      frame_len = unpack(&unpack_buffer_[kI]);
+      if (frame_len != -1) kI += frame_len;
     }
   }
   super_capacitor_.read(rx_buffer);
@@ -68,9 +68,9 @@ int Referee::unpack(uint8_t *rx_data) {
   int frame_len;
   FrameHeaderStruct frame_header;
 
-  memcpy(&frame_header, rx_data, kProtocolHeaderLength);
-  if (verifyCRC8CheckSum(rx_data, kProtocolHeaderLength) == true) {
-    frame_len = frame_header.data_length_ + kProtocolHeaderLength + kProtocolCmdIdLength + kProtocolTailLength;;
+  memcpy(&frame_header, rx_data, k_header_length_);
+  if (verifyCRC8CheckSum(rx_data, k_header_length_) == true) {
+    frame_len = frame_header.data_length_ + k_header_length_ + k_cmd_id_length_ + k_tail_length_;;
     if (verifyCRC16CheckSum(rx_data, frame_len) == true) {
       cmd_id = (rx_data[6] << 8 | rx_data[5]);
       switch (cmd_id) {
@@ -196,7 +196,7 @@ void Referee::drawCircle(int center_x, int center_y, int radius, int picture_id,
   uint8_t tx_buffer[128] = {0};
   uint8_t tx_data[sizeof(ClientGraphicData)] = {0};
   auto client_graph_data = (ClientGraphicData *) tx_data;
-  int tx_len = kProtocolHeaderLength + kProtocolCmdIdLength + sizeof(ClientGraphicData) + kProtocolTailLength;
+  int tx_len = k_header_length_ + k_cmd_id_length_ + sizeof(ClientGraphicData) + k_tail_length_;
 
   client_graph_data->student_interactive_header_data_.data_cmd_id_ = CLIENT_GRAPH_SINGLE_CMD;
   client_graph_data->student_interactive_header_data_.sender_id_ = robot_id_;
@@ -226,7 +226,7 @@ void Referee::drawString(int x, int y, int picture_id, std::string data,
   uint8_t tx_buffer[128] = {0};
   uint8_t tx_data[sizeof(ClientCharData)] = {0};
   auto client_char_data = (ClientCharData *) tx_data;
-  int tx_len = kProtocolHeaderLength + kProtocolCmdIdLength + sizeof(ClientCharData) + kProtocolTailLength;
+  int tx_len = k_header_length_ + k_cmd_id_length_ + sizeof(ClientCharData) + k_tail_length_;
 
   client_char_data->student_interactive_header_data_.data_cmd_id_ = CLIENT_CHARACTER_CMD;
   client_char_data->student_interactive_header_data_.sender_id_ = robot_id_;
@@ -262,7 +262,7 @@ void Referee::sendInteractiveData(int data_cmd_id, int receiver_id, uint8_t data
   uint8_t tx_buffer[128] = {0};
   uint8_t tx_data[sizeof(InteractiveData)] = {0};
   auto student_interactive_data = (InteractiveData *) tx_data;
-  int tx_len = kProtocolHeaderLength + kProtocolCmdIdLength + sizeof(InteractiveData) + kProtocolTailLength;
+  int tx_len = k_header_length_ + k_cmd_id_length_ + sizeof(InteractiveData) + k_tail_length_;
 
   student_interactive_data->student_interactive_header_data_.data_cmd_id_ = data_cmd_id;
   student_interactive_data->student_interactive_header_data_.sender_id_ = robot_id_;
@@ -278,15 +278,15 @@ void Referee::sendInteractiveData(int data_cmd_id, int receiver_id, uint8_t data
 }
 
 void Referee::pack(uint8_t *tx_buffer, uint8_t *data, int cmd_id, int len) {
-  memset(tx_buffer, 0, kProtocolFrameLength);
+  memset(tx_buffer, 0, k_frame_length_);
   auto *frame_header = (FrameHeaderStruct *) tx_buffer;
 
   frame_header->sof_ = 0xA5;
   frame_header->data_length_ = len;
-  memcpy(&tx_buffer[kProtocolHeaderLength], (uint8_t *) &cmd_id, kProtocolCmdIdLength);
-  appendCRC8CheckSum(tx_buffer, kProtocolHeaderLength);
-  memcpy(&tx_buffer[kProtocolHeaderLength + kProtocolCmdIdLength], data, len);
-  appendCRC16CheckSum(tx_buffer, kProtocolHeaderLength + kProtocolCmdIdLength + len + kProtocolTailLength);
+  memcpy(&tx_buffer[k_header_length_], (uint8_t *) &cmd_id, k_cmd_id_length_);
+  appendCRC8CheckSum(tx_buffer, k_header_length_);
+  memcpy(&tx_buffer[k_header_length_ + k_cmd_id_length_], data, len);
+  appendCRC16CheckSum(tx_buffer, k_header_length_ + k_cmd_id_length_ + len + k_tail_length_);
 }
 
 uint8_t getCRC8CheckSum(unsigned char *pch_message, unsigned int dw_length, unsigned char uc_crc_8) {
