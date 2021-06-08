@@ -46,7 +46,7 @@ class EngineerManual : public ChassisGimbalManual {
     }
   }
   void leftSwitchMid() override {
-    sendStepList("grasp_small_resource");
+    sendStepList("grasp_big_resource");
   }
   void leftSwitchUp() override {
     if (state_ == RC)
