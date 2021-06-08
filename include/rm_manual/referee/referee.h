@@ -22,7 +22,7 @@ class SuperCapacitor {
   void read(const std::vector<uint8_t> &rx_buffer);
 
   float parameters[4] = {0};
-  bool is_online_ = true;
+  bool is_online_ = false;
   ros::Time last_get_capacitor_data_ = ros::Time::now();
  private:
   void dtpReceivedCallBack(unsigned char receive_byte);
@@ -87,12 +87,11 @@ class Referee {
   void publishData();
 
   serial::Serial serial_;
-  const std::string serial_port_ = "/dev/usbReferee";
-  const int kUnpackLength = 256;
-  const int kProtocolFrameLength = 128, kProtocolHeaderLength = 5, kProtocolCmdIdLength = 2, kProtocolTailLength = 2;
-  std::vector<uint8_t> rx_data_;
-
   ros::Time last_get_referee_data_ = ros::Time::now();
+  const std::string serial_port_ = "/dev/usbReferee";
+  const int k_frame_length_ = 128, k_header_length_ = 5, k_cmd_id_length_ = 2, k_tail_length_ = 2;
+  static const int k_unpack_buffer_length_ = 256;
+  uint8_t unpack_buffer_[k_unpack_buffer_length_];
 };
 
 // CRC verification
