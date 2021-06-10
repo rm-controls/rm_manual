@@ -21,7 +21,7 @@ rm_manual:
       k_vel: 0.0
       k_hp: 0.0
       k_freq: 99.0
-      timeout: 0.05
+      timeout: 0.1
   shooter:
     topic: "/cmd_shoot"
     gimbal_error_limit: 0.05
