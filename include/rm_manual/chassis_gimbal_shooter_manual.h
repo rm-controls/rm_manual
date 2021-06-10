@@ -28,7 +28,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void leftSwitchDown() override {
     ChassisGimbalManual::leftSwitchDown();
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+    if (state_ == RC) shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   }
   void leftSwitchMid() override {
     rm_manual::ChassisGimbalManual::leftSwitchMid();
@@ -56,8 +56,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void fPress() override { if (state_ == PC) shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
   void qPress() override {
     if (state_ == PC) {
-      ros::Duration period = ros::Time::now() - last_release_q_;
-      if (period > ros::Duration(0.1) && period < ros::Duration(0.15))
+      if (ros::Time::now() - last_release_q_ < ros::Duration(0.05))
         shooter_cmd_sender_->setBurstMode(!shooter_cmd_sender_->getBurstMode());
     }
   }
