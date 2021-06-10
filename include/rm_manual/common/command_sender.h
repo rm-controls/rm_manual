@@ -117,6 +117,8 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
       ROS_ERROR("Max yaw velocity no defined (namespace: %s)", nh.getNamespace().c_str());
     if (!nh.getParam("max_pitch_vel", max_pitch_vel_))
       ROS_ERROR("Max pitch velocity no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (!nh.getParam("track_timeout", track_timeout_))
+      ROS_ERROR("Track timeout no defined (namespace: %s)", nh.getNamespace().c_str());
     cost_function_ = new TargetCostFunction(nh, referee);
   }
   ~GimbalCommandSender() { delete cost_function_; };
@@ -129,8 +131,9 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
   }
   void updateCost(const rm_msgs::TrackDataArray &track_data_array, bool base_only = false) {
     msg_.target_id = cost_function_->costFunction(track_data_array, base_only);
-    if (msg_.target_id == 0)
-      setMode(rm_msgs::GimbalCmd::RATE);
+    if (msg_.target_id == 0) {
+      if ((ros::Time::now() - last_track_).toSec() > track_timeout_) setMode(rm_msgs::GimbalCmd::RATE);
+    } else last_track_ = ros::Time::now();
   }
   void setZero() override {
     msg_.rate_yaw = 0.;
@@ -138,7 +141,8 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
   }
  private:
   TargetCostFunction *cost_function_;
-  double max_yaw_rate_{}, max_pitch_vel_{};
+  double max_yaw_rate_{}, max_pitch_vel_{}, track_timeout_;
+  ros::Time last_track_;
 };
 
 class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd> {

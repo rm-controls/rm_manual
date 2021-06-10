@@ -15,6 +15,7 @@ rm_manual:
     topic: "/cmd_gimbal"
     max_yaw_vel: 12.56
     max_pitch_vel: 12.56
+    track_timeout: 0.5
     target_cost_function:
       k_pos: 1.0
       k_vel: 1.0
