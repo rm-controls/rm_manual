@@ -46,8 +46,6 @@ rm_manual:
       - controllers/chassis_controller
       - controllers/gimbal_controller
       - controllers/shooter_controller
-    stop_controllers:
-      - controllers/trigger_calibration_controller
   calibration_manager:
     trigger:
       switch:
