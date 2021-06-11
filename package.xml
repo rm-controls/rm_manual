@@ -1,24 +1,24 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>rm_manual</name>
-  <version>1.0.0</version>
-  <description>A template for ROS packages.</description>
-  <maintainer email="liaoqiayuan@gmail.com">Qiayuan Liao</maintainer>
+    <name>rm_manual</name>
+    <version>1.0.1</version>
+    <description>A template for ROS packages.</description>
+    <maintainer email="liaoqiayuan@gmail.com">Qiayuan Liao</maintainer>
 
-  <license>BSD</license>
-  <author email="liaoqiayuan@gmail.com">Qiayuan Liao</author>
+    <license>BSD</license>
+    <author email="liaoqiayuan@gmail.com">Qiayuan Liao</author>
 
-  <!-- buildtool_depend: dependencies of the build process -->
-  <buildtool_depend>catkin</buildtool_depend>
-  <!-- depend: build, export, and execution dependency -->
-  <depend>roscpp</depend>
-  <depend>sensor_msgs</depend>
-  <depend>roslint</depend>
-  <depend>rm_msgs</depend>
-  <depend>rm_common</depend>
-  <depend>tf</depend>
-  <depend>control_toolbox</depend>
-  <depend>controller_manager</depend>
-  <depend>control_msgs</depend>
-  <depend>dynamic_reconfigure</depend>
+    <!-- buildtool_depend: dependencies of the build process -->
+    <buildtool_depend>catkin</buildtool_depend>
+    <!-- depend: build, export, and execution dependency -->
+    <depend>roscpp</depend>
+    <depend>sensor_msgs</depend>
+    <depend>roslint</depend>
+    <depend>rm_msgs</depend>
+    <depend>rm_common</depend>
+    <depend>tf</depend>
+    <depend>control_toolbox</depend>
+    <depend>controller_manager</depend>
+    <depend>control_msgs</depend>
+    <depend>dynamic_reconfigure</depend>
 </package>
