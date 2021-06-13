@@ -23,6 +23,8 @@ find_package(catkin REQUIRED
         control_msgs
         serial
         controller_manager_msgs
+        std_msgs
+        actionlib
         )
 
 ## Find system libraries
@@ -50,6 +52,8 @@ catkin_package(
         tf2_geometry_msgs
         control_msgs
         controller_manager_msgs
+        std_msgs
+        actionlib
         DEPENDS
 )
 
