@@ -25,6 +25,7 @@ find_package(catkin REQUIRED
         controller_manager_msgs
         std_msgs
         actionlib
+        nav_msgs
         )
 
 ## Find system libraries
@@ -54,6 +55,7 @@ catkin_package(
         controller_manager_msgs
         std_msgs
         actionlib
+        nav_msgs
         DEPENDS
 )
 
