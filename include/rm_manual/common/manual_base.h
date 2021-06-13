@@ -13,9 +13,7 @@
 
 #include <iostream>
 #include <queue>
-#include <utility>
 #include <tf/transform_listener.h>
-#include <control_toolbox/pid.h>
 #include <controller_manager_msgs/SwitchController.h>
 
 #include <rm_common/ros_utilities.h>
