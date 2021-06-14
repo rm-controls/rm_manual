@@ -42,7 +42,7 @@ class ChassisGimbalManual : public ManualBase {
       vel_cmd_sender_->setAngularZVel(data_.dbus_data_.wheel);
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
     } else
-      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setLinearXVel(data_.dbus_data_.ch_r_y);
     vel_cmd_sender_->setLinearYVel(-data_.dbus_data_.ch_r_x);
   }
