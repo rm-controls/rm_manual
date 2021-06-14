@@ -25,7 +25,7 @@ class HeatLimit {
   double getHz() const {
     if (burst_flag_) return expect_shoot_frequency_;
     if (!referee_.is_online_) return safe_shoot_frequency_;
-    double cooling_limit, cooling_rate, cooling_heat;
+    double cooling_limit{}, cooling_rate{}, cooling_heat{};
     if (type_ == "ID1_17MM") {
       cooling_limit = referee_.referee_data_.game_robot_status_.shooter_id_1_17_mm_cooling_limit_;
       cooling_rate = referee_.referee_data_.game_robot_status_.shooter_id_1_17_mm_cooling_rate_;
