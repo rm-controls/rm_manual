@@ -36,6 +36,7 @@ rm_manual:
     - controllers/chassis_controller
     - controllers/gimbal_controller
     - controllers/shooter_controller
+    - controllers/orientation_controller
     - controllers/trigger_calibration_controller
   state_controllers_switch:
     start_controllers:
@@ -46,6 +47,7 @@ rm_manual:
       - controllers/chassis_controller
       - controllers/gimbal_controller
       - controllers/shooter_controller
+      - controllers/orientation_controller
     stop_controllers:
       - controllers/trigger_calibration_controller
   calibration_manager:
