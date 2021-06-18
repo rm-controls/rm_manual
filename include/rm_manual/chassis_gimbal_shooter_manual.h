@@ -12,6 +12,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   explicit ChassisGimbalShooterManual(ros::NodeHandle &nh) : ChassisGimbalManual(nh) {
     ros::NodeHandle shooter_nh(nh, "shooter");
     shooter_cmd_sender_ = new ShooterCommandSender(shooter_nh, data_.referee_);
+    ros::NodeHandle cover_nh(nh, "cover");
+    cover_command_sender_ = new CoverCommandSender(cover_nh);
   }
  protected:
   void drawUi() override {
@@ -25,6 +27,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void sendCommand(const ros::Time &time) override {
     ChassisGimbalManual::sendCommand(time);
     shooter_cmd_sender_->sendCommand(time);
+    cover_command_sender_->sendCommand(time);
   }
   void leftSwitchDown() override {
     ChassisGimbalManual::leftSwitchDown();
@@ -47,11 +50,13 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void rightSwitchDown() override {
     ChassisGimbalManual::rightSwitchDown();
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+    cover_command_sender_->open();
   }
   void rightSwitchUp() override {
     ChassisGimbalManual::rightSwitchUp();
     if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+    cover_command_sender_->close();
   }
   void fPress() override { if (state_ == PC) shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
   void qPress() override {
@@ -82,6 +87,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     }
   }
   ShooterCommandSender *shooter_cmd_sender_{};
+  CoverCommandSender *cover_command_sender_{};
 };
 }
 

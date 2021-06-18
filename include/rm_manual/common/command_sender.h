@@ -13,6 +13,8 @@
 #include <rm_msgs/ShootCmd.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <nav_msgs/Odometry.h>
+#include <std_msgs/Float64.h>
+
 #include "heat_limit.h"
 #include "target_cost_function.h"
 
@@ -27,7 +29,11 @@ class CommandSenderBase {
     queue_size_ = getParam(nh, "queue_size", 1);
     pub_ = nh.advertise<MsgType>(topic_, queue_size_);
   }
-  void setMode(int mode) { if (!std::is_same<MsgType, geometry_msgs::Twist>::value) msg_.mode = mode; }
+  void setMode(int mode) {
+    if (!std::is_same<MsgType, geometry_msgs::Twist>::value &&
+        !std::is_same<MsgType, std_msgs::Float64>::value)
+      msg_.mode = mode;
+  }
   virtual void sendCommand(const ros::Time &time) { pub_.publish(msg_); }
   virtual void setZero() = 0;
   MsgType *getMsg() { return &msg_; }
@@ -230,6 +236,23 @@ class Vel3DCommandSender : public HeaderStampCommandSenderBase<geometry_msgs::Tw
   }
  private:
   double max_linear_x_{}, max_linear_y_{}, max_linear_z_{}, max_angular_x_{}, max_angular_y_{}, max_angular_z_{};
+};
+
+class CoverCommandSender : public CommandSenderBase<std_msgs::Float64> {
+ public:
+  explicit CoverCommandSender(ros::NodeHandle &nh) : CommandSenderBase<std_msgs::Float64>(nh), has_cover_(false) {
+    if (nh.getParam("close_pos", close_pos_) && nh.getParam("open_pos", open_pos_))
+      has_cover_ = true;
+  }
+  void open() { msg_.data = open_pos_; }
+  void close() { msg_.data = close_pos_; }
+  void sendCommand(const ros::Time &time) override {
+    if (has_cover_) CommandSenderBase<std_msgs::Float64>::sendCommand(time);
+  }
+  void setZero() override {};
+ private:
+  bool has_cover_;
+  double close_pos_{}, open_pos_{};
 };
 
 }
