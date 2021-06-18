@@ -47,6 +47,7 @@ class ManualBase {
     switch_base_ctrl_srv_->switchControllers();
     switch_base_ctrl_srv_->callService();
     state_ = IDLE;
+    calibration_manager_->reset();
   }
   virtual void leftSwitchDown() {};
   virtual void leftSwitchMid() {};

@@ -153,7 +153,7 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
   }
  private:
   TargetCostFunction *cost_function_;
-  double max_yaw_rate_{}, max_pitch_vel_{}, track_timeout_;
+  double max_yaw_rate_{}, max_pitch_vel_{}, track_timeout_{};
   ros::Time last_track_;
 };
 

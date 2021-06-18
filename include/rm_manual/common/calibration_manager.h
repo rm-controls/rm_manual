@@ -36,7 +36,8 @@ class CalibrationManager {
           .query_services_ = new QueryCalibrationService(query_nh)});
     }
     last_query_ = ros::Time::now();
-    reset();
+    // Start with calibrated, you should use reset() to start calibration.
+    calibration_itr_ = calibration_services_.end();
   }
   void reset() {
     if (calibration_services_.empty())

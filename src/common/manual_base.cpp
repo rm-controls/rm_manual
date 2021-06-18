@@ -22,9 +22,9 @@ void ManualBase::run() {
   ros::Time time = ros::Time::now();
   data_.referee_.read();
   setZero();
+  calibration_manager_->checkCalibrate(time);
   checkSwitch(time);
   checkKeyboard(time);
-  calibration_manager_->checkCalibrate(time);
   sendCommand(time);
   drawUi();
 }
