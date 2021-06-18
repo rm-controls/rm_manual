@@ -90,23 +90,41 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
     if (!nh.getParam("accel_z", accel_z))
       ROS_ERROR("Accel Z no defined (namespace: %s)", nh.getNamespace().c_str());
     if (!nh.getParam("safety_power", safety_power_))
-      ROS_ERROR("safety power no defined (namespace: %s)", nh.getNamespace().c_str());
+      ROS_ERROR("Safety power no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (!nh.getParam("capacitor_threshold", capacitor_threshold_))
+      ROS_ERROR("Capacitor threshold no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (!nh.getParam("charge_power", charge_power_))
+      ROS_ERROR("Charge power no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (!nh.getParam("extra_power", extra_power_))
+      ROS_ERROR("Extra power no defined (namespace: %s)", nh.getNamespace().c_str());
     msg_.accel.linear.x = accel_x;
     msg_.accel.linear.y = accel_y;
     msg_.accel.angular.z = accel_z;
+    burst_flag_ = false;
   }
   void sendCommand(const ros::Time &time) override {
-    if (referee_.super_capacitor_.is_online_)
-      msg_.power_limit = referee_.super_capacitor_.parameters[1];
-    else if (referee_.is_online_)
-      msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit_;
-    else
+    if (referee_.is_online_) {
+      if (referee_.super_capacitor_.parameters[3] < capacitor_threshold_)
+        msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit_ - charge_power_;
+      else {
+        if (getBrustMode())
+          msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit_ + extra_power_;
+        else
+          msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit_;
+      }
+    } else
       msg_.power_limit = safety_power_;
     TimeStampCommandSenderBase<rm_msgs::ChassisCmd>::sendCommand(time);
   }
   void setZero() override {};
+  void setBurstMode(bool burst_flag) { burst_flag_ = burst_flag; }
+  bool getBrustMode() { return burst_flag_; }
  private:
   double safety_power_{};
+  double capacitor_threshold_{};
+  double charge_power_{};
+  double extra_power_{};
+  bool burst_flag_;
 };
 
 class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd> {
