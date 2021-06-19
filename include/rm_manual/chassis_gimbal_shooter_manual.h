@@ -58,6 +58,10 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
     cover_command_sender_->close();
   }
+  void rightSwitchMid() override {
+    ChassisGimbalManual::rightSwitchMid();
+    cover_command_sender_->close();
+  }
   void fPress() override { if (state_ == PC) shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
   void qPress() override {
     if (state_ == PC) {
