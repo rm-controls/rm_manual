@@ -6,6 +6,10 @@ rm_manual:
     accel_y: 10.0
     accel_z: 20.0
     safety_power: 50.0
+    capacitor_threshold: 0.1
+    charge_power: 20
+    extra_power: 30
+    burst_power: 200
   vel:
     topic: "/cmd_vel"
     max_linear_x: 4.0
@@ -37,6 +41,7 @@ rm_manual:
   controllers_list:
     - controllers/robot_state_controller
     - controllers/joint_state_controller
+    - controllers/orientation_controller
     - controllers/chassis_controller
     - controllers/gimbal_controller
     - controllers/shooter_controller
@@ -47,6 +52,7 @@ rm_manual:
     start_controllers:
       - controllers/robot_state_controller
       - controllers/joint_state_controller
+      - controllers/orientation_controller
   base_controllers_switch:
     start_controllers:
       - controllers/chassis_controller
