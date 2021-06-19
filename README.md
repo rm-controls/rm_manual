@@ -2,23 +2,22 @@
 
 ## Overview
 
-This is a template: replace, remove, and add where required. Describe here what this package does and what it's meant
-for in a few sentences.
+This is a package about the referee system, including the sending and receiving of various data and the drawing of the 
+operation auxiliary interface
 
-**Keywords:** example, package, template
+**Keywords:** referee, auxiliary, ROS
 
-Or, add some keywords to the Bitbucket or GitHub repository.
 
 ### License
 
 The source code is released under a [BSD 3-Clause license](LICENSE).
 
-**Author: Péter Fankhauser<br />
-Affiliation: [ANYbotics](https://www.anybotics.com/)<br />
-Maintainer: Péter Fankhauser, pfankhauser@anybotics.com**
+**Author: QiayuanLiao<br />
+Affiliation: [Dynamicx]()<br />
+Maintainer: QiayuanLiao, liaoqiayuan@gmail.com**
 
-The PACKAGE NAME package has been tested under [ROS] Indigo, Melodic and Noetic on respectively Ubuntu 14.04, 18.04 and
-20.04. This is research code, expect that it changes often and any fitness for a particular purpose is disclaimed.
+The rm_base package has been tested under [ROS] Melodic and Noetic on respectively 18.04 and 20.04. This is research
+code, expect that it changes often and any fitness for a particular purpose is disclaimed.
 
 [![Build Status](http://rsl-ci.ethz.ch/buildStatus/icon?job=ros_best_practices)](http://rsl-ci.ethz.ch/job/ros_best_practices/)
 
@@ -63,9 +62,15 @@ Or better, use `rosdep`:
 #### Dependencies
 
 - [Robot Operating System (ROS)](http://wiki.ros.org) (middleware for robotics),
-- [Eigen] (linear algebra library)
-
-  sudo rosdep install --from-paths src
+- roscpp
+- sensor_msgs
+- roslint
+- rm_msgs
+- rm_common
+- tf2_geometry_msgs
+- control_msgs
+- serial
+- controller_manager_msgs
 
 #### Building
 
@@ -73,39 +78,48 @@ To build from source, clone the latest version from this repository into your ca
 using
 
 	cd catkin_workspace/src
-	git clone https://github.com/ethz-asl/ros_best_practices.git
+	git clone http://frp.acmetech.top:8080/dynamicx/rm_manual.git
 	cd ../
 	rosdep install --from-paths . --ignore-src
 	catkin_make
 
-### Running in Docker
+[comment]: <> (### Running in Docker)
 
-Docker is a great way to run an application with all dependencies and libraries bundles together. Make sure
-to [install Docker](https://docs.docker.com/get-docker/) first.
+[comment]: <> (Docker is a great way to run an application with all dependencies and libraries bundles together. Make sure)
 
-First, spin up a simple container:
+[comment]: <> (to [install Docker]&#40;https://docs.docker.com/get-docker/&#41; first.)
 
-	docker run -ti --rm --name ros-container ros:noetic bash
+[comment]: <> (First, spin up a simple container:)
 
-This downloads the `ros:noetic` image from the Docker Hub, indicates that it requires an interactive terminal (`-t, -i`)
-, gives it a name (`--name`), removes it after you exit the container (`--rm`) and runs a command (`bash`).
+[comment]: <> (	docker run -ti --rm --name ros-container ros:noetic bash)
 
-Now, create a catkin workspace, clone the package, build it, done!
+[comment]: <> (This downloads the `ros:noetic` image from the Docker Hub, indicates that it requires an interactive terminal &#40;`-t, -i`&#41;)
 
-	apt-get update && apt-get install -y git
-	mkdir -p /ws/src && cd /ws/src
-	git clone https://github.com/leggedrobotics/ros_best_practices.git
-	cd ..
-	rosdep install --from-path src
-	catkin_make
-	source devel/setup.bash
-	roslaunch ros_package_template ros_package_template.launch
+[comment]: <> (, gives it a name &#40;`--name`&#41;, removes it after you exit the container &#40;`--rm`&#41; and runs a command &#40;`bash`&#41;.)
+
+[comment]: <> (Now, create a catkin workspace, clone the package, build it, done!)
+
+[comment]: <> (	apt-get update && apt-get install -y git)
+
+[comment]: <> (	mkdir -p /ws/src && cd /ws/src)
+
+[comment]: <> (	git clone http://frp.acmetech.top:8080/dynamicx/rm_manual.git)
+
+[comment]: <> (	cd ..)
+
+[comment]: <> (	rosdep install --from-path src)
+
+[comment]: <> (	catkin_make)
+
+[comment]: <> (	source devel/setup.bash)
+
+[comment]: <> (	roslaunch rm_manual load.launch)
 
 ### Unit Tests
 
 Run the unit tests with
 
-	catkin_make run_tests_ros_package_template
+	catkin_make text_power_limit.launch
 
 ### Static code analysis
 
@@ -119,17 +133,30 @@ Describe the quickest way to run this software, for example:
 
 Run the main node with
 
-	roslaunch ros_package_template ros_package_template.launch
+	roslaunch rm_manual load.launch
 
 ## Config files
 
-Config file folder/set 1
+Config file rm_manual/config
 
-* **config_file_1.yaml** Shortly explain the content of this config file
+* **engineer.yaml** Shortly explain the content of this config file
 
-Config file folder/set 2
+Config file rm_manual/config
 
-* **...**
+* **engineer.yaml** Shortly explain the content of this config file
+
+Config file rm_manual/config
+
+* **engineer.yaml** Shortly explain the content of this config file
+
+Config file rm_manual/config
+
+* **engineer.yaml** Shortly explain the content of this config file
+
+Config file rm_manual/config
+
+* **engineer.yaml** Shortly explain the content of this config file
+
 
 ## Launch files
 
