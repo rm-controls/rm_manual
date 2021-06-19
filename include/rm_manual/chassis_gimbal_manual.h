@@ -48,8 +48,6 @@ class ChassisGimbalManual : public ManualBase {
   }
   void rightSwitchDown() override {
     ManualBase::rightSwitchDown();
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::PASSIVE);
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::PASSIVE);
   }
   void rightSwitchUp() override {
     ManualBase::rightSwitchUp();
@@ -87,8 +85,7 @@ class ChassisGimbalManual : public ManualBase {
   void xPress() override { if (state_ == PC) ui_->setOperateType(ADD); }
   void gPress() override {
     if (state_ == PC) {
-      if (ros::Time::now() - last_release_g_ < ros::Duration(0.05)
-          && chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::PASSIVE) {
+      if (ros::Time::now() - last_release_g_ < ros::Duration(0.05)) {
         if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
           chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
         else chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
@@ -112,16 +109,12 @@ class ChassisGimbalManual : public ManualBase {
     }
   }
   void ctrlZPress() override {
-    if (state_ == PC) {
-      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::PASSIVE);
-      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::PASSIVE);
-    }
+    if (state_ == PC)
+      state_ = IDLE;
   }
   void ctrlWPress() override {
-    if (state_ == PC) {
-      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-    }
+    if (state_ == IDLE)
+      state_ = PC;
   }
   ChassisCommandSender *chassis_cmd_sender_{};
   Vel2DCommandSender *vel_cmd_sender_;

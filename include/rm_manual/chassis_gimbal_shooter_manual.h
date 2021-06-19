@@ -73,18 +73,12 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     if (state_ == PC) { gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed()); }
   }
   void ctrlWPress() override {
+    if (state_ == IDLE) { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
     ChassisGimbalManual::ctrlWPress();
-    if (state_ == PC) {
-      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
-      shooter_cmd_sender_->setBurstMode(false);
-    }
   }
   void ctrlZPress() override {
+    if (state_ == PC) { shooter_cmd_sender_->setBurstMode(false); }
     ChassisGimbalManual::ctrlZPress();
-    if (state_ == PC) {
-      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PASSIVE);
-      shooter_cmd_sender_->setBurstMode(false);
-    }
   }
   ShooterCommandSender *shooter_cmd_sender_{};
   CoverCommandSender *cover_command_sender_{};

@@ -6,6 +6,10 @@ rm_manual:
     accel_y: 10.0
     accel_z: 20.0
     safety_power: 50.0
+    capacitor_threshold: 0.1
+    charge_power: 20
+    extra_power: 30
+    burst_power: 200
   vel:
     topic: "/cmd_vel"
     max_linear_x: 4.0
@@ -52,6 +56,7 @@ rm_manual:
       - controllers/chassis_controller
       - controllers/gimbal_controller
       - controllers/shooter_controller
+      - controllers/cover_controller
   calibration_manager:
     trigger:
       switch:
