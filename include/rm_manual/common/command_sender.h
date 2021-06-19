@@ -97,6 +97,8 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
       ROS_ERROR("Charge power no defined (namespace: %s)", nh.getNamespace().c_str());
     if (!nh.getParam("extra_power", extra_power_))
       ROS_ERROR("Extra power no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (!nh.getParam("burst_power", burst_power_))
+      ROS_ERROR("Burst power no defined (namespace: %s)", nh.getNamespace().c_str());
     msg_.accel.linear.x = accel_x;
     msg_.accel.linear.y = accel_y;
     msg_.accel.angular.z = accel_z;
@@ -108,9 +110,9 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
         msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit_ - charge_power_;
       else {
         if (getBrustMode())
-          msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit_ + extra_power_;
+          msg_.power_limit = burst_power_;
         else
-          msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit_;
+          msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit_ + extra_power_;
       }
     } else
       msg_.power_limit = safety_power_;
@@ -124,7 +126,8 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
   double capacitor_threshold_{};
   double charge_power_{};
   double extra_power_{};
-  bool burst_flag_;
+  double burst_power_{};
+  bool burst_flag_{};
 };
 
 class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd> {
