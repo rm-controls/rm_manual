@@ -46,13 +46,10 @@ class ChassisGimbalManual : public ManualBase {
     vel_cmd_sender_->setLinearXVel(data_.dbus_data_.ch_r_y);
     vel_cmd_sender_->setLinearYVel(-data_.dbus_data_.ch_r_x);
   }
-  void rightSwitchDown() override {
-    ManualBase::rightSwitchDown();
-  }
   void rightSwitchUp() override {
     ManualBase::rightSwitchUp();
-    if (gimbal_cmd_sender_->getMsg()->mode == rm_msgs::GimbalCmd::RATE)
-      gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+    gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
     if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
       vel_cmd_sender_->setAngularZVel(1.);
     ui_->setOperateType(UPDATE);
