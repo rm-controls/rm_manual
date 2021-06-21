@@ -26,7 +26,7 @@ void ManualBase::run() {
   checkSwitch(time);
   checkKeyboard(time);
   sendCommand(time);
-  drawUi();
+//  drawUi();
 }
 
 void ManualBase::checkSwitch(const ros::Time &time) {
