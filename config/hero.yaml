@@ -34,10 +34,13 @@ rm_manual:
       safe_shoot_frequency: 1
       heat_coeff: 1.5
       type: "ID1_42MM"
+  cover:
+    topic: "/controllers/cover_controller/command"
+    open_pos: -2.0
+    close_pos: 0.0
   controllers_list:
     - controllers/robot_state_controller
     - controllers/joint_state_controller
-    - controllers/orientation_controller
     - controllers/chassis_controller
     - controllers/gimbal_controller
     - controllers/shooter_controller
@@ -46,7 +49,6 @@ rm_manual:
     start_controllers:
       - controllers/robot_state_controller
       - controllers/joint_state_controller
-      - controllers/orientation_controller
   base_controllers_switch:
     start_controllers:
       - controllers/chassis_controller
