@@ -33,7 +33,7 @@ void Referee::read() {
 
   if (ros::Time::now() - last_get_referee_data_ > ros::Duration(0.1)) is_online_ = false;
   try {
-    if (serial_.waitReadable()) {
+    if (serial_.available()) {
       rx_len = serial_.available();
       serial_.read(rx_buffer, rx_len);
     }
