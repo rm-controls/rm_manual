@@ -16,7 +16,7 @@ class HeatLimit {
       ROS_ERROR("Safe shoot heat coeff frequency no defined (namespace: %s)", nh.getNamespace().c_str());
     if (!nh.getParam("type", type_))
       ROS_ERROR("Shooter type no defined (namespace: %s)", nh.getNamespace().c_str());
-    if (type_ == "ID2_17MM")
+    if (type_ == "ID1_42MM")
       bullet_heat_ = 100.;
     else
       bullet_heat_ = 10.;
@@ -45,7 +45,7 @@ class HeatLimit {
     else if (cooling_heat >= cooling_limit)
       return 0.0;
     else
-      return cooling_rate / cooling_heat;
+      return cooling_rate / bullet_heat_;
   }
 
   int getSpeedLimit() {
