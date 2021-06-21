@@ -81,22 +81,18 @@ class ChassisGimbalManual : public ManualBase {
   void dPress() override { if (state_ == PC) vel_cmd_sender_->setLinearYVel(-1.); }
   void xPress() override { if (state_ == PC) ui_->setOperateType(ADD); }
   void gPress() override {
-    if (state_ == PC) {
-      if (ros::Time::now() - last_release_g_ < ros::Duration(0.05)) {
-        if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
-          chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-        else chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
-      }
+    if (state_ == PC && ros::Time::now() - last_release_g_ < ros::Duration(0.05)) {
+      if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
+        chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+      else chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
     }
   }
   void ePress() override {
-    if (state_ == PC) {
-      if (ros::Time::now() - last_release_e_ < ros::Duration(0.05)) {
-        if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::TWIST)
-          chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-        else if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW)
-          chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
-      }
+    if (state_ == PC && ros::Time::now() - last_release_e_ < ros::Duration(0.05)) {
+      if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::TWIST)
+        chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+      else if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW)
+        chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
     }
   }
   void mouseRightPress() override {

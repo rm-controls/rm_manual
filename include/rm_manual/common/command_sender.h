@@ -127,7 +127,7 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
       if (referee_.super_capacitor_.parameters[3] < capacitor_threshold_)
         msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit_ - charge_power_;
       else {
-        if (getBrustMode())
+        if (getBurstMode())
           msg_.power_limit = burst_power_;
         else
           msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit_ + extra_power_;
@@ -138,7 +138,7 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
   }
   void setZero() override {};
   void setBurstMode(bool burst_flag) { burst_flag_ = burst_flag; }
-  bool getBrustMode() { return burst_flag_; }
+  bool getBurstMode() { return burst_flag_; }
  private:
   double safety_power_{};
   double capacitor_threshold_{};
