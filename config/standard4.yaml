@@ -30,9 +30,9 @@ rm_manual:
     topic: "/cmd_shoot"
     gimbal_error_limit: 0.05
     heat_limit:
-      expect_shoot_frequency: 10
-      safe_shoot_frequency: 10
-      heat_coeff: 1.5
+      expect_shoot_frequency: 20
+      safe_shoot_frequency: 5
+      heat_coeff: 5.0
       type: "ID1_17MM"
   cover:
     topic: "/controllers/cover_controller/command"
