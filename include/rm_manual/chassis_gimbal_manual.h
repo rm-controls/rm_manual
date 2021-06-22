@@ -45,6 +45,7 @@ class ChassisGimbalManual : public ManualBase {
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setLinearXVel(data_.dbus_data_.ch_r_y);
     vel_cmd_sender_->setLinearYVel(-data_.dbus_data_.ch_r_x);
+    gimbal_cmd_sender_->setRate(-data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y);
   }
   void rightSwitchUp() override {
     ManualBase::rightSwitchUp();
@@ -56,10 +57,7 @@ class ChassisGimbalManual : public ManualBase {
   }
   void leftSwitchDown() override {
     ManualBase::leftSwitchDown();
-    if (state_ == RC) {
-      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-      gimbal_cmd_sender_->setRate(-data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y);
-    }
+    if (state_ == RC) { gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE); }
   }
   void leftSwitchMid() override {
     ManualBase::leftSwitchMid();
