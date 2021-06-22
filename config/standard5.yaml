@@ -59,7 +59,7 @@ rm_manual:
       - controllers/shooter_controller
       - controllers/cover_controller
   calibration_manager:
-    trigger:
+    - step: trigger
       switch:
         start_controllers:
           - controllers/trigger_calibration_controller
@@ -67,14 +67,6 @@ rm_manual:
           - controllers/shooter_controller
       query:
         service_name: /controllers/trigger_calibration_controller/is_calibrated
-    cover:
-      switch:
-        start_controllers:
-          - controllers/cover_calibration_controller
-        stop_controllers:
-          - controllers/cover_controller
-      query:
-        service_name: /controllers/cover_calibration_controller/is_calibrated
 
 controllers:
   cover_controller:

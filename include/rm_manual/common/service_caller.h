@@ -26,6 +26,19 @@ class ServiceCallerBase {
       }
     client_ = nh.serviceClient<ServiceType>(service_name_);
   }
+  explicit ServiceCallerBase(const XmlRpc::XmlRpcValue &controllers, const std::string &service_name = "") {
+    ros::NodeHandle nh("/rm_manual/calibration_manager");
+    if (controllers.hasMember("service_name"))
+      service_name_ = static_cast<std::string>(controllers["service_name"]);
+    else {
+      service_name_ = service_name;
+      if (service_name.empty()) {
+        ROS_ERROR("Service name no defined (namespace: %s)", nh.getNamespace().c_str());
+        return;
+      }
+    }
+    client_ = nh.serviceClient<ServiceType>(service_name_);
+  }
   ~ServiceCallerBase() { delete thread_; }
   void callService() {
     if (isCalling())
@@ -68,6 +81,20 @@ class SwitchControllersService : public ServiceCallerBase<controller_manager_msg
     service_.request.strictness = service_.request.BEST_EFFORT;
     service_.request.start_asap = true;
   }
+  explicit SwitchControllersService(const XmlRpc::XmlRpcValue &controllers)
+      : ServiceCallerBase<controller_manager_msgs::SwitchController>(
+      controllers, "/controller_manager/switch_controller") {
+    if (controllers.hasMember("start_controllers"))
+      for (int i = 0; i < controllers.size(); ++i)
+        start_controllers_.push_back(controllers["start_controllers"][i]);
+    if (controllers.hasMember("stop_controllers"))
+      for (int i = 0; i < controllers.size(); ++i)
+        stop_controllers_.push_back(controllers["stop_controllers"][i]);
+    if (start_controllers_.empty() && stop_controllers_.empty())
+      ROS_ERROR("No start/stop controllers specified (namespace: /rm_manual/calibration_manager)");
+    service_.request.strictness = service_.request.BEST_EFFORT;
+    service_.request.start_asap = true;
+  }
   void startControllersOnly() {
     service_.request.start_controllers = start_controllers_;
     service_.request.stop_controllers.clear();
@@ -95,6 +122,8 @@ class SwitchControllersService : public ServiceCallerBase<controller_manager_msg
 class QueryCalibrationService : public ServiceCallerBase<control_msgs::QueryCalibrationState> {
  public:
   explicit QueryCalibrationService(ros::NodeHandle &nh) : ServiceCallerBase<control_msgs::QueryCalibrationState>(nh) {}
+  explicit QueryCalibrationService(const XmlRpc::XmlRpcValue &controllers)
+      : ServiceCallerBase<control_msgs::QueryCalibrationState>(controllers) {}
   bool getIsCalibrated() {
     if (isCalling()) return false;
     return service_.response.is_calibrated;

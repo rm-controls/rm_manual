@@ -21,19 +21,17 @@ class CalibrationManager {
     nh_global.param("use_sim_time", use_sim_time, false);
     if (use_sim_time)
       return;
-    ros::NodeHandle cali_nh(nh, "calibration_manager");
     XmlRpc::XmlRpcValue rpc_value;
-    if (!nh.getParam("calibration_manager", rpc_value) || rpc_value.getType() != XmlRpc::XmlRpcValue::TypeStruct) {
+    if (!nh.getParam("calibration_manager", rpc_value) || rpc_value.getType() != XmlRpc::XmlRpcValue::TypeArray) {
       ROS_INFO("No calibration controllers defined");
       return;
     }
-    for (XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = rpc_value.begin(); it != rpc_value.end(); ++it) {
-      std::string value = it->first;
-      ros::NodeHandle switch_nh(cali_nh, value + "/switch");
-      ros::NodeHandle query_nh(cali_nh, value + "/query");
+    for (int i = 0; i < rpc_value.size(); ++i) {
+      ROS_ASSERT(rpc_value[i].hasMember("switch"));
+      ROS_ASSERT(rpc_value[i].hasMember("query"));
       calibration_services_.push_back(CalibrationService{
-          .switch_services_ = new SwitchControllersService(switch_nh),
-          .query_services_ = new QueryCalibrationService(query_nh)});
+          .switch_services_ = new SwitchControllersService(rpc_value[i]["switch"]),
+          .query_services_ = new QueryCalibrationService(rpc_value[i]["query"])});
     }
     last_query_ = ros::Time::now();
     // Start with calibrated, you should use reset() to start calibration.
