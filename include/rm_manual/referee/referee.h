@@ -20,8 +20,10 @@ namespace rm_manual {
 class SuperCapacitor {
  public:
   void read(const std::vector<uint8_t> &rx_buffer);
-
-  float parameters[4] = {0};
+  float getChassisPower() const { return parameters[0]; }
+  float getLimitPower() const { return parameters[1]; }
+  float getBufferPower() const { return parameters[2]; }
+  float getCapPower() const { return parameters[3]; }
   bool is_online_ = false;
   ros::Time last_get_capacitor_data_ = ros::Time::now();
  private:
@@ -29,6 +31,7 @@ class SuperCapacitor {
   void receiveCallBack(unsigned char package_id, unsigned char *data);
   static float int16ToFloat(unsigned short data0);
 
+  float parameters[4] = {0};
   unsigned char receive_buffer_[1024] = {0};
   unsigned char ping_pong_buffer_[1024] = {0};
   unsigned int receive_buf_counter_ = 0;

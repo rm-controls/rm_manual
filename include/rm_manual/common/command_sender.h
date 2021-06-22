@@ -124,7 +124,7 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
   }
   void sendCommand(const ros::Time &time) override {
     if (referee_.is_online_) {
-      if (referee_.super_capacitor_.parameters[3] < capacitor_threshold_)
+      if (referee_.super_capacitor_.getCapPower() < capacitor_threshold_)
         msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit_ - charge_power_;
       else {
         if (getBurstMode())

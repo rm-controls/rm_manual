@@ -7,7 +7,7 @@
 namespace rm_manual {
 void Ui::displayCapInfo() {
   if (graphic_operate_type_ != ADD && ros::Time::now() - last_update_cap_time_ < ros::Duration(0.5)) return;
-  float cap_power = referee_->super_capacitor_.parameters[3] * 100;
+  float cap_power = referee_->super_capacitor_.getCapPower() * 100;
   char power_string[30];
   sprintf(power_string, "Cap: %1.0f%%", cap_power);
   if (cap_power >= 60)
