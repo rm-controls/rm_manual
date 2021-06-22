@@ -44,7 +44,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     rm_manual::ChassisGimbalManual::leftSwitchUp();
     if (state_ == RC) {
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-      shooter_cmd_sender_->checkError(data_.gimbal_des_error_.error);
+      shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
     }
   }
   void rightSwitchDown() override {

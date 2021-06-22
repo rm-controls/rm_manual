@@ -127,7 +127,7 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
       if (referee_.super_capacitor_.parameters[3] < capacitor_threshold_)
         msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit_ - charge_power_;
       else {
-        if (getBrustMode())
+        if (getBurstMode())
           msg_.power_limit = burst_power_;
         else
           msg_.power_limit = referee_.referee_data_.game_robot_status_.chassis_power_limit_ + extra_power_;
@@ -138,7 +138,7 @@ class ChassisCommandSender : public TimeStampCommandSenderBase<rm_msgs::ChassisC
   }
   void setZero() override {};
   void setBurstMode(bool burst_flag) { burst_flag_ = burst_flag; }
-  bool getBrustMode() { return burst_flag_; }
+  bool getBurstMode() { return burst_flag_; }
  private:
   double safety_power_{};
   double capacitor_threshold_{};
@@ -195,8 +195,9 @@ class ShooterCommandSender : public TimeStampCommandSenderBase<rm_msgs::ShootCmd
   }
   ~ShooterCommandSender() { delete heat_limit_; }
   void setCover(bool is_open) { msg_.cover = is_open; }
-  void checkError(int track_error) {
-    if (msg_.mode == rm_msgs::ShootCmd::PUSH && track_error > gimbal_error_limit_) setMode(rm_msgs::ShootCmd::READY);
+  void checkError(const rm_msgs::GimbalDesError &gimbal_des_error, const ros::Time &time) {
+    if (gimbal_des_error.error > gimbal_error_limit_ && time - gimbal_des_error.stamp < ros::Duration(0.1))
+      if (msg_.mode == rm_msgs::ShootCmd::PUSH) setMode(rm_msgs::ShootCmd::READY);
   }
   void sendCommand(const ros::Time &time) override {
     msg_.speed = heat_limit_->getSpeedLimit();
