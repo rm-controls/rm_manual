@@ -24,9 +24,7 @@ void Ui::displayChassisInfo(uint8_t chassis_mode, bool burst_flag) {
       && last_chassis_mode_ == chassis_mode)
     return;
   GraphicColorType color = burst_flag ? ORANGE : YELLOW;
-  if (chassis_mode == rm_msgs::ChassisCmd::PASSIVE)
-    referee_->drawString(1470, 790, 1, "chassis:passive", color, graphic_operate_type_);
-  else if (chassis_mode == rm_msgs::ChassisCmd::FOLLOW)
+  if (chassis_mode == rm_msgs::ChassisCmd::FOLLOW)
     referee_->drawString(1470, 790, 1, "chassis:follow", color, graphic_operate_type_);
   else if (chassis_mode == rm_msgs::ChassisCmd::GYRO)
     referee_->drawString(1470, 790, 1, "chassis:gyro", color, graphic_operate_type_);
@@ -38,9 +36,7 @@ void Ui::displayChassisInfo(uint8_t chassis_mode, bool burst_flag) {
 
 void Ui::displayGimbalInfo(uint8_t gimbal_mode) {
   if (graphic_operate_type_ != ADD && last_gimbal_mode_ == gimbal_mode) return;
-  if (gimbal_mode == rm_msgs::GimbalCmd::PASSIVE)
-    referee_->drawString(1470, 740, 2, "gimbal:passive", YELLOW, graphic_operate_type_);
-  else if (gimbal_mode == rm_msgs::GimbalCmd::RATE)
+  if (gimbal_mode == rm_msgs::GimbalCmd::RATE)
     referee_->drawString(1470, 740, 2, "gimbal:rate", YELLOW, graphic_operate_type_);
   else if (gimbal_mode == rm_msgs::GimbalCmd::TRACK)
     referee_->drawString(1470, 740, 2, "gimbal:track", YELLOW, graphic_operate_type_);
@@ -52,9 +48,7 @@ void Ui::displayShooterInfo(uint8_t shooter_mode, bool burst_flag) {
       && last_shooter_mode_ == shooter_mode)
     return;
   GraphicColorType color = burst_flag ? ORANGE : YELLOW;
-  if (shooter_mode == rm_msgs::ShootCmd::PASSIVE)
-    referee_->drawString(1470, 690, 3, "shooter:passive", color, graphic_operate_type_);
-  else if (shooter_mode == rm_msgs::ShootCmd::READY)
+  if (shooter_mode == rm_msgs::ShootCmd::READY)
     referee_->drawString(1470, 690, 3, "shooter:ready", color, graphic_operate_type_);
   else if (shooter_mode == rm_msgs::ShootCmd::PUSH)
     referee_->drawString(1470, 690, 3, "shooter:push", color, graphic_operate_type_);
