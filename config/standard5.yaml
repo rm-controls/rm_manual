@@ -32,7 +32,7 @@ rm_manual:
     heat_limit:
       expect_shoot_frequency: 20
       safe_shoot_frequency: 5
-      heat_coeff: 5.0
+      heat_coeff: 8.0
       type: "ID1_17MM"
     type: "ID1_17MM"
     cover:
