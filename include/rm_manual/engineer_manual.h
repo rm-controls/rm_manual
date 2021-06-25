@@ -22,15 +22,13 @@ class EngineerManual : public ChassisGimbalManual {
     ros::NodeHandle arm_servo(nh, "arm_servo");
 
     arm_servo_sender_ = new Vel3DCommandSender(arm_servo);
-    reset_servo_server_ =
-        nh.serviceClient<std_srvs::Empty>("/servo_server/reset_servo_status");
+    reset_servo_server_ = nh.serviceClient<std_srvs::Empty>("/servo_server/reset_servo_status");
     ROS_INFO("Waiting for move arm server to start.");
     action_client_.waitForServer();
     ROS_INFO("Move arm server started.");
     sendStepList("raise_arm");
 
     pub_ = nh.advertise<std_msgs::Float64>("/controllers/mast_controller/command", 1);
-
   }
  private:
   void sendCommand(const ros::Time &time) override {
