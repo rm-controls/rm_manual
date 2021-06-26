@@ -22,6 +22,7 @@ void ManualBase::run() {
   ros::Time time = ros::Time::now();
   data_.referee_.read();
   setZero();
+  checkReferee(time);
   calibration_manager_->checkCalibrate(time);
   checkSwitch(time);
   checkKeyboard(time);
@@ -29,14 +30,32 @@ void ManualBase::run() {
 //  drawUi();
 }
 
+void ManualBase::checkReferee(const ros::Time &time) {
+  if (data_.referee_.referee_data_.game_robot_status_.mains_power_chassis_output_
+      && !data_.referee_.last_referee_data_.game_robot_status_.mains_power_chassis_output_) {
+    ROS_INFO("Chassis output ON");
+    chassisOutputOn();
+  }
+  if (data_.referee_.referee_data_.game_robot_status_.mains_power_gimbal_output_
+      && !data_.referee_.last_referee_data_.game_robot_status_.mains_power_gimbal_output_) {
+    ROS_INFO("Gimbal output ON");
+    gimbalOutputOn();
+  }
+  if (data_.referee_.referee_data_.game_robot_status_.mains_power_shooter_output_
+      && !data_.referee_.last_referee_data_.game_robot_status_.mains_power_shooter_output_) {
+    ROS_INFO("Shooter output ON");
+    shooterOutputOn();
+  }
+}
+
 void ManualBase::checkSwitch(const ros::Time &time) {
   if (remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() > 0.1) {
-    ROS_INFO("Remote off");
+    ROS_INFO("Remote controller OFF");
     remoteControlTurnOff();
     remote_is_open_ = false;
   }
   if (!remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() < 0.1) {
-    ROS_INFO("Remote on");
+    ROS_INFO("Remote controller ON");
     remoteControlTurnOn();
     remote_is_open_ = true;
   }

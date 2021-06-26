@@ -31,11 +31,17 @@ class ManualBase {
   enum { PASSIVE, IDLE, RC, PC };
   void run();
  protected:
+  void checkReferee(const ros::Time &time);
   void checkSwitch(const ros::Time &time);
   void checkKeyboard(const ros::Time &time);
   virtual void setZero() = 0;
   virtual void sendCommand(const ros::Time &time) = 0;
   virtual void drawUi() {};
+
+  // Referee
+  virtual void chassisOutputOn() {};
+  virtual void gimbalOutputOn() {};
+  virtual void shooterOutputOn() {};
 
   // Remote Controller
   virtual void remoteControlTurnOff() {

@@ -29,6 +29,10 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     shooter_cmd_sender_->sendCommand(time);
     cover_command_sender_->sendCommand(time);
   }
+  void shooterOutputOn() override {
+    ROS_INFO("Shooter Output on!");
+    calibration_manager_->reset();
+  }
   void leftSwitchDown() override {
     ChassisGimbalManual::leftSwitchDown();
     if (state_ == RC) shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
