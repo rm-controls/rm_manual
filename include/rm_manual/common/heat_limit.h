@@ -40,12 +40,15 @@ class HeatLimit {
       cooling_heat = referee_.referee_data_.power_heat_data_.shooter_id_1_42_mm_cooling_heat_;
     }
 
-    if (cooling_heat < cooling_limit - bullet_heat_ * heat_coeff_)
-      return expect_shoot_frequency_;
-    else if (cooling_heat >= cooling_limit)
+    if (cooling_limit - cooling_heat < bullet_heat_)
       return 0.0;
-    else
+    else if (cooling_limit - cooling_heat == bullet_heat_)
       return cooling_rate / bullet_heat_;
+    else if (cooling_limit - cooling_heat <= bullet_heat_ * heat_coeff_)
+      return (cooling_limit - cooling_heat) / (bullet_heat_ * heat_coeff_)
+          * (expect_shoot_frequency_ - cooling_rate / bullet_heat_) + cooling_rate / bullet_heat_;
+    else
+      return expect_shoot_frequency_;
   }
 
   int getSpeedLimit() {
