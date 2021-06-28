@@ -34,11 +34,10 @@ rm_manual:
       safe_shoot_frequency: 5
       heat_coeff: 8.0
       type: "ID1_17MM"
-    type: "ID1_17MM"
-    cover:
-      topic: "/controllers/cover_controller/command"
-      open_pos: -2.0
-      close_pos: 0.0
+  cover:
+    topic: "/controllers/cover_controller/command"
+    open_pos: -2.0
+    close_pos: 0.0
   controllers_list:
     - controllers/robot_state_controller
     - controllers/joint_state_controller
@@ -59,6 +58,14 @@ rm_manual:
       - controllers/shooter_controller
       - controllers/cover_controller
   calibration_manager:
+    - step: cover
+      switch:
+        start_controllers:
+          - controllers/cover_calibration_controller
+        stop_controllers:
+          - controllers/cover_controller
+      query:
+        service_name: /controllers/cover_calibration_controller/is_calibrated
     - step: trigger
       switch:
         start_controllers:
