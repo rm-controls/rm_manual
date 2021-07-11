@@ -22,15 +22,14 @@ class UiBase {
   int picture_id_, picture_x_, picture_y_;
 };
 
-class UiControllers : public UiBase {
+class UiManual : public UiBase {
  public:
-  UiControllers(Referee *referee) : UiBase(referee) {};
+  UiManual(Referee *referee) : UiBase(referee) {};
   void display(uint8_t mode, bool flag = false) {
     if (operate_type_ != ADD && last_mode_ == mode && last_flag_ == flag) return;
     color_ = flag ? ORANGE : YELLOW;
     getInfo(mode);
     referee_->drawString(picture_x_, picture_y_, picture_id_, display_info_, color_, operate_type_);
-    ROS_INFO("display");
     last_mode_ = mode;
     last_flag_ = flag;
   }
@@ -40,9 +39,9 @@ class UiControllers : public UiBase {
   bool last_flag_ = false;
 };
 
-class UiChassis : public UiControllers {
+class UiChassis : public UiManual {
  public:
-  UiChassis(Referee *referee) : UiControllers(referee) {
+  UiChassis(Referee *referee) : UiManual(referee) {
     last_mode_ = rm_msgs::ChassisCmd::FOLLOW;
     picture_id_ = 0;
     picture_x_ = 1470;
@@ -56,9 +55,9 @@ class UiChassis : public UiControllers {
   }
 };
 
-class UiGimbal : public UiControllers {
+class UiGimbal : public UiManual {
  public:
-  UiGimbal(Referee *referee) : UiControllers(referee) {
+  UiGimbal(Referee *referee) : UiManual(referee) {
     last_mode_ = rm_msgs::GimbalCmd::RATE;
     picture_id_ = 1;
     picture_x_ = 1470;
@@ -71,9 +70,9 @@ class UiGimbal : public UiControllers {
   }
 };
 
-class UiShooter : public UiControllers {
+class UiShooter : public UiManual {
  public:
-  UiShooter(Referee *referee) : UiControllers(referee) {
+  UiShooter(Referee *referee) : UiManual(referee) {
     last_mode_ = rm_msgs::ShootCmd::STOP;
     picture_id_ = 2;
     picture_x_ = 1470;
@@ -84,6 +83,39 @@ class UiShooter : public UiControllers {
     if (mode == rm_msgs::ShootCmd::STOP) display_info_ = "shooter:stop";
     else if (mode == rm_msgs::ShootCmd::READY) display_info_ = "shooter:ready";
     else if (mode == rm_msgs::ShootCmd::PUSH) display_info_ = "shooter:push";
+  }
+};
+
+class UiAuto : public UiBase {
+ public:
+  UiAuto(Referee *referee) : UiBase(referee) {};
+  void display(const ros::Time &time) {
+    if (operate_type_ != ADD && time - last_update_ < ros::Duration(0.5)) return;
+    getInfo();
+    referee_->drawString(picture_x_, picture_y_, picture_id_, display_info_, color_, operate_type_);
+    last_update_ = time;
+  }
+ protected:
+  virtual void getInfo() {};
+  ros::Time last_update_ = ros::Time::now();
+};
+
+class UiCapacitor : public UiAuto {
+ public:
+  UiCapacitor(Referee *referee) : UiAuto(referee) {
+    picture_id_ = 3;
+    picture_x_ = 910;
+    picture_y_ = 100;
+  };
+ protected:
+  void getInfo() override {
+    float cap_power = referee_->super_capacitor_.getCapPower() * 100;
+    if (cap_power >= 60) color_ = GREEN;
+    else if (cap_power < 60 && cap_power >= 30) color_ = YELLOW;
+    else color_ = ORANGE;
+    char power_string[30] = {' '};
+    sprintf(power_string, "Cap: %1.0f%%", cap_power);
+    display_info_ = power_string;
   }
 };
 } // namespace rm_manual

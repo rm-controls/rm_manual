@@ -18,12 +18,14 @@ class ChassisGimbalManual : public ManualBase {
     gimbal_cmd_sender_ = new GimbalCommandSender(gimbal_nh, data_.referee_);
     ui_chassis_ = new UiChassis(&data_.referee_);
     ui_gimbal_ = new UiGimbal(&data_.referee_);
+    ui_capacitor_ = new UiCapacitor(&data_.referee_);
   }
  protected:
   void drawUi() override {
     if (state_ == PC) {
       ui_chassis_->display(chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
       ui_gimbal_->display(gimbal_cmd_sender_->getMsg()->mode);
+      ui_capacitor_->display(ros::Time::now());
     }
   }
   void sendCommand(const ros::Time &time) override {
@@ -55,6 +57,7 @@ class ChassisGimbalManual : public ManualBase {
       vel_cmd_sender_->setAngularZVel(1.);
     ui_chassis_->setOperateType(UPDATE);
     ui_gimbal_->setOperateType(UPDATE);
+    ui_capacitor_->setOperateType(UPDATE);
   }
   void leftSwitchDown() override {
     ManualBase::leftSwitchDown();
@@ -82,6 +85,7 @@ class ChassisGimbalManual : public ManualBase {
     if (state_ == PC) {
       ui_chassis_->setOperateType(ADD);
       ui_gimbal_->setOperateType(ADD);
+      ui_capacitor_->setOperateType(ADD);
     }
   }
   void gPress() override {
@@ -118,6 +122,7 @@ class ChassisGimbalManual : public ManualBase {
   GimbalCommandSender *gimbal_cmd_sender_{};
   UiChassis *ui_chassis_{};
   UiGimbal *ui_gimbal_{};
+  UiCapacitor *ui_capacitor_{};
 };
 }
 
