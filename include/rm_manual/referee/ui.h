@@ -25,7 +25,7 @@ class UiBase {
 class UiManual : public UiBase {
  public:
   UiManual(Referee *referee) : UiBase(referee) {};
-  void display(uint8_t mode, bool flag = false) {
+  virtual void display(uint8_t mode, bool flag = false) {
     if (operate_type_ != ADD && last_mode_ == mode && last_flag_ == flag) return;
     color_ = flag ? ORANGE : YELLOW;
     getInfo(mode);
@@ -43,7 +43,7 @@ class UiChassis : public UiManual {
  public:
   UiChassis(Referee *referee) : UiManual(referee) {
     last_mode_ = rm_msgs::ChassisCmd::FOLLOW;
-    picture_id_ = 0;
+    picture_id_ = 4;
     picture_x_ = 1470;
     picture_y_ = 790;
   }
@@ -59,7 +59,7 @@ class UiGimbal : public UiManual {
  public:
   UiGimbal(Referee *referee) : UiManual(referee) {
     last_mode_ = rm_msgs::GimbalCmd::RATE;
-    picture_id_ = 1;
+    picture_id_ = 5;
     picture_x_ = 1470;
     picture_y_ = 740;
   }
@@ -74,7 +74,7 @@ class UiShooter : public UiManual {
  public:
   UiShooter(Referee *referee) : UiManual(referee) {
     last_mode_ = rm_msgs::ShootCmd::STOP;
-    picture_id_ = 2;
+    picture_id_ = 6;
     picture_x_ = 1470;
     picture_y_ = 690;
   }
@@ -89,7 +89,7 @@ class UiShooter : public UiManual {
 class UiAuto : public UiBase {
  public:
   UiAuto(Referee *referee) : UiBase(referee) {};
-  void display(const ros::Time &time) {
+  virtual void display(const ros::Time &time) {
     if (operate_type_ != ADD && time - last_update_ < ros::Duration(0.5)) return;
     getInfo();
     referee_->drawString(picture_x_, picture_y_, picture_id_, display_info_, color_, operate_type_);
@@ -103,7 +103,7 @@ class UiAuto : public UiBase {
 class UiCapacitor : public UiAuto {
  public:
   UiCapacitor(Referee *referee) : UiAuto(referee) {
-    picture_id_ = 3;
+    picture_id_ = 7;
     picture_x_ = 910;
     picture_y_ = 100;
   };
@@ -117,6 +117,44 @@ class UiCapacitor : public UiAuto {
     sprintf(power_string, "Cap: %1.0f%%", cap_power);
     display_info_ = power_string;
   }
+};
+
+class UiArmor : public UiAuto {
+ public:
+  UiArmor(Referee *referee, int armor_id) : UiAuto(referee) { armor_id_ = armor_id; }
+  void display(const ros::Time &time) override {
+    if (referee_->referee_data_.robot_hurt_.hurt_type_ == 0x00
+        && referee_->referee_data_.robot_hurt_.armor_id_ == armor_id_) {
+      updateArmorPosition();
+      referee_->drawCircle(picture_x_, picture_y_, 50, armor_id_, color_, ADD);
+      last_update_ = time;
+      delete_flag_ = false;
+      referee_->referee_data_.robot_hurt_.hurt_type_ = 0x01;
+    }
+    if (!delete_flag_ && time - last_update_ > ros::Duration(10)) {
+      referee_->drawCircle(0, 0, 0, armor_id_, YELLOW, DELETE);
+      delete_flag_ = true;
+    }
+  }
+ protected:
+  void updateArmorPosition() {
+    geometry_msgs::TransformStamped yaw2baselink;
+    double roll, pitch, yaw;
+    try { yaw2baselink = tf_.lookupTransform("yaw", "base_link", ros::Time(0)); }
+    catch (tf2::TransformException &ex) {}
+    quatToRPY(yaw2baselink.transform.rotation, roll, pitch, yaw);
+    if (armor_id_ == 0 || armor_id_ == 2) {
+      picture_x_ = (int) (960 + 340 * sin(armor_id_ * M_PI_2 + yaw));
+      picture_y_ = (int) (540 + 340 * cos(armor_id_ * M_PI_2 + yaw));
+    } else {
+      picture_x_ = (int) (960 + 340 * sin(-armor_id_ * M_PI_2 + yaw));
+      picture_y_ = (int) (540 + 340 * cos(-armor_id_ * M_PI_2 + yaw));
+    }
+  }
+  int armor_id_;
+  bool delete_flag_ = false;
+  tf2_ros::Buffer tf_;
+  tf2_ros::TransformListener *tf_listener_{};
 };
 } // namespace rm_manual
 #endif //RM_MANUAL_REFEREE_UI_H_

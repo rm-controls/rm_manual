@@ -19,13 +19,22 @@ class ChassisGimbalManual : public ManualBase {
     ui_chassis_ = new UiChassis(&data_.referee_);
     ui_gimbal_ = new UiGimbal(&data_.referee_);
     ui_capacitor_ = new UiCapacitor(&data_.referee_);
+    ui_armor0_ = new UiArmor(&data_.referee_, 0);
+    ui_armor1_ = new UiArmor(&data_.referee_, 1);
+    ui_armor2_ = new UiArmor(&data_.referee_, 2);
+    ui_armor3_ = new UiArmor(&data_.referee_, 3);
   }
  protected:
   void drawUi() override {
     if (state_ == PC) {
+      ros::Time time = ros::Time::now();
       ui_chassis_->display(chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
       ui_gimbal_->display(gimbal_cmd_sender_->getMsg()->mode);
-      ui_capacitor_->display(ros::Time::now());
+      ui_capacitor_->display(time);
+      ui_armor0_->display(time);
+      ui_armor1_->display(time);
+      ui_armor2_->display(time);
+      ui_armor3_->display(time);
     }
   }
   void sendCommand(const ros::Time &time) override {
@@ -123,6 +132,10 @@ class ChassisGimbalManual : public ManualBase {
   UiChassis *ui_chassis_{};
   UiGimbal *ui_gimbal_{};
   UiCapacitor *ui_capacitor_{};
+  UiArmor *ui_armor0_{};
+  UiArmor *ui_armor1_{};
+  UiArmor *ui_armor2_{};
+  UiArmor *ui_armor3_{};
 };
 }
 
