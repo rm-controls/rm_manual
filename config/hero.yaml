@@ -30,7 +30,10 @@ rm_manual:
     topic: "/cmd_shoot"
     gimbal_error_limit: 0.05
     heat_limit:
-      expect_shoot_frequency: 3
+      expect_shoot_frequency_1: 1
+      expect_shoot_frequency_2: 2
+      expect_shoot_frequency_3: 3
+      burst_shoot_frequency: 5
       safe_shoot_frequency: 1
       heat_coeff: 3.0
       type: "ID1_42MM"
