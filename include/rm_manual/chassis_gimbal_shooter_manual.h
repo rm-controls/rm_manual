@@ -14,11 +14,12 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     shooter_cmd_sender_ = new ShooterCommandSender(shooter_nh, data_.referee_);
     ros::NodeHandle cover_nh(nh, "cover");
     cover_command_sender_ = new CoverCommandSender(cover_nh);
+    ui_shooter_ = new UiShooter(&data_.referee_);
   }
  protected:
   void drawUi() override {
     ChassisGimbalManual::drawUi();
-    if (state_ == PC) ui_->displayShooterInfo(shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
+    if (state_ == PC) ui_shooter_->display(shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
   }
   void setZero() override {
     ChassisGimbalManual::setZero();
@@ -61,6 +62,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
     cover_command_sender_->close();
+    ui_shooter_->setOperateType(UPDATE);
   }
   void rightSwitchMid() override {
     ChassisGimbalManual::rightSwitchMid();
@@ -68,10 +70,12 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void fPress() override { if (state_ == PC) shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
   void qPress() override {
-    if (state_ == PC) {
-      if (ros::Time::now() - last_release_q_ < ros::Duration(0.05))
-        shooter_cmd_sender_->setBurstMode(!shooter_cmd_sender_->getBurstMode());
-    }
+    if ((state_ == PC) && ros::Time::now() - last_release_q_ < ros::Duration(0.015))
+      shooter_cmd_sender_->setBurstMode(!shooter_cmd_sender_->getBurstMode());
+  }
+  void xPress() override {
+    ChassisGimbalManual::xPress();
+    if (state_ == PC) ui_shooter_->setOperateType(ADD);
   }
   void mouseLeftPress() override {
     if (state_ == PC) { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH); }
@@ -90,6 +94,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   ShooterCommandSender *shooter_cmd_sender_{};
   CoverCommandSender *cover_command_sender_{};
+  UiShooter *ui_shooter_{};
 };
 }
 

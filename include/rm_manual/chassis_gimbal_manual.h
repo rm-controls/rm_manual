@@ -16,14 +16,14 @@ class ChassisGimbalManual : public ManualBase {
     vel_cmd_sender_ = new Vel2DCommandSender(vel_nh);
     ros::NodeHandle gimbal_nh(nh, "gimbal");
     gimbal_cmd_sender_ = new GimbalCommandSender(gimbal_nh, data_.referee_);
+    ui_chassis_ = new UiChassis(&data_.referee_);
+    ui_gimbal_ = new UiGimbal(&data_.referee_);
   }
  protected:
   void drawUi() override {
     if (state_ == PC) {
-      ui_->displayCapInfo();
-      ui_->displayArmorInfo(ros::Time::now());
-      ui_->displayChassisInfo(chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
-      ui_->displayGimbalInfo(chassis_cmd_sender_->getMsg()->mode);
+      ui_chassis_->display(chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
+      ui_gimbal_->display(gimbal_cmd_sender_->getMsg()->mode);
     }
   }
   void sendCommand(const ros::Time &time) override {
@@ -53,7 +53,8 @@ class ChassisGimbalManual : public ManualBase {
     gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
     if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
       vel_cmd_sender_->setAngularZVel(1.);
-    ui_->setOperateType(UPDATE);
+    ui_chassis_->setOperateType(UPDATE);
+    ui_gimbal_->setOperateType(UPDATE);
   }
   void leftSwitchDown() override {
     ManualBase::leftSwitchDown();
@@ -77,7 +78,12 @@ class ChassisGimbalManual : public ManualBase {
   void aPress() override { if (state_ == PC) vel_cmd_sender_->setLinearYVel(1.); }
   void sPress() override { if (state_ == PC) vel_cmd_sender_->setLinearXVel(-1.); }
   void dPress() override { if (state_ == PC) vel_cmd_sender_->setLinearYVel(-1.); }
-  void xPress() override { if (state_ == PC) ui_->setOperateType(ADD); }
+  void xPress() override {
+    if (state_ == PC) {
+      ui_chassis_->setOperateType(ADD);
+      ui_gimbal_->setOperateType(ADD);
+    }
+  }
   void gPress() override {
     if (state_ == PC && ros::Time::now() - last_release_g_ < ros::Duration(0.015)) {
       if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
@@ -110,6 +116,8 @@ class ChassisGimbalManual : public ManualBase {
   ChassisCommandSender *chassis_cmd_sender_{};
   Vel2DCommandSender *vel_cmd_sender_;
   GimbalCommandSender *gimbal_cmd_sender_{};
+  UiChassis *ui_chassis_{};
+  UiGimbal *ui_gimbal_{};
 };
 }
 
