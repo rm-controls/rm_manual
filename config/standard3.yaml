@@ -47,10 +47,12 @@ rm_manual:
     - controllers/cover_controller
     - controllers/trigger_calibration_controller
     - controllers/cover_calibration_controller
+    - controllers/orientation_controller
   state_controllers_switch:
     start_controllers:
       - controllers/robot_state_controller
       - controllers/joint_state_controller
+      - controllers/orientation_controller
   base_controllers_switch:
     start_controllers:
       - controllers/chassis_controller
