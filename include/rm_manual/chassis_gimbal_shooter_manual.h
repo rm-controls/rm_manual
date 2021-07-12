@@ -11,9 +11,9 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
  public:
   explicit ChassisGimbalShooterManual(ros::NodeHandle &nh) : ChassisGimbalManual(nh) {
     ros::NodeHandle shooter_nh(nh, "shooter");
-    shooter_cmd_sender_ = new ShooterCommandSender(shooter_nh, data_.referee_);
+    shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, data_.referee_);
     ros::NodeHandle cover_nh(nh, "cover");
-    cover_command_sender_ = new CoverCommandSender(cover_nh);
+    cover_command_sender_ = new rm_common::CoverCommandSender(cover_nh);
     ui_shooter_ = new UiShooter(&data_.referee_);
   }
  protected:
@@ -92,8 +92,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     if (state_ == PC) { shooter_cmd_sender_->setBurstMode(false); }
     ChassisGimbalManual::ctrlZPress();
   }
-  ShooterCommandSender *shooter_cmd_sender_{};
-  CoverCommandSender *cover_command_sender_{};
+  rm_common::ShooterCommandSender *shooter_cmd_sender_{};
+  rm_common::CoverCommandSender *cover_command_sender_{};
   UiShooter *ui_shooter_{};
 };
 }

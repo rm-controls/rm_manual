@@ -11,11 +11,11 @@ class ChassisGimbalManual : public ManualBase {
  public:
   explicit ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
     ros::NodeHandle chassis_nh(nh, "chassis");
-    chassis_cmd_sender_ = new ChassisCommandSender(chassis_nh, data_.referee_);
+    chassis_cmd_sender_ = new rm_common::ChassisCommandSender(chassis_nh, data_.referee_);
     ros::NodeHandle vel_nh(nh, "vel");
-    vel_cmd_sender_ = new Vel2DCommandSender(vel_nh);
+    vel_cmd_sender_ = new rm_common::Vel2DCommandSender(vel_nh);
     ros::NodeHandle gimbal_nh(nh, "gimbal");
-    gimbal_cmd_sender_ = new GimbalCommandSender(gimbal_nh, data_.referee_);
+    gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh, data_.referee_);
     ui_chassis_ = new UiChassis(&data_.referee_);
     ui_gimbal_ = new UiGimbal(&data_.referee_);
     ui_capacitor_ = new UiCapacitor(&data_.referee_);
@@ -135,9 +135,9 @@ class ChassisGimbalManual : public ManualBase {
     if (state_ == IDLE)
       state_ = PC;
   }
-  ChassisCommandSender *chassis_cmd_sender_{};
-  Vel2DCommandSender *vel_cmd_sender_;
-  GimbalCommandSender *gimbal_cmd_sender_{};
+  rm_common::ChassisCommandSender *chassis_cmd_sender_{};
+  rm_common::Vel2DCommandSender *vel_cmd_sender_;
+  rm_common::GimbalCommandSender *gimbal_cmd_sender_{};
   UiChassis *ui_chassis_{};
   UiGimbal *ui_gimbal_{};
   UiCapacitor *ui_capacitor_{};

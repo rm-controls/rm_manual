@@ -20,9 +20,7 @@ find_package(catkin REQUIRED
         rm_msgs
         rm_common
         tf2_geometry_msgs
-        control_msgs
         serial
-        controller_manager_msgs
         std_msgs
         actionlib
         nav_msgs
@@ -51,8 +49,6 @@ catkin_package(
         rm_msgs
         rm_common
         tf2_geometry_msgs
-        control_msgs
-        controller_manager_msgs
         std_msgs
         actionlib
         nav_msgs
