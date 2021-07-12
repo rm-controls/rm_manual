@@ -172,8 +172,8 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
   void setBulletSpeed(double bullet_speed) {
     msg_.bullet_speed = bullet_speed;
   }
-  void updateCost(const rm_msgs::TrackDataArray &track_data_array, bool base_only = false) {
-    msg_.target_id = cost_function_->costFunction(track_data_array, base_only);
+  void updateCost(const rm_msgs::TrackDataArray &track_data_array) {
+    msg_.target_id = cost_function_->costFunction(track_data_array, base_only_);
     if (msg_.target_id == 0) {
       if ((ros::Time::now() - last_track_).toSec() > track_timeout_) setMode(rm_msgs::GimbalCmd::RATE);
     } else last_track_ = ros::Time::now();
@@ -182,9 +182,12 @@ class GimbalCommandSender : public TimeStampCommandSenderBase<rm_msgs::GimbalCmd
     msg_.rate_yaw = 0.;
     msg_.rate_pitch = 0.;
   }
+  void setBaseOnly(bool base_only) { base_only_ = base_only; }
+  bool getBaseOnly() { return base_only_; }
  private:
   TargetCostFunction *cost_function_;
   double max_yaw_rate_{}, max_pitch_vel_{}, track_timeout_{};
+  bool base_only_ = false;
   ros::Time last_track_;
 };
 

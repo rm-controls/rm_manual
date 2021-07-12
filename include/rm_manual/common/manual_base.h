@@ -87,7 +87,6 @@ class ManualBase {
   virtual void ctrlWPress() {};
 
   Data data_;
-  Ui *ui_;
   ControllerLoader *controller_loader_;
   CalibrationManager *calibration_manager_;
   SwitchControllersService *switch_state_ctrl_srv_, *switch_base_ctrl_srv_{};

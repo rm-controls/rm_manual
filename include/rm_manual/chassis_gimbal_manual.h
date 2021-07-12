@@ -16,14 +16,27 @@ class ChassisGimbalManual : public ManualBase {
     vel_cmd_sender_ = new Vel2DCommandSender(vel_nh);
     ros::NodeHandle gimbal_nh(nh, "gimbal");
     gimbal_cmd_sender_ = new GimbalCommandSender(gimbal_nh, data_.referee_);
+    ui_chassis_ = new UiChassis(&data_.referee_);
+    ui_gimbal_ = new UiGimbal(&data_.referee_);
+    ui_capacitor_ = new UiCapacitor(&data_.referee_);
+    ui_target_ = new UiTarget(&data_.referee_);
+    ui_armor0_ = new UiArmor(&data_.referee_, 0);
+    ui_armor1_ = new UiArmor(&data_.referee_, 1);
+    ui_armor2_ = new UiArmor(&data_.referee_, 2);
+    ui_armor3_ = new UiArmor(&data_.referee_, 3);
   }
  protected:
   void drawUi() override {
     if (state_ == PC) {
-      ui_->displayCapInfo();
-      ui_->displayArmorInfo(ros::Time::now());
-      ui_->displayChassisInfo(chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
-      ui_->displayGimbalInfo(chassis_cmd_sender_->getMsg()->mode);
+      ros::Time time = ros::Time::now();
+      ui_chassis_->display(chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
+      ui_gimbal_->display(gimbal_cmd_sender_->getMsg()->mode);
+      ui_capacitor_->display(time);
+      ui_target_->display(gimbal_cmd_sender_->getBaseOnly());
+      ui_armor0_->display(time);
+      ui_armor1_->display(time);
+      ui_armor2_->display(time);
+      ui_armor3_->display(time);
     }
   }
   void sendCommand(const ros::Time &time) override {
@@ -46,6 +59,7 @@ class ChassisGimbalManual : public ManualBase {
     vel_cmd_sender_->setLinearXVel(data_.dbus_data_.ch_r_y);
     vel_cmd_sender_->setLinearYVel(-data_.dbus_data_.ch_r_x);
     gimbal_cmd_sender_->setRate(-data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y);
+    gimbal_cmd_sender_->setBaseOnly(false);
   }
   void rightSwitchUp() override {
     ManualBase::rightSwitchUp();
@@ -53,7 +67,10 @@ class ChassisGimbalManual : public ManualBase {
     gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
     if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
       vel_cmd_sender_->setAngularZVel(1.);
-    ui_->setOperateType(UPDATE);
+    ui_chassis_->setOperateType(UPDATE);
+    ui_gimbal_->setOperateType(UPDATE);
+    ui_capacitor_->setOperateType(UPDATE);
+    ui_target_->setOperateType(UPDATE);
   }
   void leftSwitchDown() override {
     ManualBase::leftSwitchDown();
@@ -77,7 +94,14 @@ class ChassisGimbalManual : public ManualBase {
   void aPress() override { if (state_ == PC) vel_cmd_sender_->setLinearYVel(1.); }
   void sPress() override { if (state_ == PC) vel_cmd_sender_->setLinearXVel(-1.); }
   void dPress() override { if (state_ == PC) vel_cmd_sender_->setLinearYVel(-1.); }
-  void xPress() override { if (state_ == PC) ui_->setOperateType(ADD); }
+  void xPress() override {
+    if (state_ == PC) {
+      ui_chassis_->setOperateType(ADD);
+      ui_gimbal_->setOperateType(ADD);
+      ui_capacitor_->setOperateType(ADD);
+      ui_target_->setOperateType(ADD);
+    }
+  }
   void gPress() override {
     if (state_ == PC && ros::Time::now() - last_release_g_ < ros::Duration(0.015)) {
       if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
@@ -92,6 +116,10 @@ class ChassisGimbalManual : public ManualBase {
       else if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW)
         chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
     }
+  }
+  void cPress() override {
+    if (state_ == PC && ros::Time::now() - last_release_c_ < ros::Duration(0.015))
+      gimbal_cmd_sender_->setBaseOnly(!gimbal_cmd_sender_->getBaseOnly());
   }
   void mouseRightPress() override {
     if (state_ == PC) {
@@ -110,6 +138,14 @@ class ChassisGimbalManual : public ManualBase {
   ChassisCommandSender *chassis_cmd_sender_{};
   Vel2DCommandSender *vel_cmd_sender_;
   GimbalCommandSender *gimbal_cmd_sender_{};
+  UiChassis *ui_chassis_{};
+  UiGimbal *ui_gimbal_{};
+  UiCapacitor *ui_capacitor_{};
+  UiTarget *ui_target_{};
+  UiArmor *ui_armor0_{};
+  UiArmor *ui_armor1_{};
+  UiArmor *ui_armor2_{};
+  UiArmor *ui_armor3_{};
 };
 }
 
