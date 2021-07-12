@@ -9,7 +9,7 @@ rm_manual:
     capacitor_threshold: 0.1
     charge_power: 20
     extra_power: 30
-    burst_power: 200
+    burst_power: 220
   vel:
     topic: "/cmd_vel"
     max_linear_x: 4.0
