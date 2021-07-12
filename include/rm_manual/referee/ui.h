@@ -33,8 +33,15 @@ class UiManual : public UiBase {
     last_mode_ = mode;
     last_flag_ = flag;
   }
+  virtual void display(bool flag) {
+    if (operate_type_ != ADD && last_flag_ == flag) return;
+    getInfo(flag);
+    referee_->drawString(picture_x_, picture_y_, picture_id_, display_info_, YELLOW, operate_type_);
+    last_flag_ = flag;
+  }
  protected:
   virtual void getInfo(uint8_t mode) {};
+  virtual void getInfo(bool flag) {};
   uint8_t last_mode_;
   bool last_flag_ = false;
 };
@@ -86,6 +93,20 @@ class UiShooter : public UiManual {
   }
 };
 
+class UiTarget : public UiManual {
+ public:
+  UiTarget(Referee *referee) : UiManual(referee) {
+    picture_id_ = 7;
+    picture_x_ = 1470;
+    picture_y_ = 640;
+  }
+ protected:
+  void getInfo(bool base_only) override {
+    if (base_only) display_info_ = "target:base";
+    else display_info_ = "target:all";
+  }
+};
+
 class UiAuto : public UiBase {
  public:
   UiAuto(Referee *referee) : UiBase(referee) {};
@@ -103,7 +124,7 @@ class UiAuto : public UiBase {
 class UiCapacitor : public UiAuto {
  public:
   UiCapacitor(Referee *referee) : UiAuto(referee) {
-    picture_id_ = 7;
+    picture_id_ = 8;
     picture_x_ = 910;
     picture_y_ = 100;
   };
@@ -131,7 +152,7 @@ class UiArmor : public UiAuto {
       delete_flag_ = false;
       referee_->referee_data_.robot_hurt_.hurt_type_ = 0x01;
     }
-    if (!delete_flag_ && time - last_update_ > ros::Duration(10)) {
+    if (!delete_flag_ && time - last_update_ > ros::Duration(0.5)) {
       referee_->drawCircle(0, 0, 0, armor_id_, YELLOW, DELETE);
       delete_flag_ = true;
     }

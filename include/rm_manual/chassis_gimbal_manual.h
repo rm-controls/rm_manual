@@ -19,6 +19,7 @@ class ChassisGimbalManual : public ManualBase {
     ui_chassis_ = new UiChassis(&data_.referee_);
     ui_gimbal_ = new UiGimbal(&data_.referee_);
     ui_capacitor_ = new UiCapacitor(&data_.referee_);
+    ui_target_ = new UiTarget(&data_.referee_);
     ui_armor0_ = new UiArmor(&data_.referee_, 0);
     ui_armor1_ = new UiArmor(&data_.referee_, 1);
     ui_armor2_ = new UiArmor(&data_.referee_, 2);
@@ -31,6 +32,7 @@ class ChassisGimbalManual : public ManualBase {
       ui_chassis_->display(chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
       ui_gimbal_->display(gimbal_cmd_sender_->getMsg()->mode);
       ui_capacitor_->display(time);
+      ui_target_->display(gimbal_cmd_sender_->getBaseOnly());
       ui_armor0_->display(time);
       ui_armor1_->display(time);
       ui_armor2_->display(time);
@@ -57,6 +59,7 @@ class ChassisGimbalManual : public ManualBase {
     vel_cmd_sender_->setLinearXVel(data_.dbus_data_.ch_r_y);
     vel_cmd_sender_->setLinearYVel(-data_.dbus_data_.ch_r_x);
     gimbal_cmd_sender_->setRate(-data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y);
+    gimbal_cmd_sender_->setBaseOnly(false);
   }
   void rightSwitchUp() override {
     ManualBase::rightSwitchUp();
@@ -67,6 +70,7 @@ class ChassisGimbalManual : public ManualBase {
     ui_chassis_->setOperateType(UPDATE);
     ui_gimbal_->setOperateType(UPDATE);
     ui_capacitor_->setOperateType(UPDATE);
+    ui_target_->setOperateType(UPDATE);
   }
   void leftSwitchDown() override {
     ManualBase::leftSwitchDown();
@@ -95,6 +99,7 @@ class ChassisGimbalManual : public ManualBase {
       ui_chassis_->setOperateType(ADD);
       ui_gimbal_->setOperateType(ADD);
       ui_capacitor_->setOperateType(ADD);
+      ui_target_->setOperateType(ADD);
     }
   }
   void gPress() override {
@@ -111,6 +116,10 @@ class ChassisGimbalManual : public ManualBase {
       else if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW)
         chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
     }
+  }
+  void cPress() override {
+    if (state_ == PC && ros::Time::now() - last_release_c_ < ros::Duration(0.015))
+      gimbal_cmd_sender_->setBaseOnly(!gimbal_cmd_sender_->getBaseOnly());
   }
   void mouseRightPress() override {
     if (state_ == PC) {
@@ -132,6 +141,7 @@ class ChassisGimbalManual : public ManualBase {
   UiChassis *ui_chassis_{};
   UiGimbal *ui_gimbal_{};
   UiCapacitor *ui_capacitor_{};
+  UiTarget *ui_target_{};
   UiArmor *ui_armor0_{};
   UiArmor *ui_armor1_{};
   UiArmor *ui_armor2_{};
