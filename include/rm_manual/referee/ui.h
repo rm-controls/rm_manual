@@ -116,6 +116,7 @@ class UiAuto : public UiBase {
     referee_->drawString(picture_x_, picture_y_, picture_id_, display_info_, color_, operate_type_);
     last_update_ = time;
   }
+  virtual void display(const ros::Time &time, uint8_t mode) {}
  protected:
   virtual void getInfo() {};
   ros::Time last_update_ = ros::Time::now();
@@ -176,6 +177,19 @@ class UiArmor : public UiAuto {
   bool delete_flag_ = false;
   tf2_ros::Buffer tf_;
   tf2_ros::TransformListener *tf_listener_{};
+};
+
+class UiWarning : public UiAuto {
+ public:
+  UiWarning(rm_common::Referee *referee) : UiAuto(referee) { operate_type_ = ADD; };
+  void display(const ros::Time &time, uint8_t mode) override {
+    if (mode != rm_msgs::ChassisCmd::GYRO && time - last_update_ > ros::Duration(2.0)) {
+      if (operate_type_ == ADD) operate_type_ = DELETE;
+      else operate_type_ = ADD;
+      referee_->drawString(800, 690, 9, "please spin", YELLOW, operate_type_);
+      last_update_ = time;
+    }
+  }
 };
 } // namespace rm_manual
 #endif //RM_MANUAL_REFEREE_UI_H_
