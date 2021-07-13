@@ -11,11 +11,11 @@ class ChassisGimbalManual : public ManualBase {
  public:
   explicit ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
     ros::NodeHandle chassis_nh(nh, "chassis");
-    chassis_cmd_sender_ = new ChassisCommandSender(chassis_nh, data_.referee_);
+    chassis_cmd_sender_ = new rm_common::ChassisCommandSender(chassis_nh, data_.referee_);
     ros::NodeHandle vel_nh(nh, "vel");
-    vel_cmd_sender_ = new Vel2DCommandSender(vel_nh);
+    vel_cmd_sender_ = new rm_common::Vel2DCommandSender(vel_nh);
     ros::NodeHandle gimbal_nh(nh, "gimbal");
-    gimbal_cmd_sender_ = new GimbalCommandSender(gimbal_nh, data_.referee_);
+    gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh, data_.referee_);
     ui_chassis_ = new UiChassis(&data_.referee_);
     ui_gimbal_ = new UiGimbal(&data_.referee_);
     ui_capacitor_ = new UiCapacitor(&data_.referee_);
@@ -67,8 +67,6 @@ class ChassisGimbalManual : public ManualBase {
     ManualBase::rightSwitchUp();
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
-    if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
-      vel_cmd_sender_->setAngularZVel(1.);
     ui_chassis_->setOperateType(UPDATE);
     ui_gimbal_->setOperateType(UPDATE);
     ui_capacitor_->setOperateType(UPDATE);
@@ -108,7 +106,10 @@ class ChassisGimbalManual : public ManualBase {
     if (state_ == PC && ros::Time::now() - last_release_g_ < ros::Duration(0.015)) {
       if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
         chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-      else chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+      else {
+        chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+        vel_cmd_sender_->setAngularZVel(1.);
+      }
     }
   }
   void ePress() override {
@@ -129,17 +130,9 @@ class ChassisGimbalManual : public ManualBase {
       gimbal_cmd_sender_->updateCost(data_.track_data_array_);
     }
   }
-  void ctrlZPress() override {
-    if (state_ == PC)
-      state_ = IDLE;
-  }
-  void ctrlWPress() override {
-    if (state_ == IDLE)
-      state_ = PC;
-  }
-  ChassisCommandSender *chassis_cmd_sender_{};
-  Vel2DCommandSender *vel_cmd_sender_;
-  GimbalCommandSender *gimbal_cmd_sender_{};
+  rm_common::ChassisCommandSender *chassis_cmd_sender_{};
+  rm_common::Vel2DCommandSender *vel_cmd_sender_;
+  rm_common::GimbalCommandSender *gimbal_cmd_sender_{};
   UiChassis *ui_chassis_{};
   UiGimbal *ui_gimbal_{};
   UiCapacitor *ui_capacitor_{};

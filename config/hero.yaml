@@ -9,7 +9,7 @@ rm_manual:
     capacitor_threshold: 0.1
     charge_power: 20
     extra_power: 30
-    burst_power: 200
+    burst_power: 220
   vel:
     topic: "/cmd_vel"
     max_linear_x: 4.0
@@ -30,7 +30,10 @@ rm_manual:
     topic: "/cmd_shoot"
     gimbal_error_limit: 0.05
     heat_limit:
-      expect_shoot_frequency: 3
+      expect_shoot_frequency_1: 1
+      expect_shoot_frequency_2: 2
+      expect_shoot_frequency_3: 3
+      burst_shoot_frequency: 5
       safe_shoot_frequency: 1
       heat_coeff: 3.0
       type: "ID1_42MM"
@@ -45,10 +48,12 @@ rm_manual:
     - controllers/gimbal_controller
     - controllers/shooter_controller
     - controllers/trigger_calibration_controller
+    - controllers/orientation_controller
   state_controllers_switch:
     start_controllers:
       - controllers/robot_state_controller
       - controllers/joint_state_controller
+      - controllers/orientation_controller
   base_controllers_switch:
     start_controllers:
       - controllers/chassis_controller

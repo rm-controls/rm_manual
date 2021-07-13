@@ -2,22 +2,21 @@
 // Created by peter on 2020/12/3.
 //
 
-#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
-#define RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
-
-#include "rm_manual/common/data.h"
-#include "rm_manual/common/command_sender.h"
-#include "rm_manual/common/controller_loader.h"
-#include "rm_manual/common/calibration_manager.h"
-#include "rm_manual/referee/ui.h"
+#ifndef RM_MANUAL_MANUAL_BASE_H_
+#define RM_MANUAL_MANUAL_BASE_H_
 
 #include <iostream>
 #include <queue>
 #include <tf/transform_listener.h>
-#include <controller_manager_msgs/SwitchController.h>
-
 #include <rm_common/ros_utilities.h>
 #include <rm_common/ori_tool.h>
+#include <rm_common/decision/command_sender.h>
+#include <rm_common/decision/controller_loader.h>
+#include <rm_common/decision/calibration_manager.h>
+#include <controller_manager_msgs/SwitchController.h>
+
+#include "rm_manual/common/data.h"
+#include "rm_manual/referee/ui.h"
 
 namespace rm_manual {
 
@@ -29,7 +28,7 @@ class ManualBase {
     delete calibration_manager_;
   }
   enum { PASSIVE, IDLE, RC, PC };
-  void run();
+  virtual void run();
  protected:
   void checkReferee(const ros::Time &time);
   void checkSwitch(const ros::Time &time);
@@ -83,13 +82,13 @@ class ManualBase {
 
   // Press in same time
   virtual void mouseLeftRightPress() {};
-  virtual void ctrlZPress() {};
-  virtual void ctrlWPress() {};
+  virtual void ctrlRPress() {};
+  virtual void ctrlVPress() {};
 
   Data data_;
-  ControllerLoader *controller_loader_;
-  CalibrationManager *calibration_manager_;
-  SwitchControllersService *switch_state_ctrl_srv_, *switch_base_ctrl_srv_{};
+  rm_common::ControllerLoader *controller_loader_;
+  rm_common::CalibrationManager *calibration_manager_;
+  rm_common::SwitchControllersService *switch_state_ctrl_srv_{}, *switch_base_ctrl_srv_{};
 
   bool remote_is_open_{};
   ros::NodeHandle nh_;
@@ -97,9 +96,9 @@ class ManualBase {
   ros::Time last_release_q_, last_release_w_, last_release_e_, last_release_r_, last_release_t_, last_release_a_,
       last_release_s_, last_release_d_, last_release_f_, last_release_g_, last_release_z_, last_release_x_,
       last_release_c_, last_release_v_, last_release_b_, last_release_shift_, last_release_mouse_left_,
-      last_release_mouse_right_, last_release_mouse_right_left_, last_release_ctrl_z_, last_release_ctrl_w_;
+      last_release_mouse_right_, last_release_mouse_right_left_, last_release_ctrl_r_, last_release_ctrl_v_;
 
 };
 
 }
-#endif // RM_MANUAL_MANUAL_COMMON_H_
+#endif // RM_MANUAL_MANUAL_BASE_H_

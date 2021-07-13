@@ -21,7 +21,7 @@ class EngineerManual : public ChassisGimbalManual {
       : ChassisGimbalManual(nh), action_client_("/engineer_middleware/move_arm", true) {
     ros::NodeHandle arm_servo(nh, "arm_servo");
 
-    arm_servo_sender_ = new Vel3DCommandSender(arm_servo);
+    arm_servo_sender_ = new rm_common::Vel3DCommandSender(arm_servo);
     reset_servo_server_ = nh.serviceClient<std_srvs::Empty>("/servo_server/reset_servo_status");
     ROS_INFO("Waiting for move arm server to start.");
     action_client_.waitForServer();
@@ -79,7 +79,7 @@ class EngineerManual : public ChassisGimbalManual {
 
   }
   ros::Publisher pub_;
-  Vel3DCommandSender *arm_servo_sender_{};
+  rm_common::Vel3DCommandSender *arm_servo_sender_{};
   ros::ServiceClient reset_servo_server_;
   std::string target_frame_, source_frame_;
   bool has_send_step_list_{};

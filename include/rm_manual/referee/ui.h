@@ -7,15 +7,15 @@
 
 #include <tf/transform_listener.h>
 #include <rm_common/ori_tool.h>
-#include "rm_manual/referee/referee.h"
+#include <rm_common/referee/referee.h>
 
 namespace rm_manual {
 class UiBase {
  public:
-  UiBase(Referee *referee) : referee_(referee) {}
+  UiBase(rm_common::Referee *referee) : referee_(referee) {}
   void setOperateType(GraphicOperateType operate_type) { operate_type_ = operate_type; }
  protected:
-  Referee *referee_;
+  rm_common::Referee *referee_;
   GraphicOperateType operate_type_ = ADD;
   GraphicColorType color_ = YELLOW;
   std::string display_info_;
@@ -24,7 +24,7 @@ class UiBase {
 
 class UiManual : public UiBase {
  public:
-  UiManual(Referee *referee) : UiBase(referee) {};
+  UiManual(rm_common::Referee *referee) : UiBase(referee) {};
   virtual void display(uint8_t mode, bool flag = false) {
     if (operate_type_ != ADD && last_mode_ == mode && last_flag_ == flag) return;
     color_ = flag ? ORANGE : YELLOW;
@@ -48,7 +48,7 @@ class UiManual : public UiBase {
 
 class UiChassis : public UiManual {
  public:
-  UiChassis(Referee *referee) : UiManual(referee) {
+  UiChassis(rm_common::Referee *referee) : UiManual(referee) {
     last_mode_ = rm_msgs::ChassisCmd::FOLLOW;
     picture_id_ = 4;
     picture_x_ = 1470;
@@ -64,7 +64,7 @@ class UiChassis : public UiManual {
 
 class UiGimbal : public UiManual {
  public:
-  UiGimbal(Referee *referee) : UiManual(referee) {
+  UiGimbal(rm_common::Referee *referee) : UiManual(referee) {
     last_mode_ = rm_msgs::GimbalCmd::RATE;
     picture_id_ = 5;
     picture_x_ = 1470;
@@ -79,7 +79,7 @@ class UiGimbal : public UiManual {
 
 class UiShooter : public UiManual {
  public:
-  UiShooter(Referee *referee) : UiManual(referee) {
+  UiShooter(rm_common::Referee *referee) : UiManual(referee) {
     last_mode_ = rm_msgs::ShootCmd::STOP;
     picture_id_ = 6;
     picture_x_ = 1470;
@@ -95,7 +95,7 @@ class UiShooter : public UiManual {
 
 class UiTarget : public UiManual {
  public:
-  UiTarget(Referee *referee) : UiManual(referee) {
+  UiTarget(rm_common::Referee *referee) : UiManual(referee) {
     picture_id_ = 7;
     picture_x_ = 1470;
     picture_y_ = 640;
@@ -109,7 +109,7 @@ class UiTarget : public UiManual {
 
 class UiAuto : public UiBase {
  public:
-  UiAuto(Referee *referee) : UiBase(referee) {};
+  UiAuto(rm_common::Referee *referee) : UiBase(referee) {};
   virtual void display(const ros::Time &time) {
     if (operate_type_ != ADD && time - last_update_ < ros::Duration(0.5)) return;
     getInfo();
@@ -124,7 +124,7 @@ class UiAuto : public UiBase {
 
 class UiCapacitor : public UiAuto {
  public:
-  UiCapacitor(Referee *referee) : UiAuto(referee) {
+  UiCapacitor(rm_common::Referee *referee) : UiAuto(referee) {
     picture_id_ = 8;
     picture_x_ = 910;
     picture_y_ = 100;
@@ -143,7 +143,7 @@ class UiCapacitor : public UiAuto {
 
 class UiArmor : public UiAuto {
  public:
-  UiArmor(Referee *referee, int armor_id) : UiAuto(referee) { armor_id_ = armor_id; }
+  UiArmor(rm_common::Referee *referee, int armor_id) : UiAuto(referee) { armor_id_ = armor_id; }
   void display(const ros::Time &time) override {
     if (referee_->referee_data_.robot_hurt_.hurt_type_ == 0x00
         && referee_->referee_data_.robot_hurt_.armor_id_ == armor_id_) {
