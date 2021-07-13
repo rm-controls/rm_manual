@@ -158,6 +158,21 @@ class SwitchEnemyColorService : public ServiceCallerBase<rm_msgs::ColorSwitch> {
   bool is_set_{};
 };
 
+class SwitchTargetTypeService : public ServiceCallerBase<rm_msgs::TargetSwitch> {
+ public:
+  explicit SwitchTargetTypeService(ros::NodeHandle &nh) : ServiceCallerBase<rm_msgs::TargetSwitch>(
+      nh, "/detection/target_change") {
+    service_.request.target = "armor";
+  }
+  void SwitchTargetType() {
+    service_.request.target = service_.request.target == "armor" ? "buff" : "armor";
+  }
+  bool getIsSwitch() {
+    if (isCalling()) return false;
+    return service_.response.target_switch_is_success;
+  }
+};
+
 }
 
 #endif //RM_MANUAL_COMMON_SERVICE_CALLER_H_

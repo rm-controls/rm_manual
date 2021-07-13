@@ -90,7 +90,6 @@ class ManualBase {
   ControllerLoader *controller_loader_;
   CalibrationManager *calibration_manager_;
   SwitchControllersService *switch_state_ctrl_srv_{}, *switch_base_ctrl_srv_{};
-  SwitchEnemyColorService *switch_enemy_color_srv_{};
 
   bool remote_is_open_{};
   ros::NodeHandle nh_;

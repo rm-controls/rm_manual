@@ -65,8 +65,6 @@ class ChassisGimbalManual : public ManualBase {
     ManualBase::rightSwitchUp();
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
-    if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
-      vel_cmd_sender_->setAngularZVel(1.);
     ui_chassis_->setOperateType(UPDATE);
     ui_gimbal_->setOperateType(UPDATE);
     ui_capacitor_->setOperateType(UPDATE);
@@ -106,7 +104,10 @@ class ChassisGimbalManual : public ManualBase {
     if (state_ == PC && ros::Time::now() - last_release_g_ < ros::Duration(0.015)) {
       if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
         chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-      else chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+      else {
+        chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+        vel_cmd_sender_->setAngularZVel(1.);
+      }
     }
   }
   void ePress() override {

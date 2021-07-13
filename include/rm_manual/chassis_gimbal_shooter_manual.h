@@ -17,6 +17,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ui_shooter_ = new UiShooter(&data_.referee_);
     ros::NodeHandle enemy_color_nh(nh, "enemy_color_switch");
     switch_enemy_color_srv_ = new SwitchEnemyColorService(enemy_color_nh);
+    ros::NodeHandle target_type_nh(nh, "target_type_switch");
+    switch_target_type_srv_ = new SwitchTargetTypeService(target_type_nh);
   }
   void run() override {
     ManualBase::run();
@@ -91,25 +93,40 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     if (state_ == PC) { gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed()); }
   }
   void ctrlRPress() override {
-
+    if (state_ == PC) {
+      if (ros::Time::now() - last_release_r_ < ros::Duration(0.015)) {
+        switch_target_type_srv_->SwitchTargetType();
+        switch_target_type_srv_->callService();
+        if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW)
+          chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+        else chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+        last_switch_target_ = ros::Time::now();
+      } else if (!switch_target_type_srv_->getIsSwitch()
+          && ros::Time::now() - last_switch_target_ > ros::Duration(0.1)) {
+        switch_target_type_srv_->callService();
+        last_switch_target_ = ros::Time::now();
+      }
+    }
   }
   void ctrlVPress() override {
     if (state_ == PC) {
       if (ros::Time::now() - last_release_v_ < ros::Duration(0.015)) {
         switch_enemy_color_srv_->SwitchEnemyColor();
         switch_enemy_color_srv_->callService();
-        last_switch_ = ros::Time::now();
-      }
-      if (!switch_enemy_color_srv_->getIsSwitch() && ros::Time::now() - last_switch_ > ros::Duration(0.1)) {
+        last_switch_color_ = ros::Time::now();
+      } else if (!switch_enemy_color_srv_->getIsSwitch()
+          && ros::Time::now() - last_switch_color_ > ros::Duration(0.1)) {
         switch_enemy_color_srv_->callService();
-        last_switch_ = ros::Time::now();
+        last_switch_color_ = ros::Time::now();
       }
     }
   }
   ShooterCommandSender *shooter_cmd_sender_{};
   CoverCommandSender *cover_command_sender_{};
   UiShooter *ui_shooter_{};
-  ros::Time last_switch_{};
+  SwitchEnemyColorService *switch_enemy_color_srv_{};
+  SwitchTargetTypeService *switch_target_type_srv_{};
+  ros::Time last_switch_color_{}, last_switch_target_{};
 };
 }
 
