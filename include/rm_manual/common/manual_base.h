@@ -2,22 +2,21 @@
 // Created by peter on 2020/12/3.
 //
 
-#ifndef RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
-#define RM_MANUAL_INCLUDE_RM_MANUAL_MANUAL_COMMON_H_
-
-#include "rm_manual/common/data.h"
-#include "rm_manual/common/command_sender.h"
-#include "rm_manual/common/controller_loader.h"
-#include "rm_manual/common/calibration_manager.h"
-#include "rm_manual/referee/ui.h"
+#ifndef RM_MANUAL_MANUAL_BASE_H_
+#define RM_MANUAL_MANUAL_BASE_H_
 
 #include <iostream>
 #include <queue>
 #include <tf/transform_listener.h>
-#include <controller_manager_msgs/SwitchController.h>
-
 #include <rm_common/ros_utilities.h>
 #include <rm_common/ori_tool.h>
+#include <rm_common/decision/command_sender.h>
+#include <rm_common/decision/controller_loader.h>
+#include <rm_common/decision/calibration_manager.h>
+#include <controller_manager_msgs/SwitchController.h>
+
+#include "rm_manual/common/data.h"
+#include "rm_manual/referee/ui.h"
 
 namespace rm_manual {
 
@@ -87,9 +86,9 @@ class ManualBase {
   virtual void ctrlVPress() {};
 
   Data data_;
-  ControllerLoader *controller_loader_;
-  CalibrationManager *calibration_manager_;
-  SwitchControllersService *switch_state_ctrl_srv_{}, *switch_base_ctrl_srv_{};
+  rm_common::ControllerLoader *controller_loader_;
+  rm_common::CalibrationManager *calibration_manager_;
+  rm_common::SwitchControllersService *switch_state_ctrl_srv_{}, *switch_base_ctrl_srv_{};
 
   bool remote_is_open_{};
   ros::NodeHandle nh_;
@@ -102,4 +101,4 @@ class ManualBase {
 };
 
 }
-#endif // RM_MANUAL_MANUAL_COMMON_H_
+#endif // RM_MANUAL_MANUAL_BASE_H_

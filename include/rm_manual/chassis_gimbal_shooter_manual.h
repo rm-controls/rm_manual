@@ -16,9 +16,9 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     cover_command_sender_ = new rm_common::CoverCommandSender(cover_nh);
     ui_shooter_ = new UiShooter(&data_.referee_);
     ros::NodeHandle enemy_color_nh(nh, "enemy_color_switch");
-    switch_enemy_color_srv_ = new SwitchEnemyColorService(enemy_color_nh);
+    switch_enemy_color_srv_ = new rm_common::SwitchEnemyColorService(enemy_color_nh);
     ros::NodeHandle target_type_nh(nh, "target_type_switch");
-    switch_target_type_srv_ = new SwitchTargetTypeService(target_type_nh);
+    switch_target_type_srv_ = new rm_common::SwitchTargetTypeService(target_type_nh);
   }
   void run() override {
     ManualBase::run();
@@ -95,11 +95,12 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void ctrlRPress() override {
     if (state_ == PC) {
       if (ros::Time::now() - last_release_r_ < ros::Duration(0.015)) {
-        switch_target_type_srv_->SwitchTargetType();
+        switch_target_type_srv_->switchTargetType();
         switch_target_type_srv_->callService();
-        if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW)
+        if (switch_target_type_srv_->getTarget() == "buff")
           chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
-        else chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+        else
+          chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
         last_switch_target_ = ros::Time::now();
       } else if (!switch_target_type_srv_->getIsSwitch()
           && ros::Time::now() - last_switch_target_ > ros::Duration(0.1)) {
@@ -124,8 +125,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
   rm_common::CoverCommandSender *cover_command_sender_{};
   UiShooter *ui_shooter_{};
-  SwitchEnemyColorService *switch_enemy_color_srv_{};
-  SwitchTargetTypeService *switch_target_type_srv_{};
+  rm_common::SwitchEnemyColorService *switch_enemy_color_srv_{};
+  rm_common::SwitchTargetTypeService *switch_target_type_srv_{};
   ros::Time last_switch_color_{}, last_switch_target_{};
 };
 }
