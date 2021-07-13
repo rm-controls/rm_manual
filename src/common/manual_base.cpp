@@ -84,8 +84,8 @@ void ManualBase::checkKeyboard(const ros::Time &time) {
   if (data_.dbus_data_.key_shift) shiftPress(); else last_release_shift_ = time;
   if (data_.dbus_data_.p_l) mouseLeftPress(); else last_release_mouse_left_ = time;
   if (data_.dbus_data_.p_r) mouseRightPress(); else last_release_mouse_right_ = time;
-  if (data_.dbus_data_.key_ctrl && data_.dbus_data_.key_z) ctrlZPress(); else last_release_ctrl_z_ = time;
-  if (data_.dbus_data_.key_ctrl && data_.dbus_data_.key_w) ctrlWPress(); else last_release_ctrl_w_ = time;
+  if (data_.dbus_data_.key_ctrl && data_.dbus_data_.key_r) ctrlRPress(); else last_release_ctrl_r_ = time;
+  if (data_.dbus_data_.key_ctrl && data_.dbus_data_.key_v) ctrlVPress(); else last_release_ctrl_v_ = time;
 }
 
 }
