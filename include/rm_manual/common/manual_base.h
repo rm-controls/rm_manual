@@ -29,7 +29,7 @@ class ManualBase {
     delete calibration_manager_;
   }
   enum { PASSIVE, IDLE, RC, PC };
-  void run();
+  virtual void run();
  protected:
   void checkReferee(const ros::Time &time);
   void checkSwitch(const ros::Time &time);
@@ -83,13 +83,14 @@ class ManualBase {
 
   // Press in same time
   virtual void mouseLeftRightPress() {};
-  virtual void ctrlZPress() {};
-  virtual void ctrlWPress() {};
+  virtual void ctrlRPress() {};
+  virtual void ctrlVPress() {};
 
   Data data_;
   ControllerLoader *controller_loader_;
   CalibrationManager *calibration_manager_;
-  SwitchControllersService *switch_state_ctrl_srv_, *switch_base_ctrl_srv_{};
+  SwitchControllersService *switch_state_ctrl_srv_{}, *switch_base_ctrl_srv_{};
+  SwitchEnemyColorService *switch_enemy_color_srv_{};
 
   bool remote_is_open_{};
   ros::NodeHandle nh_;
@@ -97,7 +98,7 @@ class ManualBase {
   ros::Time last_release_q_, last_release_w_, last_release_e_, last_release_r_, last_release_t_, last_release_a_,
       last_release_s_, last_release_d_, last_release_f_, last_release_g_, last_release_z_, last_release_x_,
       last_release_c_, last_release_v_, last_release_b_, last_release_shift_, last_release_mouse_left_,
-      last_release_mouse_right_, last_release_mouse_right_left_, last_release_ctrl_z_, last_release_ctrl_w_;
+      last_release_mouse_right_, last_release_mouse_right_left_, last_release_ctrl_r_, last_release_ctrl_v_;
 
 };
 

@@ -127,14 +127,6 @@ class ChassisGimbalManual : public ManualBase {
       gimbal_cmd_sender_->updateCost(data_.track_data_array_);
     }
   }
-  void ctrlZPress() override {
-    if (state_ == PC)
-      state_ = IDLE;
-  }
-  void ctrlWPress() override {
-    if (state_ == IDLE)
-      state_ = PC;
-  }
   ChassisCommandSender *chassis_cmd_sender_{};
   Vel2DCommandSender *vel_cmd_sender_;
   GimbalCommandSender *gimbal_cmd_sender_{};

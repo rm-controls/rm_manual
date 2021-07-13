@@ -12,6 +12,8 @@
 #include <ros/service.h>
 #include <controller_manager_msgs/SwitchController.h>
 #include <control_msgs/QueryCalibrationState.h>
+#include <rm_msgs/ColorSwitch.h>
+#include <rm_msgs/TargetSwitch.h>
 
 namespace rm_manual {
 template<class ServiceType>
@@ -128,6 +130,32 @@ class QueryCalibrationService : public ServiceCallerBase<control_msgs::QueryCali
     if (isCalling()) return false;
     return service_.response.is_calibrated;
   }
+};
+
+class SwitchEnemyColorService : public ServiceCallerBase<rm_msgs::ColorSwitch> {
+ public:
+  explicit SwitchEnemyColorService(ros::NodeHandle &nh) : ServiceCallerBase<rm_msgs::ColorSwitch>(
+      nh, "/detection/enemy_color_change") {}
+  void setEnemyColor(const Referee &referee) {
+    if (referee.robot_id_ != 0 && !is_set_) {
+      //RED:1~9  BLUE:101~109
+      service_.request.color = referee.robot_id_ < 50 ? "blue" : "red";
+      callService();
+      if (getIsSwitch())
+        is_set_ = true;
+    }
+  }
+  void SwitchEnemyColor() {
+    if (is_set_)
+      service_.request.color = service_.request.color == "blue" ? "red" : "blue";
+  }
+  bool getIsSwitch() {
+    if (isCalling()) return false;
+    return service_.response.is_success;
+  }
+
+ private:
+  bool is_set_{};
 };
 
 }

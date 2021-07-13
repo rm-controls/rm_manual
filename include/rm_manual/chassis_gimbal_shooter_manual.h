@@ -15,6 +15,12 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ros::NodeHandle cover_nh(nh, "cover");
     cover_command_sender_ = new CoverCommandSender(cover_nh);
     ui_shooter_ = new UiShooter(&data_.referee_);
+    ros::NodeHandle enemy_color_nh(nh, "enemy_color_switch");
+    switch_enemy_color_srv_ = new SwitchEnemyColorService(enemy_color_nh);
+  }
+  void run() override {
+    ManualBase::run();
+    switch_enemy_color_srv_->setEnemyColor(data_.referee_);
   }
  protected:
   void drawUi() override {
@@ -84,17 +90,26 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ChassisGimbalManual::mouseRightPress();
     if (state_ == PC) { gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed()); }
   }
-  void ctrlWPress() override {
-    if (state_ == IDLE) { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
-    ChassisGimbalManual::ctrlWPress();
+  void ctrlRPress() override {
+
   }
-  void ctrlZPress() override {
-    if (state_ == PC) { shooter_cmd_sender_->setBurstMode(false); }
-    ChassisGimbalManual::ctrlZPress();
+  void ctrlVPress() override {
+    if (state_ == PC) {
+      if (ros::Time::now() - last_release_v_ < ros::Duration(0.015)) {
+        switch_enemy_color_srv_->SwitchEnemyColor();
+        switch_enemy_color_srv_->callService();
+        last_switch_ = ros::Time::now();
+      }
+      if (!switch_enemy_color_srv_->getIsSwitch() && ros::Time::now() - last_switch_ > ros::Duration(0.1)) {
+        switch_enemy_color_srv_->callService();
+        last_switch_ = ros::Time::now();
+      }
+    }
   }
   ShooterCommandSender *shooter_cmd_sender_{};
   CoverCommandSender *cover_command_sender_{};
   UiShooter *ui_shooter_{};
+  ros::Time last_switch_{};
 };
 }
 
