@@ -37,13 +37,11 @@ rm_manual:
   controllers_list:
     - controllers/robot_state_controller
     - controllers/joint_state_controller
-    - controllers/orientation_controller
     - controllers/chassis_controller
   state_controllers_switch:
     start_controllers:
       - controllers/robot_state_controller
       - controllers/joint_state_controller
-      - controllers/orientation_controller
   base_controllers_switch:
     start_controllers:
       - controllers/chassis_controller
