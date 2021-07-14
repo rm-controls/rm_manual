@@ -34,15 +34,13 @@ class EngineerManual : public ChassisGimbalManual {
   void sendCommand(const ros::Time &time) override {
     ChassisGimbalManual::sendCommand(time);
     arm_servo_sender_->sendCommand(time);
+    pub_.publish(std_msgs::Float64());
   }
   void setZero() override {
     ChassisGimbalManual::setZero();
     arm_servo_sender_->setZero();
   }
   void rightSwitchMid() override {
-    std_msgs::Float64 offset;
-    offset.data = 0;
-    pub_.publish(offset);
     if (data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN)
       ChassisGimbalManual::rightSwitchMid();
   }
