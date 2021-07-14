@@ -27,7 +27,11 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
  protected:
   void drawUi() override {
     ChassisGimbalManual::drawUi();
-    if (state_ == PC) ui_shooter_->display(shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
+    if (state_ == PC) {
+      ui_shooter_->display(shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
+      ui_target_->display(switch_target_type_srv_->getTarget(), switch_enemy_color_srv_->getColor(),
+                          gimbal_cmd_sender_->getBaseOnly());
+    }
   }
   void setZero() override {
     ChassisGimbalManual::setZero();
@@ -112,7 +116,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void ctrlVPress() override {
     if (state_ == PC) {
       if (ros::Time::now() - last_release_v_ < ros::Duration(0.015)) {
-        switch_enemy_color_srv_->SwitchEnemyColor();
+        switch_enemy_color_srv_->switchEnemyColor();
         switch_enemy_color_srv_->callService();
         last_switch_color_ = ros::Time::now();
       } else if (!switch_enemy_color_srv_->getIsSwitch()

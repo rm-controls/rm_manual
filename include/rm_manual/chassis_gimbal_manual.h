@@ -33,7 +33,6 @@ class ChassisGimbalManual : public ManualBase {
       ui_chassis_->display(chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
       ui_gimbal_->display(gimbal_cmd_sender_->getMsg()->mode);
       ui_capacitor_->display(time);
-      ui_target_->display(gimbal_cmd_sender_->getBaseOnly());
       ui_warning_->display(time, chassis_cmd_sender_->getMsg()->mode);
       ui_armor0_->display(time);
       ui_armor1_->display(time);

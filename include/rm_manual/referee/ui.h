@@ -33,15 +33,10 @@ class UiManual : public UiBase {
     last_mode_ = mode;
     last_flag_ = flag;
   }
-  virtual void display(bool flag) {
-    if (operate_type_ != ADD && last_flag_ == flag) return;
-    getInfo(flag);
-    referee_->drawString(picture_x_, picture_y_, picture_id_, display_info_, YELLOW, operate_type_);
-    last_flag_ = flag;
+  virtual void display(std::string type, std::string color, bool flag) {
   }
  protected:
   virtual void getInfo(uint8_t mode) {};
-  virtual void getInfo(bool flag) {};
   uint8_t last_mode_;
   bool last_flag_ = false;
 };
@@ -100,11 +95,20 @@ class UiTarget : public UiManual {
     picture_x_ = 1470;
     picture_y_ = 640;
   }
- protected:
-  void getInfo(bool base_only) override {
-    if (base_only) display_info_ = "target:base";
-    else display_info_ = "target:all";
+  void display(std::string type, std::string color, bool base_only) override {
+    if (operate_type_ != ADD && last_flag_ == base_only && last_type_ == type && last_color_ == color) return;
+    if (type == "buff") display_info_ = "target:buff";
+    else if (base_only) display_info_ = "target:base";
+    else display_info_ = "target:armor";
+    if (color == "red") display_info_ += "(r)";
+    else display_info_ += "(b)";
+    referee_->drawString(picture_x_, picture_y_, picture_id_, display_info_, YELLOW, operate_type_);
+    last_flag_ = base_only;
+    last_type_ = type;
+    last_color_ = color;
   }
+ protected:
+  std::string last_type_, last_color_;
 };
 
 class UiAuto : public UiBase {
