@@ -122,6 +122,10 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
       }
     }
   }
+  void ctrlCPress() override {
+    if (state_ == PC && ros::Time::now() - last_release_c_ < ros::Duration(0.015))
+      gimbal_cmd_sender_->setBaseOnly(!gimbal_cmd_sender_->getBaseOnly());
+  }
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
   rm_common::CoverCommandSender *cover_command_sender_{};
   UiShooter *ui_shooter_{};

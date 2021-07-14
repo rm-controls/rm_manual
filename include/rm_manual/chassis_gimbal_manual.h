@@ -118,10 +118,6 @@ class ChassisGimbalManual : public ManualBase {
         chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
     }
   }
-  void cPress() override {
-    if (state_ == PC && ros::Time::now() - last_release_c_ < ros::Duration(0.015))
-      gimbal_cmd_sender_->setBaseOnly(!gimbal_cmd_sender_->getBaseOnly());
-  }
   void mouseRightPress() override {
     if (state_ == PC) {
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
