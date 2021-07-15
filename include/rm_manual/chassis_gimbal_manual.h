@@ -118,12 +118,6 @@ class ChassisGimbalManual : public ManualBase {
         chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
     }
   }
-  void mouseRightPress() override {
-    if (state_ == PC) {
-      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
-      gimbal_cmd_sender_->updateCost(data_.track_data_array_);
-    }
-  }
   rm_common::ChassisCommandSender *chassis_cmd_sender_{};
   rm_common::Vel2DCommandSender *vel_cmd_sender_;
   rm_common::GimbalCommandSender *gimbal_cmd_sender_{};

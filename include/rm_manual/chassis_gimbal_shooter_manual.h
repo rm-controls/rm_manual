@@ -89,12 +89,15 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     if (state_ == PC) { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH); }
   }
   void mouseRightPress() override {
-    ChassisGimbalManual::mouseRightPress();
-    if (state_ == PC) { gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed()); }
+    if (state_ == PC && cover_command_sender_->isClose()) {
+      gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+      gimbal_cmd_sender_->updateCost(data_.track_data_array_);
+    }
   }
   void ctrlRPress() override {
     if (state_ == PC) {
-      if (ros::Time::now() - last_release_r_ < ros::Duration(0.015)) {
+      if (ros::Time::now() - last_release_ctrl_r_ < ros::Duration(0.015)) {
         switch_target_type_srv_->switchTargetType();
         switch_target_type_srv_->callService();
         if (switch_target_type_srv_->getTarget() == "buff")
@@ -111,7 +114,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void ctrlVPress() override {
     if (state_ == PC) {
-      if (ros::Time::now() - last_release_v_ < ros::Duration(0.015)) {
+      if (ros::Time::now() - last_release_ctrl_v_ < ros::Duration(0.015)) {
         switch_enemy_color_srv_->switchEnemyColor();
         switch_enemy_color_srv_->callService();
         last_switch_color_ = ros::Time::now();
@@ -125,6 +128,25 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void ctrlCPress() override {
     if (state_ == PC && ros::Time::now() - last_release_c_ < ros::Duration(0.015))
       gimbal_cmd_sender_->setBaseOnly(!gimbal_cmd_sender_->getBaseOnly());
+  }
+  void ctrlZPress() override {
+    if (state_ == PC && ros::Time::now() - last_release_ctrl_z_ < ros::Duration(0.015)
+        && data_.referee_.robot_id_ != RobotId::BLUE_HERO && data_.referee_.robot_id_ != RobotId::RED_HERO) {
+      if (cover_command_sender_->isClose()) {
+        geometry_msgs::PointStamped aim_point{};
+        aim_point.header.frame_id = "yaw";
+        aim_point.header.stamp = ros::Time::now();
+        aim_point.point.x = 1000;
+        aim_point.point.y = 0;
+        aim_point.point.z = 0;
+        gimbal_cmd_sender_->setAimPoint(aim_point);
+        gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
+        cover_command_sender_->open();
+      } else {
+        gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+        cover_command_sender_->close();
+      }
+    }
   }
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
   rm_common::CoverCommandSender *cover_command_sender_{};
