@@ -25,7 +25,7 @@ class UiBase {
 class UiManual : public UiBase {
  public:
   UiManual(rm_common::Referee *referee) : UiBase(referee) {};
-  virtual void display(uint8_t mode, bool flag = false) {
+  void display(uint8_t mode, bool flag = false) {
     if (operate_type_ != ADD && last_mode_ == mode && last_flag_ == flag) return;
     color_ = flag ? ORANGE : YELLOW;
     getInfo(mode);
@@ -33,15 +33,8 @@ class UiManual : public UiBase {
     last_mode_ = mode;
     last_flag_ = flag;
   }
-  virtual void display(bool flag) {
-    if (operate_type_ != ADD && last_flag_ == flag) return;
-    getInfo(flag);
-    referee_->drawString(picture_x_, picture_y_, picture_id_, display_info_, YELLOW, operate_type_);
-    last_flag_ = flag;
-  }
  protected:
   virtual void getInfo(uint8_t mode) {};
-  virtual void getInfo(bool flag) {};
   uint8_t last_mode_;
   bool last_flag_ = false;
 };
@@ -93,6 +86,20 @@ class UiShooter : public UiManual {
   }
 };
 
+class UiSentry : public UiManual {
+ public:
+  UiSentry(rm_common::Referee *referee) : UiManual(referee) {
+    picture_id_ = 10;
+    picture_x_ = 1470;
+    picture_y_ = 590;
+  }
+ protected:
+  void getInfo(uint8_t mode) override {
+    if (mode == 0) display_info_ = "sentry:standby";
+    else display_info_ = "sentry:attack";
+  }
+};
+
 class UiTarget : public UiManual {
  public:
   UiTarget(rm_common::Referee *referee) : UiManual(referee) {
@@ -100,11 +107,20 @@ class UiTarget : public UiManual {
     picture_x_ = 1470;
     picture_y_ = 640;
   }
- protected:
-  void getInfo(bool base_only) override {
-    if (base_only) display_info_ = "target:base";
-    else display_info_ = "target:all";
+  void display(std::string type, std::string color, bool base_only) {
+    if (operate_type_ != ADD && last_flag_ == base_only && last_type_ == type && last_color_ == color) return;
+    if (type == "buff") display_info_ = "target:buff";
+    else if (base_only) display_info_ = "target:base";
+    else display_info_ = "target:armor";
+    if (color == "red") display_info_ += "(red)";
+    else display_info_ += "(blue)";
+    referee_->drawString(picture_x_, picture_y_, picture_id_, display_info_, YELLOW, operate_type_);
+    last_flag_ = base_only;
+    last_type_ = type;
+    last_color_ = color;
   }
+ protected:
+  std::string last_type_, last_color_;
 };
 
 class UiAuto : public UiBase {
@@ -116,6 +132,7 @@ class UiAuto : public UiBase {
     referee_->drawString(picture_x_, picture_y_, picture_id_, display_info_, color_, operate_type_);
     last_update_ = time;
   }
+  virtual void display(const ros::Time &time, uint8_t mode) {}
  protected:
   virtual void getInfo() {};
   ros::Time last_update_ = ros::Time::now();
@@ -176,6 +193,19 @@ class UiArmor : public UiAuto {
   bool delete_flag_ = false;
   tf2_ros::Buffer tf_;
   tf2_ros::TransformListener *tf_listener_{};
+};
+
+class UiWarning : public UiAuto {
+ public:
+  UiWarning(rm_common::Referee *referee) : UiAuto(referee) { operate_type_ = ADD; };
+  void display(const ros::Time &time, uint8_t mode) override {
+    if (mode != rm_msgs::ChassisCmd::GYRO && time - last_update_ > ros::Duration(2.0)) {
+      if (operate_type_ == ADD) operate_type_ = DELETE;
+      else operate_type_ = ADD;
+      referee_->drawString(850, 690, 9, "please spin", YELLOW, operate_type_);
+      last_update_ = time;
+    }
+  }
 };
 } // namespace rm_manual
 #endif //RM_MANUAL_REFEREE_UI_H_
