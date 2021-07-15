@@ -1,10 +1,10 @@
-rm_manual:
-  robot_type: "engineer"
+﻿rm_manual:
+  robot_type: "standard"
   chassis:
     topic: "/cmd_chassis"
-    accel_x: 10.0
-    accel_y: 10.0
-    accel_z: 20.0
+    accel_x: 4.0
+    accel_y: 4.0
+    accel_z: 5.0
     safety_power: 50.0
     capacitor_threshold: 0.1
     charge_power: 0
@@ -14,7 +14,7 @@ rm_manual:
     topic: "/cmd_vel"
     max_linear_x: 4.0
     max_linear_y: 4.0
-    max_angular_z: 10.0
+    max_angular_z: 6.0
   gimbal:
     topic: "/cmd_gimbal"
     max_yaw_vel: 12.56
@@ -37,17 +37,15 @@ rm_manual:
   controllers_list:
     - controllers/robot_state_controller
     - controllers/joint_state_controller
-    - controllers/orientation_controller
     - controllers/chassis_controller
+    - controllers/arm_trajectory_controller
   state_controllers_switch:
     start_controllers:
       - controllers/robot_state_controller
       - controllers/joint_state_controller
-      - controllers/orientation_controller
   base_controllers_switch:
     start_controllers:
       - controllers/chassis_controller
-      - controllers/gimbal_controller
-      - controllers/shooter_controller
+      - controllers/arm_trajectory_controller
   calibration_manager:
 
