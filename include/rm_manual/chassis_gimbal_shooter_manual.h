@@ -112,7 +112,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void ctrlVPress() override {
     if (state_ == PC) {
       if (ros::Time::now() - last_release_v_ < ros::Duration(0.015)) {
-        switch_enemy_color_srv_->SwitchEnemyColor();
+        switch_enemy_color_srv_->switchEnemyColor();
         switch_enemy_color_srv_->callService();
         last_switch_color_ = ros::Time::now();
       } else if (!switch_enemy_color_srv_->getIsSwitch()
