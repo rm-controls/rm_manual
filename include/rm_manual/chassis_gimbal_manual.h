@@ -20,6 +20,7 @@ class ChassisGimbalManual : public ManualBase {
     ui_gimbal_ = new UiGimbal(&data_.referee_);
     ui_capacitor_ = new UiCapacitor(&data_.referee_);
     ui_target_ = new UiTarget(&data_.referee_);
+    ui_warning_ = new UiWarning(&data_.referee_);
     ui_armor0_ = new UiArmor(&data_.referee_, 0);
     ui_armor1_ = new UiArmor(&data_.referee_, 1);
     ui_armor2_ = new UiArmor(&data_.referee_, 2);
@@ -32,7 +33,7 @@ class ChassisGimbalManual : public ManualBase {
       ui_chassis_->display(chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
       ui_gimbal_->display(gimbal_cmd_sender_->getMsg()->mode);
       ui_capacitor_->display(time);
-      ui_target_->display(gimbal_cmd_sender_->getBaseOnly());
+      ui_warning_->display(time, chassis_cmd_sender_->getMsg()->mode);
       ui_armor0_->display(time);
       ui_armor1_->display(time);
       ui_armor2_->display(time);
@@ -135,6 +136,7 @@ class ChassisGimbalManual : public ManualBase {
   UiGimbal *ui_gimbal_{};
   UiCapacitor *ui_capacitor_{};
   UiTarget *ui_target_{};
+  UiWarning *ui_warning_{};
   UiArmor *ui_armor0_{};
   UiArmor *ui_armor1_{};
   UiArmor *ui_armor2_{};
