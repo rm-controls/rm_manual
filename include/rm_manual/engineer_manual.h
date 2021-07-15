@@ -26,7 +26,6 @@ class EngineerManual : public ChassisGimbalManual {
     ROS_INFO("Waiting for move arm server to start.");
     action_client_.waitForServer();
     ROS_INFO("Move arm server started.");
-    sendStepList("raise_arm");
 
     pub_ = nh.advertise<std_msgs::Float64>("/controllers/mast_controller/command", 1);
   }
@@ -51,7 +50,8 @@ class EngineerManual : public ChassisGimbalManual {
     }
   }
   void leftSwitchMid() override {
-    sendStepList("grasp_big_resource");
+    rm_msgs::EngineerActionGoal g;
+    sendStepList(g.goal.FOLD);
   }
   void leftSwitchUp() override {
     if (state_ == RC)
@@ -62,9 +62,9 @@ class EngineerManual : public ChassisGimbalManual {
     ManualBase::remoteControlTurnOn();
     reset_servo_server_.call(srv);
   }
-  void sendStepList(std::string step_list) {
+  void sendStepList(uint8_t step_queue_id) {
     rm_msgs::EngineerActionGoal goal;
-    goal.goal.step = std::move(step_list);
+    goal.goal.step_queue_id = step_queue_id;
     if (action_client_.isServerConnected()) {
       if (!has_send_step_list_) {
         action_client_.sendGoal(goal.goal);
