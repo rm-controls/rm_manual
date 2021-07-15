@@ -29,15 +29,15 @@ class EngineerManual : public ChassisGimbalManual {
 
     pub_ = nh.advertise<std_msgs::Float64>("/controllers/mast_controller/command", 1);
   }
+  void run() override {
+    arm_servo_sender_->setZero();
+    ChassisGimbalManual::run();
+  }
  private:
   void sendCommand(const ros::Time &time) override {
     ChassisGimbalManual::sendCommand(time);
     arm_servo_sender_->sendCommand(time);
     pub_.publish(std_msgs::Float64());
-  }
-  void setZero() override {
-    ChassisGimbalManual::setZero();
-    arm_servo_sender_->setZero();
   }
   void rightSwitchMid() override {
     if (data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN)

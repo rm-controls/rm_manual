@@ -32,8 +32,9 @@ class ManualBase {
  protected:
   void checkReferee(const ros::Time &time);
   void checkSwitch(const ros::Time &time);
-  void checkKeyboard(const ros::Time &time);
-  virtual void setZero() = 0;
+  void checkKeyboard();
+  virtual void updateRc();
+  virtual void updatePc();
   virtual void sendCommand(const ros::Time &time) = 0;
   virtual void drawUi() {};
 
@@ -79,13 +80,32 @@ class ManualBase {
   virtual void shiftPress() {};
   virtual void mouseLeftPress() {};
   virtual void mouseRightPress() {};
-
-  // Press in same time
-  virtual void mouseLeftRightPress() {};
   virtual void ctrlRPress() {};
   virtual void ctrlVPress() {};
   virtual void ctrlCPress() {};
   virtual void ctrlZPress() {};
+
+  virtual void qRelease() {};
+  virtual void wRelease() {};
+  virtual void eRelease() {};
+  virtual void rRelease() {};
+  virtual void aRelease() {};
+  virtual void sRelease() {};
+  virtual void dRelease() {};
+  virtual void fRelease() {};
+  virtual void gRelease() {};
+  virtual void zRelease() {};
+  virtual void xRelease() {};
+  virtual void cRelease() {};
+  virtual void vRelease() {};
+  virtual void bRelease() {};
+  virtual void shiftRelease() {};
+  virtual void mouseLeftRelease() {};
+  virtual void mouseRightRelease() {};
+  virtual void ctrlRRelease() {};
+  virtual void ctrlVRelease() {};
+  virtual void ctrlCRelease() {};
+  virtual void ctrlZRelease() {};
 
   Data data_;
   rm_common::ControllerLoader *controller_loader_;
@@ -95,12 +115,10 @@ class ManualBase {
   bool remote_is_open_{};
   ros::NodeHandle nh_;
   int state_ = PASSIVE;
-  ros::Time last_release_q_, last_release_w_, last_release_e_, last_release_r_, last_release_t_, last_release_a_,
-      last_release_s_, last_release_d_, last_release_f_, last_release_g_, last_release_z_, last_release_x_,
-      last_release_c_, last_release_v_, last_release_b_, last_release_shift_, last_release_mouse_left_,
-      last_release_mouse_right_, last_release_mouse_right_left_, last_release_ctrl_r_, last_release_ctrl_v_,
-      last_release_ctrl_c_, last_release_ctrl_z_;
-
+  bool last_q_{}, last_w_{}, last_e_{}, last_r_{}, last_a_{}, last_s_{}, last_d_{}, last_f_{}, last_g_{},
+      last_z_{}, last_x_{}, last_c_{}, last_v_{}, last_b_{}, last_shift_{}, last_mouse_left_{},
+      last_mouse_right_{}, last_ctrl_{};
+  uint8_t last_switch_right_, last_switch_left_;
 };
 
 }
