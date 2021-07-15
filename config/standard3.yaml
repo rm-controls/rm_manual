@@ -41,6 +41,8 @@ rm_manual:
     topic: "/controllers/cover_controller/command"
     open_pos: -2.0
     close_pos: 0.0
+  enemy_color_switch:
+    error_amount_limit: 10
   controllers_list:
     - controllers/robot_state_controller
     - controllers/joint_state_controller
