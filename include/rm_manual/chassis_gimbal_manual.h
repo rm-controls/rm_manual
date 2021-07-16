@@ -95,9 +95,9 @@ class ChassisGimbalManual : public ManualBase {
   }
   void drawUi() override {
     ros::Time time = ros::Time::now();
-    ui_chassis_->display(chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
+    ui_chassis_->display(time, chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
     ui_warning_->display(time, chassis_cmd_sender_->getMsg()->mode);
-    ui_gimbal_->display(gimbal_cmd_sender_->getMsg()->mode);
+    ui_gimbal_->display(time, gimbal_cmd_sender_->getMsg()->mode);
     ui_armor0_->display(time);
     ui_armor1_->display(time);
     ui_armor2_->display(time);

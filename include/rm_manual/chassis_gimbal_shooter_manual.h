@@ -138,10 +138,11 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void drawUi() override {
     ChassisGimbalManual::drawUi();
-    ui_shooter_->display(shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
-    ui_target_->display(switch_target_type_srv_->getTarget(), switch_enemy_color_srv_->getColor(),
+    ros::Time time = ros::Time::now();
+    ui_shooter_->display(time, shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
+    ui_target_->display(time, switch_target_type_srv_->getTarget(), switch_enemy_color_srv_->getColor(),
                         gimbal_cmd_sender_->getBaseOnly());
-    ui_capacitor_->display(ros::Time::now());
+    ui_capacitor_->display(time);
   }
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
   rm_common::CoverCommandSender *cover_command_sender_{};
