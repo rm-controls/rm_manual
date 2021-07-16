@@ -117,14 +117,16 @@ void ManualBase::checkKeyboard() {
   else if (last_mouse_left_ && !data_.dbus_data_.p_l) mouseLeftRelease();
   if (!last_mouse_right_ && data_.dbus_data_.p_r) mouseRightPress();
   else if (last_mouse_right_ && !data_.dbus_data_.p_r) mouseRightRelease();
-  if (!(last_ctrl_ & last_r_) && (data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r)) ctrlRPress();
-  else if ((last_ctrl_ & last_r_) && !(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r)) ctrlRRelease();
-  if (!(last_ctrl_ & last_v_) && (data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v)) ctrlVPress();
-  else if ((last_ctrl_ & last_v_) && !(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v)) ctrlVRelease();
-  if (!(last_ctrl_ & last_c_) && (data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c)) ctrlCPress();
-  else if ((last_ctrl_ & last_c_) && !(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c)) ctrlCRelease();
-  if (!(last_ctrl_ & last_z_) && (data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z)) ctrlZPress();
-  else if ((last_ctrl_ & last_z_) && !(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z)) ctrlZRelease();
+  if (data_.dbus_data_.key_ctrl) {
+    if (!last_r_ && data_.dbus_data_.key_r) ctrlRPress();
+    else if (last_r_ && !data_.dbus_data_.key_r) ctrlRRelease();
+    if (!last_v_ && data_.dbus_data_.key_v) ctrlVPress();
+    else if (last_v_ && !data_.dbus_data_.key_v) ctrlVRelease();
+    if (!last_c_ && data_.dbus_data_.key_c) ctrlCPress();
+    else if (last_c_ && !data_.dbus_data_.key_c) ctrlCRelease();
+    if (!last_z_ && data_.dbus_data_.key_z) ctrlZPress();
+    else if (last_z_ && !data_.dbus_data_.key_z) ctrlZRelease();
+  }
 
   last_a_ = data_.dbus_data_.key_a;
   last_b_ = data_.dbus_data_.key_b;
