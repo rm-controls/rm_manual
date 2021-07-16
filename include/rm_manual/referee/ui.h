@@ -16,7 +16,7 @@ class UiBase {
   void setOperateType(GraphicOperateType operate_type) { operate_type_ = operate_type; }
  protected:
   rm_common::Referee *referee_;
-  GraphicOperateType operate_type_ = ADD;
+  GraphicOperateType operate_type_ = UPDATE;
   GraphicColorType color_ = YELLOW;
   std::string display_title_, display_info_;
   int picture_id_, picture_x_, picture_y_;
@@ -150,6 +150,23 @@ class UiTarget : public UiManual {
   std::string last_type_, last_color_;
 };
 
+class UiCover : public UiManual {
+ public:
+  UiCover(rm_common::Referee *referee) : UiManual(referee) {
+    picture_id_ = 11;
+    picture_x_ = 900;
+    picture_y_ = 740;
+    last_flag_ = true;
+  }
+  void display(bool close_flag) {
+    if (close_flag != last_flag_) {
+      if (!close_flag) referee_->drawString(picture_x_, picture_y_, picture_id_, "cover open", GREEN, ADD);
+      else referee_->drawString(picture_x_, picture_y_, picture_id_, "cover open", GREEN, DELETE);
+    }
+    last_flag_ = close_flag;
+  }
+};
+
 class UiAuto : public UiBase {
  public:
   UiAuto(rm_common::Referee *referee) : UiBase(referee) {};
@@ -224,12 +241,16 @@ class UiArmor : public UiAuto {
 
 class UiWarning : public UiAuto {
  public:
-  UiWarning(rm_common::Referee *referee) : UiAuto(referee) { operate_type_ = ADD; };
+  UiWarning(rm_common::Referee *referee) : UiAuto(referee) {
+    picture_id_ = 9;
+    picture_x_ = 900;
+    picture_y_ = 690;
+  };
   void display(const ros::Time &time, uint8_t mode) override {
     if (mode != rm_msgs::ChassisCmd::GYRO && time - last_update_ > ros::Duration(2.0)) {
       if (operate_type_ == ADD) operate_type_ = DELETE;
       else operate_type_ = ADD;
-      referee_->drawString(900, 690, 9, "please spin", YELLOW, operate_type_);
+      referee_->drawString(picture_x_, picture_y_, picture_id_, "please spin", YELLOW, operate_type_);
       last_update_ = time;
     }
   }

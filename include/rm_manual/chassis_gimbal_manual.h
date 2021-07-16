@@ -73,6 +73,7 @@ class ChassisGimbalManual : public ManualBase {
   void xPress() override {
     ui_chassis_->setOperateType(ADD);
     ui_gimbal_->setOperateType(ADD);
+    ui_warning_->setOperateType(ADD);
   }
   void xRelease() override {
     ui_chassis_->setOperateType(UPDATE);

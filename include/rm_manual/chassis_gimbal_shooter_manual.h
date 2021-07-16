@@ -21,6 +21,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     switch_target_type_srv_ = new rm_common::SwitchTargetTypeService(target_type_nh);
     ui_capacitor_ = new UiCapacitor(&data_.referee_);
     ui_target_ = new UiTarget(&data_.referee_);
+    ui_cover_ = new UiCover(&data_.referee_);
   }
   void run() override {
     ManualBase::run();
@@ -143,12 +144,14 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ui_target_->display(time, switch_target_type_srv_->getTarget(), switch_enemy_color_srv_->getColor(),
                         gimbal_cmd_sender_->getBaseOnly());
     ui_capacitor_->display(time);
+    ui_cover_->display(cover_command_sender_->isClose());
   }
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
   rm_common::CoverCommandSender *cover_command_sender_{};
   UiShooter *ui_shooter_{};
   UiCapacitor *ui_capacitor_{};
   UiTarget *ui_target_{};
+  UiCover *ui_cover_{};
   rm_common::SwitchEnemyColorService *switch_enemy_color_srv_{};
   rm_common::SwitchTargetTypeService *switch_target_type_srv_{};
 };
