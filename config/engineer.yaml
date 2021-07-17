@@ -30,8 +30,8 @@ rm_manual:
     - controllers/joint_state_controller
     - controllers/chassis_controller
     - controllers/arm_trajectory_controller
-    - controllers/hand_controller
     - controllers/mast_controller
+    - controllers/card_controller
   state_controllers_switch:
     start_controllers:
       - controllers/robot_state_controller
@@ -41,7 +41,7 @@ rm_manual:
       - controllers/chassis_controller
       - controllers/gimbal_controller
       - controllers/arm_trajectory_controller
-      - controllers/hand_controller
       - controllers/mast_controller
+      - controllers/card_controller
   calibration_manager:
 
