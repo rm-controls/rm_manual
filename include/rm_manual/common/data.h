@@ -6,11 +6,11 @@
 #define RM_MANUAL_COMMON_DATA_H_
 
 #include <ros/ros.h>
-#include <rm_common/referee/referee.h>
 #include <rm_common/decision/target_cost_function.h>
 #include <nav_msgs/Odometry.h>
 #include <rm_msgs/DbusData.h>
 #include <rm_msgs/GimbalDesError.h>
+#include "rm_manual/referee/referee.h"
 
 namespace rm_manual {
 
@@ -45,7 +45,7 @@ class Data {
   rm_msgs::GimbalDesError gimbal_des_error_;
   nav_msgs::Odometry odom_;
 
-  rm_common::Referee referee_;
+  Referee referee_;
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
