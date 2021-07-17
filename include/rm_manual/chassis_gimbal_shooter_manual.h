@@ -11,7 +11,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
  public:
   explicit ChassisGimbalShooterManual(ros::NodeHandle &nh) : ChassisGimbalManual(nh) {
     ros::NodeHandle shooter_nh(nh, "shooter");
-    shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, data_.referee_);
+    shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh);
     ros::NodeHandle cover_nh(nh, "cover");
     cover_command_sender_ = new rm_common::CoverCommandSender(cover_nh);
     ui_shooter_ = new UiShooter(&data_.referee_);
@@ -25,7 +25,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void run() override {
     ManualBase::run();
-    switch_enemy_color_srv_->setEnemyColor(data_.referee_);
+    switch_enemy_color_srv_->setEnemyColor(data_.referee_.referee_data_);
   }
  protected:
   void sendCommand(const ros::Time &time) override {
@@ -62,15 +62,17 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void leftSwitchMid() override {
     ChassisGimbalManual::leftSwitchMid();
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
-    gimbal_cmd_sender_->updateCost(data_.track_data_array_);
+    gimbal_cmd_sender_->updateCost(data_.referee_.referee_data_, data_.track_data_array_);
     gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
+    shooter_cmd_sender_->updateLimit(data_.referee_.referee_data_);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
   }
   void leftSwitchUp() override {
     ChassisGimbalManual::leftSwitchUp();
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
-    gimbal_cmd_sender_->updateCost(data_.track_data_array_);
+    gimbal_cmd_sender_->updateCost(data_.referee_.referee_data_, data_.track_data_array_);
     gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
+    shooter_cmd_sender_->updateLimit(data_.referee_.referee_data_);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
     shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
   }
@@ -89,6 +91,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ui_target_->setOperateType(UPDATE);
   }
   void mouseLeftPress() override {
+    shooter_cmd_sender_->updateLimit(data_.referee_.referee_data_);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
   }
   void mouseLeftRelease() override { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY); }
@@ -96,7 +99,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     if (cover_command_sender_->isClose()) {
       gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
-      gimbal_cmd_sender_->updateCost(data_.track_data_array_);
+      gimbal_cmd_sender_->updateCost(data_.referee_.referee_data_, data_.track_data_array_);
       shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
     }
   }
