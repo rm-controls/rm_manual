@@ -22,7 +22,7 @@ class InputEventBase {
  protected:
   bool last_state_;
   ros::Time last_change_;
-  boost::function<void(ros::Duration duration)> handler_;
+  boost::function<void(ros::Duration)> handler_;
 };
 
 class RisingInputEvent : public InputEventBase {

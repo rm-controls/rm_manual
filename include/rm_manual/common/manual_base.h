@@ -40,9 +40,9 @@ class ManualBase {
   virtual void drawUi() {};
 
   // Referee
-  virtual void chassisOutputOn() {};
-  virtual void gimbalOutputOn() {};
-  virtual void shooterOutputOn() {};
+  virtual void chassisOutputOn(ros::Duration /*duration*/) { ROS_INFO("Chassis output ON"); }
+  virtual void gimbalOutputOn(ros::Duration /*duration*/) { ROS_INFO("Gimbal output ON"); }
+  virtual void shooterOutputOn(ros::Duration /*duration*/) { ROS_INFO("Shooter output ON"); }
 
   // Remote Controller
   virtual void remoteControlTurnOff() {
@@ -89,6 +89,9 @@ class ManualBase {
   bool remote_is_open_{};
   ros::NodeHandle nh_;
   int state_ = PASSIVE;
+  RisingInputEvent switch_right_down_event_, switch_right_mid_event_, switch_right_up_event_;
+  RisingInputEvent switch_left_down_event_, switch_left_mid_event_, switch_left_up_event_;
+  RisingInputEvent chassis_power_on_, gimbal_power_on_, shooter_power_on_;
   RisingInputEvent w_press_event_;
   FallingInputEvent w_release_event_;
   RisingInputEvent s_press_event_;
@@ -105,12 +108,6 @@ class ManualBase {
   FallingInputEvent x_release_event_;
   RisingInputEvent e_press_event_;
   RisingInputEvent g_press_event_;
-  RisingInputEvent switch_right_down_event_;
-  RisingInputEvent switch_right_mid_event_;
-  RisingInputEvent switch_right_up_event_;
-  RisingInputEvent switch_left_down_event_;
-  RisingInputEvent switch_left_mid_event_;
-  RisingInputEvent switch_left_up_event_;
 };
 
 }

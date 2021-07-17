@@ -54,7 +54,7 @@ class Referee {
 
   rm_msgs::Referee referee_pub_data_;
   rm_msgs::SuperCapacitor super_capacitor_pub_data_;
-  rm_common::RefereeData referee_data_{}, last_referee_data_;
+  rm_common::RefereeData referee_data_{};
   SuperCapacitor super_capacitor_;
 
   bool is_online_ = false;
@@ -74,7 +74,7 @@ class Referee {
   const std::string serial_port_ = "/dev/usbReferee";
   const int k_frame_length_ = 128, k_header_length_ = 5, k_cmd_id_length_ = 2, k_tail_length_ = 2;
   static const int k_unpack_buffer_length_ = 256;
-  uint8_t unpack_buffer_[k_unpack_buffer_length_];
+  uint8_t unpack_buffer_[k_unpack_buffer_length_]{};
 };
 
 // CRC verification
