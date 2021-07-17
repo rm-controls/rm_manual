@@ -12,6 +12,7 @@ class ChassisGimbalManual : public ManualBase {
   explicit ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
     ros::NodeHandle chassis_nh(nh, "chassis");
     chassis_cmd_sender_ = new rm_common::ChassisCommandSender(chassis_nh);
+    chassis_cmd_sender_->updateLimit(data_.referee_.referee_data_);
     ros::NodeHandle vel_nh(nh, "vel");
     vel_cmd_sender_ = new rm_common::Vel2DCommandSender(vel_nh);
     ros::NodeHandle gimbal_nh(nh, "gimbal");

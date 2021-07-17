@@ -79,7 +79,6 @@ class EngineerManual : public ChassisGimbalManual {
   ros::Publisher pub_;
   rm_common::Vel3DCommandSender *arm_servo_sender_{};
   ros::ServiceClient reset_servo_server_;
-  std::string target_frame_, source_frame_;
   bool has_send_step_list_{};
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 };
