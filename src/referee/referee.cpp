@@ -185,6 +185,9 @@ int Referee::unpack(uint8_t *rx_data) {
 void Referee::getRobotId() {
   robot_id_ = referee_data_.game_robot_status_.robot_id_;
   robot_color_ = robot_id_ >= 100 ? "blue" : "red";
+  referee_data_.robot_id_ = robot_id_;
+  referee_data_.robot_color_ = robot_color_;
+  referee_data_.is_online_ = is_online_;
   if (robot_id_ != BLUE_SENTRY && robot_id_ != RED_SENTRY) {
     switch (robot_id_) {
       case BLUE_HERO:client_id_ = BLUE_HERO_CLIENT;
