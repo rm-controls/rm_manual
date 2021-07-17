@@ -91,6 +91,10 @@ void ManualBase::checkKeyboard() {
   else if (last_s_ && !data_.dbus_data_.key_s) sRelease();
   if (data_.dbus_data_.key_d) dPress();
   else if (last_d_ && !data_.dbus_data_.key_d) dRelease();
+  if (data_.dbus_data_.p_l) mouseLeftPress();
+  else if (last_mouse_left_ && !data_.dbus_data_.p_l) mouseLeftRelease();
+  if (data_.dbus_data_.p_r) mouseRightPress();
+  else if (last_mouse_right_ && !data_.dbus_data_.p_r) mouseRightRelease();
   if (!last_b_ && data_.dbus_data_.key_b) bPress();
   else if (last_b_ && !data_.dbus_data_.key_b) bRelease();
   if (!last_c_ && data_.dbus_data_.key_c) cPress();
@@ -113,10 +117,6 @@ void ManualBase::checkKeyboard() {
   else if (last_z_ && !data_.dbus_data_.key_z) zRelease();
   if (!last_shift_ && data_.dbus_data_.key_shift) shiftPress();
   else if (last_shift_ && !data_.dbus_data_.key_shift) shiftRelease();
-  if (!last_mouse_left_ && data_.dbus_data_.p_l) mouseLeftPress();
-  else if (last_mouse_left_ && !data_.dbus_data_.p_l) mouseLeftRelease();
-  if (!last_mouse_right_ && data_.dbus_data_.p_r) mouseRightPress();
-  else if (last_mouse_right_ && !data_.dbus_data_.p_r) mouseRightRelease();
   if (data_.dbus_data_.key_ctrl) {
     if (!last_r_ && data_.dbus_data_.key_r) ctrlRPress();
     else if (last_r_ && !data_.dbus_data_.key_r) ctrlRRelease();

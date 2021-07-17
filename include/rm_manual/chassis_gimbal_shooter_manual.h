@@ -37,6 +37,11 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ROS_INFO("Shooter Output on!");
     calibration_manager_->reset();
   }
+  void updateRc() override {
+    ChassisGimbalManual::updateRc();
+    gimbal_cmd_sender_->updateCost(data_.referee_.referee_data_, data_.track_data_array_);
+    shooter_cmd_sender_->updateLimit(data_.referee_.referee_data_);
+  }
   void rightSwitchDown() override {
     ChassisGimbalManual::rightSwitchDown();
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
@@ -62,17 +67,13 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void leftSwitchMid() override {
     ChassisGimbalManual::leftSwitchMid();
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
-    gimbal_cmd_sender_->updateCost(data_.referee_.referee_data_, data_.track_data_array_);
     gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
-    shooter_cmd_sender_->updateLimit(data_.referee_.referee_data_);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
   }
   void leftSwitchUp() override {
     ChassisGimbalManual::leftSwitchUp();
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
-    gimbal_cmd_sender_->updateCost(data_.referee_.referee_data_, data_.track_data_array_);
     gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
-    shooter_cmd_sender_->updateLimit(data_.referee_.referee_data_);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
     shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
   }
