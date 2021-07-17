@@ -16,6 +16,7 @@
 #include <controller_manager_msgs/SwitchController.h>
 
 #include "rm_manual/common/data.h"
+#include "rm_manual/common/input_event.h"
 #include "rm_manual/referee/ui.h"
 
 namespace rm_manual {
@@ -64,7 +65,7 @@ class ManualBase {
 
   // Keyboard
   virtual void qPress() {};
-  virtual void wPress() {};
+  virtual void wPress(ros::Duration duration) {};
   virtual void ePress() {};
   virtual void rPress() {};
   virtual void aPress() {};
@@ -115,10 +116,7 @@ class ManualBase {
   bool remote_is_open_{};
   ros::NodeHandle nh_;
   int state_ = PASSIVE;
-  bool last_q_{}, last_w_{}, last_e_{}, last_r_{}, last_a_{}, last_s_{}, last_d_{}, last_f_{}, last_g_{},
-      last_z_{}, last_x_{}, last_c_{}, last_v_{}, last_b_{}, last_shift_{}, last_mouse_left_{},
-      last_mouse_right_{}, last_ctrl_{};
-  uint8_t last_switch_right_, last_switch_left_;
+  RisingInputEvent w_press_event_;
 };
 
 }

@@ -5,7 +5,9 @@
 #include "rm_manual/common/manual_base.h"
 namespace rm_manual {
 
-ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh) {
+ManualBase::ManualBase(ros::NodeHandle &nh) :
+    data_(nh), nh_(nh),
+    w_press_event_(boost::bind(&ManualBase::wPress, this, _1)) {
   controller_loader_ = new rm_common::ControllerLoader(nh);
   controller_loader_->loadControllers();
   calibration_manager_ = new rm_common::CalibrationManager(nh);
@@ -55,12 +57,12 @@ void ManualBase::checkSwitch(const ros::Time &time) {
     remoteControlTurnOn();
     remote_is_open_ = true;
   }
-  if (last_switch_right_ != data_.dbus_data_.s_r) {
-    if (data_.dbus_data_.s_r == rm_msgs::DbusData::UP) rightSwitchUp();
-    else if (data_.dbus_data_.s_r == rm_msgs::DbusData::MID) rightSwitchMid();
-    else if (data_.dbus_data_.s_r == rm_msgs::DbusData::DOWN) rightSwitchDown();
-  }
-  last_switch_right_ = data_.dbus_data_.s_r;
+//  if (last_switch_right_ != data_.dbus_data_.s_r) {
+//    if (data_.dbus_data_.s_r == rm_msgs::DbusData::UP) rightSwitchUp();
+//    else if (data_.dbus_data_.s_r == rm_msgs::DbusData::MID) rightSwitchMid();
+//    else if (data_.dbus_data_.s_r == rm_msgs::DbusData::DOWN) rightSwitchDown();
+//  }
+//  last_switch_right_ = data_.dbus_data_.s_r;
 
   if (state_ == RC)
     updateRc();
@@ -69,12 +71,12 @@ void ManualBase::checkSwitch(const ros::Time &time) {
 }
 
 void ManualBase::updateRc() {
-  if (last_switch_left_ != data_.dbus_data_.s_l) {
-    if (data_.dbus_data_.s_l == rm_msgs::DbusData::UP) leftSwitchUp();
-    else if (data_.dbus_data_.s_l == rm_msgs::DbusData::MID) leftSwitchMid();
-    else if (data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN) leftSwitchDown();
-  }
-  last_switch_left_ = data_.dbus_data_.s_l;
+//  if (last_switch_left_ != data_.dbus_data_.s_l) {
+//    if (data_.dbus_data_.s_l == rm_msgs::DbusData::UP) leftSwitchUp();
+//    else if (data_.dbus_data_.s_l == rm_msgs::DbusData::MID) leftSwitchMid();
+//    else if (data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN) leftSwitchDown();
+//  }
+//  last_switch_left_ = data_.dbus_data_.s_l;
 }
 
 void ManualBase::updatePc() {
@@ -83,70 +85,10 @@ void ManualBase::updatePc() {
 }
 
 void ManualBase::checkKeyboard() {
-  if (data_.dbus_data_.key_w) wPress();
-  else if (last_w_ && !data_.dbus_data_.key_w) wRelease();
-  if (data_.dbus_data_.key_a) aPress();
-  else if (last_a_ && !data_.dbus_data_.key_a) aRelease();
-  if (data_.dbus_data_.key_s) sPress();
-  else if (last_s_ && !data_.dbus_data_.key_s) sRelease();
-  if (data_.dbus_data_.key_d) dPress();
-  else if (last_d_ && !data_.dbus_data_.key_d) dRelease();
-  if (!last_b_ && data_.dbus_data_.key_b) bPress();
-  else if (last_b_ && !data_.dbus_data_.key_b) bRelease();
-  if (!last_c_ && data_.dbus_data_.key_c) cPress();
-  else if (last_c_ && !data_.dbus_data_.key_c) cRelease();
-  if (!last_e_ && data_.dbus_data_.key_e) ePress();
-  else if (last_e_ && !data_.dbus_data_.key_e) eRelease();
-  if (!last_f_ && data_.dbus_data_.key_f) fPress();
-  else if (last_f_ && !data_.dbus_data_.key_f) fRelease();
-  if (!last_g_ && data_.dbus_data_.key_g) gPress();
-  else if (last_g_ && !data_.dbus_data_.key_g) gRelease();
-  if (!last_q_ && data_.dbus_data_.key_q) qPress();
-  else if (last_q_ && !data_.dbus_data_.key_q) qRelease();
-  if (!last_r_ && data_.dbus_data_.key_r) rPress();
-  else if (last_r_ && !data_.dbus_data_.key_r) rRelease();
-  if (!last_v_ && data_.dbus_data_.key_v) vPress();
-  else if (last_v_ && !data_.dbus_data_.key_v) vRelease();
-  if (!last_x_ && data_.dbus_data_.key_x) xPress();
-  else if (last_x_ && !data_.dbus_data_.key_x) xRelease();
-  if (!last_z_ && data_.dbus_data_.key_z) zPress();
-  else if (last_z_ && !data_.dbus_data_.key_z) zRelease();
-  if (!last_shift_ && data_.dbus_data_.key_shift) shiftPress();
-  else if (last_shift_ && !data_.dbus_data_.key_shift) shiftRelease();
-  if (!last_mouse_left_ && data_.dbus_data_.p_l) mouseLeftPress();
-  else if (last_mouse_left_ && !data_.dbus_data_.p_l) mouseLeftRelease();
-  if (!last_mouse_right_ && data_.dbus_data_.p_r) mouseRightPress();
-  else if (last_mouse_right_ && !data_.dbus_data_.p_r) mouseRightRelease();
-  if (data_.dbus_data_.key_ctrl) {
-    if (!last_r_ && data_.dbus_data_.key_r) ctrlRPress();
-    else if (last_r_ && !data_.dbus_data_.key_r) ctrlRRelease();
-    if (!last_v_ && data_.dbus_data_.key_v) ctrlVPress();
-    else if (last_v_ && !data_.dbus_data_.key_v) ctrlVRelease();
-    if (!last_c_ && data_.dbus_data_.key_c) ctrlCPress();
-    else if (last_c_ && !data_.dbus_data_.key_c) ctrlCRelease();
-    if (!last_z_ && data_.dbus_data_.key_z) ctrlZPress();
-    else if (last_z_ && !data_.dbus_data_.key_z) ctrlZRelease();
-  }
-
-  last_a_ = data_.dbus_data_.key_a;
-  last_b_ = data_.dbus_data_.key_b;
-  last_c_ = data_.dbus_data_.key_c;
-  last_d_ = data_.dbus_data_.key_d;
-  last_e_ = data_.dbus_data_.key_e;
-  last_f_ = data_.dbus_data_.key_f;
-  last_g_ = data_.dbus_data_.key_g;
-  last_q_ = data_.dbus_data_.key_q;
-  last_r_ = data_.dbus_data_.key_r;
-  last_s_ = data_.dbus_data_.key_s;
-  last_w_ = data_.dbus_data_.key_w;
-  last_v_ = data_.dbus_data_.key_v;
-  last_x_ = data_.dbus_data_.key_x;
-  last_z_ = data_.dbus_data_.key_z;
-  last_shift_ = data_.dbus_data_.key_shift;
-  last_mouse_left_ = data_.dbus_data_.p_l;
-  last_mouse_right_ = data_.dbus_data_.p_r;
-  last_ctrl_ = data_.dbus_data_.key_ctrl;
+  w_press_event_.update(data_.dbus_data_.key_w);
 }
 
 }
+
+
 

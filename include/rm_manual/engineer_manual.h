@@ -4,12 +4,14 @@
 
 #ifndef RM_MANUAL_ENGINEER_MANUAL_H_
 #define RM_MANUAL_ENGINEER_MANUAL_H_
+
+#include "rm_manual/chassis_gimbal_manual.h"
+
 #include <std_srvs/Empty.h>
 #include <actionlib/client/simple_action_client.h>
 #include <std_msgs/Float64.h>
 
 #include <rm_msgs/EngineerAction.h>
-#include "rm_manual/chassis_gimbal_manual.h"
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <utility>

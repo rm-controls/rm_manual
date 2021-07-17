@@ -62,7 +62,7 @@ class ChassisGimbalManual : public ManualBase {
     ManualBase::leftSwitchDown();
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   }
-  void wPress() override { vel_cmd_sender_->setLinearXVel(1.); }
+  void wPress(ros::Duration) override { vel_cmd_sender_->setLinearXVel(1.); }
   void wRelease() override { vel_cmd_sender_->setLinearXVel(0.); }
   void aPress() override { vel_cmd_sender_->setLinearYVel(1.); }
   void aRelease() override { vel_cmd_sender_->setLinearYVel(0.); }
