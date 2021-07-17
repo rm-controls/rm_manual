@@ -41,20 +41,9 @@ class EngineerManual : public ChassisGimbalManual {
     pub_.publish(std_msgs::Float64());
   }
   void rightSwitchMid() override {
-    if (data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN) {
-      ManualBase::rightSwitchMid();
-      if (std::abs(data_.dbus_data_.wheel) > 0.01) {
-        vel_cmd_sender_->setAngularZVel(data_.dbus_data_.wheel);
-        chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
-      } else
-        chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-      vel_cmd_sender_->setLinearXVel(data_.dbus_data_.ch_r_y);
-      vel_cmd_sender_->setLinearYVel(-data_.dbus_data_.ch_r_x);
-      gimbal_cmd_sender_->setRate(-data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y);
-      gimbal_cmd_sender_->setBaseOnly(false);
-    }
+    ChassisGimbalManual::rightSwitchMid();
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   }
-
   void rightSwitchDown() override {
     ChassisGimbalManual::rightSwitchDown();
     if (has_send_step_list_) {
@@ -86,7 +75,6 @@ class EngineerManual : public ChassisGimbalManual {
       }
     } else
       ROS_WARN("Can not connected with move arm server");
-
   }
   ros::Publisher pub_;
   rm_common::Vel3DCommandSender *arm_servo_sender_{};
