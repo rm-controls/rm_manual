@@ -36,10 +36,10 @@ class ChassisGimbalManual : public ManualBase {
     ManualBase::updateRc();
     chassis_cmd_sender_->updateLimit(data_.referee_.referee_data_);
     if (std::abs(data_.dbus_data_.wheel) > 0.01) {
-      vel_cmd_sender_->setAngularZVel(data_.dbus_data_.wheel);
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
     } else
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    vel_cmd_sender_->setAngularZVel(data_.dbus_data_.wheel);
     vel_cmd_sender_->setLinearXVel(data_.dbus_data_.ch_r_y);
     vel_cmd_sender_->setLinearYVel(-data_.dbus_data_.ch_r_x);
     gimbal_cmd_sender_->setRate(-data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y);

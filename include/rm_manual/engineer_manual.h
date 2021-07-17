@@ -34,21 +34,30 @@ class EngineerManual : public ChassisGimbalManual {
     arm_servo_sender_->setZero();
     ChassisGimbalManual::run();
   }
+  void updateRc() override {
+    ChassisGimbalManual::updateRc();
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  }
+
  private:
   void sendCommand(const ros::Time &time) override {
     ChassisGimbalManual::sendCommand(time);
     arm_servo_sender_->sendCommand(time);
     pub_.publish(std_msgs::Float64());
   }
-  void rightSwitchMid(ros::Duration time) override {
-    ChassisGimbalManual::rightSwitchMid(time);
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  }
   void rightSwitchDown(ros::Duration time) override {
     ChassisGimbalManual::rightSwitchDown(time);
     if (has_send_step_list_) {
       action_client_.cancelAllGoals();
     }
+  }
+  void rightSwitchMid(ros::Duration time) override {
+    ChassisGimbalManual::rightSwitchMid(time);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  }
+  void rightSwitchUp(ros::Duration time) override {
+    ChassisGimbalManual::rightSwitchUp(time);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   }
   void leftSwitchMid(ros::Duration time) override {
     rm_msgs::EngineerActionGoal g;
