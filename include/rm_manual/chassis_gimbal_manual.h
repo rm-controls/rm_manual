@@ -48,11 +48,15 @@ class ChassisGimbalManual : public ManualBase {
     chassis_cmd_sender_->updateLimit(data_.referee_.referee_data_);
     gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
   }
+  void rightSwitchDown(ros::Duration time) override {
+    ManualBase::rightSwitchDown(time);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+  }
   void rightSwitchMid(ros::Duration time) override {
     ManualBase::rightSwitchMid(time);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-    gimbal_cmd_sender_->setBaseOnly(false);
   }
   void rightSwitchUp(ros::Duration time) override {
     ManualBase::rightSwitchUp(time);
