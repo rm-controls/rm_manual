@@ -27,7 +27,7 @@ class SuperCapacitor {
   ros::Time last_get_capacitor_data_ = ros::Time::now();
  private:
   void dtpReceivedCallBack(unsigned char receive_byte);
-  void receiveCallBack(unsigned char package_id, unsigned char *data);
+  void receiveCallBack(unsigned char package_id, const unsigned char *data);
   static float int16ToFloat(unsigned short data0);
 
   float parameters[4] = {0};
@@ -41,7 +41,7 @@ class Referee {
   Referee() { referee_data_.robot_hurt_.hurt_type_ = 0x09; };
   void init();
   void read();
-  void drawString(int picture_id, int x, int y, std::string data,
+  void drawString(int picture_id, int x, int y, const std::string &data,
                   GraphicColorType color, GraphicOperateType operate_type);
   void drawCircle(int picture_id, int center_x, int center_y, int radius,
                   GraphicColorType color, GraphicOperateType operate_type);
@@ -63,7 +63,7 @@ class Referee {
   std::string robot_color_;
  private:
   int unpack(uint8_t *rx_data);
-  void pack(uint8_t *tx_buffer, uint8_t *data, int cmd_id, int len);
+  void pack(uint8_t *tx_buffer, uint8_t *data, int cmd_id, int len) const;
   void sendUi(int picture_id, int x, int y, GraphicConfigData *config_data, GraphicColorType color,
               GraphicType graph_type, GraphicOperateType operate_type, std::string string_data = "");
   void getRobotId();

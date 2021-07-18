@@ -18,7 +18,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
       ctrl_v_press_event_(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this, _1)),
       ctrl_r_press_event_(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this, _1)) {
     ros::NodeHandle shooter_nh(nh, "shooter");
-    shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh);
+    shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, data_.referee_.referee_data_);
     ros::NodeHandle cover_nh(nh, "cover");
     cover_command_sender_ = new rm_common::CoverCommandSender(cover_nh);
     ui_shooter_ = new UiShooter(&data_.referee_);
@@ -54,8 +54,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void updateRc() override {
     ChassisGimbalManual::updateRc();
-    gimbal_cmd_sender_->updateCost(data_.referee_.referee_data_, data_.track_data_array_);
-    shooter_cmd_sender_->updateLimit(data_.referee_.referee_data_);
+    gimbal_cmd_sender_->updateCost(data_.track_data_array_);
   }
   void rightSwitchDown(ros::Duration time) override {
     ChassisGimbalManual::rightSwitchDown(time);
@@ -103,7 +102,6 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ui_target_->setOperateType(UPDATE);
   }
   void mouseLeftPress(ros::Duration time) override {
-    shooter_cmd_sender_->updateLimit(data_.referee_.referee_data_);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
   }
   void mouseLeftRelease(ros::Duration time) override { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY); }
@@ -111,7 +109,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     if (cover_command_sender_->isClose()) {
       gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
-      gimbal_cmd_sender_->updateCost(data_.referee_.referee_data_, data_.track_data_array_);
+      gimbal_cmd_sender_->updateCost(data_.track_data_array_);
       shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
     }
   }
