@@ -45,8 +45,6 @@ class Referee {
                   GraphicColorType color, GraphicOperateType operate_type);
   void drawCircle(int picture_id, int center_x, int center_y, int radius,
                   GraphicColorType color, GraphicOperateType operate_type);
-  void drawRectangle(int picture_id, int start_x, int start_y, int end_x, int end_y,
-                     GraphicColorType color, GraphicOperateType operate_type);
   void sendInteractiveData(int data_cmd_id, int receiver_id, unsigned char data);
 
   ros::Publisher referee_pub_;
@@ -64,8 +62,8 @@ class Referee {
  private:
   int unpack(uint8_t *rx_data);
   void pack(uint8_t *tx_buffer, uint8_t *data, int cmd_id, int len) const;
-  void sendUi(int picture_id, int x, int y, GraphicConfigData *config_data, GraphicColorType color,
-              GraphicType graph_type, GraphicOperateType operate_type, std::string string_data = "");
+  void sendUi(GraphicConfigData *config_data, int config_num, GraphicOperateType operate_type,
+              std::string string_data = "");
   void getRobotId();
   void publishData();
 
