@@ -46,49 +46,49 @@ class ChassisGimbalManual : public ManualBase {
     ManualBase::updatePc();
     gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
   }
-  void rightSwitchDown(ros::Duration time) override {
-    ManualBase::rightSwitchDown(time);
+  void rightSwitchDown(ros::Duration duration) override {
+    ManualBase::rightSwitchDown(duration);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     vel_cmd_sender_->set2DVel(0., 0., 0.);
     gimbal_cmd_sender_->setRate(0., 0.);
   }
-  void rightSwitchMid(ros::Duration time) override {
-    ManualBase::rightSwitchMid(time);
+  void rightSwitchMid(ros::Duration duration) override {
+    ManualBase::rightSwitchMid(duration);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   }
-  void rightSwitchUp(ros::Duration time) override {
-    ManualBase::rightSwitchUp(time);
+  void rightSwitchUp(ros::Duration duration) override {
+    ManualBase::rightSwitchUp(duration);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     ui_chassis_->setOperateType(UPDATE);
     ui_gimbal_->setOperateType(UPDATE);
   }
-  void leftSwitchDown(ros::Duration time) override {
-    ManualBase::leftSwitchDown(time);
+  void leftSwitchDown(ros::Duration duration) override {
+    ManualBase::leftSwitchDown(duration);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   }
-  void wPress(ros::Duration) override { vel_cmd_sender_->setLinearXVel(1.); }
-  void wRelease(ros::Duration) override { vel_cmd_sender_->setLinearXVel(0.); }
-  void aPress(ros::Duration) override { vel_cmd_sender_->setLinearYVel(1.); }
-  void aRelease(ros::Duration) override { vel_cmd_sender_->setLinearYVel(0.); }
-  void sPress(ros::Duration) override { vel_cmd_sender_->setLinearXVel(-1.); }
-  void sRelease(ros::Duration) override { vel_cmd_sender_->setLinearXVel(0.); }
-  void dPress(ros::Duration) override { vel_cmd_sender_->setLinearYVel(-1.); }
-  void dRelease(ros::Duration) override { vel_cmd_sender_->setLinearYVel(0.); }
-  void xPress(ros::Duration) override {
+  void wPress(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearXVel(1.); }
+  void wRelease(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearXVel(0.); }
+  void aPress(ros::Duration /*duration*/v) override { vel_cmd_sender_->setLinearYVel(1.); }
+  void aRelease(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearYVel(0.); }
+  void sPress(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearXVel(-1.); }
+  void sRelease(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearXVel(0.); }
+  void dPress(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearYVel(-1.); }
+  void dRelease(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearYVel(0.); }
+  void xPress(ros::Duration /*duration*/) override {
     ui_chassis_->setOperateType(ADD);
     ui_gimbal_->setOperateType(ADD);
     ui_warning_->setOperateType(ADD);
     ui_capacitor_->setOperateType(ADD);
   }
-  void xRelease(ros::Duration) override {
+  void xRelease(ros::Duration /*duration*/) override {
     ui_chassis_->setOperateType(UPDATE);
     ui_gimbal_->setOperateType(UPDATE);
     ui_capacitor_->setOperateType(UPDATE);
   }
-  void gPress(ros::Duration) override {
+  void gPress(ros::Duration /*duration*/) override {
     if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
       vel_cmd_sender_->setAngularZVel(0.);
@@ -97,7 +97,7 @@ class ChassisGimbalManual : public ManualBase {
       vel_cmd_sender_->setAngularZVel(1.);
     }
   }
-  void ePress(ros::Duration) override {
+  void ePress(ros::Duration /*duration*/) override {
     if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::TWIST)
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     else
@@ -105,7 +105,7 @@ class ChassisGimbalManual : public ManualBase {
   }
   void drawUi() override {
     ros::Time time = ros::Time::now();
-    ui_chassis_->display(time, chassis_cmd_sender_->getMsg()->mode, data_.dbus_data_.key_shift);
+    ui_chassis_->display(time, chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
     ui_gimbal_->display(time, gimbal_cmd_sender_->getMsg()->mode);
     ui_warning_->display(time, chassis_cmd_sender_->getMsg()->mode);
     ui_capacitor_->display(time);

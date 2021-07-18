@@ -62,8 +62,6 @@ rm_manual:
     start_controllers:
       - controllers/chassis_controller
       - controllers/gimbal_controller
-      - controllers/shooter_controller
-      - controllers/cover_controller
   calibration_manager:
     - step: cover
       switch:
