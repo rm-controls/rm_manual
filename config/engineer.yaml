@@ -32,6 +32,7 @@ rm_manual:
     - controllers/arm_trajectory_controller
     - controllers/mast_controller
     - controllers/card_controller
+    - controllers/hard_controller
   state_controllers_switch:
     start_controllers:
       - controllers/robot_state_controller
