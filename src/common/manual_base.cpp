@@ -36,11 +36,10 @@ ManualBase::ManualBase(ros::NodeHandle &nh) :
   controller_loader_ = new rm_common::ControllerManager(nh);
   calibration_manager_ = new rm_common::CalibrationManager(nh);
   ros::NodeHandle state_ctrl_nh(nh, "state_controllers_switch");
-  switch_state_ctrl_srv_ = new rm_common::SwitchControllersService(state_ctrl_nh);
-  switch_state_ctrl_srv_->startControllersOnly();
+  switch_state_ctrl_srv_ = new rm_common::SwitchControllersServiceCaller(state_ctrl_nh);
   switch_state_ctrl_srv_->callService();
   ros::NodeHandle base_ctrl_nh(nh, "base_controllers_switch");
-  switch_base_ctrl_srv_ = new rm_common::SwitchControllersService(base_ctrl_nh);
+  switch_base_ctrl_srv_ = new rm_common::SwitchControllersServiceCaller(base_ctrl_nh);
 }
 
 void ManualBase::run() {

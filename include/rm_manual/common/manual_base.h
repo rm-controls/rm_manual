@@ -11,7 +11,7 @@
 #include <rm_common/ros_utilities.h>
 #include <rm_common/ori_tool.h>
 #include <rm_common/decision/command_sender.h>
-#include <rm_common/decision/controller_loader.h>
+#include <rm_common/decision/controller_manager.h>
 #include <rm_common/decision/calibration_manager.h>
 #include <controller_manager_msgs/SwitchController.h>
 
@@ -82,9 +82,9 @@ class ManualBase {
   virtual void gPress(ros::Duration duration) {};
 
   Data data_;
-  rm_common::ControllerLoader *controller_loader_;
+  rm_common::ControllerManager *controller_loader_;
   rm_common::CalibrationManager *calibration_manager_;
-  rm_common::SwitchControllersService *switch_state_ctrl_srv_{}, *switch_base_ctrl_srv_{};
+  rm_common::SwitchControllersServiceCaller *switch_state_ctrl_srv_{}, *switch_base_ctrl_srv_{};
 
   bool remote_is_open_{};
   ros::NodeHandle nh_;

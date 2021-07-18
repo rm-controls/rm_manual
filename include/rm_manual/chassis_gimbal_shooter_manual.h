@@ -25,9 +25,9 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     cover_command_sender_ = new rm_common::CoverCommandSender(cover_nh);
     ui_shooter_ = new UiShooter(&data_.referee_);
     ros::NodeHandle enemy_color_nh(nh, "enemy_color_switch");
-    switch_enemy_color_srv_ = new rm_common::SwitchEnemyColorService(enemy_color_nh);
+    switch_enemy_color_srv_ = new rm_common::SwitchEnemyColorServiceCaller(enemy_color_nh);
     ros::NodeHandle target_type_nh(nh, "target_type_switch");
-    switch_target_type_srv_ = new rm_common::SwitchTargetTypeService(target_type_nh);
+    switch_target_type_srv_ = new rm_common::SwitchTargetTypeServiceCaller(target_type_nh);
     ui_target_ = new UiTarget(&data_.referee_);
     ui_cover_ = new UiCover(&data_.referee_);
   }
@@ -176,8 +176,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   RisingInputEvent ctrl_r_press_event_;
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
   rm_common::CoverCommandSender *cover_command_sender_{};
-  rm_common::SwitchEnemyColorService *switch_enemy_color_srv_{};
-  rm_common::SwitchTargetTypeService *switch_target_type_srv_{};
+  rm_common::SwitchEnemyColorServiceCaller *switch_enemy_color_srv_{};
+  rm_common::SwitchTargetTypeServiceCaller *switch_target_type_srv_{};
   UiShooter *ui_shooter_{};
   UiTarget *ui_target_{};
   UiCover *ui_cover_{};
