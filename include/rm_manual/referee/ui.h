@@ -12,21 +12,21 @@
 namespace rm_manual {
 class UiBase {
  public:
-  UiBase(Referee *referee) : referee_(referee) {}
+  explicit UiBase(Referee *referee) : referee_(referee) {}
   void setOperateType(GraphicOperateType operate_type) { operate_type_ = operate_type; }
  protected:
   Referee *referee_;
   GraphicOperateType operate_type_ = UPDATE;
   GraphicColorType color_ = YELLOW;
-  std::string display_title_, display_info_;
-  int picture_id_, picture_x_, picture_y_;
+  std::string display_title_{}, display_info_{};
+  int picture_id_{}, picture_x_{}, picture_y_{};
   ros::Time init_time_;
   bool init_flag_ = false;
 };
 
 class UiManual : public UiBase {
  public:
-  UiManual(Referee *referee) : UiBase(referee) { picture_x_ = 150; };
+  explicit UiManual(Referee *referee) : UiBase(referee) { picture_x_ = 150; };
   void display(const ros::Time &time, uint8_t mode, bool flag = false) {
     if (operate_type_ != ADD && last_mode_ == mode && last_flag_ == flag) return;
     color_ = flag ? ORANGE : YELLOW;
@@ -37,10 +37,10 @@ class UiManual : public UiBase {
         init_flag_ = true;
       }
       if (time - init_time_ <= ros::Duration(0.2))
-        referee_->drawString(picture_x_, picture_y_, picture_id_ + 20, display_title_, WHITE, ADD);
-      else referee_->drawString(picture_x_ + 120, picture_y_, picture_id_, display_info_, color_, ADD);
+        referee_->drawString(picture_id_ + 20, picture_x_, picture_y_, display_title_, WHITE, ADD);
+      else referee_->drawString(picture_id_, picture_x_ + 120, picture_y_, display_info_, color_, ADD);
     } else {
-      referee_->drawString(picture_x_ + 120, picture_y_, picture_id_, display_info_, color_, operate_type_);
+      referee_->drawString(picture_id_, picture_x_ + 120, picture_y_, display_info_, color_, operate_type_);
       last_mode_ = mode;
       last_flag_ = flag;
       init_flag_ = false;
@@ -48,13 +48,13 @@ class UiManual : public UiBase {
   }
  protected:
   virtual void getInfo(uint8_t mode) {};
-  uint8_t last_mode_;
+  uint8_t last_mode_{};
   bool last_flag_ = false;
 };
 
 class UiChassis : public UiManual {
  public:
-  UiChassis(Referee *referee) : UiManual(referee) {
+  explicit UiChassis(Referee *referee) : UiManual(referee) {
     last_mode_ = rm_msgs::ChassisCmd::FOLLOW;
     display_title_ = "chassis";
     picture_id_ = 4;
@@ -70,7 +70,7 @@ class UiChassis : public UiManual {
 
 class UiGimbal : public UiManual {
  public:
-  UiGimbal(Referee *referee) : UiManual(referee) {
+  explicit UiGimbal(Referee *referee) : UiManual(referee) {
     last_mode_ = rm_msgs::GimbalCmd::RATE;
     display_title_ = "gimbal";
     picture_id_ = 5;
@@ -79,13 +79,14 @@ class UiGimbal : public UiManual {
  protected:
   void getInfo(uint8_t mode) override {
     if (mode == rm_msgs::GimbalCmd::RATE) display_info_ = "rate";
+    else if (mode == rm_msgs::GimbalCmd::DIRECT) display_info_ = "direct";
     else if (mode == rm_msgs::GimbalCmd::TRACK) display_info_ = "track";
   }
 };
 
 class UiShooter : public UiManual {
  public:
-  UiShooter(Referee *referee) : UiManual(referee) {
+  explicit UiShooter(Referee *referee) : UiManual(referee) {
     last_mode_ = rm_msgs::ShootCmd::STOP;
     display_title_ = "shooter";
     picture_id_ = 6;
@@ -101,7 +102,7 @@ class UiShooter : public UiManual {
 
 class UiSentry : public UiManual {
  public:
-  UiSentry(Referee *referee) : UiManual(referee) {
+  explicit UiSentry(Referee *referee) : UiManual(referee) {
     display_title_ = "sentry";
     picture_id_ = 10;
     picture_y_ = 590;
@@ -115,12 +116,12 @@ class UiSentry : public UiManual {
 
 class UiTarget : public UiManual {
  public:
-  UiTarget(Referee *referee) : UiManual(referee) {
+  explicit UiTarget(Referee *referee) : UiManual(referee) {
     display_title_ = "target";
     picture_id_ = 7;
     picture_y_ = 640;
   }
-  void display(const ros::Time &time, std::string type, std::string color, bool base_only) {
+  void display(const ros::Time &time, const std::string &type, const std::string &color, bool base_only) {
     if (operate_type_ != ADD && last_flag_ == base_only && last_type_ == type && last_color_ == color) return;
     getTargetInfo(type, color, base_only);
     if (operate_type_ == ADD) {
@@ -129,10 +130,10 @@ class UiTarget : public UiManual {
         init_flag_ = true;
       }
       if (time - init_time_ <= ros::Duration(0.2))
-        referee_->drawString(picture_x_, picture_y_, picture_id_ + 20, display_title_, WHITE, ADD);
-      else referee_->drawString(picture_x_ + 120, picture_y_, picture_id_, display_info_, color_, ADD);
+        referee_->drawString(picture_id_ + 20, picture_x_, picture_y_, display_title_, WHITE, ADD);
+      else referee_->drawString(picture_id_, picture_x_ + 120, picture_y_, display_info_, color_, ADD);
     } else {
-      referee_->drawString(picture_x_ + 120, picture_y_, picture_id_, display_info_, color_, operate_type_);
+      referee_->drawString(picture_id_, picture_x_ + 120, picture_y_, display_info_, color_, operate_type_);
       last_flag_ = base_only;
       last_type_ = type;
       last_color_ = color;
@@ -140,7 +141,7 @@ class UiTarget : public UiManual {
     }
   }
  protected:
-  void getTargetInfo(std::string type, std::string color, bool base_only) {
+  void getTargetInfo(const std::string &type, const std::string &color, bool base_only) {
     if (type == "buff") display_info_ = "buff";
     else if (base_only) display_info_ = "base";
     else display_info_ = "armor";
@@ -152,7 +153,7 @@ class UiTarget : public UiManual {
 
 class UiCover : public UiManual {
  public:
-  UiCover(Referee *referee) : UiManual(referee) {
+  explicit UiCover(Referee *referee) : UiManual(referee) {
     picture_id_ = 11;
     picture_x_ = 900;
     picture_y_ = 740;
@@ -160,8 +161,8 @@ class UiCover : public UiManual {
   }
   void display(bool close_flag) {
     if (close_flag != last_flag_) {
-      if (!close_flag) referee_->drawString(picture_x_, picture_y_, picture_id_, "cover open", GREEN, ADD);
-      else referee_->drawString(picture_x_, picture_y_, picture_id_, "cover open", GREEN, DELETE);
+      if (!close_flag) referee_->drawString(picture_id_, picture_x_, picture_y_, "cover open", GREEN, ADD);
+      else referee_->drawString(picture_id_, picture_x_, picture_y_, "cover open", GREEN, DELETE);
     }
     last_flag_ = close_flag;
   }
@@ -169,11 +170,11 @@ class UiCover : public UiManual {
 
 class UiAuto : public UiBase {
  public:
-  UiAuto(Referee *referee) : UiBase(referee) {};
+  explicit UiAuto(Referee *referee) : UiBase(referee) {};
   virtual void display(const ros::Time &time) {
     if (operate_type_ != ADD && time - last_update_ < ros::Duration(0.5)) return;
     getInfo();
-    referee_->drawString(picture_x_, picture_y_, picture_id_, display_info_, color_, operate_type_);
+    referee_->drawString(picture_id_, picture_x_, picture_y_, display_info_, color_, operate_type_);
     last_update_ = time;
   }
   virtual void display(const ros::Time &time, uint8_t mode) {}
@@ -184,7 +185,7 @@ class UiAuto : public UiBase {
 
 class UiCapacitor : public UiAuto {
  public:
-  UiCapacitor(Referee *referee) : UiAuto(referee) {
+  explicit UiCapacitor(Referee *referee) : UiAuto(referee) {
     picture_id_ = 8;
     picture_x_ = 910;
     picture_y_ = 100;
@@ -208,13 +209,13 @@ class UiArmor : public UiAuto {
     if (referee_->referee_data_.robot_hurt_.hurt_type_ == 0x00
         && referee_->referee_data_.robot_hurt_.armor_id_ == armor_id_) {
       updateArmorPosition();
-      referee_->drawCircle(picture_x_, picture_y_, 50, armor_id_, color_, ADD);
+      referee_->drawCircle(armor_id_, picture_x_, picture_y_, 50, color_, ADD);
       last_update_ = time;
       delete_flag_ = false;
       referee_->referee_data_.robot_hurt_.hurt_type_ = 0x01;
     }
     if (!delete_flag_ && time - last_update_ > ros::Duration(0.5)) {
-      referee_->drawCircle(0, 0, 0, armor_id_, YELLOW, DELETE);
+      referee_->drawCircle(armor_id_, 0, 0, 0, YELLOW, DELETE);
       delete_flag_ = true;
     }
   }
@@ -241,7 +242,7 @@ class UiArmor : public UiAuto {
 
 class UiWarning : public UiAuto {
  public:
-  UiWarning(Referee *referee) : UiAuto(referee) {
+  explicit UiWarning(Referee *referee) : UiAuto(referee) {
     picture_id_ = 9;
     picture_x_ = 900;
     picture_y_ = 690;
@@ -250,7 +251,7 @@ class UiWarning : public UiAuto {
     if (mode != rm_msgs::ChassisCmd::GYRO && time - last_update_ > ros::Duration(2.0)) {
       if (operate_type_ == ADD) operate_type_ = DELETE;
       else operate_type_ = ADD;
-      referee_->drawString(picture_x_, picture_y_, picture_id_, "please spin", YELLOW, operate_type_);
+      referee_->drawString(picture_id_, picture_x_, picture_y_, "please spin", YELLOW, operate_type_);
       last_update_ = time;
     }
   }

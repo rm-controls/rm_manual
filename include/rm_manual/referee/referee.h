@@ -41,7 +41,7 @@ class Referee {
   Referee() { referee_data_.robot_hurt_.hurt_type_ = 0x09; };
   void init();
   void read();
-  void drawString(int picture_id, int x, int y, std::string data,
+  void drawString(int picture_id, int x, int y, const std::string &data,
                   GraphicColorType color, GraphicOperateType operate_type);
   void drawCircle(int picture_id, int center_x, int center_y, int radius,
                   GraphicColorType color, GraphicOperateType operate_type);
@@ -63,7 +63,7 @@ class Referee {
   std::string robot_color_;
  private:
   int unpack(uint8_t *rx_data);
-  void pack(uint8_t *tx_buffer, uint8_t *data, int cmd_id, int len);
+  void pack(uint8_t *tx_buffer, uint8_t *data, int cmd_id, int len) const;
   void sendUi(int picture_id, int x, int y, GraphicConfigData *config_data, GraphicColorType color,
               GraphicType graph_type, GraphicOperateType operate_type, std::string string_data = "");
   void getRobotId();
@@ -74,7 +74,7 @@ class Referee {
   const std::string serial_port_ = "/dev/usbReferee";
   const int k_frame_length_ = 128, k_header_length_ = 5, k_cmd_id_length_ = 2, k_tail_length_ = 2;
   static const int k_unpack_buffer_length_ = 256;
-  uint8_t unpack_buffer_[k_unpack_buffer_length_];
+  uint8_t unpack_buffer_[k_unpack_buffer_length_]{};
 };
 
 // CRC verification

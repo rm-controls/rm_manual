@@ -54,6 +54,11 @@ void Referee::read() {
     }
   }
   super_capacitor_.read(rx_buffer);
+  referee_data_.capacity_data.is_online_ = super_capacitor_.is_online_;
+  referee_data_.capacity_data.buffer_power_ = super_capacitor_.getBufferPower();
+  referee_data_.capacity_data.cap_power_ = super_capacitor_.getCapPower();
+  referee_data_.capacity_data.chassis_power_ = super_capacitor_.getChassisPower();
+  referee_data_.capacity_data.limit_power_ = super_capacitor_.getLimitPower();
   getRobotId();
   publishData();
 }
@@ -65,7 +70,7 @@ int Referee::unpack(uint8_t *rx_data) {
 
   memcpy(&frame_header, rx_data, k_header_length_);
   if (verifyCRC8CheckSum(rx_data, k_header_length_) == true) {
-    frame_len = frame_header.data_length_ + k_header_length_ + k_cmd_id_length_ + k_tail_length_;;
+    frame_len = frame_header.data_length_ + k_header_length_ + k_cmd_id_length_ + k_tail_length_;
     if (verifyCRC16CheckSum(rx_data, frame_len) == true) {
       cmd_id = (rx_data[6] << 8 | rx_data[5]);
       switch (cmd_id) {
@@ -122,8 +127,8 @@ int Referee::unpack(uint8_t *rx_data) {
         case POWER_HEAT_DATA_CMD: {
           last_referee_data_.power_heat_data_ = referee_data_.power_heat_data_;
           memcpy(&referee_data_.power_heat_data_, rx_data + 7, sizeof(PowerHeatData));
-          referee_data_.power_heat_data_.chassis_volt_ *= 0.001; //mV->V
-          referee_data_.power_heat_data_.chassis_current_ *= 0.001; //mA->A
+          referee_data_.power_heat_data_.chassis_volt_ = 0.001; //mV->V
+          referee_data_.power_heat_data_.chassis_current_ = 0.001; //mA->A
           break;
         }
         case ROBOT_POS_CMD: {
@@ -242,7 +247,7 @@ void Referee::publishData() {
   super_capacitor_pub_.publish(super_capacitor_pub_data_);
 }
 
-void Referee::drawString(int picture_id, int x, int y, std::string data,
+void Referee::drawString(int picture_id, int x, int y, const std::string &data,
                          GraphicColorType color, GraphicOperateType operate_type) {
   GraphicConfigData config_data;
   config_data.start_angle_ = 15;
@@ -310,7 +315,7 @@ void Referee::sendUi(int picture_id, int x, int y, GraphicConfigData *config_dat
   ui_data->config_data_.end_y_ = config_data->end_y_;
   ui_data->config_data_.radius_ = config_data->radius_;
   ui_data->config_data_.width_ = config_data->width_;
-  if (string_data != "") {
+  if (!string_data.empty()) {
     ui_data->student_interactive_header_data_.data_cmd_id_ = CLIENT_CHARACTER_CMD;
     for (int kI = 0; kI < 30; ++kI) {
       if (kI < (int) string_data.size()) ui_data->string_data_[kI] = string_data[kI];
@@ -329,7 +334,7 @@ void Referee::sendUi(int picture_id, int x, int y, GraphicConfigData *config_dat
   }
 }
 
-void Referee::pack(uint8_t *tx_buffer, uint8_t *data, int cmd_id, int len) {
+void Referee::pack(uint8_t *tx_buffer, uint8_t *data, int cmd_id, int len) const {
   memset(tx_buffer, 0, k_frame_length_);
   auto *frame_header = (FrameHeaderStruct *) tx_buffer;
 
