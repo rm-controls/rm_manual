@@ -40,7 +40,6 @@ void ManualBase::run() {
   ros::Time time = ros::Time::now();
   data_.referee_.read();
   checkReferee(time);
-//  calibration_manager_->checkCalibrate(time);
   checkSwitch(time);
   sendCommand(time);
   controller_manager_.update();

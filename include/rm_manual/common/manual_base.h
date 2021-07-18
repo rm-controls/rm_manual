@@ -5,6 +5,10 @@
 #ifndef RM_MANUAL_MANUAL_BASE_H_
 #define RM_MANUAL_MANUAL_BASE_H_
 
+#include "rm_manual/common/data.h"
+#include "rm_manual/common/input_event.h"
+#include "rm_manual/referee/ui.h"
+
 #include <iostream>
 #include <queue>
 #include <tf/transform_listener.h>
@@ -12,12 +16,7 @@
 #include <rm_common/ori_tool.h>
 #include <rm_common/decision/command_sender.h>
 #include <rm_common/decision/controller_manager.h>
-//#include <rm_common/decision/calibration_manager.h>
 #include <controller_manager_msgs/SwitchController.h>
-
-#include "rm_manual/common/data.h"
-#include "rm_manual/common/input_event.h"
-#include "rm_manual/referee/ui.h"
 
 namespace rm_manual {
 
