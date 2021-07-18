@@ -27,7 +27,7 @@ class SuperCapacitor {
   ros::Time last_get_capacitor_data_ = ros::Time::now();
  private:
   void dtpReceivedCallBack(unsigned char receive_byte);
-  void receiveCallBack(unsigned char package_id, unsigned char *data);
+  void receiveCallBack(unsigned char package_id, const unsigned char *data);
   static float int16ToFloat(unsigned short data0);
 
   float parameters[4] = {0};

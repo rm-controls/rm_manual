@@ -34,7 +34,7 @@ void Referee::read() {
   if (ros::Time::now() - last_get_referee_data_ > ros::Duration(0.1)) is_online_ = false;
   try {
     if (serial_.available()) {
-      rx_len = serial_.available();
+      rx_len = (int) serial_.available();
       serial_.read(rx_buffer, rx_len);
     }
   } catch (serial::IOException &e) {
@@ -127,8 +127,10 @@ int Referee::unpack(uint8_t *rx_data) {
         case POWER_HEAT_DATA_CMD: {
           last_referee_data_.power_heat_data_ = referee_data_.power_heat_data_;
           memcpy(&referee_data_.power_heat_data_, rx_data + 7, sizeof(PowerHeatData));
-          referee_data_.power_heat_data_.chassis_volt_ = 0.001; //mV->V
-          referee_data_.power_heat_data_.chassis_current_ = 0.001; //mA->A
+          referee_data_.power_heat_data_.chassis_volt_ =
+              (uint16_t) (referee_data_.power_heat_data_.chassis_volt_ * 0.001); //mV->V
+          referee_data_.power_heat_data_.chassis_current_ =
+              (uint16_t) (referee_data_.power_heat_data_.chassis_current_ * 0.001); //mA->A
           break;
         }
         case ROBOT_POS_CMD: {
@@ -238,7 +240,7 @@ void Referee::publishData() {
   referee_pub_data_.stamp = last_get_referee_data_;
 
   super_capacitor_pub_data_.capacity = super_capacitor_.getCapPower();
-  super_capacitor_pub_data_.chassis_power_buffer = super_capacitor_.getBufferPower();
+  super_capacitor_pub_data_.chassis_power_buffer = (uint16_t) super_capacitor_.getBufferPower();
   super_capacitor_pub_data_.limit_power = super_capacitor_.getLimitPower();
   super_capacitor_pub_data_.chassis_power = super_capacitor_.getChassisPower();
   super_capacitor_pub_data_.stamp = super_capacitor_.last_get_capacitor_data_;
@@ -277,7 +279,7 @@ void Referee::sendInteractiveData(int data_cmd_id, int receiver_id, uint8_t data
   uint8_t tx_buffer[128] = {0};
   uint8_t tx_data[sizeof(InteractiveData)] = {0};
   auto student_interactive_data = (InteractiveData *) tx_data;
-  int tx_len = k_header_length_ + k_cmd_id_length_ + sizeof(InteractiveData) + k_tail_length_;
+  int tx_len = k_header_length_ + k_cmd_id_length_ + (int) sizeof(InteractiveData) + k_tail_length_;
 
   student_interactive_data->header_data_.data_cmd_id_ = data_cmd_id;
   student_interactive_data->header_data_.sender_id_ = robot_id_;
@@ -296,7 +298,7 @@ void Referee::sendUi(int picture_id, int x, int y, GraphicConfigData *config_dat
                      GraphicType graph_type, GraphicOperateType operate_type, std::string string_data) {
   uint8_t tx_buffer[128] = {0}, tx_data[sizeof(ClientGraphicData)] = {0};
   auto ui_data = (ClientGraphicData *) tx_data;
-  int tx_len = k_header_length_ + k_cmd_id_length_ + sizeof(ClientGraphicData) + k_tail_length_;
+  int tx_len = k_header_length_ + k_cmd_id_length_ + (int) sizeof(ClientGraphicData) + k_tail_length_;
 
   ui_data->student_interactive_header_data_.sender_id_ = robot_id_;
   ui_data->student_interactive_header_data_.receiver_id_ = client_id_;
@@ -356,14 +358,14 @@ uint8_t getCRC8CheckSum(unsigned char *pch_message, unsigned int dw_length, unsi
 }
 
 uint32_t verifyCRC8CheckSum(unsigned char *pch_message, unsigned int dw_length) {
-  unsigned char uc_expected = 0;
+  unsigned char uc_expected;
   if ((pch_message == nullptr) || (dw_length <= 2)) return 0;
   uc_expected = getCRC8CheckSum(pch_message, dw_length - 1, kCrc8Init);
   return (uc_expected == pch_message[dw_length - 1]);
 }
 
 void appendCRC8CheckSum(unsigned char *pch_message, unsigned int dw_length) {
-  unsigned char uc_crc = 0;
+  unsigned char uc_crc;
   if ((pch_message == nullptr) || (dw_length <= 2)) return;
   uc_crc = getCRC8CheckSum((unsigned char *) pch_message, dw_length - 1, kCrc8Init);
   pch_message[dw_length - 1] = uc_crc;
@@ -380,7 +382,7 @@ uint16_t getCRC16CheckSum(uint8_t *pch_message, uint32_t dw_length, uint16_t w_c
 }
 
 uint32_t verifyCRC16CheckSum(uint8_t *pch_message, uint32_t dw_length) {
-  uint16_t w_expected = 0;
+  uint16_t w_expected;
   if ((pch_message == nullptr) || (dw_length <= 2)) return 0;
   w_expected = getCRC16CheckSum(pch_message, dw_length - 2, kCrc16Init);
   return ((w_expected & 0xff) == pch_message[dw_length - 2]
@@ -388,7 +390,7 @@ uint32_t verifyCRC16CheckSum(uint8_t *pch_message, uint32_t dw_length) {
 }
 
 void appendCRC16CheckSum(uint8_t *pch_message, uint32_t dw_length) {
-  uint16_t wCRC = 0;
+  uint16_t wCRC;
   if ((pch_message == nullptr) || (dw_length <= 2)) return;
   wCRC = getCRC16CheckSum((uint8_t *) pch_message, dw_length - 2, kCrc16Init);
   pch_message[dw_length - 2] = (uint8_t) (wCRC & 0x00ff);
@@ -418,7 +420,7 @@ void SuperCapacitor::read(const std::vector<uint8_t> &rx_buffer) {
   if (ros::Time::now() - last_get_capacitor_data_ > ros::Duration(0.1)) is_online_ = false;
 }
 
-void SuperCapacitor::receiveCallBack(unsigned char package_id, unsigned char *data) {
+void SuperCapacitor::receiveCallBack(unsigned char package_id, const unsigned char *data) {
   if (package_id == 0) {
     last_get_capacitor_data_ = ros::Time::now();
     parameters[0] = int16ToFloat((data[0] << 8) | data[1]);
