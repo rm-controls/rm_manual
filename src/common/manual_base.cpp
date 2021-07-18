@@ -33,8 +33,7 @@ ManualBase::ManualBase(ros::NodeHandle &nh) :
     x_release_event_(boost::bind(&ManualBase::xRelease, this, _1)),
     e_press_event_(boost::bind(&ManualBase::ePress, this, _1)),
     g_press_event_(boost::bind(&ManualBase::gPress, this, _1)) {
-  controller_loader_ = new rm_common::ControllerLoader(nh);
-  controller_loader_->loadControllers();
+  controller_loader_ = new rm_common::ControllerManager(nh);
   calibration_manager_ = new rm_common::CalibrationManager(nh);
   ros::NodeHandle state_ctrl_nh(nh, "state_controllers_switch");
   switch_state_ctrl_srv_ = new rm_common::SwitchControllersService(state_ctrl_nh);
