@@ -13,6 +13,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
       ChassisGimbalManual(nh),
       q_press_event_(boost::bind(&ChassisGimbalShooterManual::qPress, this, _1)),
       f_press_event_(boost::bind(&ChassisGimbalShooterManual::fPress, this, _1)),
+      shift_press_event_(boost::bind(&ChassisGimbalShooterManual::shiftPress, this, _1)),
+      shift_release_event_(boost::bind(&ChassisGimbalShooterManual::shiftRelease, this, _1)),
       ctrl_z_press_event_(boost::bind(&ChassisGimbalShooterManual::ctrlZPress, this, _1)),
       ctrl_c_press_event_(boost::bind(&ChassisGimbalShooterManual::ctrlCPress, this, _1)),
       ctrl_v_press_event_(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this, _1)),
@@ -38,6 +40,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ManualBase::checkKeyboard();
     q_press_event_.update(data_.dbus_data_.key_q);
     f_press_event_.update(data_.dbus_data_.key_f);
+    shift_press_event_.update(data_.dbus_data_.key_shift);
+    shift_release_event_.update(data_.dbus_data_.key_shift);
     ctrl_z_press_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
     ctrl_c_press_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
     ctrl_v_press_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v);
@@ -56,56 +60,56 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ChassisGimbalManual::updateRc();
     gimbal_cmd_sender_->updateCost(data_.track_data_array_);
   }
-  void rightSwitchDown(ros::Duration time) override {
-    ChassisGimbalManual::rightSwitchDown(time);
+  void rightSwitchDown(ros::Duration duration) override {
+    ChassisGimbalManual::rightSwitchDown(duration);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
     cover_command_sender_->open();
   }
-  void rightSwitchMid(ros::Duration time) override {
-    ChassisGimbalManual::rightSwitchMid(time);
+  void rightSwitchMid(ros::Duration duration) override {
+    ChassisGimbalManual::rightSwitchMid(duration);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
     cover_command_sender_->close();
   }
-  void rightSwitchUp(ros::Duration time) override {
-    ChassisGimbalManual::rightSwitchUp(time);
+  void rightSwitchUp(ros::Duration duration) override {
+    ChassisGimbalManual::rightSwitchUp(duration);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
     cover_command_sender_->close();
     ui_shooter_->setOperateType(UPDATE);
     ui_capacitor_->setOperateType(UPDATE);
     ui_target_->setOperateType(UPDATE);
   }
-  void leftSwitchDown(ros::Duration time) override {
-    ChassisGimbalManual::leftSwitchDown(time);
+  void leftSwitchDown(ros::Duration duration) override {
+    ChassisGimbalManual::leftSwitchDown(duration);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   }
-  void leftSwitchMid(ros::Duration time) override {
-    ChassisGimbalManual::leftSwitchMid(time);
+  void leftSwitchMid(ros::Duration duration) override {
+    ChassisGimbalManual::leftSwitchMid(duration);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
     gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
   }
-  void leftSwitchUp(ros::Duration time) override {
-    ChassisGimbalManual::leftSwitchUp(time);
+  void leftSwitchUp(ros::Duration duration) override {
+    ChassisGimbalManual::leftSwitchUp(duration);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
     gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
     shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
   }
-  void xPress(ros::Duration time) override {
-    ChassisGimbalManual::xPress(time);
+  void xPress(ros::Duration duration) override {
+    ChassisGimbalManual::xPress(duration);
     ui_shooter_->setOperateType(ADD);
     ui_target_->setOperateType(ADD);
   }
-  void xRelease(ros::Duration time) override {
-    ChassisGimbalManual::xRelease(time);
+  void xRelease(ros::Duration duration) override {
+    ChassisGimbalManual::xRelease(duration);
     ui_shooter_->setOperateType(UPDATE);
     ui_target_->setOperateType(UPDATE);
   }
-  void mouseLeftPress(ros::Duration time) override {
+  void mouseLeftPress(ros::Duration /*duration*/) override {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
   }
-  void mouseLeftRelease(ros::Duration time) override { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY); }
-  void mouseRightPress(ros::Duration time) override {
+  void mouseLeftRelease(ros::Duration /*duration*/) override { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY); }
+  void mouseRightPress(ros::Duration /*duration*/) override {
     if (cover_command_sender_->isClose()) {
       gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
@@ -113,13 +117,15 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
       shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
     }
   }
-  void mouseRightRelease(ros::Duration time) override {
+  void mouseRightRelease(ros::Duration /*duration*/) override {
     if (cover_command_sender_->isClose())
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   }
-  void fPress(ros::Duration time) { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
-  void qPress(ros::Duration time) { shooter_cmd_sender_->setBurstMode(!shooter_cmd_sender_->getBurstMode()); }
-  void ctrlRPress(ros::Duration time) {
+  void fPress(ros::Duration /*duration*/) { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
+  void qPress(ros::Duration /*duration*/) { shooter_cmd_sender_->setBurstMode(!shooter_cmd_sender_->getBurstMode()); }
+  void shiftPress(ros::Duration /*duration*/) { chassis_cmd_sender_->setBurstMode(true); }
+  void shiftRelease(ros::Duration /*duration*/) { chassis_cmd_sender_->setBurstMode(false); }
+  void ctrlRPress(ros::Duration /*duration*/) {
     switch_target_type_srv_->switchTargetType();
     switch_target_type_srv_->callService();
     if (switch_target_type_srv_->getTarget() == "buff")
@@ -127,14 +133,14 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     else
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   }
-  void ctrlVPress(ros::Duration time) {
+  void ctrlVPress(ros::Duration /*duration*/) {
     switch_enemy_color_srv_->switchEnemyColor();
     switch_enemy_color_srv_->callService();
   }
-  void ctrlCPress(ros::Duration time) {
+  void ctrlCPress(ros::Duration /*duration*/) {
     gimbal_cmd_sender_->setBaseOnly(!gimbal_cmd_sender_->getBaseOnly());
   }
-  void ctrlZPress(ros::Duration time) {
+  void ctrlZPress(ros::Duration /*duration*/) {
     if (data_.referee_.robot_id_ != RobotId::BLUE_HERO && data_.referee_.robot_id_ != RobotId::RED_HERO) {
       if (cover_command_sender_->isClose()) {
         geometry_msgs::PointStamped aim_point{};
@@ -162,6 +168,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   RisingInputEvent q_press_event_;
   RisingInputEvent f_press_event_;
+  RisingInputEvent shift_press_event_;
+  FallingInputEvent shift_release_event_;
   RisingInputEvent ctrl_z_press_event_;
   RisingInputEvent ctrl_c_press_event_;
   RisingInputEvent ctrl_v_press_event_;
