@@ -75,57 +75,46 @@ int Referee::unpack(uint8_t *rx_data) {
       cmd_id = (rx_data[6] << 8 | rx_data[5]);
       switch (cmd_id) {
         case GAME_STATUS_CMD: {
-          last_referee_data_.game_status_ = referee_data_.game_status_;
           memcpy(&referee_data_.game_status_, rx_data + 7, sizeof(GameStatus));
           break;
         }
         case GAME_RESULT_CMD: {
-          last_referee_data_.game_result_ = referee_data_.game_result_;
           memcpy(&referee_data_.game_result_, rx_data + 7, sizeof(GameResult));
           break;
         }
         case GAME_ROBOT_HP_CMD: {
-          last_referee_data_.game_robot_hp_ = referee_data_.game_robot_hp_;
           memcpy(&referee_data_.game_robot_hp_, rx_data + 7, sizeof(GameRobotHp));
           break;
         }
         case DART_STATUS_CMD: {
-          last_referee_data_.dart_status_ = referee_data_.dart_status_;
           memcpy(&referee_data_.dart_status_, rx_data + 7, sizeof(DartStatus));
           break;
         }
         case ICRA_ZONE_STATUS_CMD: {
-          last_referee_data_.icra_buff_debuff_zone_status = referee_data_.icra_buff_debuff_zone_status;
           memcpy(&referee_data_.icra_buff_debuff_zone_status, rx_data + 7, sizeof(IcraBuffDebuffZoneStatus));
           break;
         }
         case FIELD_EVENTS_CMD: {
-          last_referee_data_.event_data_ = referee_data_.event_data_;
           memcpy(&referee_data_.event_data_, rx_data + 7, sizeof(EventData));
           break;
         }
         case SUPPLY_PROJECTILE_ACTION_CMD: {
-          last_referee_data_.supply_projectile_action_ = referee_data_.supply_projectile_action_;
           memcpy(&referee_data_.supply_projectile_action_, rx_data + 7, sizeof(SupplyProjectileAction));
           break;
         }
         case REFEREE_WARNING_CMD: {
-          last_referee_data_.referee_warning_ = referee_data_.referee_warning_;
           memcpy(&referee_data_.referee_warning_, rx_data + 7, sizeof(RefereeWarning));
           break;
         }
         case DART_REMAINING_CMD: {
-          last_referee_data_.dart_remaining_time_ = referee_data_.dart_remaining_time_;
           memcpy(&referee_data_.dart_remaining_time_, rx_data + 7, sizeof(DartRemainingTime));
           break;
         }
         case ROBOT_STATUS_CMD: {
-          last_referee_data_.game_robot_status_ = referee_data_.game_robot_status_;
           memcpy(&referee_data_.game_robot_status_, rx_data + 7, sizeof(GameRobotStatus));
           break;
         }
         case POWER_HEAT_DATA_CMD: {
-          last_referee_data_.power_heat_data_ = referee_data_.power_heat_data_;
           memcpy(&referee_data_.power_heat_data_, rx_data + 7, sizeof(PowerHeatData));
           referee_data_.power_heat_data_.chassis_volt_ =
               (uint16_t) (referee_data_.power_heat_data_.chassis_volt_ * 0.001); //mV->V
@@ -134,47 +123,38 @@ int Referee::unpack(uint8_t *rx_data) {
           break;
         }
         case ROBOT_POS_CMD: {
-          last_referee_data_.game_robot_pos_ = referee_data_.game_robot_pos_;
           memcpy(&referee_data_.game_robot_pos_, rx_data + 7, sizeof(GameRobotPos));
           break;
         }
         case BUFF_CMD: {
-          last_referee_data_.buff_ = referee_data_.buff_;
           memcpy(&referee_data_.buff_, rx_data + 7, sizeof(Buff));
           break;
         }
         case AERIAL_ROBOT_ENERGY_CMD: {
-          last_referee_data_.aerial_robot_energy_ = referee_data_.aerial_robot_energy_;
           memcpy(&referee_data_.aerial_robot_energy_, rx_data + 7, sizeof(AerialRobotEnergy));
           break;
         }
         case ROBOT_HURT_CMD: {
-          last_referee_data_.robot_hurt_ = referee_data_.robot_hurt_;
           memcpy(&referee_data_.robot_hurt_, rx_data + 7, sizeof(RobotHurt));
           break;
         }
         case SHOOT_DATA_CMD: {
-          last_referee_data_.shoot_data_ = referee_data_.shoot_data_;
           memcpy(&referee_data_.shoot_data_, rx_data + 7, sizeof(ShootData));
           break;
         }
         case BULLET_REMAINING_CMD: {
-          last_referee_data_.bullet_remaining_ = referee_data_.bullet_remaining_;
           memcpy(&referee_data_.bullet_remaining_, rx_data + 7, sizeof(BulletRemaining));
           break;
         }
         case ROBOT_RFID_STATUS_CMD: {
-          last_referee_data_.rfid_status_ = referee_data_.rfid_status_;
           memcpy(&referee_data_.rfid_status_, rx_data + 7, sizeof(RfidStatus));
           break;
         }
         case DART_CLIENT_CMD: {
-          last_referee_data_.dart_remaining_time_ = referee_data_.dart_remaining_time_;
           memcpy(&referee_data_.dart_client_cmd_, rx_data + 7, sizeof(DartClientCmd));
           break;
         }
         case INTERACTIVE_DATA_CMD: {
-          last_referee_data_.interactive_data = referee_data_.interactive_data;
           memcpy(&referee_data_.interactive_data, rx_data + 7, sizeof(InteractiveData));
           break;
         }

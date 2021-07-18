@@ -54,7 +54,7 @@ class Referee {
 
   rm_msgs::Referee referee_pub_data_;
   rm_msgs::SuperCapacitor super_capacitor_pub_data_;
-  rm_common::RefereeData referee_data_{}, last_referee_data_;
+  rm_common::RefereeData referee_data_{};
   SuperCapacitor super_capacitor_;
 
   bool is_online_ = false;

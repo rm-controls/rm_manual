@@ -4,7 +4,6 @@
 
 #ifndef RM_MANUAL_ENGINEER_MANUAL_H_
 #define RM_MANUAL_ENGINEER_MANUAL_H_
-
 #include "rm_manual/chassis_gimbal_manual.h"
 
 #include <std_srvs/Empty.h>
@@ -35,21 +34,30 @@ class EngineerManual : public ChassisGimbalManual {
     arm_servo_sender_->setZero();
     ChassisGimbalManual::run();
   }
+  void updateRc() override {
+    ChassisGimbalManual::updateRc();
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  }
+
  private:
   void sendCommand(const ros::Time &time) override {
     ChassisGimbalManual::sendCommand(time);
     arm_servo_sender_->sendCommand(time);
     pub_.publish(std_msgs::Float64());
   }
-  void rightSwitchMid(ros::Duration time) override {
-    if (data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN)
-      ChassisGimbalManual::rightSwitchMid(time);
-  }
   void rightSwitchDown(ros::Duration time) override {
     ChassisGimbalManual::rightSwitchDown(time);
     if (has_send_step_list_) {
       action_client_.cancelAllGoals();
     }
+  }
+  void rightSwitchMid(ros::Duration time) override {
+    ChassisGimbalManual::rightSwitchMid(time);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  }
+  void rightSwitchUp(ros::Duration time) override {
+    ChassisGimbalManual::rightSwitchUp(time);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   }
   void leftSwitchMid(ros::Duration time) override {
     rm_msgs::EngineerActionGoal g;
@@ -76,12 +84,10 @@ class EngineerManual : public ChassisGimbalManual {
       }
     } else
       ROS_WARN("Can not connected with move arm server");
-
   }
   ros::Publisher pub_;
   rm_common::Vel3DCommandSender *arm_servo_sender_{};
   ros::ServiceClient reset_servo_server_;
-  std::string target_frame_, source_frame_;
   bool has_send_step_list_{};
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 };

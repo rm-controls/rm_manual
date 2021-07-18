@@ -8,6 +8,15 @@ namespace rm_manual {
 ManualBase::ManualBase(ros::NodeHandle &nh) :
     data_(nh),
     nh_(nh),
+    switch_right_down_event_(boost::bind(&ManualBase::rightSwitchDown, this, _1)),
+    switch_right_mid_event_(boost::bind(&ManualBase::rightSwitchMid, this, _1)),
+    switch_right_up_event_(boost::bind(&ManualBase::rightSwitchUp, this, _1)),
+    switch_left_down_event_(boost::bind(&ManualBase::leftSwitchDown, this, _1)),
+    switch_left_mid_event_(boost::bind(&ManualBase::leftSwitchMid, this, _1)),
+    switch_left_up_event_(boost::bind(&ManualBase::leftSwitchUp, this, _1)),
+    chassis_power_on_(boost::bind(&ManualBase::chassisOutputOn, this, _1)),
+    gimbal_power_on_(boost::bind(&ManualBase::gimbalOutputOn, this, _1)),
+    shooter_power_on_(boost::bind(&ManualBase::shooterOutputOn, this, _1)),
     w_press_event_(boost::bind(&ManualBase::wPress, this, _1)),
     w_release_event_(boost::bind(&ManualBase::wRelease, this, _1)),
     s_press_event_(boost::bind(&ManualBase::sPress, this, _1)),
@@ -23,13 +32,7 @@ ManualBase::ManualBase(ros::NodeHandle &nh) :
     x_press_event_(boost::bind(&ManualBase::xPress, this, _1)),
     x_release_event_(boost::bind(&ManualBase::xRelease, this, _1)),
     e_press_event_(boost::bind(&ManualBase::ePress, this, _1)),
-    g_press_event_(boost::bind(&ManualBase::gPress, this, _1)),
-    switch_right_down_event_(boost::bind(&ManualBase::rightSwitchDown, this, _1)),
-    switch_right_mid_event_(boost::bind(&ManualBase::rightSwitchMid, this, _1)),
-    switch_right_up_event_(boost::bind(&ManualBase::rightSwitchUp, this, _1)),
-    switch_left_down_event_(boost::bind(&ManualBase::leftSwitchDown, this, _1)),
-    switch_left_mid_event_(boost::bind(&ManualBase::leftSwitchMid, this, _1)),
-    switch_left_up_event_(boost::bind(&ManualBase::leftSwitchUp, this, _1)) {
+    g_press_event_(boost::bind(&ManualBase::gPress, this, _1)) {
   controller_loader_ = new rm_common::ControllerLoader(nh);
   controller_loader_->loadControllers();
   calibration_manager_ = new rm_common::CalibrationManager(nh);
@@ -51,21 +54,9 @@ void ManualBase::run() {
 }
 
 void ManualBase::checkReferee(const ros::Time &time) {
-  if (data_.referee_.referee_data_.game_robot_status_.mains_power_chassis_output_
-      && !data_.referee_.last_referee_data_.game_robot_status_.mains_power_chassis_output_) {
-    ROS_INFO("Chassis output ON");
-    chassisOutputOn();
-  }
-  if (data_.referee_.referee_data_.game_robot_status_.mains_power_gimbal_output_
-      && !data_.referee_.last_referee_data_.game_robot_status_.mains_power_gimbal_output_) {
-    ROS_INFO("Gimbal output ON");
-    gimbalOutputOn();
-  }
-  if (data_.referee_.referee_data_.game_robot_status_.mains_power_shooter_output_
-      && !data_.referee_.last_referee_data_.game_robot_status_.mains_power_shooter_output_) {
-    ROS_INFO("Shooter output ON");
-    shooterOutputOn();
-  }
+  chassis_power_on_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_chassis_output_);
+  gimbal_power_on_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_gimbal_output_);
+  shooter_power_on_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_shooter_output_);
 }
 
 void ManualBase::checkSwitch(const ros::Time &time) {
