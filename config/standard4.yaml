@@ -43,23 +43,19 @@ rm_manual:
     close_pos: 0.0
   enemy_color_switch:
     fail_limit: 10
+
   controllers_list:
-    - controllers/robot_state_controller
-    - controllers/joint_state_controller
-    - controllers/chassis_controller
-    - controllers/gimbal_controller
-    - controllers/shooter_controller
-    - controllers/cover_controller
-    - controllers/trigger_calibration_controller
-    - controllers/cover_calibration_controller
-  state_controllers_switch:
-    start_controllers:
+    state_controllers:
       - controllers/robot_state_controller
       - controllers/joint_state_controller
-  base_controllers_switch:
-    start_controllers:
+    main_controllers:
       - controllers/chassis_controller
       - controllers/gimbal_controller
+      - controllers/shooter_controller
+      - controllers/cover_controller
+    calibration_controllers:
+      - controllers/trigger_calibration_controller
+      - controllers/cover_calibration_controller
   calibration_manager:
     - step: cover
       switch:

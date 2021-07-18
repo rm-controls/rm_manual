@@ -54,7 +54,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void shooterOutputOn(ros::Duration /*duration*/) override {
     ROS_INFO("Shooter Output on!");
-    calibration_manager_->reset();
+//    calibration_manager_->reset();
   }
   void updateRc() override {
     ChassisGimbalManual::updateRc();
