@@ -12,27 +12,43 @@
 #include <rm_common/ori_tool.h>
 
 namespace rm_manual {
+template<class GraphType>
 class UiBase {
  public:
   explicit UiBase(ros::NodeHandle &nh, Referee &referee) : referee_(referee) {}
-  virtual void display() {
-    for (int i = 0; i < (int) graph_vector_.size(); i++)
-      referee_.sendUi(graph_vector_[i]->getConfig(), graph_vector_[i]->getContent());
-  }
  protected:
-  std::vector<GraphBase *> graph_vector_;
+  std::vector<GraphType *> graph_vector_;
   Referee &referee_;
 };
 
-class UiTitle : public UiBase {
+class TitleUi : public UiBase<UnChangeGraph> {
  public:
-  explicit UiTitle(ros::NodeHandle &nh, Referee &referee) : UiBase(nh, referee) {
+  explicit TitleUi(ros::NodeHandle &nh, Referee &referee) : UiBase(nh, referee) {
     XmlRpc::XmlRpcValue title_config;
     if (!nh.getParam("title", title_config)) {
       ROS_ERROR("Title no defined (namespace %s)", nh.getNamespace().c_str());
       return;
     }
-    for (int i = 0; i < (int) title_config.size(); ++i) graph_vector_.push_back(new UnChangeGraph(title_config[i]));
+    for (int i = 0; i < (int) title_config.size(); ++i)
+      graph_vector_.push_back(new UnChangeGraph(title_config[i], referee));
+  }
+  void add() { for (int i = 0; i < (int) graph_vector_.size(); ++i) graph_vector_[i]->add(); }
+};
+
+class WarningUi : public UiBase<AutoChangeGraph> {
+ public:
+  explicit WarningUi(ros::NodeHandle &nh, Referee &referee, const ros::Duration &duration) : UiBase(nh, referee) {
+    XmlRpc::XmlRpcValue warning_config;
+    if (!nh.getParam("warning", warning_config)) {
+      ROS_ERROR("Warning no defined (namespace %s)", nh.getNamespace().c_str());
+      return;
+    }
+    for (int i = 0; i < (int) warning_config.size(); ++i)
+      graph_vector_.push_back(new AutoChangeGraph(warning_config[i], referee, duration));
+  }
+  void update(const ros::Time &time, const std::string &graph_name, bool state) {
+    for (int i = 0; i < (int) graph_vector_.size(); ++i)
+      if (graph_vector_[i]->getName() == graph_name) graph_vector_[i]->update(time, state);
   }
 };
 

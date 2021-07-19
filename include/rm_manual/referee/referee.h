@@ -4,8 +4,6 @@
 #ifndef RM_MANUAL_REFEREE_H_
 #define RM_MANUAL_REFEREE_H_
 
-#include "rm_manual/referee/graph.h"
-
 #include <cstdint>
 #include <serial/serial.h>
 #include <ros/ros.h>

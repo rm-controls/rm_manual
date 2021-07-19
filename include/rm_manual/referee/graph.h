@@ -5,34 +5,35 @@
 #ifndef RM_MANUAL_INCLUDE_GRAPH_H_
 #define RM_MANUAL_INCLUDE_GRAPH_H_
 
+#include "rm_manual/referee/referee.h"
 #include <rm_common/ros_utilities.h>
 #include <rm_common/referee/protocol.h>
 
 namespace rm_manual {
 class GraphBase {
  public:
-  explicit GraphBase(const XmlRpc::XmlRpcValue &config) {
+  explicit GraphBase(const XmlRpc::XmlRpcValue &config, Referee &referee) : referee_(referee) {
     try {
-      config_.graphic_name_[0] = (uint8_t) ((int) config["id"] & 0xff);
-      config_.graphic_name_[1] = (uint8_t) (((int) config["id"] >> 8) & 0xff);
-      config_.graphic_name_[2] = (uint8_t) (((int) config["id"] >> 16) & 0xff);
-      config_.start_x_ = (int) config["start_x"];
-      config_.start_y_ = (int) config["start_y"];
-      config_.end_x_ = (int) config["end_x"];
-      config_.end_y_ = (int) config["end_y"];
-      config_.start_angle_ = (int) config["start_angle"];
-      config_.end_angle_ = (int) config["end_angle"];
-      config_.radius_ = (int) config["radius"];
-      config_.width_ = (int) config["width"];
-      config_.color_ = getColor(config["color"]);
-      config_.graphic_type_ = getType(config["type"]);
-      content_ = (std::string) config["content"];
+      name_ = (std::string) config["name"];
+      config_.graphic_id_[0] = (uint8_t) ((int) config["data"]["id"] & 0xff);
+      config_.graphic_id_[1] = (uint8_t) (((int) config["data"]["id"] >> 8) & 0xff);
+      config_.graphic_id_[2] = (uint8_t) (((int) config["data"]["id"] >> 16) & 0xff);
+      config_.start_x_ = (int) config["data"]["start_x"];
+      config_.start_y_ = (int) config["data"]["start_y"];
+      config_.end_x_ = (int) config["data"]["end_x"];
+      config_.end_y_ = (int) config["data"]["end_y"];
+      config_.start_angle_ = (int) config["data"]["start_angle"];
+      config_.end_angle_ = (int) config["data"]["end_angle"];
+      config_.radius_ = (int) config["data"]["radius"];
+      config_.width_ = (int) config["data"]["width"];
+      config_.color_ = getColor(config["data"]["color"]);
+      config_.graphic_type_ = getType(config["data"]["type"]);
+      content_ = (std::string) config["data"]["content"];
     } catch (XmlRpc::XmlRpcException &e) {
       ROS_ERROR("Wrong ui parameter type: %s", e.getMessage().c_str());
     }
   };
-  const rm_common::GraphConfig &getConfig() { return config_; }
-  const std::string &getContent() { return content_; }
+  const std::string getName() { return name_; }
  protected:
   rm_common::GraphColor getColor(const std::string &color) {
     if (color == "main_color") return rm_common::GraphColor::MAIN_COLOR;
@@ -53,38 +54,56 @@ class GraphBase {
     else if (type == "string") return rm_common::GraphType::STRING;
     else return rm_common::GraphType::LINE;
   }
+  void display() { referee_.sendUi(config_, content_); }
+  Referee &referee_;
   rm_common::GraphConfig config_;
+  std::string name_;
   std::string content_;
 };
 
 class UnChangeGraph : public GraphBase {
  public:
-  explicit UnChangeGraph(const XmlRpc::XmlRpcValue &config) : GraphBase(config) {
+  explicit UnChangeGraph(const XmlRpc::XmlRpcValue &config, Referee &referee) : GraphBase(config, referee) {
     config_.operate_type_ = rm_common::GraphOperation::ADD;
     config_.layer_ = 2;
   };
+  void add() { display(); }
 };
 
 class AutoChangeGraph : public GraphBase {
  public:
-  explicit AutoChangeGraph(const XmlRpc::XmlRpcValue &config) : GraphBase(config) {
+  explicit AutoChangeGraph(const XmlRpc::XmlRpcValue &config, Referee &referee, const ros::Duration &duration)
+      : GraphBase(config, referee), last_time_(ros::Time::now()), duration_(duration) {
     config_.operate_type_ = rm_common::GraphOperation::UPDATE;
     config_.layer_ = 1;
   };
-  void setContent(const std::string &content) { content_ = content; }
-  void setColor(const rm_common::GraphColor &color) { config_.color_ = color; }
-  void setOperation(const rm_common::GraphOperation &operation) { config_.operate_type_ = operation; }
+  void add() {
+    config_.operate_type_ = rm_common::GraphOperation::ADD;
+    display();
+    config_.operate_type_ = rm_common::GraphOperation::UPDATE;
+  }
+  void update(const ros::Time &time, bool state) {
+    if (state && time - last_time_ > duration_) {
+      if (config_.operate_type_ == rm_common::GraphOperation::DELETE)
+        config_.operate_type_ = rm_common::GraphOperation::ADD;
+      else config_.operate_type_ = rm_common::GraphOperation::DELETE;
+      display();
+      last_time_ = time;
+    }
+  }
+ private:
+  ros::Time last_time_;
+  ros::Duration duration_;
 };
 
 class ManualChangeGraph : public GraphBase {
  public:
-  explicit ManualChangeGraph(const XmlRpc::XmlRpcValue &config) : GraphBase(config) {
+  explicit ManualChangeGraph(const XmlRpc::XmlRpcValue &config, Referee &referee) : GraphBase(config, referee) {
     config_.operate_type_ = rm_common::GraphOperation::UPDATE;
     config_.layer_ = 0;
   };
   void setContent(const std::string &content) { content_ = content; }
   void setColor(const rm_common::GraphColor &color) { config_.color_ = color; }
-  void setOperation(const rm_common::GraphOperation &operation) { config_.operate_type_ = operation; }
 };
 
 }
