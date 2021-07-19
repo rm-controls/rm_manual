@@ -23,13 +23,10 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, data_.referee_.referee_data_);
     ros::NodeHandle cover_nh(nh, "cover");
     cover_command_sender_ = new rm_common::CoverCommandSender(cover_nh);
-    ui_shooter_ = new UiShooter(&data_.referee_);
     ros::NodeHandle enemy_color_nh(nh, "enemy_color_switch");
     switch_enemy_color_srv_ = new rm_common::SwitchEnemyColorService(enemy_color_nh);
     ros::NodeHandle target_type_nh(nh, "target_type_switch");
     switch_target_type_srv_ = new rm_common::SwitchTargetTypeService(target_type_nh);
-    ui_target_ = new UiTarget(&data_.referee_);
-    ui_cover_ = new UiCover(&data_.referee_);
   }
   void run() override {
     ManualBase::run();
@@ -74,9 +71,6 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ChassisGimbalManual::rightSwitchUp(duration);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
     cover_command_sender_->close();
-    ui_shooter_->setOperateType(UPDATE);
-    ui_capacitor_->setOperateType(UPDATE);
-    ui_target_->setOperateType(UPDATE);
   }
   void leftSwitchDown(ros::Duration duration) override {
     ChassisGimbalManual::leftSwitchDown(duration);
@@ -97,13 +91,9 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void xPress(ros::Duration duration) override {
     ChassisGimbalManual::xPress(duration);
-    ui_shooter_->setOperateType(ADD);
-    ui_target_->setOperateType(ADD);
   }
   void xRelease(ros::Duration duration) override {
     ChassisGimbalManual::xRelease(duration);
-    ui_shooter_->setOperateType(UPDATE);
-    ui_target_->setOperateType(UPDATE);
   }
   void mouseLeftPress(ros::Duration /*duration*/) override {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
@@ -158,14 +148,6 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
       }
     }
   }
-  void drawUi() override {
-    ChassisGimbalManual::drawUi();
-    ros::Time time = ros::Time::now();
-    ui_shooter_->display(time, shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
-    ui_target_->display(time, switch_target_type_srv_->getTarget(), switch_enemy_color_srv_->getColor(),
-                        gimbal_cmd_sender_->getBaseOnly());
-    ui_cover_->display(cover_command_sender_->isClose());
-  }
   RisingInputEvent q_press_event_;
   RisingInputEvent f_press_event_;
   RisingInputEvent shift_press_event_;
@@ -178,9 +160,6 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   rm_common::CoverCommandSender *cover_command_sender_{};
   rm_common::SwitchEnemyColorService *switch_enemy_color_srv_{};
   rm_common::SwitchTargetTypeService *switch_target_type_srv_{};
-  UiShooter *ui_shooter_{};
-  UiTarget *ui_target_{};
-  UiCover *ui_cover_{};
 };
 }
 

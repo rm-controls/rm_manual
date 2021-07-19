@@ -5,93 +5,87 @@
 #ifndef RM_MANUAL_INCLUDE_GRAPH_H_
 #define RM_MANUAL_INCLUDE_GRAPH_H_
 
-#include <iostream>
+#include <rm_common/ros_utilities.h>
 #include <rm_common/referee/protocol.h>
 
 namespace rm_manual {
 class GraphBase {
  public:
-  GraphBase(int id, int x, int y, int width)
-      : color_(rm_common::GraphColor::WHITE), operation_(rm_common::GraphOperation::UPDATE) {
-    config_.graphic_name_[0] = (uint8_t) (id & 0xff);
-    config_.graphic_name_[1] = (uint8_t) ((id >> 8) & 0xff);
-    config_.graphic_name_[2] = (uint8_t) ((id >> 16) & 0xff);
-    config_.start_x_ = x;
-    config_.start_y_ = y;
-    config_.width_ = width;
-  };
-  void setColor(rm_common::GraphColor color) { color_ = color; }
-  void setOperation(rm_common::GraphOperation operation) { operation_ = operation; }
- protected:
-  rm_common::GraphColor color_;
-  rm_common::GraphOperation operation_;
-  rm_common::GraphConfig config_;
-};
-
-class LineGraph : public GraphBase {
- public:
-  LineGraph(int id, int start_x, int start_y, int width, int end_x, int end_y)
-      : GraphBase(id, start_x, start_y, width) {
-    config_.end_x_ = end_x;
-    config_.end_y_ = end_y;
-    config_.graphic_type_ = rm_common::GraphType::LINE;
-  }
-};
-
-class RectangleGraph : public LineGraph {
- public:
-  RectangleGraph(int id, int start_x, int start_y, int width, int end_x, int end_y)
-      : LineGraph(id, start_x, start_y, width, end_x, end_y) {
-    config_.graphic_type_ = rm_common::GraphType::RECTANGLE;
-  }
-};
-
-class CircleGraph : public GraphBase {
- public:
-  CircleGraph(int id, int center_x, int center_y, int width, int radius)
-      : GraphBase(id, center_x, center_y, width) {
-    config_.radius_ = radius;
-    config_.graphic_type_ = rm_common::GraphType::CIRCLE;
-  }
-};
-
-class EllipseGraph : public GraphBase {
- public:
-  EllipseGraph(int id, int center_x, int center_y, int width, int len_x, int len_y)
-      : GraphBase(id, center_x, center_y, width) {
-    config_.end_x_ = len_x;
-    config_.end_y_ = len_y;
-    config_.graphic_type_ = rm_common::GraphType::ELLIPSE;
-  }
-};
-
-class ArcGraph : public EllipseGraph {
- public:
-  ArcGraph(int id, int center_x, int center_y, int width, int len_x, int len_y, int start_angle, int end_angle)
-      : EllipseGraph(id, center_x, center_y, width, len_x, len_y) {
-    config_.start_angle_ = start_angle;
-    config_.end_angle_ = end_angle;
-    config_.graphic_type_ = rm_common::GraphType::ARC;
-  }
-};
-
-class StringGraph : public GraphBase {
- public:
-  StringGraph(int id, int start_x, int start_y, int width, int char_size, int string_len)
-      : GraphBase(id, start_x, start_y, width) {
-    config_.start_angle_ = char_size;
-    config_.end_angle_ = string_len;
-    config_.graphic_type_ = rm_common::GraphType::STRING;
-  }
-  void setString(const std::string &data) {
-    for (int i = 0; i < 30; ++i) {
-      if (i < (int) data.size()) string_data_[i] = data[i];
-      else string_data_[i] = ' ';
+  explicit GraphBase(const XmlRpc::XmlRpcValue &config) {
+    try {
+      config_.graphic_name_[0] = (uint8_t) ((int) config["id"] & 0xff);
+      config_.graphic_name_[1] = (uint8_t) (((int) config["id"] >> 8) & 0xff);
+      config_.graphic_name_[2] = (uint8_t) (((int) config["id"] >> 16) & 0xff);
+      config_.start_x_ = (double) config["start_x"];
+      config_.start_y_ = (int) config["start_y"];
+      config_.end_x_ = (int) config["end_x"];
+      config_.end_y_ = (int) config["end_y"];
+      config_.start_angle_ = (int) config["start_angle"];
+      config_.end_angle_ = (int) config["end_angle"];
+      config_.radius_ = (int) config["radius"];
+      config_.width_ = (int) config["width"];
+      config_.color_ = getColor(config["color"]);
+      config_.graphic_type_ = getType(config["type"]);
+      content_ = (std::string) config["content"];
+    } catch (XmlRpc::XmlRpcException &e) {
+      ROS_ERROR("Wrong ui parameter type: %s", e.getMessage().c_str());
     }
+  };
+  const rm_common::GraphConfig &getConfig() { return config_; }
+  const std::string &getContent() { return content_; }
+ protected:
+  rm_common::GraphColor getColor(const std::string &color) {
+    if (color == "main_color") return rm_common::GraphColor::MAIN_COLOR;
+    else if (color == "yellow") return rm_common::GraphColor::YELLOW;
+    else if (color == "green") return rm_common::GraphColor::GREEN;
+    else if (color == "orange") return rm_common::GraphColor::ORANGE;
+    else if (color == "purple") return rm_common::GraphColor::PURPLE;
+    else if (color == "pink") return rm_common::GraphColor::PINK;
+    else if (color == "cyan") return rm_common::GraphColor::CYAN;
+    else if (color == "black") return rm_common::GraphColor::BLACK;
+    else return rm_common::GraphColor::WHITE;
   }
-  uint8_t *getString() { return string_data_; }
- private:
-  uint8_t string_data_[30]{};
+  rm_common::GraphType getType(const std::string &type) {
+    if (type == "rectangle") return rm_common::GraphType::RECTANGLE;
+    else if (type == "circle") return rm_common::GraphType::CIRCLE;
+    else if (type == "ellipse") return rm_common::GraphType::ELLIPSE;
+    else if (type == "arc") return rm_common::GraphType::ARC;
+    else if (type == "string") return rm_common::GraphType::STRING;
+    else return rm_common::GraphType::LINE;
+  }
+  rm_common::GraphConfig config_;
+  std::string content_;
 };
+
+class UnChangeGraph : public GraphBase {
+ public:
+  explicit UnChangeGraph(const XmlRpc::XmlRpcValue &config) : GraphBase(config) {
+    config_.operate_type_ = rm_common::GraphOperation::ADD;
+    config_.layer_ = 2;
+  };
+};
+
+class AutoChangeGraph : public GraphBase {
+ public:
+  explicit AutoChangeGraph(const XmlRpc::XmlRpcValue &config) : GraphBase(config) {
+    config_.operate_type_ = rm_common::GraphOperation::UPDATE;
+    config_.layer_ = 1;
+  };
+  void setContent(const std::string &content) { content_ = content; }
+  void setColor(const rm_common::GraphColor &color) { config_.color_ = color; }
+  void setOperation(const rm_common::GraphOperation &operation) { config_.operate_type_ = operation; }
+};
+
+class ManualChangeGraph : public GraphBase {
+ public:
+  explicit ManualChangeGraph(const XmlRpc::XmlRpcValue &config) : GraphBase(config) {
+    config_.operate_type_ = rm_common::GraphOperation::UPDATE;
+    config_.layer_ = 0;
+  };
+  void setContent(const std::string &content) { content_ = content; }
+  void setColor(const rm_common::GraphColor &color) { config_.color_ = color; }
+  void setOperation(const rm_common::GraphOperation &operation) { config_.operate_type_ = operation; }
+};
+
 }
 #endif //RM_MANUAL_INCLUDE_GRAPH_H_

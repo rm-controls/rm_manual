@@ -229,33 +229,6 @@ void Referee::publishData() {
   super_capacitor_pub_.publish(super_capacitor_pub_data_);
 }
 
-void Referee::drawString(int picture_id, int x, int y, const std::string &data,
-                         rm_common::GraphColor color, rm_common::GraphOperation operate_type) {
-  rm_common::GraphConfig config_data;
-  config_data.graphic_name_[0] = picture_id;
-  config_data.start_x_ = x;
-  config_data.start_y_ = y;
-  config_data.color_ = color;
-  config_data.graphic_type_ = rm_common::GraphType::STRING;
-  config_data.start_angle_ = 15;
-  config_data.end_angle_ = (int) data.size();
-  config_data.width_ = 3;
-  sendUi(&config_data, 1, operate_type, data);
-}
-
-void Referee::drawCircle(int picture_id, int center_x, int center_y, int radius,
-                         rm_common::GraphColor color, rm_common::GraphOperation operate_type) {
-  rm_common::GraphConfig config_data;
-  config_data.graphic_name_[0] = picture_id;
-  config_data.start_x_ = center_x;
-  config_data.start_y_ = center_y;
-  config_data.color_ = color;
-  config_data.graphic_type_ = rm_common::GraphType::CIRCLE;
-  config_data.radius_ = radius;
-  config_data.width_ = 4;
-  sendUi(&config_data, 1, operate_type);
-}
-
 void Referee::sendInteractiveData(int data_cmd_id, int receiver_id, uint8_t data) {
   uint8_t tx_buffer[128] = {0};
   uint8_t tx_data[sizeof(rm_common::InteractiveData)] = {0};
@@ -275,31 +248,25 @@ void Referee::sendInteractiveData(int data_cmd_id, int receiver_id, uint8_t data
   }
 }
 
-void Referee::sendUi(rm_common::GraphConfig *config_data, int config_num, rm_common::GraphOperation operate_type,
-                     std::string string_data) {
-  uint8_t tx_buffer[128] = {0}, tx_data[sizeof(rm_common::GraphData)] = {0};
-  auto ui_data = (rm_common::GraphData *) tx_data;
+void Referee::sendUi(const rm_common::GraphConfig &config, const std::string &content) {
+  uint8_t tx_buffer[128] = {0};
+  rm_common::GraphData tx_data;
   int data_len = (int) sizeof(rm_common::GraphData);
 
-  if (!string_data.empty()) {
-    ui_data->student_interactive_header_data_.data_cmd_id_ = rm_common::DataCmdId::CLIENT_CHARACTER_CMD;
-    for (int kI = 0; kI < 30; ++kI) {
-      if (kI < (int) string_data.size())
-        tx_data[kI + sizeof(rm_common::InteractiveDataHeader) + sizeof(rm_common::GraphConfig)] = string_data[kI];
-      else
-        tx_data[kI + sizeof(rm_common::InteractiveDataHeader) + sizeof(rm_common::GraphConfig)] = ' ';
-    }
-  } else {
-    ui_data->student_interactive_header_data_.data_cmd_id_ = rm_common::DataCmdId::CLIENT_GRAPH_SINGLE_CMD;
+  tx_data.header_.sender_id_ = robot_id_;
+  tx_data.header_.receiver_id_ = client_id_;
+  tx_data.config_ = config;
+  if (content.empty()) {
+    tx_data.header_.data_cmd_id_ = rm_common::DataCmdId::CLIENT_GRAPH_SINGLE_CMD;
     data_len -= 30;
+  } else {
+    tx_data.header_.data_cmd_id_ = rm_common::DataCmdId::CLIENT_CHARACTER_CMD;
+    for (int i = 0; i < 30; i++) {
+      if (i < (int) content.size()) tx_data.content_[i] = content[i];
+      else tx_data.content_[i] = ' ';
+    }
   }
-  ui_data->student_interactive_header_data_.sender_id_ = robot_id_;
-  ui_data->student_interactive_header_data_.receiver_id_ = client_id_;
-  for (int i = 0; i < config_num; i++) {
-    memcpy(&ui_data->config_data_[i], &config_data[i], (int) sizeof(config_data));
-    ui_data->config_data_[i].operate_type_ = operate_type;
-  }
-  pack(tx_buffer, tx_data, rm_common::RefereeCmdId::INTERACTIVE_DATA_CMD, data_len);
+  pack(tx_buffer, (uint8_t *) &tx_data, rm_common::RefereeCmdId::INTERACTIVE_DATA_CMD, data_len);
   try {
     serial_.write(tx_buffer, k_header_length_ + k_cmd_id_length_ + k_tail_length_ + data_len);
   } catch (serial::PortNotOpenedException &e) {

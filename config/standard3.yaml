@@ -79,6 +79,11 @@ rm_manual:
           - controllers/shooter_controller
       query:
         service_name: /controllers/trigger_calibration_controller/is_calibrated
+  ui:
+    title:
+      - { type: "string", id: 0, start_x: [ 300, 300, 300 ], start_y: [ 600, 600, 600 ], end_x: 0, end_y: 0, start_angle: 0, end_angle: 0, radius: 0, width: 3, color: "white", content: "chassis" }
+      - { type: "string", id: 1, start_x: [ 300, 300, 300 ], start_y: [ 650, 650, 650 ], end_x: 0, end_y: 0, start_angle: 0, end_angle: 0, radius: 0, width: 3, color: "white", content: "gimbal" }
+      - { type: "line", id: 2, start_x: [ 1300,1300,1300 ], start_y: [ 600, 600, 600 ], end_x: 0, end_y: 0, start_angle: 0, end_angle: 0, radius: 0, width: 3, color: "pink", content: "" }
 
 controllers:
   cover_controller:
