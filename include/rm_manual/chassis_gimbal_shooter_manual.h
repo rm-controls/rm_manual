@@ -39,7 +39,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void run() override {
     ManualBase::run();
     switch_enemy_color_srv_->setEnemyColor(data_.referee_.referee_data_);
-//    shooter_calibration_->update(ros::Time::now());
+    shooter_calibration_->update(ros::Time::now());
   }
  protected:
   void checkKeyboard() override {
@@ -59,8 +59,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     cover_command_sender_->sendCommand(time);
   }
   void shooterOutputOn(ros::Duration /*duration*/) override {
-    ROS_INFO("Shooter Output on!");
-//    shooter_calibration_->reset();
+    ROS_INFO("Shooter Output ON");
+    shooter_calibration_->reset();
   }
   void updateRc() override {
     ChassisGimbalManual::updateRc();
