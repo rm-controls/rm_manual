@@ -91,6 +91,14 @@ class AutoChangeGraph : public GraphBase {
       last_time_ = time;
     }
   }
+  void update(const ros::Time &time, double data) {
+    if (data != 0. && time - last_time_ > duration_) {
+      display();
+      last_time_ = time;
+    }
+  }
+  void setColor(const rm_common::GraphColor &color) { config_.color_ = color; }
+  void setContent(const std::string &content) { content_ = content; }
  private:
   ros::Time last_time_;
   ros::Duration duration_;

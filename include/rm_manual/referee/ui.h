@@ -52,5 +52,29 @@ class WarningUi : public UiBase<AutoChangeGraph> {
   }
 };
 
+class CapacitorUi : public UiBase<AutoChangeGraph> {
+ public:
+  explicit CapacitorUi(ros::NodeHandle &nh, Referee &referee, const ros::Duration &duration) : UiBase(nh, referee) {
+    XmlRpc::XmlRpcValue capacitor_config;
+    if (!nh.getParam("capacitor", capacitor_config)) {
+      ROS_ERROR("Capacitor no defined (namespace %s)", nh.getNamespace().c_str());
+      return;
+    }
+    for (int i = 0; i < (int) capacitor_config.size(); ++i)
+      graph_vector_.push_back(new AutoChangeGraph(capacitor_config[i], referee, duration));
+  }
+  void update(const ros::Time &time, double data) {
+    if (!graph_vector_.empty()) {
+      char data_str[30] = {' '};
+      sprintf(data_str, "cap:%1.0f%%", data);
+      graph_vector_[0]->setContent(data_str);
+      if (data < 30.) graph_vector_[0]->setColor(rm_common::GraphColor::ORANGE);
+      else if (data > 70.) graph_vector_[0]->setColor(rm_common::GraphColor::GREEN);
+      else graph_vector_[0]->setColor(rm_common::GraphColor::YELLOW);
+      graph_vector_[0]->update(time, data);
+    }
+  }
+};
+
 } // namespace rm_manual
 #endif //RM_MANUAL_REFEREE_UI_H_
