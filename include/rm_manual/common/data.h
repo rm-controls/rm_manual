@@ -8,6 +8,7 @@
 #include <ros/ros.h>
 #include <rm_common/decision/target_cost_function.h>
 #include <nav_msgs/Odometry.h>
+#include <sensor_msgs/JointState.h>
 #include <rm_msgs/DbusData.h>
 #include <rm_msgs/GimbalDesError.h>
 #include "rm_manual/referee/referee.h"
@@ -18,6 +19,7 @@ class Data {
  public:
   explicit Data(ros::NodeHandle &nh) : tf_listener_(tf_buffer_) {
     // sub
+    joint_state_sub_ = nh.subscribe<sensor_msgs::JointState>("/joint_states", 10, &Data::jointStateCallback, this);
     dbus_sub_ = nh.subscribe<rm_msgs::DbusData>("/dbus_data", 10, &Data::dbusDataCallback, this);
     track_sub_ = nh.subscribe<rm_msgs::TrackDataArray>("/track", 10, &Data::trackCallback, this);
     gimbal_des_error_sub_ =
@@ -30,16 +32,19 @@ class Data {
     referee_.init();
   }
 
+  void jointStateCallback(const sensor_msgs::JointState::ConstPtr &joint_state) { joint_state_ = *joint_state; }
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr &data) { dbus_data_ = *data; }
   void trackCallback(const rm_msgs::TrackDataArray::ConstPtr &data) { track_data_array_ = *data; }
   void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr &data) { gimbal_des_error_ = *data; }
   void odomCallback(const nav_msgs::Odometry::ConstPtr &data) { odom_ = *data; }
 
+  ros::Subscriber joint_state_sub_;
   ros::Subscriber dbus_sub_;
   ros::Subscriber track_sub_;
   ros::Subscriber gimbal_des_error_sub_;
   ros::Subscriber odom_sub_;
 
+  sensor_msgs::JointState joint_state_;
   rm_msgs::DbusData dbus_data_;
   rm_msgs::TrackDataArray track_data_array_;
   rm_msgs::GimbalDesError gimbal_des_error_;

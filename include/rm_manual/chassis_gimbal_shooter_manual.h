@@ -23,7 +23,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ros::NodeHandle shooter_nh(nh, "shooter");
     shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, data_.referee_.referee_data_);
     ros::NodeHandle cover_nh(nh, "cover");
-    cover_command_sender_ = new rm_common::CoverCommandSender(cover_nh);
+    cover_command_sender_ = new rm_common::JointPositionBinaryCommandSender(cover_nh);
     ui_shooter_ = new UiShooter(&data_.referee_);
     ros::NodeHandle enemy_color_nh(nh, "enemy_color_switch");
     switch_enemy_color_srv_ = new rm_common::SwitchEnemyColorServiceCaller(enemy_color_nh);
@@ -31,15 +31,18 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     switch_target_type_srv_ = new rm_common::SwitchTargetTypeServiceCaller(target_type_nh);
 
     XmlRpc::XmlRpcValue rpc_value;
-    nh.getParam("shooter_calibration", rpc_value);
-    shooter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+    nh.getParam("trigger_calibration", rpc_value);
+    trigger_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+    nh.getParam("cover_calibration", rpc_value);
+    cover_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
     ui_target_ = new UiTarget(&data_.referee_);
     ui_cover_ = new UiCover(&data_.referee_);
   }
   void run() override {
     ManualBase::run();
     switch_enemy_color_srv_->setEnemyColor(data_.referee_.referee_data_);
-    shooter_calibration_->update(ros::Time::now());
+    trigger_calibration_->update(ros::Time::now());
+    cover_calibration_->update(ros::Time::now());
   }
  protected:
   void checkKeyboard() override {
@@ -60,7 +63,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void shooterOutputOn(ros::Duration /*duration*/) override {
     ROS_INFO("Shooter Output ON");
-    shooter_calibration_->reset();
+    trigger_calibration_->reset();
+    cover_calibration_->reset();
   }
   void updateRc() override {
     ChassisGimbalManual::updateRc();
@@ -116,7 +120,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void mouseLeftRelease(ros::Duration /*duration*/) override { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY); }
   void mouseRightPress(ros::Duration /*duration*/) override {
-    if (cover_command_sender_->isClose()) {
+    if (cover_command_sender_->getState()) {
       gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
       gimbal_cmd_sender_->updateCost(data_.track_data_array_);
@@ -124,7 +128,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     }
   }
   void mouseRightRelease(ros::Duration /*duration*/) override {
-    if (cover_command_sender_->isClose())
+    if (cover_command_sender_->getState())
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   }
   void fPress(ros::Duration /*duration*/) { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
@@ -148,7 +152,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void ctrlZPress(ros::Duration /*duration*/) {
     if (data_.referee_.robot_id_ != RobotId::BLUE_HERO && data_.referee_.robot_id_ != RobotId::RED_HERO) {
-      if (cover_command_sender_->isClose()) {
+      if (cover_command_sender_->getState()) {
         geometry_msgs::PointStamped aim_point{};
         aim_point.header.frame_id = "yaw";
         aim_point.header.stamp = ros::Time::now();
@@ -170,7 +174,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ui_shooter_->display(time, shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
     ui_target_->display(time, switch_target_type_srv_->getTarget(), switch_enemy_color_srv_->getColor(),
                         gimbal_cmd_sender_->getBaseOnly());
-    ui_cover_->display(cover_command_sender_->isClose());
+    ui_cover_->display(cover_command_sender_->getState());
   }
   RisingInputEvent q_press_event_;
   RisingInputEvent f_press_event_;
@@ -181,10 +185,11 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   RisingInputEvent ctrl_v_press_event_;
   RisingInputEvent ctrl_r_press_event_;
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
-  rm_common::CoverCommandSender *cover_command_sender_{};
+  rm_common::JointPositionBinaryCommandSender *cover_command_sender_{};
   rm_common::SwitchEnemyColorServiceCaller *switch_enemy_color_srv_{};
   rm_common::SwitchTargetTypeServiceCaller *switch_target_type_srv_{};
-  rm_common::CalibrationQueue *shooter_calibration_;
+  rm_common::CalibrationQueue *trigger_calibration_;
+  rm_common::CalibrationQueue *cover_calibration_;
   UiShooter *ui_shooter_{};
   UiTarget *ui_target_{};
   UiCover *ui_cover_{};
