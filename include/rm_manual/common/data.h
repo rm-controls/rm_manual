@@ -5,12 +5,12 @@
 #ifndef RM_MANUAL_COMMON_DATA_H_
 #define RM_MANUAL_COMMON_DATA_H_
 
+#include "rm_manual/referee/referee.h"
 #include <ros/ros.h>
 #include <rm_common/decision/target_cost_function.h>
 #include <nav_msgs/Odometry.h>
 #include <rm_msgs/DbusData.h>
 #include <rm_msgs/GimbalDesError.h>
-#include "rm_manual/referee/referee.h"
 
 namespace rm_manual {
 
