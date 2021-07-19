@@ -26,32 +26,37 @@ rm_manual:
       k_freq: 1.0
       timeout: 0.05
   controllers_list:
-    - controllers/robot_state_controller
-    - controllers/joint_state_controller
-    - controllers/chassis_controller
-    - controllers/arm_trajectory_controller
-    - controllers/mast_controller
-    - controllers/card_controller
-    - controllers/hand_controller
-    - controllers/mast_calibration_controller
-    - controllers/joint5_calibration_controller
-    - controllers/joint4_calibration_controller
-    - controllers/joint3_calibration_controller
-    - controllers/joint2_calibration_controller
-    - controllers/joint1_calibration_controller
-    - controllers/hand_calibration_controller
-    - controllers/card_calibration_controller
-  state_controllers_switch:
-    start_controllers:
+    state_controllers:
       - controllers/robot_state_controller
       - controllers/joint_state_controller
-  base_controllers_switch:
-    start_controllers:
+    main_controllers:
       - controllers/chassis_controller
-      - controllers/gimbal_controller
       - controllers/arm_trajectory_controller
       - controllers/mast_controller
       - controllers/card_controller
       - controllers/hand_controller
-  calibration_manager:
-
+    calibration_controllers:
+      - controllers/mast_calibration_controller
+      - controllers/joint5_calibration_controller
+      - controllers/joint4_calibration_controller
+      - controllers/joint3_calibration_controller
+      - controllers/joint2_calibration_controller
+      - controllers/joint1_calibration_controller
+      - controllers/hand_calibration_controller
+      - controllers/card_calibration_controller
+  arm_calibration:
+    - start_controller: controllers/joint1_calibration_controller
+      stop_controller: controllers/arm_trajectory_controller
+      service_name: /controllers/joint1_calibration_controller/is_calibrated
+    - start_controller: controllers/joint2_calibration_controller
+      stop_controller: controllers/arm_trajectory_controller
+      service_name: /controllers/joint2_calibration_controller/is_calibrated
+    - start_controller: controllers/joint3_calibration_controller
+      stop_controller: controllers/arm_trajectory_controller
+      service_name: /controllers/joint3_calibration_controller/is_calibrated
+    - start_controller: controllers/joint4_calibration_controller
+      stop_controller: controllers/arm_trajectory_controller
+      service_name: /controllers/joint4_calibration_controller/is_calibrated
+    - start_controller: controllers/joint5_calibration_controller
+      stop_controller: controllers/arm_trajectory_controller
+      service_name: /controllers/joint5_calibration_controller/is_calibrated

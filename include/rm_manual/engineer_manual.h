@@ -19,34 +19,31 @@ namespace rm_manual {
 class EngineerManual : public ChassisGimbalManual {
  public:
   explicit EngineerManual(ros::NodeHandle &nh)
-      : ChassisGimbalManual(nh), action_client_("/engineer_middleware/move_arm", true) {
-    ros::NodeHandle arm_servo(nh, "arm_servo");
-
-    arm_servo_sender_ = new rm_common::Vel3DCommandSender(arm_servo);
-    reset_servo_server_ = nh.serviceClient<std_srvs::Empty>("/servo_server/reset_servo_status");
-    ROS_INFO("Waiting for move arm server to start.");
+      : ChassisGimbalManual(nh), action_client_("/engineer_middleware/move_arm", true),
+        left_switch_up_fall_event_(boost::bind(&EngineerManual::leftSwitchUpFall, this, _1)) {
+    ROS_INFO("Waiting for middleware to start.");
     action_client_.waitForServer();
-    ROS_INFO("Move arm server started.");
-
-    pub_ = nh.advertise<std_msgs::Float64>("/controllers/mast_controller/command", 1);
+    ROS_INFO("Middleware started.");
+    XmlRpc::XmlRpcValue rpc_value;
+    nh.getParam("arm_calibration", rpc_value);
+    arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   }
   void run() override {
-    arm_servo_sender_->setZero();
     ChassisGimbalManual::run();
+    arm_calibration_->update(ros::Time::now());
   }
   void updateRc() override {
     ChassisGimbalManual::updateRc();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+    left_switch_up_fall_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::UP);
   }
-
  private:
   void sendCommand(const ros::Time &time) override {
     ChassisGimbalManual::sendCommand(time);
-    arm_servo_sender_->sendCommand(time);
-    pub_.publish(std_msgs::Float64());
   }
   void rightSwitchDown(ros::Duration time) override {
     ChassisGimbalManual::rightSwitchDown(time);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
     if (has_send_step_list_) {
       action_client_.cancelAllGoals();
     }
@@ -59,18 +56,11 @@ class EngineerManual : public ChassisGimbalManual {
     ChassisGimbalManual::rightSwitchUp(time);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   }
-  void leftSwitchMid(ros::Duration time) override {
-    rm_msgs::EngineerActionGoal g;
-    sendStepList(g.goal.FOLD);
-  }
-  void leftSwitchUp(ros::Duration time) override {
-    if (state_ == RC)
-      arm_servo_sender_->setAngularVel(data_.dbus_data_.ch_l_x, data_.dbus_data_.ch_l_y, data_.dbus_data_.ch_r_y);
-  }
   void remoteControlTurnOn() override {
-    std_srvs::Empty srv;
     ManualBase::remoteControlTurnOn();
-    reset_servo_server_.call(srv);
+  }
+  void leftSwitchUpFall(ros::Duration time) {
+    arm_calibration_->reset();
   }
   void sendStepList(uint8_t step_queue_id) {
     rm_msgs::EngineerActionGoal goal;
@@ -85,11 +75,10 @@ class EngineerManual : public ChassisGimbalManual {
     } else
       ROS_WARN("Can not connected with move arm server");
   }
-  ros::Publisher pub_;
-  rm_common::Vel3DCommandSender *arm_servo_sender_{};
-  ros::ServiceClient reset_servo_server_;
   bool has_send_step_list_{};
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
+  rm_common::CalibrationQueue *arm_calibration_{};
+  FallingInputEvent left_switch_up_fall_event_;
 };
 
 }
