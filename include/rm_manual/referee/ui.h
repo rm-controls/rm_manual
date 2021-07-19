@@ -5,19 +5,20 @@
 #ifndef RM_MANUAL_REFEREE_UI_H_
 #define RM_MANUAL_REFEREE_UI_H_
 
+#include "rm_manual/referee/referee.h"
 #include <tf/transform_listener.h>
 #include <rm_common/ori_tool.h>
-#include "rm_manual/referee/referee.h"
 
 namespace rm_manual {
+using namespace rm_common;
 class UiBase {
  public:
   explicit UiBase(Referee *referee) : referee_(referee) {}
-  void setOperateType(GraphicOperateType operate_type) { operate_type_ = operate_type; }
+  void setOperateType(GraphOperation operate_type) { operate_type_ = operate_type; }
  protected:
   Referee *referee_;
-  GraphicOperateType operate_type_ = UPDATE;
-  GraphicColorType color_ = YELLOW;
+  GraphOperation operate_type_ = UPDATE;
+  GraphColor color_ = YELLOW;
   std::string display_title_{}, display_info_{};
   int picture_id_{}, picture_x_{}, picture_y_{};
   ros::Time init_time_;
