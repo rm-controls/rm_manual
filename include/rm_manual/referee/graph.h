@@ -16,7 +16,7 @@ class GraphBase {
       config_.graphic_name_[0] = (uint8_t) ((int) config["id"] & 0xff);
       config_.graphic_name_[1] = (uint8_t) (((int) config["id"] >> 8) & 0xff);
       config_.graphic_name_[2] = (uint8_t) (((int) config["id"] >> 16) & 0xff);
-      config_.start_x_ = (double) config["start_x"];
+      config_.start_x_ = (int) config["start_x"];
       config_.start_y_ = (int) config["start_y"];
       config_.end_x_ = (int) config["end_x"];
       config_.end_y_ = (int) config["end_y"];

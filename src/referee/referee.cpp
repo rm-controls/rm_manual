@@ -270,7 +270,7 @@ void Referee::sendUi(const rm_common::GraphConfig &config, const std::string &co
   try {
     serial_.write(tx_buffer, k_header_length_ + k_cmd_id_length_ + k_tail_length_ + data_len);
   } catch (serial::PortNotOpenedException &e) {
-    ROS_ERROR("Cannot open referee port, fail to draw UI");
+    ROS_ERROR_ONCE("Cannot open referee port, fail to draw UI");
   }
 }
 
