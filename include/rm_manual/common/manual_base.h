@@ -5,29 +5,24 @@
 #ifndef RM_MANUAL_MANUAL_BASE_H_
 #define RM_MANUAL_MANUAL_BASE_H_
 
+#include "rm_manual/common/data.h"
+#include "rm_manual/common/input_event.h"
+#include "rm_manual/referee/ui.h"
+
 #include <iostream>
 #include <queue>
 #include <tf/transform_listener.h>
 #include <rm_common/ros_utilities.h>
 #include <rm_common/ori_tool.h>
 #include <rm_common/decision/command_sender.h>
-#include <rm_common/decision/controller_loader.h>
-#include <rm_common/decision/calibration_manager.h>
+#include <rm_common/decision/controller_manager.h>
 #include <controller_manager_msgs/SwitchController.h>
-
-#include "rm_manual/common/data.h"
-#include "rm_manual/common/input_event.h"
-#include "rm_manual/referee/ui.h"
 
 namespace rm_manual {
 
 class ManualBase {
  public:
   explicit ManualBase(ros::NodeHandle &nh);
-  ~ManualBase() {
-    delete controller_loader_;
-    delete calibration_manager_;
-  }
   enum { PASSIVE, IDLE, RC, PC };
   virtual void run();
  protected:
@@ -45,17 +40,8 @@ class ManualBase {
   virtual void shooterOutputOn(ros::Duration /*duration*/) { ROS_INFO("Shooter output ON"); }
 
   // Remote Controller
-  virtual void remoteControlTurnOff() {
-    switch_base_ctrl_srv_->flipControllers();
-    switch_base_ctrl_srv_->callService();
-    state_ = PASSIVE;
-  }
-  virtual void remoteControlTurnOn() {
-    switch_base_ctrl_srv_->switchControllers();
-    switch_base_ctrl_srv_->callService();
-    state_ = IDLE;
-    calibration_manager_->reset();
-  }
+  virtual void remoteControlTurnOff();
+  virtual void remoteControlTurnOn();
   virtual void leftSwitchDown(ros::Duration duration) {};
   virtual void leftSwitchMid(ros::Duration duration) {};
   virtual void leftSwitchUp(ros::Duration duration) {};
@@ -82,12 +68,10 @@ class ManualBase {
   virtual void gPress(ros::Duration duration) {};
 
   Data data_;
-  rm_common::ControllerLoader *controller_loader_;
-  rm_common::CalibrationManager *calibration_manager_;
-  rm_common::SwitchControllersService *switch_state_ctrl_srv_{}, *switch_base_ctrl_srv_{};
+  ros::NodeHandle nh_;
+  rm_common::ControllerManager controller_manager_;
 
   bool remote_is_open_{};
-  ros::NodeHandle nh_;
   int state_ = PASSIVE;
   RisingInputEvent switch_right_down_event_, switch_right_mid_event_, switch_right_up_event_;
   RisingInputEvent switch_left_down_event_, switch_left_mid_event_, switch_left_up_event_;

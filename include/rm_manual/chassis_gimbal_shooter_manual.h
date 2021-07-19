@@ -5,6 +5,7 @@
 #ifndef RM_MANUAL_CHASSIS_GIMBAL_SHOOTER_MANUAL_H_
 #define RM_MANUAL_CHASSIS_GIMBAL_SHOOTER_MANUAL_H_
 #include "rm_manual/chassis_gimbal_manual.h"
+#include <rm_common/decision/calibration_queue.h>
 
 namespace rm_manual {
 class ChassisGimbalShooterManual : public ChassisGimbalManual {
@@ -25,15 +26,20 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     cover_command_sender_ = new rm_common::CoverCommandSender(cover_nh);
     ui_shooter_ = new UiShooter(&data_.referee_);
     ros::NodeHandle enemy_color_nh(nh, "enemy_color_switch");
-    switch_enemy_color_srv_ = new rm_common::SwitchEnemyColorService(enemy_color_nh);
+    switch_enemy_color_srv_ = new rm_common::SwitchEnemyColorServiceCaller(enemy_color_nh);
     ros::NodeHandle target_type_nh(nh, "target_type_switch");
-    switch_target_type_srv_ = new rm_common::SwitchTargetTypeService(target_type_nh);
+    switch_target_type_srv_ = new rm_common::SwitchTargetTypeServiceCaller(target_type_nh);
+
+    XmlRpc::XmlRpcValue rpc_value;
+    nh.getParam("shooter_calibration", rpc_value);
+    shooter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
     ui_target_ = new UiTarget(&data_.referee_);
     ui_cover_ = new UiCover(&data_.referee_);
   }
   void run() override {
     ManualBase::run();
     switch_enemy_color_srv_->setEnemyColor(data_.referee_.referee_data_);
+    shooter_calibration_->update(ros::Time::now());
   }
  protected:
   void checkKeyboard() override {
@@ -53,8 +59,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     cover_command_sender_->sendCommand(time);
   }
   void shooterOutputOn(ros::Duration /*duration*/) override {
-    ROS_INFO("Shooter Output on!");
-    calibration_manager_->reset();
+    ROS_INFO("Shooter Output ON");
+    shooter_calibration_->reset();
   }
   void updateRc() override {
     ChassisGimbalManual::updateRc();
@@ -176,8 +182,9 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   RisingInputEvent ctrl_r_press_event_;
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
   rm_common::CoverCommandSender *cover_command_sender_{};
-  rm_common::SwitchEnemyColorService *switch_enemy_color_srv_{};
-  rm_common::SwitchTargetTypeService *switch_target_type_srv_{};
+  rm_common::SwitchEnemyColorServiceCaller *switch_enemy_color_srv_{};
+  rm_common::SwitchTargetTypeServiceCaller *switch_target_type_srv_{};
+  rm_common::CalibrationQueue *shooter_calibration_;
   UiShooter *ui_shooter_{};
   UiTarget *ui_target_{};
   UiCover *ui_cover_{};
