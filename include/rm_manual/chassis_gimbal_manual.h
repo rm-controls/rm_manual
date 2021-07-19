@@ -49,9 +49,9 @@ class ChassisGimbalManual : public ManualBase {
   void rightSwitchDown(ros::Duration duration) override {
     ManualBase::rightSwitchDown(duration);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    vel_cmd_sender_->setZero();
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-    vel_cmd_sender_->set2DVel(0., 0., 0.);
-    gimbal_cmd_sender_->setRate(0., 0.);
+    gimbal_cmd_sender_->setZero();
   }
   void rightSwitchMid(ros::Duration duration) override {
     ManualBase::rightSwitchMid(duration);
@@ -61,6 +61,7 @@ class ChassisGimbalManual : public ManualBase {
   void rightSwitchUp(ros::Duration duration) override {
     ManualBase::rightSwitchUp(duration);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    vel_cmd_sender_->setZero();
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     ui_chassis_->setOperateType(UPDATE);
     ui_gimbal_->setOperateType(UPDATE);
