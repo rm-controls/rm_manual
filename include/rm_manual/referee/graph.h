@@ -12,21 +12,24 @@
 namespace rm_manual {
 class GraphBase {
  public:
-  explicit GraphBase(const XmlRpc::XmlRpcValue &config, Referee &referee) : referee_(referee) {
-    config_.graphic_id_[0] = (uint8_t) ((int) config["id"] & 0xff);
-    config_.graphic_id_[1] = (uint8_t) (((int) config["id"] >> 8) & 0xff);
-    config_.graphic_id_[2] = (uint8_t) (((int) config["id"] >> 16) & 0xff);
-    config_.start_x_ = (int) config["start_x"];
-    config_.start_y_ = (int) config["start_y"];
-    config_.end_x_ = (int) config["end_x"];
-    config_.end_y_ = (int) config["end_y"];
-    config_.start_angle_ = (int) config["start_angle"];
-    config_.end_angle_ = (int) config["end_angle"];
-    config_.radius_ = (int) config["radius"];
-    config_.width_ = (int) config["width"];
-    config_.color_ = getColor(config["color"]);
-    config_.graphic_type_ = getType(config["type"]);
-    content_ = (std::string) config["content"];
+  explicit GraphBase(const XmlRpc::XmlRpcValue &config, Referee &referee)
+      : referee_(referee), content_("") {
+    if (config.hasMember("id")) {
+      config_.graphic_id_[0] = (uint8_t) ((int) config["id"] & 0xff);
+      config_.graphic_id_[1] = (uint8_t) (((int) config["id"] >> 8) & 0xff);
+      config_.graphic_id_[2] = (uint8_t) (((int) config["id"] >> 16) & 0xff);
+    }
+    if (config.hasMember("start_x")) config_.start_x_ = setValue(config["start_x"], start_x_array_);
+    if (config.hasMember("start_y")) config_.start_y_ = setValue(config["start_y"], start_y_array_);
+    if (config.hasMember("end_x")) config_.end_x_ = setValue(config["end_x"], end_x_array_);
+    if (config.hasMember("end_y")) config_.end_y_ = setValue(config["end_y"], end_y_array_);
+    if (config.hasMember("type")) config_.graphic_type_ = getType(config["type"]);
+    if (config.hasMember("start_angle")) config_.start_angle_ = (int) config["start_angle"];
+    if (config.hasMember("end_angle")) config_.end_angle_ = (int) config["end_angle"];
+    if (config.hasMember("radius")) config_.radius_ = (int) config["radius"];
+    if (config.hasMember("width")) config_.width_ = (int) config["width"];
+    if (config.hasMember("color")) config_.color_ = getColor(config["color"]);
+    if (config.hasMember("content")) content_ = (std::string) config["content"];
   };
   void setColor(const rm_common::GraphColor &color) { config_.color_ = color; }
   void setContent(const std::string &content) { content_ = content; }
@@ -52,9 +55,16 @@ class GraphBase {
   }
   void display() { referee_.sendUi(config_, content_); }
   Referee &referee_;
-  rm_common::GraphConfig config_;
-  std::string name_;
   std::string content_;
+  rm_common::GraphConfig config_{};
+  int start_x_array_[4]{}, start_y_array_[4]{}, end_x_array_[4]{}, end_y_array_[4]{};
+ private:
+  int setValue(XmlRpc::XmlRpcValue value, int *storage_array) {
+    if (value.getType() == XmlRpc::XmlRpcValue::TypeArray)
+      for (int i = 0; i < 4 && i < (int) value.size(); ++i) storage_array[i] = (int) value[i];
+    else storage_array[0] = (int) value;
+    return storage_array[0];
+  }
 };
 
 class UnChangeGraph : public GraphBase {

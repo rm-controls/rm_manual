@@ -5,7 +5,6 @@
 #ifndef RM_MANUAL_REFEREE_UI_H_
 #define RM_MANUAL_REFEREE_UI_H_
 
-#include "rm_manual/referee/referee.h"
 #include "rm_manual/referee/graph.h"
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
