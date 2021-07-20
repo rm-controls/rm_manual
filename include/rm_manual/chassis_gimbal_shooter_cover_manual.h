@@ -78,11 +78,9 @@ class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual {
     ChassisGimbalShooterManual::drawUi();
     ui_cover_->display(cover_command_sender_->getState());
   }
-
   rm_common::JointPositionBinaryCommandSender *cover_command_sender_{};
   rm_common::CalibrationQueue *cover_calibration_;
   RisingInputEvent ctrl_z_press_event_;
-
 };
 }
 

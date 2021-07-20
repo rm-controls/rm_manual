@@ -18,14 +18,13 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
       shift_release_event_(boost::bind(&ChassisGimbalShooterManual::shiftRelease, this, _1)),
       ctrl_c_press_event_(boost::bind(&ChassisGimbalShooterManual::ctrlCPress, this, _1)),
       ctrl_v_press_event_(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this, _1)),
-      ctrl_r_press_event_(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this, _1)) {
+      ctrl_r_press_event_(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this, _1)),
+      ctrl_b_press_event_(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this, _1)) {
     ros::NodeHandle shooter_nh(nh, "shooter");
     shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, data_.referee_.referee_data_);
     ui_shooter_ = new UiShooter(&data_.referee_);
-    ros::NodeHandle enemy_color_nh(nh, "enemy_color_switch");
-    switch_enemy_color_srv_ = new rm_common::SwitchEnemyColorServiceCaller(enemy_color_nh);
-    ros::NodeHandle target_type_nh(nh, "target_type_switch");
-    switch_target_type_srv_ = new rm_common::SwitchTargetTypeServiceCaller(target_type_nh);
+    ros::NodeHandle detection_switch_nh(nh, "detection_switch");
+    switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
 
     XmlRpc::XmlRpcValue rpc_value;
     nh.getParam("trigger_calibration", rpc_value);
@@ -35,7 +34,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void run() override {
     ChassisGimbalManual::run();
-    switch_enemy_color_srv_->setEnemyColor(data_.referee_.referee_data_);
+    switch_detection_srv_->setEnemyColor(data_.referee_.referee_data_);
     trigger_calibration_->update(ros::Time::now());
   }
  protected:
@@ -48,6 +47,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ctrl_c_press_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
     ctrl_v_press_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v);
     ctrl_r_press_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
+    ctrl_b_press_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
   }
   void sendCommand(const ros::Time &time) override {
     ChassisGimbalManual::sendCommand(time);
@@ -120,27 +120,34 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void qPress(ros::Duration /*duration*/) { shooter_cmd_sender_->setBurstMode(!shooter_cmd_sender_->getBurstMode()); }
   void shiftPress(ros::Duration /*duration*/) { chassis_cmd_sender_->setBurstMode(true); }
   void shiftRelease(ros::Duration /*duration*/) { chassis_cmd_sender_->setBurstMode(false); }
+  void ctrlCPress(ros::Duration /*duration*/) {
+    gimbal_cmd_sender_->setBaseOnly(!gimbal_cmd_sender_->getBaseOnly());
+  }
+  void ctrlVPress(ros::Duration /*duration*/) {
+    switch_detection_srv_->switchEnemyColor();
+    switch_detection_srv_->callService();
+  }
   void ctrlRPress(ros::Duration /*duration*/) {
-    switch_target_type_srv_->switchTargetType();
-    switch_target_type_srv_->callService();
-    if (switch_target_type_srv_->getTarget() == "buff")
+    switch_detection_srv_->switchTargetType();
+    switch_detection_srv_->callService();
+    if (switch_detection_srv_->getTarget())
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
     else
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   }
-  void ctrlVPress(ros::Duration /*duration*/) {
-    switch_enemy_color_srv_->switchEnemyColor();
-    switch_enemy_color_srv_->callService();
-  }
-  void ctrlCPress(ros::Duration /*duration*/) {
-    gimbal_cmd_sender_->setBaseOnly(!gimbal_cmd_sender_->getBaseOnly());
+  void ctrlBPress(ros::Duration /*duration*/) {
+    switch_detection_srv_->switchExposureLevel();
+    switch_detection_srv_->callService();
   }
   void drawUi() override {
     ChassisGimbalManual::drawUi();
     ros::Time time = ros::Time::now();
+    std::string enemy_color =
+        switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::BLUE ? "blue" : "red";
+    std::string target_type =
+        switch_detection_srv_->getTarget() == rm_msgs::StatusChangeRequest::BUFF ? "buff" : "armor";
     ui_shooter_->display(time, shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
-    ui_target_->display(time, switch_target_type_srv_->getTarget(), switch_enemy_color_srv_->getColor(),
-                        gimbal_cmd_sender_->getBaseOnly());
+    ui_target_->display(time, target_type, enemy_color, gimbal_cmd_sender_->getBaseOnly());
   }
   RisingInputEvent q_press_event_;
   RisingInputEvent f_press_event_;
@@ -149,9 +156,9 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   RisingInputEvent ctrl_c_press_event_;
   RisingInputEvent ctrl_v_press_event_;
   RisingInputEvent ctrl_r_press_event_;
+  RisingInputEvent ctrl_b_press_event_;
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
-  rm_common::SwitchEnemyColorServiceCaller *switch_enemy_color_srv_{};
-  rm_common::SwitchTargetTypeServiceCaller *switch_target_type_srv_{};
+  rm_common::SwitchDetectionCaller *switch_detection_srv_{};
   rm_common::CalibrationQueue *trigger_calibration_;
   UiShooter *ui_shooter_{};
   UiTarget *ui_target_{};
