@@ -13,27 +13,21 @@ namespace rm_manual {
 class GraphBase {
  public:
   explicit GraphBase(const XmlRpc::XmlRpcValue &config, Referee &referee) : referee_(referee) {
-    try {
-      name_ = (std::string) config["name"];
-      config_.graphic_id_[0] = (uint8_t) ((int) config["data"]["id"] & 0xff);
-      config_.graphic_id_[1] = (uint8_t) (((int) config["data"]["id"] >> 8) & 0xff);
-      config_.graphic_id_[2] = (uint8_t) (((int) config["data"]["id"] >> 16) & 0xff);
-      config_.start_x_ = (int) config["data"]["start_x"];
-      config_.start_y_ = (int) config["data"]["start_y"];
-      config_.end_x_ = (int) config["data"]["end_x"];
-      config_.end_y_ = (int) config["data"]["end_y"];
-      config_.start_angle_ = (int) config["data"]["start_angle"];
-      config_.end_angle_ = (int) config["data"]["end_angle"];
-      config_.radius_ = (int) config["data"]["radius"];
-      config_.width_ = (int) config["data"]["width"];
-      config_.color_ = getColor(config["data"]["color"]);
-      config_.graphic_type_ = getType(config["data"]["type"]);
-      content_ = (std::string) config["data"]["content"];
-    } catch (XmlRpc::XmlRpcException &e) {
-      ROS_ERROR("Wrong ui parameter type: %s", e.getMessage().c_str());
-    }
+    config_.graphic_id_[0] = (uint8_t) ((int) config["id"] & 0xff);
+    config_.graphic_id_[1] = (uint8_t) (((int) config["id"] >> 8) & 0xff);
+    config_.graphic_id_[2] = (uint8_t) (((int) config["id"] >> 16) & 0xff);
+    config_.start_x_ = (int) config["start_x"];
+    config_.start_y_ = (int) config["start_y"];
+    config_.end_x_ = (int) config["end_x"];
+    config_.end_y_ = (int) config["end_y"];
+    config_.start_angle_ = (int) config["start_angle"];
+    config_.end_angle_ = (int) config["end_angle"];
+    config_.radius_ = (int) config["radius"];
+    config_.width_ = (int) config["width"];
+    config_.color_ = getColor(config["color"]);
+    config_.graphic_type_ = getType(config["type"]);
+    content_ = (std::string) config["content"];
   };
-  const std::string getName() { return name_; }
   void setColor(const rm_common::GraphColor &color) { config_.color_ = color; }
   void setContent(const std::string &content) { content_ = content; }
  protected:

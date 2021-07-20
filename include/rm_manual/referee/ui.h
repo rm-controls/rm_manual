@@ -23,11 +23,14 @@ class UiBase {
       ROS_ERROR("%s no defined (namespace %s)", ui_type.c_str(), nh.getNamespace().c_str());
       return;
     }
-    for (int i = 0; i < (int) config_param.size(); ++i)
-      graph_vector_.push_back(new GraphType(config_param[i], referee_));
+    try {
+      for (int i = 0; i < (int) config_param.size(); ++i)
+        graph_vector_.insert(std::pair<std::string, GraphType *>(config_param[i]["name"],
+                                                                 new GraphType(config_param[i]["data"], referee_)));
+    } catch (XmlRpc::XmlRpcException &e) { ROS_ERROR("Wrong ui parameter: %s", e.getMessage().c_str()); }
   }
   Referee &referee_;
-  std::vector<GraphType *> graph_vector_;
+  std::map<std::string, GraphType *> graph_vector_;
 };
 
 class TitleUi : public UiBase<UnChangeGraph> {
@@ -35,7 +38,7 @@ class TitleUi : public UiBase<UnChangeGraph> {
   explicit TitleUi(ros::NodeHandle &nh, Referee &referee) : UiBase(nh, referee) {
     getParam("title", nh);
   }
-  void add() { for (int i = 0; i < (int) graph_vector_.size(); ++i) graph_vector_[i]->add(); }
+  void add() { for (auto graph:graph_vector_) graph.second->add(); }
 };
 
 class WarningUi : public UiBase<AutoChangeGraph> {
@@ -44,8 +47,8 @@ class WarningUi : public UiBase<AutoChangeGraph> {
     getParam("warning", nh);
   }
   void update(const ros::Time &time, const std::string &graph_name, bool state) {
-    for (int i = 0; i < (int) graph_vector_.size(); ++i)
-      if (graph_vector_[i]->getName() == graph_name) graph_vector_[i]->update(time, state);
+    auto graph = graph_vector_.find(graph_name);
+    if (graph != graph_vector_.end()) graph->second->update(time, state);
   }
 };
 
@@ -55,15 +58,14 @@ class CapacitorUi : public UiBase<AutoChangeGraph> {
     getParam("capacitor", nh);
   }
   void add(double data) {
-    if (!graph_vector_.empty() && data != 0.) {
-      setConfig(*graph_vector_[0], data);
-      graph_vector_[0]->add();
-    }
+    auto graph = graph_vector_.find("capacitor");
+    if (graph != graph_vector_.end() && data != 0.) graph->second->add();
   }
   void update(const ros::Time &time, double data) {
-    if (!graph_vector_.empty()) {
-      setConfig(*graph_vector_[0], data);
-      graph_vector_[0]->update(time, data);
+    auto graph = graph_vector_.find("capacitor");
+    if (graph != graph_vector_.end()) {
+      setConfig(*graph->second, data);
+      graph->second->update(time, data);
     }
   }
  private:
@@ -82,23 +84,22 @@ class StateUi : public UiBase<ManualChangeGraph> {
   explicit StateUi(ros::NodeHandle &nh, Referee &referee) : UiBase(nh, referee) {
     getParam("state", nh);
   }
-  void add() { for (int i = 0; i < (int) graph_vector_.size(); ++i) graph_vector_[i]->add(); }
+  void add() { for (auto graph:graph_vector_) graph.second->add(); }
   void update(const std::string &graph_name, uint8_t mode, bool flag) {
-    for (int i = 0; i < (int) graph_vector_.size(); ++i) {
-      if (graph_name == graph_vector_[i]->getName()) {
-        updateState(graph_vector_[i], mode);
-        updateColor(graph_vector_[i], flag);
-        graph_vector_[i]->update(mode, flag);
-      }
+    auto graph = graph_vector_.find(graph_name);
+    if (graph != graph_vector_.end()) {
+      updateState(graph_name, graph->second, mode);
+      updateColor(graph_name, graph->second, flag);
+      graph->second->update(mode, flag);
     }
   }
  protected:
-  void updateState(ManualChangeGraph *graph, uint8_t mode) {
-    if (graph->getName() == "chassis") graph->setContent(getChassisState(mode));
-    else if (graph->getName() == "gimbal") graph->setContent(getGimbalState(mode));
-    else if (graph->getName() == "shooter") graph->setContent(getShooterState(mode));
+  void updateState(const std::string &name, ManualChangeGraph *graph, uint8_t mode) {
+    if (name == "chassis") graph->setContent(getChassisState(mode));
+    else if (name == "gimbal") graph->setContent(getGimbalState(mode));
+    else if (name == "shooter") graph->setContent(getShooterState(mode));
   }
-  void updateColor(ManualChangeGraph *graph, bool flag) {
+  void updateColor(const std::string &name, ManualChangeGraph *graph, bool flag) {
     if (flag) graph->setColor(rm_common::GraphColor::ORANGE);
     else graph->setColor(rm_common::GraphColor::YELLOW);
   }
