@@ -34,6 +34,8 @@ class GraphBase {
     }
   };
   const std::string getName() { return name_; }
+  void setColor(const rm_common::GraphColor &color) { config_.color_ = color; }
+  void setContent(const std::string &content) { content_ = content; }
  protected:
   rm_common::GraphColor getColor(const std::string &color) {
     if (color == "main_color") return rm_common::GraphColor::MAIN_COLOR;
@@ -72,8 +74,8 @@ class UnChangeGraph : public GraphBase {
 
 class AutoChangeGraph : public GraphBase {
  public:
-  explicit AutoChangeGraph(const XmlRpc::XmlRpcValue &config, Referee &referee, const ros::Duration &duration)
-      : GraphBase(config, referee), last_time_(ros::Time::now()), duration_(duration) {
+  explicit AutoChangeGraph(const XmlRpc::XmlRpcValue &config, Referee &referee)
+      : GraphBase(config, referee), last_time_(ros::Time::now()), duration_(ros::Duration(1.)) {
     config_.operate_type_ = rm_common::GraphOperation::UPDATE;
     config_.layer_ = 1;
   };
@@ -97,8 +99,6 @@ class AutoChangeGraph : public GraphBase {
       last_time_ = time;
     }
   }
-  void setColor(const rm_common::GraphColor &color) { config_.color_ = color; }
-  void setContent(const std::string &content) { content_ = content; }
  private:
   ros::Time last_time_;
   ros::Duration duration_;
@@ -106,12 +106,26 @@ class AutoChangeGraph : public GraphBase {
 
 class ManualChangeGraph : public GraphBase {
  public:
-  explicit ManualChangeGraph(const XmlRpc::XmlRpcValue &config, Referee &referee) : GraphBase(config, referee) {
+  explicit ManualChangeGraph(const XmlRpc::XmlRpcValue &config, Referee &referee)
+      : GraphBase(config, referee), last_state_(0), last_flag_(false) {
     config_.operate_type_ = rm_common::GraphOperation::UPDATE;
     config_.layer_ = 0;
   };
-  void setContent(const std::string &content) { content_ = content; }
-  void setColor(const rm_common::GraphColor &color) { config_.color_ = color; }
+  void add() {
+    config_.operate_type_ = rm_common::GraphOperation::ADD;
+    display();
+    config_.operate_type_ = rm_common::GraphOperation::UPDATE;
+  }
+  void update(uint8_t state, bool flag) {
+    if (state != last_state_ || flag != last_flag_) {
+      display();
+      last_state_ = state;
+      last_flag_ = flag;
+    }
+  }
+ private:
+  uint8_t last_state_;
+  bool last_flag_;
 };
 
 }
