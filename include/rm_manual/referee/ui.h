@@ -82,8 +82,45 @@ class StateUi : public UiBase<ManualChangeGraph> {
   explicit StateUi(ros::NodeHandle &nh, Referee &referee) : UiBase(nh, referee) {
     getParam("state", nh);
   }
-  void add() {
-
+  void add() { for (int i = 0; i < (int) graph_vector_.size(); ++i) graph_vector_[i]->add(); }
+  void update(const std::string &graph_name, uint8_t mode, bool flag) {
+    for (int i = 0; i < (int) graph_vector_.size(); ++i) {
+      if (graph_name == graph_vector_[i]->getName()) {
+        updateState(graph_vector_[i], mode);
+        updateColor(graph_vector_[i], flag);
+        graph_vector_[i]->update(mode, flag);
+      }
+    }
+  }
+ protected:
+  void updateState(ManualChangeGraph *graph, uint8_t mode) {
+    if (graph->getName() == "chassis") graph->setContent(getChassisState(mode));
+    else if (graph->getName() == "gimbal") graph->setContent(getGimbalState(mode));
+    else if (graph->getName() == "shooter") graph->setContent(getShooterState(mode));
+  }
+  void updateColor(ManualChangeGraph *graph, bool flag) {
+    if (flag) graph->setColor(rm_common::GraphColor::ORANGE);
+    else graph->setColor(rm_common::GraphColor::YELLOW);
+  }
+ private:
+  const std::string getChassisState(uint8_t mode) {
+    if (mode == rm_msgs::ChassisCmd::RAW) return "raw";
+    else if (mode == rm_msgs::ChassisCmd::FOLLOW) return "follow";
+    else if (mode == rm_msgs::ChassisCmd::GYRO) return "gyro";
+    else if (mode == rm_msgs::ChassisCmd::TWIST) return "twist";
+    else return "error";
+  }
+  const std::string getGimbalState(uint8_t mode) {
+    if (mode == rm_msgs::GimbalCmd::RATE) return "rate";
+    else if (mode == rm_msgs::GimbalCmd::TRACK) return "track";
+    else if (mode == rm_msgs::GimbalCmd::DIRECT) return "direct";
+    else return "error";
+  }
+  const std::string getShooterState(uint8_t mode) {
+    if (mode == rm_msgs::ShootCmd::STOP) return "stop";
+    else if (mode == rm_msgs::ShootCmd::READY) return "ready";
+    else if (mode == rm_msgs::ShootCmd::PUSH) return "push";
+    else return "error";
   }
 };
 } // namespace rm_manual
