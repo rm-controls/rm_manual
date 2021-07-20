@@ -59,7 +59,7 @@ rm_manual:
     - start_controller: controllers/card_calibration_controller
       stop_controller: controllers/card_controller
       service_name: /controllers/card_calibration_controller/is_calibrated
-  all_calibration:
+  arm_calibration:
     - start_controller: controllers/joint1_calibration_controller
       stop_controller: controllers/arm_trajectory_controller
       service_name: /controllers/joint1_calibration_controller/is_calibrated

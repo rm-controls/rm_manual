@@ -31,7 +31,7 @@ class EngineerManual : public ChassisGimbalManual {
     mast_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_mast);
     // Calibration
     XmlRpc::XmlRpcValue rpc_value;
-    nh.getParam("all_calibration", rpc_value);
+    nh.getParam("arm_calibration", rpc_value);
     arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
     nh.getParam("power_on_calibration", rpc_value);
     power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
