@@ -24,13 +24,22 @@ class EngineerManual : public ChassisGimbalManual {
     ROS_INFO("Waiting for middleware to start.");
     action_client_.waitForServer();
     ROS_INFO("Middleware started.");
+    // Command sender
+    ros::NodeHandle nh_card(nh, "card");
+    card_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_card);
+    ros::NodeHandle nh_mast(nh, "mast");
+    mast_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_mast);
+    // Calibration
     XmlRpc::XmlRpcValue rpc_value;
-    nh.getParam("arm_calibration", rpc_value);
+    nh.getParam("all_calibration", rpc_value);
     arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+    nh.getParam("power_on_calibration", rpc_value);
+    power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   }
   void run() override {
     ChassisGimbalManual::run();
     arm_calibration_->update(ros::Time::now());
+    power_on_calibration_->update(ros::Time::now());
   }
   void updateRc() override {
     ChassisGimbalManual::updateRc();
@@ -40,6 +49,14 @@ class EngineerManual : public ChassisGimbalManual {
  private:
   void sendCommand(const ros::Time &time) override {
     ChassisGimbalManual::sendCommand(time);
+    card_command_sender_->sendCommand(time);
+    mast_command_sender_->sendCommand(time);
+  }
+  void remoteControlTurnOn() override {
+    ManualBase::remoteControlTurnOn();
+  }
+  void chassisOutputOn(ros::Duration /*duration*/) override {
+    power_on_calibration_->reset();
   }
   void rightSwitchDown(ros::Duration time) override {
     ChassisGimbalManual::rightSwitchDown(time);
@@ -55,9 +72,6 @@ class EngineerManual : public ChassisGimbalManual {
   void rightSwitchUp(ros::Duration time) override {
     ChassisGimbalManual::rightSwitchUp(time);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  }
-  void remoteControlTurnOn() override {
-    ManualBase::remoteControlTurnOn();
   }
   void leftSwitchUpFall(ros::Duration time) {
     arm_calibration_->reset();
@@ -77,8 +91,9 @@ class EngineerManual : public ChassisGimbalManual {
   }
   bool has_send_step_list_{};
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
-  rm_common::CalibrationQueue *arm_calibration_{};
+  rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   FallingInputEvent left_switch_up_fall_event_;
+  rm_common::JointPositionBinaryCommandSender *mast_command_sender_, *card_command_sender_;
 };
 
 }
