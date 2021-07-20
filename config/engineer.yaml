@@ -52,6 +52,13 @@ rm_manual:
       - controllers/joint1_calibration_controller
       - controllers/hand_calibration_controller
       - controllers/card_calibration_controller
+  power_on_calibration:
+    - start_controller: controllers/mast_calibration_controller
+      stop_controller: controllers/mast_controller
+      service_name: /controllers/mast_calibration_controller/is_calibrated
+    - start_controller: controllers/card_calibration_controller
+      stop_controller: controllers/card_controller
+      service_name: /controllers/card_calibration_controller/is_calibrated
   all_calibration:
     - start_controller: controllers/joint1_calibration_controller
       stop_controller: controllers/arm_trajectory_controller
@@ -71,10 +78,3 @@ rm_manual:
     - start_controller: controllers/hand_calibration_controller
       stop_controller: controllers/hand_controller
       service_name: /controllers/hand_calibration_controller/is_calibrated
-  power_on_calibration:
-    - start_controller: controllers/mast_calibration_controller
-      stop_controller: controllers/mast_controller
-      service_name: /controllers/mast_calibration_controller/is_calibrated
-    - start_controller: controllers/card_calibration_controller
-      stop_controller: controllers/card_controller
-      service_name: /controllers/card_calibration_controller/is_calibrated
