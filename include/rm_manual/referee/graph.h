@@ -88,24 +88,36 @@ class AutoChangeGraph : public GraphBase {
     display();
     config_.operate_type_ = rm_common::GraphOperation::UPDATE;
   }
+  void update(int data) {
+    if (data == last_data_) return;
+    updatePosition();
+    display();
+    last_data_ = data;
+  }
   void update(const ros::Time &time, bool state) {
-    if (state && time - last_time_ > duration_) {
-      if (config_.operate_type_ == rm_common::GraphOperation::DELETE)
-        config_.operate_type_ = rm_common::GraphOperation::ADD;
-      else config_.operate_type_ = rm_common::GraphOperation::DELETE;
-      display();
-      last_time_ = time;
-    }
+    if (!state || time - last_time_ < duration_) return;
+    config_.operate_type_ = config_.operate_type_ == rm_common::GraphOperation::DELETE ? rm_common::GraphOperation::ADD
+                                                                                       : rm_common::GraphOperation::DELETE;
+    display();
+    last_time_ = time;
   }
   void update(const ros::Time &time, double data) {
-    if (data != 0. && time - last_time_ > duration_) {
-      display();
-      last_time_ = time;
-    }
+    if (data == 0. || time - last_time_ < duration_) return;
+    display();
+    last_time_ = time;
   }
  private:
+  void updatePosition() {
+    if (level++ > 4) return;
+    config_.start_x_ = start_x_array_[level];
+    config_.start_y_ = start_y_array_[level];
+    config_.end_x_ = end_x_array_[level];
+    config_.end_y_ = end_y_array_[level];
+  }
   ros::Time last_time_;
   ros::Duration duration_;
+  int last_data_{};
+  int level{};
 };
 
 class ManualChangeGraph : public GraphBase {

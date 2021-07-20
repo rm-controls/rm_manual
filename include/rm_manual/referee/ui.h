@@ -58,6 +58,13 @@ class StateUi : public UiBase<ManualChangeGraph> {
   const std::string getTargetState(uint8_t mode);
 };
 
+class AimUi : public UiBase<AutoChangeGraph> {
+ public:
+  explicit AimUi(ros::NodeHandle &nh, Referee &referee) : UiBase(nh, referee, "aim") {};
+  void add() { for (auto graph:graph_vector_) graph.second->add(); }
+  void update(int level) { for (auto graph:graph_vector_) graph.second->update(level); }
+};
+
 class CapacitorUi : public UiBase<AutoChangeGraph> {
  public:
   explicit CapacitorUi(ros::NodeHandle &nh, Referee &referee) : UiBase(nh, referee, "capacitor") {};
