@@ -149,6 +149,11 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
       }
     }
   }
+  void drawUi() override {
+    ChassisGimbalManual::drawUi();
+    state_ui_->update("shooter", shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
+    warning_ui_->update("cover", !cover_command_sender_->isClose(), ros::Time::now());
+  }
   RisingInputEvent q_press_event_;
   RisingInputEvent f_press_event_;
   RisingInputEvent shift_press_event_;

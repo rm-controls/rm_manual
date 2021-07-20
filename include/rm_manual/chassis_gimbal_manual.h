@@ -16,6 +16,10 @@ class ChassisGimbalManual : public ManualBase {
     vel_cmd_sender_ = new rm_common::Vel2DCommandSender(vel_nh);
     ros::NodeHandle gimbal_nh(nh, "gimbal");
     gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh, data_.referee_.referee_data_);
+    ros::NodeHandle ui_nh(nh, "ui");
+    title_ui_ = new TitleUi(ui_nh, data_.referee_);
+    state_ui_ = new StateUi(ui_nh, data_.referee_);
+    warning_ui_ = new WarningUi(ui_nh, data_.referee_);
   }
  protected:
   void sendCommand(const ros::Time &time) override {
@@ -61,13 +65,16 @@ class ChassisGimbalManual : public ManualBase {
   }
   void wPress(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearXVel(1.); }
   void wRelease(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearXVel(0.); }
-  void aPress(ros::Duration /*duration*/v) override { vel_cmd_sender_->setLinearYVel(1.); }
+  void aPress(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearYVel(1.); }
   void aRelease(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearYVel(0.); }
   void sPress(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearXVel(-1.); }
   void sRelease(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearXVel(0.); }
   void dPress(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearYVel(-1.); }
   void dRelease(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearYVel(0.); }
-  void xPress(ros::Duration /*duration*/) override {}
+  void xPress(ros::Duration /*duration*/) override {
+    title_ui_->add();
+    state_ui_->add();
+  }
   void xRelease(ros::Duration /*duration*/) override {}
   void gPress(ros::Duration /*duration*/) override {
     if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
@@ -84,9 +91,17 @@ class ChassisGimbalManual : public ManualBase {
     else
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
   }
+  void drawUi() override {
+    state_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
+    state_ui_->update("gimbal", gimbal_cmd_sender_->getMsg()->mode);
+    warning_ui_->update("spin", chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::GYRO, ros::Time::now());
+  }
   rm_common::ChassisCommandSender *chassis_cmd_sender_{};
   rm_common::Vel2DCommandSender *vel_cmd_sender_;
   rm_common::GimbalCommandSender *gimbal_cmd_sender_{};
+  TitleUi *title_ui_{};
+  StateUi *state_ui_{};
+  WarningUi *warning_ui_{};
 };
 }
 
