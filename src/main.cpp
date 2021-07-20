@@ -3,7 +3,7 @@
 //
 
 #include "rm_manual/common/manual_base.h"
-#include "rm_manual/chassis_gimbal_shooter_manual.h"
+#include "rm_manual/chassis_gimbal_shooter_cover_manual.h"
 #include "rm_manual/engineer_manual.h"
 
 int main(int argc, char **argv) {
@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh("~");
   robot = getParam(nh, "robot_type", (std::string) "error");
   if (robot == "standard" || robot == "hero")
-    manual_control = new rm_manual::ChassisGimbalShooterManual(nh);
+    manual_control = new rm_manual::ChassisGimbalShooterCoverManual(nh);
   else if (robot == "engineer")
     manual_control = new rm_manual::EngineerManual(nh);
   else {

@@ -6,8 +6,8 @@
 namespace rm_manual {
 
 ManualBase::ManualBase(ros::NodeHandle &nh) :
-    data_(nh),
-    nh_(nh),
+    data_(nh), nh_(nh),
+    controller_manager_(nh),
     switch_right_down_event_(boost::bind(&ManualBase::rightSwitchDown, this, _1)),
     switch_right_mid_event_(boost::bind(&ManualBase::rightSwitchMid, this, _1)),
     switch_right_up_event_(boost::bind(&ManualBase::rightSwitchUp, this, _1)),
@@ -33,24 +33,27 @@ ManualBase::ManualBase(ros::NodeHandle &nh) :
     x_release_event_(boost::bind(&ManualBase::xRelease, this, _1)),
     e_press_event_(boost::bind(&ManualBase::ePress, this, _1)),
     g_press_event_(boost::bind(&ManualBase::gPress, this, _1)) {
-  controller_loader_ = new rm_common::ControllerLoader(nh);
-  controller_loader_->loadControllers();
-  calibration_manager_ = new rm_common::CalibrationManager(nh);
-  ros::NodeHandle state_ctrl_nh(nh, "state_controllers_switch");
-  switch_state_ctrl_srv_ = new rm_common::SwitchControllersService(state_ctrl_nh);
-  switch_state_ctrl_srv_->startControllersOnly();
-  switch_state_ctrl_srv_->callService();
-  ros::NodeHandle base_ctrl_nh(nh, "base_controllers_switch");
-  switch_base_ctrl_srv_ = new rm_common::SwitchControllersService(base_ctrl_nh);
+  controller_manager_.startStateControllers();
 }
 
 void ManualBase::run() {
   ros::Time time = ros::Time::now();
   data_.referee_.read();
   checkReferee(time);
-  calibration_manager_->checkCalibrate(time);
   checkSwitch(time);
   sendCommand(time);
+  controller_manager_.update();
+}
+
+void ManualBase::remoteControlTurnOff() {
+  controller_manager_.stopMainControllers();
+  controller_manager_.stopCalibrationControllers();
+  state_ = PASSIVE;
+}
+
+void ManualBase::remoteControlTurnOn() {
+  controller_manager_.startMainControllers();
+  state_ = IDLE;
 }
 
 void ManualBase::checkReferee(const ros::Time &time) {

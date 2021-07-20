@@ -41,47 +41,21 @@ rm_manual:
     topic: "/controllers/cover_controller/command"
     open_pos: -2.0
     close_pos: 0.0
-  enemy_color_switch:
-    error_amount_limit: 10
+  detection_switch:
+    fail_limit: 10
+
   controllers_list:
-    - controllers/robot_state_controller
-    - controllers/joint_state_controller
-    - controllers/chassis_controller
-    - controllers/gimbal_controller
-    - controllers/shooter_controller
-    - controllers/trigger_calibration_controller
-    - controllers/orientation_controller
-  state_controllers_switch:
-    start_controllers:
+    state_controllers:
       - controllers/robot_state_controller
       - controllers/joint_state_controller
-      - controllers/orientation_controller
-  base_controllers_switch:
-    start_controllers:
+    main_controllers:
       - controllers/chassis_controller
       - controllers/gimbal_controller
-  calibration_manager:
-    trigger:
-      switch:
-        start_controllers:
-          - controllers/trigger_calibration_controller
-        stop_controllers:
-          - controllers/shooter_controller
-      query:
-        service_name: /controllers/trigger_calibration_controller/is_calibrated
-  ui:
-    title:
-      - { name: "chassis", data: { type: "string", id: 0, start_x: 150, start_y: 800, end_x: 0, end_y: 0, start_angle: 0, end_angle: 0, radius: 0, width: 3, color: "white", content: "chassis:" } }
-      - { name: "gimbal", data: { type: "string", id: 1, start_x: 150, start_y: 750, end_x: 0, end_y: 0, start_angle: 0, end_angle: 0, radius: 0, width: 3, color: "white", content: "gimbal:" } }
-      - { name: "shooter", data: { type: "string", id: 2, start_x: 150, start_y: 700, end_x: 0, end_y: 0, start_angle: 0, end_angle: 0, radius: 0, width: 3, color: "white", content: "shooter:" } }
-      - { name: "target", data: { type: "string", id: 3, start_x: 150, start_y: 650, end_x: 0, end_y: 0, start_angle: 0, end_angle: 0, radius: 0, width: 3, color: "white", content: "target:" } }
-    warning:
-      - { name: "spin", data: { type: "string", id: 4, start_x: 900, start_y: 700, end_x: 0, end_y: 0, start_angle: 0, end_angle: 0, radius: 0, width: 3, color: "yellow", content: "please spin!!" } }
-    capacitor:
-      - { name: "capacitor", data: { type: "string", id: 6, start_x: 900, start_y: 100, end_x: 0, end_y: 0, start_angle: 0, end_angle: 0, radius: 0, width: 3, color: "yellow", content: "" } }
-    state:
-      - { name: "chassis", data: { type: "string", id: 7, start_x: 200, start_y: 800, end_x: 0, end_y: 0, start_angle: 0, end_angle: 0, radius: 0, width: 3, color: "yellow", content: "" } }
-      - { name: "gimbal", data: { type: "string", id: 8, start_x: 200, start_y: 750, end_x: 0, end_y: 0, start_angle: 0, end_angle: 0, radius: 0, width: 3, color: "yellow", content: "" } }
-      - { name: "shooter", data: { type: "string", id: 9, start_x: 200, start_y: 700, end_x: 0, end_y: 0, start_angle: 0, end_angle: 0, radius: 0, width: 3, color: "yellow", content: "" } }
-      - { name: "target", data: { type: "string", id: 10, start_x: 200, start_y: 650, end_x: 0, end_y: 0, start_angle: 0, end_angle: 0, radius: 0, width: 3, color: "yellow", content: "" } }
+      - controllers/shooter_controller
+    calibration_controllers:
+      - controllers/trigger_calibration_controller
 
+  trigger_calibration:
+    - start_controller: controllers/trigger_calibration_controller
+      stop_controller: controllers/shooter_controller
+      service_name: /controllers/trigger_calibration_controller/is_calibrated
