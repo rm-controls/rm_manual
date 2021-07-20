@@ -10,6 +10,7 @@
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <rm_common/ori_tool.h>
+#include <rm_msgs/StatusChangeRequest.h>
 
 namespace rm_manual {
 template<class GraphType>
@@ -55,6 +56,7 @@ class StateUi : public UiBase<ManualChangeGraph> {
   const std::string getChassisState(uint8_t mode);
   const std::string getGimbalState(uint8_t mode);
   const std::string getShooterState(uint8_t mode);
+  const std::string getTargetState(uint8_t mode);
 };
 
 class CapacitorUi : public UiBase<AutoChangeGraph> {

@@ -19,11 +19,16 @@ void StateUi::update(const std::string &graph_name, uint8_t mode, bool flag) {
 }
 
 void StateUi::updateConfig(const std::string &name, ManualChangeGraph *config, uint8_t mode, bool flag) {
+  if (flag) config->setColor(rm_common::GraphColor::ORANGE);
+  else config->setColor(rm_common::GraphColor::YELLOW);
   if (name == "chassis") config->setContent(getChassisState(mode));
   else if (name == "gimbal") config->setContent(getGimbalState(mode));
   else if (name == "shooter") config->setContent(getShooterState(mode));
-  if (flag) config->setColor(rm_common::GraphColor::ORANGE);
-  else config->setColor(rm_common::GraphColor::YELLOW);
+  else if (name == "target") {
+    config->setContent(getTargetState(mode));
+    if (flag) config->setColor(rm_common::GraphColor::PINK);
+    else config->setColor(rm_common::GraphColor::CYAN);
+  }
 }
 
 const std::string StateUi::getChassisState(uint8_t mode) {
@@ -45,6 +50,12 @@ const std::string StateUi::getShooterState(uint8_t mode) {
   if (mode == rm_msgs::ShootCmd::STOP) return "stop";
   else if (mode == rm_msgs::ShootCmd::READY) return "ready";
   else if (mode == rm_msgs::ShootCmd::PUSH) return "push";
+  else return "error";
+}
+
+const std::string StateUi::getTargetState(uint8_t mode) {
+  if (mode == rm_msgs::StatusChangeRequest::BUFF) return "buff";
+  else if (mode == rm_msgs::StatusChangeRequest::ARMOR) return "armor";
   else return "error";
 }
 

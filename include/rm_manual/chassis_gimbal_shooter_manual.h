@@ -126,6 +126,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void drawUi() override {
     ChassisGimbalManual::drawUi();
     state_ui_->update("shooter", shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
+    state_ui_->update("target", switch_detection_srv_->getTarget(),
+                      switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
   }
   RisingInputEvent q_press_event_;
   RisingInputEvent f_press_event_;
