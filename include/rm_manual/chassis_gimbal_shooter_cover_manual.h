@@ -57,7 +57,8 @@ class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual {
       ChassisGimbalShooterManual::mouseRightRelease(duration);
   }
   void ctrlZPress(ros::Duration /*duration*/) {
-    if (data_.referee_.robot_id_ != RobotId::BLUE_HERO && data_.referee_.robot_id_ != RobotId::RED_HERO) {
+    if (data_.referee_.robot_id_ != rm_common::RobotId::BLUE_HERO
+        && data_.referee_.robot_id_ != rm_common::RobotId::RED_HERO) {
       if (cover_command_sender_->getState()) {
         geometry_msgs::PointStamped aim_point{};
         aim_point.header.frame_id = "yaw";
@@ -76,7 +77,7 @@ class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual {
   }
   void drawUi() override {
     ChassisGimbalShooterManual::drawUi();
-    ui_cover_->display(cover_command_sender_->getState());
+    state_ui_->update("cover", !cover_command_sender_->getState());
   }
   rm_common::JointPositionBinaryCommandSender *cover_command_sender_{};
   rm_common::CalibrationQueue *cover_calibration_;

@@ -22,15 +22,12 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
       ctrl_b_press_event_(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this, _1)) {
     ros::NodeHandle shooter_nh(nh, "shooter");
     shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, data_.referee_.referee_data_);
-    ui_shooter_ = new UiShooter(&data_.referee_);
     ros::NodeHandle detection_switch_nh(nh, "detection_switch");
     switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
 
     XmlRpc::XmlRpcValue rpc_value;
     nh.getParam("trigger_calibration", rpc_value);
     trigger_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-    ui_target_ = new UiTarget(&data_.referee_);
-    ui_cover_ = new UiCover(&data_.referee_);
   }
   void run() override {
     ChassisGimbalManual::run();
@@ -72,9 +69,6 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void rightSwitchUp(ros::Duration duration) override {
     ChassisGimbalManual::rightSwitchUp(duration);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
-    ui_shooter_->setOperateType(UPDATE);
-    ui_capacitor_->setOperateType(UPDATE);
-    ui_target_->setOperateType(UPDATE);
   }
   void leftSwitchDown(ros::Duration duration) override {
     ChassisGimbalManual::leftSwitchDown(duration);
@@ -92,16 +86,6 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
     shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
-  }
-  void xPress(ros::Duration duration) override {
-    ChassisGimbalManual::xPress(duration);
-    ui_shooter_->setOperateType(ADD);
-    ui_target_->setOperateType(ADD);
-  }
-  void xRelease(ros::Duration duration) override {
-    ChassisGimbalManual::xRelease(duration);
-    ui_shooter_->setOperateType(UPDATE);
-    ui_target_->setOperateType(UPDATE);
   }
   void mouseLeftPress(ros::Duration /*duration*/) override {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
@@ -141,13 +125,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void drawUi() override {
     ChassisGimbalManual::drawUi();
-    ros::Time time = ros::Time::now();
-    std::string enemy_color =
-        switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::BLUE ? "blue" : "red";
-    std::string target_type =
-        switch_detection_srv_->getTarget() == rm_msgs::StatusChangeRequest::BUFF ? "buff" : "armor";
-    ui_shooter_->display(time, shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
-    ui_target_->display(time, target_type, enemy_color, gimbal_cmd_sender_->getBaseOnly());
+    state_ui_->update("shooter", shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
   }
   RisingInputEvent q_press_event_;
   RisingInputEvent f_press_event_;
@@ -160,9 +138,6 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
   rm_common::SwitchDetectionCaller *switch_detection_srv_{};
   rm_common::CalibrationQueue *trigger_calibration_;
-  UiShooter *ui_shooter_{};
-  UiTarget *ui_target_{};
-  UiCover *ui_cover_{};
 };
 }
 
