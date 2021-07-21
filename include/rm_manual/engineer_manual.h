@@ -19,8 +19,9 @@ namespace rm_manual {
 class EngineerManual : public ChassisGimbalManual {
  public:
   explicit EngineerManual(ros::NodeHandle &nh)
-      : ChassisGimbalManual(nh), action_client_("/engineer_middleware/move_arm", true),
-        left_switch_up_fall_event_(boost::bind(&EngineerManual::leftSwitchUpFall, this, _1)) {
+      : ChassisGimbalManual(nh), operating_mode_(MANUAL), action_client_("/engineer_middleware/move_arm", true),
+        left_switch_up_fall_event_(boost::bind(&EngineerManual::leftSwitchUpFall, this, _1)),
+        left_switch_down_fall_event_(boost::bind(&EngineerManual::leftSwitchDownFall, this, _1)) {
     ROS_INFO("Waiting for middleware to start.");
     action_client_.waitForServer();
     ROS_INFO("Middleware started.");
@@ -40,30 +41,39 @@ class EngineerManual : public ChassisGimbalManual {
     ChassisGimbalManual::run();
     arm_calibration_->update(ros::Time::now());
     power_on_calibration_->update(ros::Time::now());
+    if (operating_mode_ == MIDDLEWARE && action_client_.getResult()->finish)
+      operating_mode_ = MANUAL;
   }
   void updateRc() override {
     ChassisGimbalManual::updateRc();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
     left_switch_up_fall_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::UP);
+    left_switch_down_fall_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN);
   }
  private:
   void sendCommand(const ros::Time &time) override {
-    ChassisGimbalManual::sendCommand(time);
-    card_command_sender_->sendCommand(time);
     mast_command_sender_->sendCommand(time);
+    if (operating_mode_ == MANUAL) {
+      ChassisGimbalManual::sendCommand(time);
+      card_command_sender_->sendCommand(time);
+    }
   }
   void remoteControlTurnOn() override {
     ManualBase::remoteControlTurnOn();
   }
+  void remoteControlTurnOff() override {
+    ManualBase::remoteControlTurnOff();
+    stopStepQueue();
+  }
   void chassisOutputOn(ros::Duration /*duration*/) override {
     power_on_calibration_->reset();
+    if (MIDDLEWARE)
+      action_client_.cancelAllGoals();
   }
   void rightSwitchDown(ros::Duration time) override {
     ChassisGimbalManual::rightSwitchDown(time);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-    if (has_send_step_list_) {
-      action_client_.cancelAllGoals();
-    }
+    stopStepQueue();
   }
   void rightSwitchMid(ros::Duration time) override {
     ChassisGimbalManual::rightSwitchMid(time);
@@ -76,23 +86,30 @@ class EngineerManual : public ChassisGimbalManual {
   void leftSwitchUpFall(ros::Duration time) {
     arm_calibration_->reset();
   }
-  void sendStepList(uint8_t step_queue_id) {
+  void leftSwitchDownFall(ros::Duration time) {
+    runStepQueue(5);
+  }
+  void runStepQueue(uint8_t step_queue_id) {
     rm_msgs::EngineerActionGoal goal;
     goal.goal.step_queue_id = step_queue_id;
     if (action_client_.isServerConnected()) {
-      if (!has_send_step_list_) {
+      if (operating_mode_ == MANUAL)
         action_client_.sendGoal(goal.goal);
-        has_send_step_list_ = true;
-      } else if (has_send_step_list_ && action_client_.getResult()->finish) {
-        has_send_step_list_ = false;
-      }
+      operating_mode_ = MIDDLEWARE;
     } else
-      ROS_WARN("Can not connected with move arm server");
+      ROS_ERROR("Can not connect to middleware");
   }
-  bool has_send_step_list_{};
+  void stopStepQueue() {
+    if (operating_mode_ == MIDDLEWARE) {
+      action_client_.cancelAllGoals();
+      operating_mode_ = MANUAL;
+    }
+  }
+  enum { MANUAL, MIDDLEWARE };
+  int operating_mode_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
-  FallingInputEvent left_switch_up_fall_event_;
+  FallingInputEvent left_switch_up_fall_event_, left_switch_down_fall_event_;
   rm_common::JointPositionBinaryCommandSender *mast_command_sender_, *card_command_sender_;
 };
 
