@@ -106,18 +106,20 @@ class AutoChangeGraph : public GraphBase {
     display();
     last_time_ = time;
   }
+  void setStartX(int start_x) { config_.start_x_ = start_x; }
+  void setStartY(int start_y) { config_.start_y_ = start_y; }
  private:
   void updatePosition() {
-    if (level++ > 4) return;
-    config_.start_x_ = start_x_array_[level];
-    config_.start_y_ = start_y_array_[level];
-    config_.end_x_ = end_x_array_[level];
-    config_.end_y_ = end_y_array_[level];
+    if (level_++ > 4) return;
+    config_.start_x_ = start_x_array_[level_];
+    config_.start_y_ = start_y_array_[level_];
+    config_.end_x_ = end_x_array_[level_];
+    config_.end_y_ = end_y_array_[level_];
   }
   ros::Time last_time_;
   ros::Duration duration_;
   int last_data_{};
-  int level{};
+  int level_{};
 };
 
 class ManualChangeGraph : public GraphBase {

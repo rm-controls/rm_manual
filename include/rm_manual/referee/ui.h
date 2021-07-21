@@ -42,6 +42,11 @@ class WarningUi : public UiBase<AutoChangeGraph> {
  public:
   explicit WarningUi(ros::NodeHandle &nh, Referee &referee) : UiBase(nh, referee, "warning") {};
   void update(const std::string &graph_name, bool state, const ros::Time &time);
+ private:
+  uint8_t getArmorId(const std::string &name);
+  void updateArmorPosition(AutoChangeGraph *graph, int armor_id);
+  tf2_ros::Buffer tf_;
+  tf2_ros::TransformListener *tf_listener_{};
 };
 
 class StateUi : public UiBase<ManualChangeGraph> {

@@ -81,4 +81,27 @@ void CapacitorUi::setConfig(AutoChangeGraph *config, double data) {
   else config->setColor(rm_common::GraphColor::YELLOW);
 }
 
+void WarningUi::updateArmorPosition(AutoChangeGraph *graph, int armor_id) {
+  geometry_msgs::TransformStamped yaw2baselink;
+  double roll, pitch, yaw;
+  try { yaw2baselink = tf_.lookupTransform("yaw", "base_link", ros::Time(0)); }
+  catch (tf2::TransformException &ex) {}
+  quatToRPY(yaw2baselink.transform.rotation, roll, pitch, yaw);
+  if (armor_id == 0 || armor_id == 2) {
+    graph->setStartX((int) (960 + 340 * sin(armor_id * M_PI_2 + yaw)));
+    graph->setStartY((int) (540 + 340 * cos(armor_id * M_PI_2 + yaw)));
+  } else {
+    graph->setStartX((int) (960 + 340 * sin(-armor_id * M_PI_2 + yaw)));
+    graph->setStartY((int) (540 + 340 * cos(-armor_id * M_PI_2 + yaw)));
+  }
+}
+
+uint8_t WarningUi::getArmorId(const std::string &name) {
+  if (name == "armor0") return 0;
+  else if (name == "armor1") return 1;
+  else if (name == "armor2") return 2;
+  else if (name == "armor3") return 3;
+  return 9;
+}
+
 }

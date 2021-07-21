@@ -74,6 +74,10 @@ rm_manual:
     warning:
       - { name: "spin", data: { type: "string", id: 4, start_x: 900, start_y: 700, width: 3, color: "yellow", content: "please spin!!" } }
       - { name: "cover", data: { type: "string", id: 5, start_x: 900, start_y: 750, width: 3, color: "green", content: "cover open!!" } }
+      - { name: "armor0", data: { type: "circle", id: 11, width: 3, color: "yellow" } }
+      - { name: "armor1", data: { type: "circle", id: 12, width: 3, color: "yellow" } }
+      - { name: "armor2", data: { type: "circle", id: 13, width: 3, color: "yellow" } }
+      - { name: "armor3", data: { type: "circle", id: 14, width: 3, color: "yellow" } }
     state:
       - { name: "chassis", data: { type: "string", id: 7, start_x: 200, start_y: 800, width: 3 } }
       - { name: "gimbal", data: { type: "string", id: 8, start_x: 200, start_y: 750, width: 3 } }
