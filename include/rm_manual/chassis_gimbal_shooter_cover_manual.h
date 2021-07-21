@@ -77,7 +77,7 @@ class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual {
   }
   void drawUi() override {
     ChassisGimbalShooterManual::drawUi();
-    state_ui_->update("cover", !cover_command_sender_->getState());
+    warning_ui_->update("cover", !cover_command_sender_->getState(), ros::Time::now());
   }
   rm_common::JointPositionBinaryCommandSender *cover_command_sender_{};
   rm_common::CalibrationQueue *cover_calibration_;

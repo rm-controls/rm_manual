@@ -53,7 +53,10 @@ class GraphBase {
     else if (type == "string") return rm_common::GraphType::STRING;
     else return rm_common::GraphType::LINE;
   }
-  void display() { referee_.sendUi(config_, content_); }
+  void display() {
+    config_.end_angle_ = (int) content_.size();
+    referee_.sendUi(config_, content_);
+  }
   Referee &referee_;
   std::string content_;
   rm_common::GraphConfig config_{};
