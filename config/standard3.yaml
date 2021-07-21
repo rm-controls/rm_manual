@@ -83,6 +83,8 @@ rm_manual:
       - { name: "gimbal", data: { type: "string", id: 8, start_x: 200, start_y: 750, width: 3 } }
       - { name: "shooter", data: { type: "string", id: 9, start_x: 200, start_y: 700, width: 3 } }
       - { name: "target", data: { type: "string", id: 10, start_x: 200, start_y: 650, width: 3 } }
+    aim:
+      - { name: "3m", data: { type: "line", id: 15, start_x: [ 1, 1, 1, 1 ], start_y: [ 1, 1, 1, 1 ] } }
     capacitor:
       - { name: "capacitor", data: { type: "string", id: 6, start_x: 900, start_y: 100, width: 3 } }
 controllers:

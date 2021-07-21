@@ -27,6 +27,7 @@ class UiBase {
                                                                  new GraphType(config_param[i]["data"], referee_)));
     } catch (XmlRpc::XmlRpcException &e) { ROS_ERROR("Wrong ui parameter: %s", e.getMessage().c_str()); }
   }
+  virtual void add() { for (auto graph:graph_vector_) graph.second->add(); }
  protected:
   Referee &referee_;
   std::map<std::string, GraphType *> graph_vector_;
@@ -35,7 +36,6 @@ class UiBase {
 class TitleUi : public UiBase<UnChangeGraph> {
  public:
   explicit TitleUi(ros::NodeHandle &nh, Referee &referee) : UiBase(nh, referee, "title") {};
-  void add() { for (auto graph:graph_vector_) graph.second->add(); }
 };
 
 class WarningUi : public UiBase<AutoChangeGraph> {
@@ -52,11 +52,9 @@ class WarningUi : public UiBase<AutoChangeGraph> {
 class StateUi : public UiBase<ManualChangeGraph> {
  public:
   explicit StateUi(ros::NodeHandle &nh, Referee &referee) : UiBase(nh, referee, "state") {};
-  void add() { for (auto graph:graph_vector_) graph.second->add(); }
   void update(const std::string &graph_name, uint8_t mode, bool flag = false);
- protected:
-  void updateConfig(const std::string &name, ManualChangeGraph *graph, uint8_t mode, bool flag);
  private:
+  void updateConfig(const std::string &name, ManualChangeGraph *graph, uint8_t mode, bool flag);
   const std::string getChassisState(uint8_t mode);
   const std::string getGimbalState(uint8_t mode);
   const std::string getShooterState(uint8_t mode);
@@ -66,15 +64,16 @@ class StateUi : public UiBase<ManualChangeGraph> {
 class AimUi : public UiBase<AutoChangeGraph> {
  public:
   explicit AimUi(ros::NodeHandle &nh, Referee &referee) : UiBase(nh, referee, "aim") {};
-  void add() { for (auto graph:graph_vector_) graph.second->add(); }
-  void update(int level) { for (auto graph:graph_vector_) graph.second->update(level); }
+  void update();
+ private:
+  void updatePosition(AutoChangeGraph *graph, int level);
 };
 
 class CapacitorUi : public UiBase<AutoChangeGraph> {
  public:
   explicit CapacitorUi(ros::NodeHandle &nh, Referee &referee) : UiBase(nh, referee, "capacitor") {};
-  void add(double data);
-  void update(const ros::Time &time, double data);
+  void add() override;
+  void update(const ros::Time &time);
  private:
   void setConfig(AutoChangeGraph *graph, double data);
 };

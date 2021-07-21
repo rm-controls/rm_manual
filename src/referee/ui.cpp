@@ -59,16 +59,30 @@ const std::string StateUi::getTargetState(uint8_t mode) {
   else return "error";
 }
 
-void CapacitorUi::add(double data) {
-  auto graph = graph_vector_.find("capacitor");
-  if (graph != graph_vector_.end() && data != 0.) graph->second->add();
+void AimUi::update() {
+  if (referee_.referee_data_.game_robot_status_.robot_level_ >= 4) return;
+  for (auto graph:graph_vector_) {
+    updatePosition(graph.second, referee_.referee_data_.game_robot_status_.robot_level_);
+    graph.second->update(referee_.referee_data_.game_robot_status_.robot_level_);
+  }
+}
+void AimUi::updatePosition(AutoChangeGraph *graph, int level) {
+  graph->setStartX(graph->getStartXArray()[level]);
+  graph->setStartY(graph->getStartYArray()[level]);
+  graph->setEndX(graph->getEndXArray()[level]);
+  graph->setEndY(graph->getEndYArray()[level]);
 }
 
-void CapacitorUi::update(const ros::Time &time, double data) {
+void CapacitorUi::add() {
+  auto graph = graph_vector_.find("capacitor");
+  if (graph != graph_vector_.end() && referee_.referee_data_.capacity_data.buffer_power_ != 0.) graph->second->add();
+}
+
+void CapacitorUi::update(const ros::Time &time) {
   auto graph = graph_vector_.find("capacitor");
   if (graph != graph_vector_.end()) {
-    setConfig(graph->second, data);
-    graph->second->update(time, data);
+    setConfig(graph->second, referee_.referee_data_.capacity_data.buffer_power_);
+    graph->second->update(time, referee_.referee_data_.capacity_data.buffer_power_);
   }
 }
 

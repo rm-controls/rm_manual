@@ -20,6 +20,7 @@ class ChassisGimbalManual : public ManualBase {
     title_ui_ = new TitleUi(ui_nh, data_.referee_);
     state_ui_ = new StateUi(ui_nh, data_.referee_);
     warning_ui_ = new WarningUi(ui_nh, data_.referee_);
+    capacitor_ui_ = new CapacitorUi(ui_nh, data_.referee_);
   }
  protected:
   void sendCommand(const ros::Time &time) override {
@@ -59,6 +60,7 @@ class ChassisGimbalManual : public ManualBase {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setZero();
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+    title_ui_->add();
   }
   void leftSwitchDown(ros::Duration duration) override {
     ManualBase::leftSwitchDown(duration);
@@ -73,7 +75,7 @@ class ChassisGimbalManual : public ManualBase {
   void dPress(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearYVel(-1.); }
   void dRelease(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearYVel(0.); }
   void xPress(ros::Duration /*duration*/) override {
-    title_ui_->add();
+    capacitor_ui_->add();
     state_ui_->add();
   }
   void xRelease(ros::Duration /*duration*/) override {}
@@ -96,6 +98,7 @@ class ChassisGimbalManual : public ManualBase {
     state_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
     state_ui_->update("gimbal", gimbal_cmd_sender_->getMsg()->mode);
     warning_ui_->update("spin", chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::GYRO, ros::Time::now());
+    capacitor_ui_->update(ros::Time::now());
   }
   rm_common::ChassisCommandSender *chassis_cmd_sender_{};
   rm_common::Vel2DCommandSender *vel_cmd_sender_;
@@ -103,6 +106,7 @@ class ChassisGimbalManual : public ManualBase {
   TitleUi *title_ui_{};
   StateUi *state_ui_{};
   WarningUi *warning_ui_{};
+  CapacitorUi *capacitor_ui_{};
 };
 }
 

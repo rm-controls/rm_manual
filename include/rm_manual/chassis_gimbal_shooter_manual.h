@@ -25,7 +25,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     ros::NodeHandle detection_switch_nh(nh, "detection_switch");
     switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
     ros::NodeHandle ui_nh(nh, "ui");
-    aim_ui_ = new AimUi(nh, data_.referee_);
+    aim_ui_ = new AimUi(ui_nh, data_.referee_);
     XmlRpc::XmlRpcValue rpc_value;
     nh.getParam("trigger_calibration", rpc_value);
     trigger_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
@@ -129,7 +129,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     state_ui_->update("shooter", shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
     state_ui_->update("target", switch_detection_srv_->getTarget(),
                       switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
-    aim_ui_->update(data_.referee_.referee_data_.game_robot_status_.robot_level_);
+    aim_ui_->update();
   }
   RisingInputEvent q_press_event_;
   RisingInputEvent f_press_event_;
