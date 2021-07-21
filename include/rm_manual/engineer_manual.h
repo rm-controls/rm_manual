@@ -32,17 +32,15 @@ class EngineerManual : public ChassisGimbalManual {
     mast_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_mast);
     // Calibration
     XmlRpc::XmlRpcValue rpc_value;
-    nh.getParam("arm_calibration", rpc_value);
-    arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
     nh.getParam("power_on_calibration", rpc_value);
     power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+    nh.getParam("arm_calibration", rpc_value);
+    arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   }
   void run() override {
     ChassisGimbalManual::run();
     arm_calibration_->update(ros::Time::now());
     power_on_calibration_->update(ros::Time::now());
-    if (operating_mode_ == MIDDLEWARE && action_client_.getResult()->finish)
-      operating_mode_ = MANUAL;
   }
   void updateRc() override {
     ChassisGimbalManual::updateRc();
@@ -83,18 +81,17 @@ class EngineerManual : public ChassisGimbalManual {
     ChassisGimbalManual::rightSwitchUp(time);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   }
-  void leftSwitchUpFall(ros::Duration time) {
-    arm_calibration_->reset();
-  }
-  void leftSwitchDownFall(ros::Duration time) {
-    runStepQueue(5);
-  }
+  void leftSwitchUpFall(ros::Duration time) { runStepQueue(5); }
+  void leftSwitchDownFall(ros::Duration time) { arm_calibration_->reset(); }
   void runStepQueue(uint8_t step_queue_id) {
-    rm_msgs::EngineerActionGoal goal;
-    goal.goal.step_queue_id = step_queue_id;
+    rm_msgs::EngineerGoal goal;
+    goal.step_queue_id = step_queue_id;
     if (action_client_.isServerConnected()) {
       if (operating_mode_ == MANUAL)
-        action_client_.sendGoal(goal.goal);
+        action_client_.sendGoal(goal,
+                                boost::bind(&EngineerManual::actionDoneCallback, this, _1, _2),
+                                boost::bind(&EngineerManual::actionActiveCallback, this),
+                                boost::bind(&EngineerManual::actionFeedbackCb, this, _1));
       operating_mode_ = MIDDLEWARE;
     } else
       ROS_ERROR("Can not connect to middleware");
@@ -104,6 +101,14 @@ class EngineerManual : public ChassisGimbalManual {
       action_client_.cancelAllGoals();
       operating_mode_ = MANUAL;
     }
+  }
+  void actionActiveCallback() { operating_mode_ = MIDDLEWARE; }
+  void actionFeedbackCb(const rm_msgs::EngineerFeedbackConstPtr &feedback) {}
+  void actionDoneCallback(const actionlib::SimpleClientGoalState &state,
+                          const rm_msgs::EngineerResultConstPtr &result) {
+    ROS_INFO("Finished in state [%s]", state.toString().c_str());
+    ROS_INFO("Result: %i", result->finish);
+    operating_mode_ = MANUAL;
   }
   enum { MANUAL, MIDDLEWARE };
   int operating_mode_;
