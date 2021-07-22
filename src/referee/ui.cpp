@@ -26,24 +26,24 @@ void UiBase::add() {
   }
 }
 
-void StateUi::update(const std::string &graph_name, uint8_t mode, bool flag) {
+void StateUi::update(const std::string &graph_name, uint8_t mode, bool burst_flag, bool color_flag) {
   auto graph = graph_vector_.find(graph_name);
   if (graph != graph_vector_.end()) {
-    updateConfig(graph_name, graph->second, mode, flag);
+    updateConfig(graph_name, graph->second, mode, burst_flag, color_flag);
     graph->second->setOperation(rm_common::GraphOperation::UPDATE);
     graph->second->display();
   }
 }
 
-void StateUi::updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool flag) {
-  if (flag) graph->setColor(rm_common::GraphColor::ORANGE);
-  else graph->setColor(rm_common::GraphColor::WHITE);
-  if (name == "chassis") graph->setContent(getChassisState(mode));
-  else if (name == "gimbal") graph->setContent(getGimbalState(mode));
-  else if (name == "shooter") graph->setContent(getShooterState(mode));
-  else if (name == "target") {
+void StateUi::updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool burst_flag, bool color_flag) {
+  if (name == "chassis") {
+    graph->setContent(getChassisState(mode));
+    if (burst_flag) graph->setColor(rm_common::GraphColor::ORANGE);
+    else graph->setColor(rm_common::GraphColor::WHITE);
+  } else if (name == "target") {
     graph->setContent(getTargetState(mode));
-    if (flag) graph->setColor(rm_common::GraphColor::PINK);
+    if (burst_flag) graph->setColor(rm_common::GraphColor::ORANGE);
+    else if (color_flag) graph->setColor(rm_common::GraphColor::PINK);
     else graph->setColor(rm_common::GraphColor::CYAN);
   }
 }
@@ -53,20 +53,6 @@ const std::string StateUi::getChassisState(uint8_t mode) {
   else if (mode == rm_msgs::ChassisCmd::FOLLOW) return "follow";
   else if (mode == rm_msgs::ChassisCmd::GYRO) return "gyro";
   else if (mode == rm_msgs::ChassisCmd::TWIST) return "twist";
-  else return "error";
-}
-
-const std::string StateUi::getGimbalState(uint8_t mode) {
-  if (mode == rm_msgs::GimbalCmd::RATE) return "rate";
-  else if (mode == rm_msgs::GimbalCmd::TRACK) return "track";
-  else if (mode == rm_msgs::GimbalCmd::DIRECT) return "direct";
-  else return "error";
-}
-
-const std::string StateUi::getShooterState(uint8_t mode) {
-  if (mode == rm_msgs::ShootCmd::STOP) return "stop";
-  else if (mode == rm_msgs::ShootCmd::READY) return "ready";
-  else if (mode == rm_msgs::ShootCmd::PUSH) return "push";
   else return "error";
 }
 

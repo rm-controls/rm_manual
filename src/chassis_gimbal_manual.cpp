@@ -88,7 +88,6 @@ void ChassisGimbalManual::ePress(ros::Duration /*duration*/) {
 
 void ChassisGimbalManual::drawUi() {
   state_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
-  state_ui_->update("gimbal", gimbal_cmd_sender_->getMsg()->mode);
   capacitor_ui_->update(ros::Time::now());
 }
 

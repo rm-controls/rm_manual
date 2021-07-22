@@ -130,8 +130,7 @@ void ChassisGimbalShooterManual::ctrlBPress(ros::Duration) {
 
 void ChassisGimbalShooterManual::drawUi() {
   ChassisGimbalManual::drawUi();
-  state_ui_->update("shooter", shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
-  state_ui_->update("target", switch_detection_srv_->getTarget(),
+  state_ui_->update("target", switch_detection_srv_->getTarget(), shooter_cmd_sender_->getBurstMode(),
                     switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
   aim_ui_->update();
 }

@@ -63,8 +63,6 @@ rm_manual:
   ui:
     state:
       - { name: "chassis", data: { type: "string", id: 0, start_x: 400, start_y: 800, start_angle: 15, width: 3, title: "chassis:" } }
-      - { name: "gimbal", data: { type: "string", id: 1, start_x: 400, start_y: 750, start_angle: 15, width: 3, title: "gimbal: " } }
-      - { name: "shooter", data: { type: "string", id: 2, start_x: 400, start_y: 700, start_angle: 15, width: 3, title: "shooter:" } }
       - { name: "target", data: { type: "string", id: 3,  start_x: 400, start_y: 650, start_angle: 15, width: 3, title: "target: " } }
     aim:
       - { name: "3m", data: { type: "line", id: 7, start_x: [ 920,920,920,920 ], start_y: [ 500,500,500,500 ], end_x: [ 1000,1000,1000,1000 ], end_y: [ 500,500,500,500 ], width: 3, color: "pink" } }

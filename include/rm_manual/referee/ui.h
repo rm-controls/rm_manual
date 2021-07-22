@@ -25,14 +25,12 @@ class UiBase {
 class StateUi : public UiBase {
  public:
   explicit StateUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "state") {
-    for (auto graph:graph_vector_) updateConfig(graph.first, graph.second, 0, false);
+    for (auto graph:graph_vector_) updateConfig(graph.first, graph.second, 0, false, false);
   }
-  void update(const std::string &graph_name, uint8_t mode, bool flag = false);
+  void update(const std::string &graph_name, uint8_t mode, bool burst_flag, bool color_flag = false);
  private:
-  void updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool flag);
+  void updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool burst_flag, bool color_flag);
   const std::string getChassisState(uint8_t mode);
-  const std::string getGimbalState(uint8_t mode);
-  const std::string getShooterState(uint8_t mode);
   const std::string getTargetState(uint8_t mode);
 };
 
