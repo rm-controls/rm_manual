@@ -4,7 +4,7 @@ rm_manual:
     topic: "/cmd_chassis"
     accel_x: 10.0
     accel_y: 10.0
-    accel_z: 5.0
+    accel_z: 20
     safety_power: 50.0
     capacitor_threshold: 0.1
     charge_power: 20
