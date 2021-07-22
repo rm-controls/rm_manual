@@ -20,7 +20,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle &nh)
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
   ros::NodeHandle ui_nh(nh, "ui");
-  aim_ui_ = new AimUi(ui_nh, data_.referee_);
+  aim_ui_ = new AimUi(ui_nh, data_);
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("trigger_calibration", rpc_value);
   trigger_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);

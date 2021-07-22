@@ -13,8 +13,9 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh, data_.referee_.referee_data_);
   ros::NodeHandle ui_nh(nh, "ui");
-  state_ui_ = new StateUi(ui_nh, data_.referee_);
-  capacitor_ui_ = new CapacitorUi(ui_nh, data_.referee_);
+  state_ui_ = new StateUi(ui_nh, data_);
+  armor_ui_ = new ArmorUi(ui_nh, data_);
+  capacitor_ui_ = new CapacitorUi(ui_nh, data_);
 }
 
 void ChassisGimbalManual::sendCommand(const ros::Time &time) {
