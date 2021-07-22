@@ -5,29 +5,46 @@
 #include "rm_manual/referee/ui.h"
 
 namespace rm_manual {
-void WarningUi::update(const std::string &graph_name, bool state, const ros::Time &time) {
-  auto graph = graph_vector_.find(graph_name);
-  if (graph != graph_vector_.end()) graph->second->update(time, state);
+UiBase::UiBase(ros::NodeHandle &nh, Referee &referee, const std::string &ui_type) : referee_(referee) {
+  XmlRpc::XmlRpcValue config_param;
+  if (!nh.getParam(ui_type, config_param)) {
+    ROS_ERROR("%s no defined (namespace %s)", ui_type.c_str(), nh.getNamespace().c_str());
+    return;
+  }
+  try {
+    for (int i = 0; i < (int) config_param.size(); ++i)
+      graph_vector_.insert(std::pair<std::string, Graph *>(config_param[i]["name"],
+                                                           new Graph(config_param[i]["data"], referee_)));
+  } catch (XmlRpc::XmlRpcException &e) { ROS_ERROR("Wrong ui parameter: %s", e.getMessage().c_str()); }
+  for (auto graph:graph_vector_) graph.second->setOperation(rm_common::GraphOperation::DELETE);
+}
+
+void UiBase::add() {
+  for (auto graph:graph_vector_) {
+    graph.second->setOperation(rm_common::GraphOperation::ADD);
+    graph.second->display();
+  }
 }
 
 void StateUi::update(const std::string &graph_name, uint8_t mode, bool flag) {
   auto graph = graph_vector_.find(graph_name);
   if (graph != graph_vector_.end()) {
     updateConfig(graph_name, graph->second, mode, flag);
-    graph->second->update(mode, flag);
+    graph->second->setOperation(rm_common::GraphOperation::UPDATE);
+    graph->second->display();
   }
 }
 
-void StateUi::updateConfig(const std::string &name, ManualChangeGraph *config, uint8_t mode, bool flag) {
-  if (flag) config->setColor(rm_common::GraphColor::ORANGE);
-  else config->setColor(rm_common::GraphColor::YELLOW);
-  if (name == "chassis") config->setContent(getChassisState(mode));
-  else if (name == "gimbal") config->setContent(getGimbalState(mode));
-  else if (name == "shooter") config->setContent(getShooterState(mode));
+void StateUi::updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool flag) {
+  if (flag) graph->setColor(rm_common::GraphColor::ORANGE);
+  else graph->setColor(rm_common::GraphColor::YELLOW);
+  if (name == "chassis") graph->setContent(getChassisState(mode));
+  else if (name == "gimbal") graph->setContent(getGimbalState(mode));
+  else if (name == "shooter") graph->setContent(getShooterState(mode));
   else if (name == "target") {
-    config->setContent(getTargetState(mode));
-    if (flag) config->setColor(rm_common::GraphColor::PINK);
-    else config->setColor(rm_common::GraphColor::CYAN);
+    graph->setContent(getTargetState(mode));
+    if (flag) graph->setColor(rm_common::GraphColor::PINK);
+    else graph->setColor(rm_common::GraphColor::CYAN);
   }
 }
 
@@ -63,10 +80,11 @@ void AimUi::update() {
   if (referee_.referee_data_.game_robot_status_.robot_level_ >= 4) return;
   for (auto graph:graph_vector_) {
     updatePosition(graph.second, referee_.referee_data_.game_robot_status_.robot_level_);
-    graph.second->update(referee_.referee_data_.game_robot_status_.robot_level_);
+    graph.second->setOperation(rm_common::GraphOperation::UPDATE);
+    graph.second->display();
   }
 }
-void AimUi::updatePosition(AutoChangeGraph *graph, int level) {
+void AimUi::updatePosition(Graph *graph, int level) {
   graph->setStartX(graph->getStartXArray()[level]);
   graph->setStartY(graph->getStartYArray()[level]);
   graph->setEndX(graph->getEndXArray()[level]);
@@ -75,47 +93,28 @@ void AimUi::updatePosition(AutoChangeGraph *graph, int level) {
 
 void CapacitorUi::add() {
   auto graph = graph_vector_.find("capacitor");
-  if (graph != graph_vector_.end() && referee_.referee_data_.capacity_data.buffer_power_ != 0.) graph->second->add();
+  if (graph != graph_vector_.end() && referee_.referee_data_.capacity_data.cap_power_ != 0.) {
+    graph->second->setOperation(rm_common::GraphOperation::ADD);
+    graph->second->display();
+  }
 }
 
 void CapacitorUi::update(const ros::Time &time) {
   auto graph = graph_vector_.find("capacitor");
-  if (graph != graph_vector_.end()) {
-    setConfig(graph->second, referee_.referee_data_.capacity_data.buffer_power_);
-    graph->second->update(time, referee_.referee_data_.capacity_data.buffer_power_);
+  if (graph != graph_vector_.end() && referee_.referee_data_.capacity_data.cap_power_ != 0.) {
+    setConfig(graph->second, referee_.referee_data_.capacity_data.cap_power_ * 100);
+    graph->second->setOperation(rm_common::GraphOperation::UPDATE);
+    graph->second->display(time);
   }
 }
 
-void CapacitorUi::setConfig(AutoChangeGraph *config, double data) {
+void CapacitorUi::setConfig(Graph *graph, double data) {
   char data_str[30] = {' '};
   sprintf(data_str, "cap:%1.0f%%", data);
-  config->setContent(data_str);
-  if (data < 30.) config->setColor(rm_common::GraphColor::ORANGE);
-  else if (data > 70.) config->setColor(rm_common::GraphColor::GREEN);
-  else config->setColor(rm_common::GraphColor::YELLOW);
-}
-
-void WarningUi::updateArmorPosition(AutoChangeGraph *graph, int armor_id) {
-  geometry_msgs::TransformStamped yaw2baselink;
-  double roll, pitch, yaw;
-  try { yaw2baselink = tf_.lookupTransform("yaw", "base_link", ros::Time(0)); }
-  catch (tf2::TransformException &ex) {}
-  quatToRPY(yaw2baselink.transform.rotation, roll, pitch, yaw);
-  if (armor_id == 0 || armor_id == 2) {
-    graph->setStartX((int) (960 + 340 * sin(armor_id * M_PI_2 + yaw)));
-    graph->setStartY((int) (540 + 340 * cos(armor_id * M_PI_2 + yaw)));
-  } else {
-    graph->setStartX((int) (960 + 340 * sin(-armor_id * M_PI_2 + yaw)));
-    graph->setStartY((int) (540 + 340 * cos(-armor_id * M_PI_2 + yaw)));
-  }
-}
-
-uint8_t WarningUi::getArmorId(const std::string &name) {
-  if (name == "armor0") return 0;
-  else if (name == "armor1") return 1;
-  else if (name == "armor2") return 2;
-  else if (name == "armor3") return 3;
-  return 9;
+  graph->setContent(data_str);
+  if (data < 30.) graph->setColor(rm_common::GraphColor::ORANGE);
+  else if (data > 70.) graph->setColor(rm_common::GraphColor::GREEN);
+  else graph->setColor(rm_common::GraphColor::YELLOW);
 }
 
 }

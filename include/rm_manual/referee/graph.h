@@ -10,10 +10,10 @@
 #include <rm_common/referee/protocol.h>
 
 namespace rm_manual {
-class GraphBase {
+class Graph {
  public:
-  explicit GraphBase(const XmlRpc::XmlRpcValue &config, Referee &referee)
-      : referee_(referee), content_("") {
+  explicit Graph(const XmlRpc::XmlRpcValue &config, Referee &referee)
+      : referee_(referee) {
     if (config.hasMember("id")) {
       config_.graphic_id_[0] = (uint8_t) ((int) config["id"] & 0xff);
       config_.graphic_id_[1] = (uint8_t) (((int) config["id"] >> 8) & 0xff);
@@ -29,11 +29,43 @@ class GraphBase {
     if (config.hasMember("radius")) config_.radius_ = (int) config["radius"];
     if (config.hasMember("width")) config_.width_ = (int) config["width"];
     if (config.hasMember("color")) config_.color_ = getColor(config["color"]);
+    if (config.hasMember("delay")) delay_ = ros::Duration((double) config["delay"]);
+    if (config.hasMember("title")) title_ = (std::string) config["title"];
     if (config.hasMember("content")) content_ = (std::string) config["content"];
   };
+  void setOperation(const rm_common::GraphOperation &operation) { config_.operate_type_ = operation; }
   void setColor(const rm_common::GraphColor &color) { config_.color_ = color; }
   void setContent(const std::string &content) { content_ = content; }
- protected:
+  void setStartX(int start_x) { config_.start_x_ = start_x; }
+  void setStartY(int start_y) { config_.start_y_ = start_y; }
+  void setEndX(int end_x) { config_.start_x_ = end_x; }
+  void setEndY(int end_y) { config_.start_y_ = end_y; }
+  void display() {
+    if (config_ == last_config_ && title_ == last_title_ && content_ == last_content_) return;
+    if (!title_.empty() && !content_.empty()) config_.end_angle_ = (int) (title_ + content_).size();
+    referee_.sendUi(config_, (title_ + content_));
+    last_content_ = content_;
+    last_title_ = title_;
+    last_config_ = config_;
+  }
+  void display(const ros::Time time) {
+    if (time - last_time_ < delay_) return;
+    if (!title_.empty() && !content_.empty()) config_.end_angle_ = (int) (title_ + content_).size();
+    referee_.sendUi(config_, (title_ + content_));
+    last_time_ = time;
+  }
+  const std::string getTitle() { return title_; }
+  const int *getStartXArray() { return start_x_array_; }
+  const int *getStartYArray() { return start_y_array_; }
+  const int *getEndXArray() { return end_x_array_; }
+  const int *getEndYArray() { return end_y_array_; }
+ private:
+  int setValue(XmlRpc::XmlRpcValue value, int *storage_array) {
+    if (value.getType() == XmlRpc::XmlRpcValue::TypeArray)
+      for (int i = 0; i < 4 && i < (int) value.size(); ++i) storage_array[i] = (int) value[i];
+    else storage_array[0] = (int) value;
+    return storage_array[0];
+  }
   rm_common::GraphColor getColor(const std::string &color) {
     if (color == "main_color") return rm_common::GraphColor::MAIN_COLOR;
     else if (color == "yellow") return rm_common::GraphColor::YELLOW;
@@ -53,97 +85,13 @@ class GraphBase {
     else if (type == "string") return rm_common::GraphType::STRING;
     else return rm_common::GraphType::LINE;
   }
-  void display() {
-    config_.end_angle_ = (int) content_.size();
-    referee_.sendUi(config_, content_);
-  }
   Referee &referee_;
-  std::string content_;
-  rm_common::GraphConfig config_{};
+  rm_common::GraphConfig config_{}, last_config_{};
+  std::string title_{}, content_{};
+  std::string last_title_{}, last_content_{};
+  ros::Time last_time_ = ros::Time::now();
+  ros::Duration delay_ = ros::Duration(0.);
   int start_x_array_[4]{}, start_y_array_[4]{}, end_x_array_[4]{}, end_y_array_[4]{};
- private:
-  int setValue(XmlRpc::XmlRpcValue value, int *storage_array) {
-    if (value.getType() == XmlRpc::XmlRpcValue::TypeArray)
-      for (int i = 0; i < 4 && i < (int) value.size(); ++i) storage_array[i] = (int) value[i];
-    else storage_array[0] = (int) value;
-    return storage_array[0];
-  }
-};
-
-class UnChangeGraph : public GraphBase {
- public:
-  explicit UnChangeGraph(const XmlRpc::XmlRpcValue &config, Referee &referee) : GraphBase(config, referee) {
-    config_.operate_type_ = rm_common::GraphOperation::ADD;
-    config_.layer_ = 2;
-  };
-  void add() { display(); }
-};
-
-class AutoChangeGraph : public GraphBase {
- public:
-  explicit AutoChangeGraph(const XmlRpc::XmlRpcValue &config, Referee &referee)
-      : GraphBase(config, referee), last_time_(ros::Time::now()), duration_(ros::Duration(1.)) {
-    config_.operate_type_ = rm_common::GraphOperation::UPDATE;
-    config_.layer_ = 1;
-  };
-  void add() {
-    config_.operate_type_ = rm_common::GraphOperation::ADD;
-    display();
-    config_.operate_type_ = rm_common::GraphOperation::UPDATE;
-  }
-  void update(int data) {
-    if (data == last_data_) return;
-    display();
-    last_data_ = data;
-  }
-  void update(const ros::Time &time, bool state) {
-    if (!state || time - last_time_ < duration_) return;
-    config_.operate_type_ = config_.operate_type_ == rm_common::GraphOperation::DELETE ? rm_common::GraphOperation::ADD
-                                                                                       : rm_common::GraphOperation::DELETE;
-    display();
-    last_time_ = time;
-  }
-  void update(const ros::Time &time, double data) {
-    if (data == 0. || time - last_time_ < duration_) return;
-    display();
-    last_time_ = time;
-  }
-  void setStartX(int start_x) { config_.start_x_ = start_x; }
-  void setStartY(int start_y) { config_.start_y_ = start_y; }
-  void setEndX(int end_x) { config_.start_x_ = end_x; }
-  void setEndY(int end_y) { config_.start_y_ = end_y; }
-  const int *getStartXArray() { return start_x_array_; }
-  const int *getStartYArray() { return start_y_array_; }
-  const int *getEndXArray() { return end_x_array_; }
-  const int *getEndYArray() { return end_y_array_; }
- private:
-  ros::Time last_time_;
-  ros::Duration duration_;
-  int last_data_{};
-};
-
-class ManualChangeGraph : public GraphBase {
- public:
-  explicit ManualChangeGraph(const XmlRpc::XmlRpcValue &config, Referee &referee)
-      : GraphBase(config, referee), last_state_(0), last_flag_(false) {
-    config_.operate_type_ = rm_common::GraphOperation::UPDATE;
-    config_.layer_ = 0;
-  };
-  void add() {
-    config_.operate_type_ = rm_common::GraphOperation::ADD;
-    display();
-    config_.operate_type_ = rm_common::GraphOperation::UPDATE;
-  }
-  void update(uint8_t state, bool flag) {
-    if (state != last_state_ || flag != last_flag_) {
-      display();
-      last_state_ = state;
-      last_flag_ = flag;
-    }
-  }
- private:
-  uint8_t last_state_;
-  bool last_flag_;
 };
 
 }

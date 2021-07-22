@@ -61,23 +61,12 @@ rm_manual:
       service_name: /controllers/trigger_calibration_controller/is_calibrated
 
   ui:
-    title:
-      - { name: "chassis", data: { type: "string", id: 0, start_x: 250, start_y: 800, start_angle: 15, width: 3, color: "white", content: "chassis:" } }
-      - { name: "gimbal", data: { type: "string", id: 1, start_x: 250, start_y: 750, start_angle: 15, width: 3, color: "white", content: "gimbal:" } }
-      - { name: "shooter", data: { type: "string", id: 2, start_x: 250, start_y: 700, start_angle: 15, width: 3, color: "white", content: "shooter:" } }
-      - { name: "target", data: { type: "string", id: 3, start_x: 250, start_y: 650, start_angle: 15, width: 3, color: "white", content: "target:" } }
-    warning:
-      - { name: "spin", data: { type: "string", id: 4, start_x: 900, start_y: 700, start_angle: 15, width: 3, color: "yellow", content: "please spin!!" } }
-      - { name: "armor0", data: { type: "circle", id: 11, width: 3, color: "yellow" } }
-      - { name: "armor1", data: { type: "circle", id: 12, width: 3, color: "yellow" } }
-      - { name: "armor2", data: { type: "circle", id: 13, width: 3, color: "yellow" } }
-      - { name: "armor3", data: { type: "circle", id: 14, width: 3, color: "yellow" } }
     state:
-      - { name: "chassis", data: { type: "string", id: 7, start_x: 450, start_y: 800, start_angle: 15, width: 3 } }
-      - { name: "gimbal", data: { type: "string", id: 8, start_x: 450, start_y: 750, start_angle: 15, width: 3 } }
-      - { name: "shooter", data: { type: "string", id: 9, start_x: 450, start_y: 700, start_angle: 15, width: 3 } }
-      - { name: "target", data: { type: "string", id: 10, start_x: 450, start_y: 650, start_angle: 15, width: 3 } }
+      - { name: "chassis", data: { type: "string", id: 0, start_x: 400, start_y: 800, start_angle: 15, width: 3, title: "chassis:" } }
+      - { name: "gimbal", data: { type: "string", id: 1, start_x: 400, start_y: 750, start_angle: 15, width: 3, title: "gimbal: " } }
+      - { name: "shooter", data: { type: "string", id: 2, start_x: 400, start_y: 700, start_angle: 15, width: 3, title: "shooter:" } }
+      - { name: "target", data: { type: "string", id: 3,  start_x: 400, start_y: 650, start_angle: 15, width: 3, title: "target: " } }
     aim:
-      - { name: "3m", data: { type: "line", id: 15, start_x: [ 1, 1, 1, 1 ], start_y: [ 1, 1, 1, 1 ] } }
+      - { name: "3m", data: { type: "line", id: 7, start_x: [ 890,890,890,890 ], start_y: [ 500,500,500,500 ], end_x: [ 1030,1030,1030,1030 ], end_y: [ 500,500,500,500 ], width: 3, color: "pink" } }
     capacitor:
       - { name: "capacitor", data: { type: "string", id: 6, start_x: 900, start_y: 100, start_angle: 15, width: 3 } }

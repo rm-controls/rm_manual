@@ -105,6 +105,10 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void qPress(ros::Duration /*duration*/) { shooter_cmd_sender_->setBurstMode(!shooter_cmd_sender_->getBurstMode()); }
   void shiftPress(ros::Duration /*duration*/) { chassis_cmd_sender_->setBurstMode(true); }
   void shiftRelease(ros::Duration /*duration*/) { chassis_cmd_sender_->setBurstMode(false); }
+  void xPress(ros::Duration duration) override {
+    ChassisGimbalManual::xPress(duration);
+    aim_ui_->add();
+  }
   void ctrlCPress(ros::Duration /*duration*/) {
     gimbal_cmd_sender_->setBaseOnly(!gimbal_cmd_sender_->getBaseOnly());
   }
@@ -129,7 +133,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
     state_ui_->update("shooter", shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
     state_ui_->update("target", switch_detection_srv_->getTarget(),
                       switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
-    aim_ui_->update();
+//    aim_ui_->update();
   }
   RisingInputEvent q_press_event_;
   RisingInputEvent f_press_event_;
