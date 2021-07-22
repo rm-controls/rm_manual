@@ -5,7 +5,7 @@
 #include "rm_manual/referee/ui.h"
 
 namespace rm_manual {
-UiBase::UiBase(ros::NodeHandle &nh, Referee &referee, const std::string &ui_type) : referee_(referee) {
+UiBase::UiBase(ros::NodeHandle &nh, Data &referee, const std::string &ui_type) : data_(referee) {
   XmlRpc::XmlRpcValue config_param;
   if (!nh.getParam(ui_type, config_param)) {
     ROS_ERROR("%s no defined (namespace %s)", ui_type.c_str(), nh.getNamespace().c_str());
@@ -14,7 +14,7 @@ UiBase::UiBase(ros::NodeHandle &nh, Referee &referee, const std::string &ui_type
   try {
     for (int i = 0; i < (int) config_param.size(); ++i)
       graph_vector_.insert(std::pair<std::string, Graph *>(config_param[i]["name"],
-                                                           new Graph(config_param[i]["data"], referee_)));
+                                                           new Graph(config_param[i]["data"], data_.referee_)));
   } catch (XmlRpc::XmlRpcException &e) { ROS_ERROR("Wrong ui parameter: %s", e.getMessage().c_str()); }
   for (auto graph:graph_vector_) graph.second->setOperation(rm_common::GraphOperation::DELETE);
 }
@@ -77,23 +77,54 @@ const std::string StateUi::getTargetState(uint8_t mode) {
 }
 
 void AimUi::update() {
-  if (referee_.referee_data_.game_robot_status_.robot_level_ >= 4) return;
+  if (data_.referee_.referee_data_.game_robot_status_.robot_level_ >= 4) return;
   for (auto graph:graph_vector_) {
-    updatePosition(graph.second, referee_.referee_data_.game_robot_status_.robot_level_);
+    updateConfig(graph.second, data_.referee_.referee_data_.game_robot_status_.robot_level_);
     graph.second->setOperation(rm_common::GraphOperation::UPDATE);
     graph.second->display();
   }
 }
-void AimUi::updatePosition(Graph *graph, int level) {
-  graph->setStartX(graph->getStartXArray()[level]);
-  graph->setStartY(graph->getStartYArray()[level]);
-  graph->setEndX(graph->getEndXArray()[level]);
-  graph->setEndY(graph->getEndYArray()[level]);
+void AimUi::updateConfig(Graph *graph, int level) {
+  graph->updateX(level);
+  graph->updateY(level);
+}
+
+void ArmorUi::update(const ros::Time &time) {
+  for (auto graph:graph_vector_) {
+    if (data_.referee_.referee_data_.robot_hurt_.hurt_type_ == 0x00
+        && data_.referee_.referee_data_.robot_hurt_.armor_id_ == getArmorId(graph.first)) {
+      updateConfig(graph.first, graph.second);
+      graph.second->display(time, true);
+    } else graph.second->display(time, false);
+  }
+}
+
+void ArmorUi::updateConfig(const std::string &name, Graph *graph) {
+  geometry_msgs::TransformStamped yaw2baselink;
+  double roll, pitch, yaw;
+  try { yaw2baselink = data_.tf_buffer_.lookupTransform("yaw", "base_link", ros::Time(0)); }
+  catch (tf2::TransformException &ex) {}
+  quatToRPY(yaw2baselink.transform.rotation, roll, pitch, yaw);
+  if (getArmorId(name) == 0 || getArmorId(name) == 2) {
+    graph->setStartX((int) (960 + 340 * sin(getArmorId(name) * M_PI_2 + yaw)));
+    graph->setStartY((int) (540 + 340 * cos(getArmorId(name) * M_PI_2 + yaw)));
+  } else {
+    graph->setStartX((int) (960 + 340 * sin(-getArmorId(name) * M_PI_2 + yaw)));
+    graph->setStartY((int) (540 + 340 * cos(-getArmorId(name) * M_PI_2 + yaw)));
+  }
+}
+
+uint8_t ArmorUi::getArmorId(const std::string &name) {
+  if (name == "armor0") return 0;
+  else if (name == "armor1") return 1;
+  else if (name == "armor2") return 2;
+  else if (name == "armor3") return 3;
+  return 9;
 }
 
 void CapacitorUi::add() {
   auto graph = graph_vector_.find("capacitor");
-  if (graph != graph_vector_.end() && referee_.referee_data_.capacity_data.cap_power_ != 0.) {
+  if (graph != graph_vector_.end() && data_.referee_.referee_data_.capacity_data.cap_power_ != 0.) {
     graph->second->setOperation(rm_common::GraphOperation::ADD);
     graph->second->display();
   }
@@ -101,14 +132,14 @@ void CapacitorUi::add() {
 
 void CapacitorUi::update(const ros::Time &time) {
   auto graph = graph_vector_.find("capacitor");
-  if (graph != graph_vector_.end() && referee_.referee_data_.capacity_data.cap_power_ != 0.) {
-    setConfig(graph->second, referee_.referee_data_.capacity_data.cap_power_ * 100);
+  if (graph != graph_vector_.end() && data_.referee_.referee_data_.capacity_data.cap_power_ != 0.) {
+    updateConfig(graph->second, data_.referee_.referee_data_.capacity_data.cap_power_ * 100);
     graph->second->setOperation(rm_common::GraphOperation::UPDATE);
     graph->second->display(time);
   }
 }
 
-void CapacitorUi::setConfig(Graph *graph, double data) {
+void CapacitorUi::updateConfig(Graph *graph, double data) {
   char data_str[30] = {' '};
   sprintf(data_str, "cap:%1.0f%%", data);
   graph->setContent(data_str);
