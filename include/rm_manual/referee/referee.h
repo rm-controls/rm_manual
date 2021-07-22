@@ -41,10 +41,7 @@ class Referee {
   Referee() { referee_data_.robot_hurt_.hurt_type_ = 0x09; };
   void init();
   void read();
-  void drawString(int picture_id, int x, int y, const std::string &data,
-                  GraphicColorType color, GraphicOperateType operate_type);
-  void drawCircle(int picture_id, int center_x, int center_y, int radius,
-                  GraphicColorType color, GraphicOperateType operate_type);
+  void sendUi(const rm_common::GraphConfig &config, const std::string &content);
   void sendInteractiveData(int data_cmd_id, int receiver_id, unsigned char data);
 
   ros::Publisher referee_pub_;
@@ -62,9 +59,7 @@ class Referee {
  private:
   int unpack(uint8_t *rx_data);
   void pack(uint8_t *tx_buffer, uint8_t *data, int cmd_id, int len) const;
-  void sendUi(GraphicConfigData *config_data, int config_num, GraphicOperateType operate_type,
-              std::string string_data = "");
-  void getRobotId();
+  void getRobotInfo();
   void publishData();
 
   serial::Serial serial_;
