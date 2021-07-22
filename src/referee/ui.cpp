@@ -5,7 +5,7 @@
 #include "rm_manual/referee/ui.h"
 
 namespace rm_manual {
-UiBase::UiBase(ros::NodeHandle &nh, Data &referee, const std::string &ui_type) : data_(referee) {
+UiBase::UiBase(ros::NodeHandle &nh, Data &data, const std::string &ui_type) : data_(data) {
   XmlRpc::XmlRpcValue config_param;
   if (!nh.getParam(ui_type, config_param)) {
     ROS_ERROR("%s no defined (namespace %s)", ui_type.c_str(), nh.getNamespace().c_str());

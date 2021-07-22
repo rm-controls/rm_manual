@@ -61,8 +61,8 @@ void ChassisGimbalShooterCoverManual::mouseRightRelease(ros::Duration duration) 
 }
 
 void ChassisGimbalShooterCoverManual::ctrlZPress(ros::Duration) {
-  if (data_.referee_.robot_id_ != rm_common::RobotId::BLUE_HERO
-      && data_.referee_.robot_id_ != rm_common::RobotId::RED_HERO) {
+  if (data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::BLUE_HERO
+      && data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::RED_HERO) {
     if (cover_command_sender_->getState()) {
       geometry_msgs::PointStamped aim_point{};
       aim_point.header.frame_id = "yaw";

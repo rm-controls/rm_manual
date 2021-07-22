@@ -22,7 +22,7 @@ void Referee::init() {
       ROS_ERROR("Cannot open referee port");
     }
   }
-  if (is_online_) ROS_INFO("Referee system connect successfully");
+  if (referee_data_.is_online_) ROS_INFO("Referee system connect successfully");
 }
 
 // read data from referee
@@ -31,7 +31,7 @@ void Referee::read() {
   uint8_t temp_buffer[k_unpack_buffer_length_] = {0};
   int rx_len = 0, frame_len;
 
-  if (ros::Time::now() - last_get_referee_data_ > ros::Duration(0.1)) is_online_ = false;
+  if (ros::Time::now() - last_get_referee_data_ > ros::Duration(0.1)) referee_data_.is_online_ = false;
   try {
     if (serial_.available()) {
       rx_len = (int) serial_.available();
@@ -39,7 +39,7 @@ void Referee::read() {
     }
   } catch (serial::IOException &e) {
     ROS_ERROR("Referee system disconnect, cannot read referee data");
-    is_online_ = false;
+    referee_data_.is_online_ = false;
     return;
   }
   if (rx_len < k_unpack_buffer_length_) {
@@ -54,11 +54,6 @@ void Referee::read() {
     }
   }
   super_capacitor_.read(rx_buffer);
-  referee_data_.capacity_data.is_online_ = super_capacitor_.is_online_;
-  referee_data_.capacity_data.buffer_power_ = super_capacitor_.getBufferPower();
-  referee_data_.capacity_data.cap_power_ = super_capacitor_.getCapPower();
-  referee_data_.capacity_data.chassis_power_ = super_capacitor_.getChassisPower();
-  referee_data_.capacity_data.limit_power_ = super_capacitor_.getLimitPower();
   getRobotInfo();
   publishData();
 }
@@ -161,7 +156,7 @@ int Referee::unpack(uint8_t *rx_data) {
         default:ROS_WARN("Referee command ID not found.");
           break;
       }
-      is_online_ = true;
+      referee_data_.is_online_ = true;
       last_get_referee_data_ = ros::Time::now();
       return frame_len;
     }
@@ -170,13 +165,11 @@ int Referee::unpack(uint8_t *rx_data) {
 }
 
 void Referee::getRobotInfo() {
-  robot_id_ = referee_data_.game_robot_status_.robot_id_;
-  robot_color_ = robot_id_ >= 100 ? "blue" : "red";
-  referee_data_.robot_id_ = robot_id_;
-  referee_data_.robot_color_ = robot_color_;
-  referee_data_.is_online_ = is_online_;
-  if (robot_id_ != rm_common::RobotId::BLUE_SENTRY && robot_id_ != rm_common::RobotId::RED_SENTRY) {
-    switch (robot_id_) {
+  referee_data_.robot_id_ = referee_data_.game_robot_status_.robot_id_;
+  referee_data_.robot_color_ = referee_data_.robot_id_ >= 100 ? "blue" : "red";
+  if (referee_data_.robot_id_ != rm_common::RobotId::BLUE_SENTRY
+      && referee_data_.robot_id_ != rm_common::RobotId::RED_SENTRY) {
+    switch (referee_data_.robot_id_) {
       case rm_common::RobotId::BLUE_HERO:client_id_ = rm_common::ClientId::BLUE_HERO_CLIENT;
         break;
       case rm_common::RobotId::BLUE_ENGINEER:client_id_ = rm_common::ClientId::BLUE_ENGINEER_CLIENT;
@@ -202,7 +195,8 @@ void Referee::getRobotInfo() {
 }
 
 void Referee::publishData() {
-  if (robot_id_ == rm_common::RobotId::RED_HERO || robot_id_ == rm_common::RobotId::BLUE_HERO) {
+  if (referee_data_.robot_id_ == rm_common::RobotId::RED_HERO
+      || referee_data_.robot_id_ == rm_common::RobotId::BLUE_HERO) {
     referee_pub_data_.shooter_heat = referee_data_.power_heat_data_.shooter_id_1_42_mm_cooling_heat_;
     referee_pub_data_.shooter_heat_cooling_limit = referee_data_.game_robot_status_.shooter_id_1_42_mm_cooling_limit_;
   } else {
@@ -219,10 +213,10 @@ void Referee::publishData() {
   referee_pub_data_.bullet_speed = referee_data_.shoot_data_.bullet_speed_;
   referee_pub_data_.stamp = last_get_referee_data_;
 
-  super_capacitor_pub_data_.capacity = super_capacitor_.getCapPower();
-  super_capacitor_pub_data_.chassis_power_buffer = (uint16_t) super_capacitor_.getBufferPower();
-  super_capacitor_pub_data_.limit_power = super_capacitor_.getLimitPower();
-  super_capacitor_pub_data_.chassis_power = super_capacitor_.getChassisPower();
+  super_capacitor_pub_data_.capacity = referee_data_.capacity_data.cap_power_;
+  super_capacitor_pub_data_.chassis_power_buffer = (uint16_t) referee_data_.capacity_data.buffer_power_;
+  super_capacitor_pub_data_.limit_power = referee_data_.capacity_data.limit_power_;
+  super_capacitor_pub_data_.chassis_power = referee_data_.capacity_data.chassis_power_;
   super_capacitor_pub_data_.stamp = super_capacitor_.last_get_capacitor_data_;
 
   referee_pub_.publish(referee_pub_data_);
@@ -236,7 +230,7 @@ void Referee::sendInteractiveData(int data_cmd_id, int receiver_id, uint8_t data
   int tx_len = k_header_length_ + k_cmd_id_length_ + (int) sizeof(rm_common::InteractiveData) + k_tail_length_;
 
   student_interactive_data->header_data_.data_cmd_id_ = data_cmd_id;
-  student_interactive_data->header_data_.sender_id_ = robot_id_;
+  student_interactive_data->header_data_.sender_id_ = referee_data_.robot_id_;
   student_interactive_data->header_data_.receiver_id_ = receiver_id;
   student_interactive_data->data_ = data;
   pack(tx_buffer, tx_data, rm_common::RefereeCmdId::INTERACTIVE_DATA_CMD, sizeof(rm_common::InteractiveData));
@@ -252,7 +246,7 @@ void Referee::sendUi(const rm_common::GraphConfig &config, const std::string &co
   uint8_t tx_buffer[128] = {0};
   rm_common::GraphData tx_data;
   int data_len = (int) sizeof(rm_common::GraphData);
-  tx_data.header_.sender_id_ = robot_id_;
+  tx_data.header_.sender_id_ = referee_data_.robot_id_;
   tx_data.header_.receiver_id_ = client_id_;
   tx_data.config_ = config;
   if (content.empty()) {
@@ -265,7 +259,7 @@ void Referee::sendUi(const rm_common::GraphConfig &config, const std::string &co
       else tx_data.content_[i] = ' ';
     }
   }
-  pack(tx_buffer, (uint8_t * ) & tx_data, rm_common::RefereeCmdId::INTERACTIVE_DATA_CMD, data_len);
+  pack(tx_buffer, (uint8_t *) &tx_data, rm_common::RefereeCmdId::INTERACTIVE_DATA_CMD, data_len);
   try {
     serial_.write(tx_buffer, k_header_length_ + k_cmd_id_length_ + k_tail_length_ + data_len);
   } catch (serial::PortNotOpenedException &e) {
@@ -348,22 +342,22 @@ void SuperCapacitor::read(const std::vector<uint8_t> &rx_buffer) {
       receive_buf_counter_ = 0;
     }
   }
-  if (parameters[0] >= 120) parameters[0] = 120;
-  if (parameters[0] <= 0) parameters[0] = 0;
-  if (parameters[2] >= 25) parameters[2] = 25;
-  if (parameters[2] <= 0) parameters[2] = 0;
-  if (parameters[3] >= 1) parameters[3] = 1;
-  if (parameters[3] <= 0) parameters[3] = 0;
-  if (ros::Time::now() - last_get_capacitor_data_ > ros::Duration(0.1)) is_online_ = false;
+  if (data_.chassis_power_ >= 120.) data_.chassis_power_ = 120.;
+  if (data_.chassis_power_ <= 0.) data_.chassis_power_ = 0.;
+  if (data_.buffer_power_ >= 25.) data_.buffer_power_ = 25.;
+  if (data_.buffer_power_ <= 0.) data_.buffer_power_ = 0.;
+  if (data_.cap_power_ >= 1.) data_.cap_power_ = 1.;
+  if (data_.cap_power_ <= 0.) data_.cap_power_ = 0.;
+  if (ros::Time::now() - last_get_capacitor_data_ > ros::Duration(0.1)) data_.is_online_ = false;
 }
 
 void SuperCapacitor::receiveCallBack(unsigned char package_id, const unsigned char *data) {
   if (package_id == 0) {
     last_get_capacitor_data_ = ros::Time::now();
-    parameters[0] = int16ToFloat((data[0] << 8) | data[1]);
-    parameters[1] = int16ToFloat((data[2] << 8) | data[3]);
-    parameters[2] = int16ToFloat((data[4] << 8) | data[5]);
-    parameters[3] = int16ToFloat((data[6] << 8) | data[7]);
+    data_.chassis_power_ = (double) int16ToFloat((data[0] << 8) | data[1]);
+    data_.limit_power_ = (double) int16ToFloat((data[2] << 8) | data[3]);
+    data_.buffer_power_ = (double) int16ToFloat((data[4] << 8) | data[5]);
+    data_.cap_power_ = (double) int16ToFloat((data[6] << 8) | data[7]);
   }
 }
 
