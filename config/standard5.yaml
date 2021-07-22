@@ -76,9 +76,9 @@ rm_manual:
       - { name: "5m", data: { type: "line", id: 9, start_x: [ 900,900,900,900 ], start_y: [ 550,550,550,550 ], end_x: [ 1020,1020,1020,1020 ], end_y: [ 550,550,550,550 ], width: 3, color: "yellow" } }
     armor:
       - { name: "armor0", data: { type: "circle", id: 10, width: 3, radius: 50, color: "yellow", delay: 5.0 } }
-      - { name: "armor1", data: { type: "circle", id: 10, width: 3, radius: 50, color: "yellow", delay: 5.0 } }
-      - { name: "armor2", data: { type: "circle", id: 10, width: 3, radius: 50, color: "yellow", delay: 5.0 } }
-      - { name: "armor3", data: { type: "circle", id: 10, width: 3, radius: 50, color: "yellow", delay: 5.0 } }
+      - { name: "armor1", data: { type: "circle", id: 11, width: 3, radius: 50, color: "yellow", delay: 5.0 } }
+      - { name: "armor2", data: { type: "circle", id: 12, width: 3, radius: 50, color: "yellow", delay: 5.0 } }
+      - { name: "armor3", data: { type: "circle", id: 13, width: 3, radius: 50, color: "yellow", delay: 5.0 } }
     capacitor:
       - { name: "capacitor", data: { type: "string", id: 6, start_x: 900, start_y: 100, start_angle: 15, width: 2, delay: 0.5 } }
 

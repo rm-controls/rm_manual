@@ -28,10 +28,10 @@ void Referee::init() {
 // read data from referee
 void Referee::read() {
   std::vector<uint8_t> rx_buffer;
-  uint8_t temp_buffer[k_unpack_buffer_length_] = {0};
+  uint8_t temp_buffer[256] = {0};
   int rx_len = 0, frame_len;
 
-  if (ros::Time::now() - last_get_referee_data_ > ros::Duration(0.1)) referee_data_.is_online_ = false;
+  if (ros::Time::now() - last_get_ > ros::Duration(0.1)) referee_data_.is_online_ = false;
   try {
     if (serial_.available()) {
       rx_len = (int) serial_.available();
@@ -157,7 +157,7 @@ int Referee::unpack(uint8_t *rx_data) {
           break;
       }
       referee_data_.is_online_ = true;
-      last_get_referee_data_ = ros::Time::now();
+      last_get_ = ros::Time::now();
       return frame_len;
     }
   }
@@ -211,13 +211,13 @@ void Referee::publishData() {
   referee_pub_data_.hurt_armor_id = referee_data_.robot_hurt_.armor_id_;
   referee_pub_data_.hurt_type = referee_data_.robot_hurt_.hurt_type_;
   referee_pub_data_.bullet_speed = referee_data_.shoot_data_.bullet_speed_;
-  referee_pub_data_.stamp = last_get_referee_data_;
+  referee_pub_data_.stamp = last_get_;
 
   super_capacitor_pub_data_.capacity = referee_data_.capacity_data.cap_power_;
   super_capacitor_pub_data_.chassis_power_buffer = (uint16_t) referee_data_.capacity_data.buffer_power_;
   super_capacitor_pub_data_.limit_power = referee_data_.capacity_data.limit_power_;
   super_capacitor_pub_data_.chassis_power = referee_data_.capacity_data.chassis_power_;
-  super_capacitor_pub_data_.stamp = super_capacitor_.last_get_capacitor_data_;
+  super_capacitor_pub_data_.stamp = super_capacitor_.last_get_data_;
 
   referee_pub_.publish(referee_pub_data_);
   super_capacitor_pub_.publish(super_capacitor_pub_data_);
@@ -242,20 +242,26 @@ void Referee::sendInteractiveData(int data_cmd_id, int receiver_id, uint8_t data
   }
 }
 
-void Referee::sendUi(const rm_common::GraphConfig &config, const std::string &content) {
+void Referee::addUi(const rm_common::GraphConfig &config, const std::string &content, bool priority_flag) {
+  if (priority_flag) ui_queue_.push_back(std::pair<rm_common::GraphConfig, std::string>(config, content));
+  else ui_queue_.insert(ui_queue_.begin(), std::pair<rm_common::GraphConfig, std::string>(config, content));
+}
+
+void Referee::sendUi(const ros::Time &time) {
+  if (ui_queue_.empty() || time - last_send_ < ros::Duration(0.5)) return;
   uint8_t tx_buffer[128] = {0};
   rm_common::GraphData tx_data;
   int data_len = (int) sizeof(rm_common::GraphData);
   tx_data.header_.sender_id_ = referee_data_.robot_id_;
   tx_data.header_.receiver_id_ = client_id_;
-  tx_data.config_ = config;
-  if (content.empty()) {
+  tx_data.config_ = ui_queue_.back().first;
+  if (ui_queue_.back().second.empty()) {
     tx_data.header_.data_cmd_id_ = rm_common::DataCmdId::CLIENT_GRAPH_SINGLE_CMD;
     data_len -= 30;
   } else {
     tx_data.header_.data_cmd_id_ = rm_common::DataCmdId::CLIENT_CHARACTER_CMD;
     for (int i = 0; i < 30; i++) {
-      if (i < (int) content.size()) tx_data.content_[i] = content[i];
+      if (i < (int) ui_queue_.back().second.size()) tx_data.content_[i] = ui_queue_.back().second[i];
       else tx_data.content_[i] = ' ';
     }
   }
@@ -265,6 +271,8 @@ void Referee::sendUi(const rm_common::GraphConfig &config, const std::string &co
   } catch (serial::PortNotOpenedException &e) {
     ROS_ERROR_ONCE("Cannot open referee port, fail to draw UI");
   }
+  ui_queue_.pop_back();
+  last_send_ = time;
 }
 
 void Referee::pack(uint8_t *tx_buffer, uint8_t *data, int cmd_id, int len) const {
@@ -348,12 +356,12 @@ void SuperCapacitor::read(const std::vector<uint8_t> &rx_buffer) {
   if (data_.buffer_power_ <= 0.) data_.buffer_power_ = 0.;
   if (data_.cap_power_ >= 1.) data_.cap_power_ = 1.;
   if (data_.cap_power_ <= 0.) data_.cap_power_ = 0.;
-  if (ros::Time::now() - last_get_capacitor_data_ > ros::Duration(0.1)) data_.is_online_ = false;
+  if (ros::Time::now() - last_get_data_ > ros::Duration(0.1)) data_.is_online_ = false;
 }
 
 void SuperCapacitor::receiveCallBack(unsigned char package_id, const unsigned char *data) {
   if (package_id == 0) {
-    last_get_capacitor_data_ = ros::Time::now();
+    last_get_data_ = ros::Time::now();
     data_.chassis_power_ = (double) int16ToFloat((data[0] << 8) | data[1]);
     data_.limit_power_ = (double) int16ToFloat((data[2] << 8) | data[3]);
     data_.buffer_power_ = (double) int16ToFloat((data[4] << 8) | data[5]);

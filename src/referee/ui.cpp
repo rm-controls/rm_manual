@@ -81,6 +81,7 @@ void ArmorUi::update(const ros::Time &time) {
         && data_.referee_.referee_data_.robot_hurt_.armor_id_ == getArmorId(graph.first)) {
       updateConfig(graph.first, graph.second);
       graph.second->display(time, true);
+      data_.referee_.referee_data_.robot_hurt_.hurt_type_ = 9;
     } else graph.second->display(time, false);
   }
 }

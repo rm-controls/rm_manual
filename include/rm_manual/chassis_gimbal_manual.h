@@ -28,7 +28,7 @@ class ChassisGimbalManual : public ManualBase {
   void dRelease(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearYVel(0.); }
   void gPress(ros::Duration /*duration*/) override;
   void ePress(ros::Duration /*duration*/) override;
-  void drawUi() override;
+  void drawUi(const ros::Time &time) override;
   rm_common::ChassisCommandSender *chassis_cmd_sender_{};
   rm_common::Vel2DCommandSender *vel_cmd_sender_;
   rm_common::GimbalCommandSender *gimbal_cmd_sender_{};

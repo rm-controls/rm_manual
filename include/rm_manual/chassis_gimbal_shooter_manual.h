@@ -36,7 +36,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void ctrlVPress(ros::Duration /*duration*/);
   void ctrlRPress(ros::Duration /*duration*/);
   void ctrlBPress(ros::Duration /*duration*/);
-  void drawUi() override;
+  void drawUi(const ros::Time &time) override;
   RisingInputEvent q_press_event_;
   RisingInputEvent f_press_event_;
   RisingInputEvent shift_press_event_;

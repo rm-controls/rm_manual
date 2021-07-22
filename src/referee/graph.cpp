@@ -27,7 +27,7 @@ Graph::Graph(const XmlRpc::XmlRpcValue &config, Referee &referee) : referee_(ref
 void Graph::display() {
   if (config_ == last_config_ && title_ == last_title_ && content_ == last_content_) return;
   if (!title_.empty() && !content_.empty()) config_.end_angle_ = (int) (title_ + content_).size();
-  referee_.sendUi(config_, (title_ + content_));
+  referee_.addUi(config_, title_ + content_, true);
   last_content_ = content_;
   last_title_ = title_;
   last_config_ = config_;
@@ -36,7 +36,7 @@ void Graph::display() {
 void Graph::display(const ros::Time &time) {
   if (time - last_time_ < delay_) return;
   if (!title_.empty() && !content_.empty()) config_.end_angle_ = (int) (title_ + content_).size();
-  referee_.sendUi(config_, (title_ + content_));
+  referee_.addUi(config_, title_ + content_);
   last_time_ = time;
 }
 
@@ -44,13 +44,11 @@ void Graph::display(const ros::Time &time, bool state) {
   if (state) {
     last_time_ = time;
     config_.operate_type_ = rm_common::GraphOperation::ADD;
-    referee_.sendUi(config_, (title_ + content_));
-    ROS_INFO("display %d", config_.operate_type_);
+    display();
   }
   if (time - last_time_ > delay_) {
     config_.operate_type_ = rm_common::GraphOperation::DELETE;
-    referee_.sendUi(config_, (title_ + content_));
-    ROS_INFO("display %d", config_.operate_type_);
+    display();
   }
 }
 

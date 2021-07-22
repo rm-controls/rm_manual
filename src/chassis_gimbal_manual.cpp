@@ -86,9 +86,11 @@ void ChassisGimbalManual::ePress(ros::Duration /*duration*/) {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
 }
 
-void ChassisGimbalManual::drawUi() {
+void ChassisGimbalManual::drawUi(const ros::Time &time) {
   state_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
-  capacitor_ui_->update(ros::Time::now());
+//  capacitor_ui_->update(time);
+  armor_ui_->update(time);
+  ManualBase::drawUi(time);
 }
 
 }
