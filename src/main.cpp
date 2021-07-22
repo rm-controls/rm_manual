@@ -12,8 +12,10 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "rm_manual");
   ros::NodeHandle nh("~");
   robot = getParam(nh, "robot_type", (std::string) "error");
-  if (robot == "standard" || robot == "hero")
+  if (robot == "standard")
     manual_control = new rm_manual::ChassisGimbalShooterCoverManual(nh);
+  else if (robot == "hero")
+    manual_control = new rm_manual::ChassisGimbalShooterManual(nh);
   else if (robot == "engineer")
     manual_control = new rm_manual::EngineerManual(nh);
   else {

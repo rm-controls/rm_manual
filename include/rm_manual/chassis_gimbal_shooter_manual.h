@@ -59,7 +59,10 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void updateRc() override {
     ChassisGimbalManual::updateRc();
-    gimbal_cmd_sender_->updateCost(data_.track_data_array_);
+    if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP) {
+      gimbal_cmd_sender_->updateCost(data_.track_data_array_);
+      gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
+    }
   }
   void rightSwitchDown(ros::Duration duration) override {
     ChassisGimbalManual::rightSwitchDown(duration);
@@ -78,12 +81,12 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   }
   void leftSwitchDown(ros::Duration duration) override {
     ChassisGimbalManual::leftSwitchDown(duration);
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   }
   void leftSwitchMid(ros::Duration duration) override {
     ChassisGimbalManual::leftSwitchMid(duration);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
-    gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
   }
   void leftSwitchUp(ros::Duration duration) override {
