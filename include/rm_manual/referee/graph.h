@@ -49,6 +49,7 @@ class Graph {
     last_config_ = config_;
   }
   void display(const ros::Time time) {
+
     if (time - last_time_ < delay_) return;
     if (!title_.empty() && !content_.empty()) config_.end_angle_ = (int) (title_ + content_).size();
     referee_.sendUi(config_, (title_ + content_));

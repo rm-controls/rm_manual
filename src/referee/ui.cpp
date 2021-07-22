@@ -37,7 +37,7 @@ void StateUi::update(const std::string &graph_name, uint8_t mode, bool flag) {
 
 void StateUi::updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool flag) {
   if (flag) graph->setColor(rm_common::GraphColor::ORANGE);
-  else graph->setColor(rm_common::GraphColor::YELLOW);
+  else graph->setColor(rm_common::GraphColor::WHITE);
   if (name == "chassis") graph->setContent(getChassisState(mode));
   else if (name == "gimbal") graph->setContent(getGimbalState(mode));
   else if (name == "shooter") graph->setContent(getShooterState(mode));

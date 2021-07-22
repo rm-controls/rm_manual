@@ -252,17 +252,6 @@ void Referee::sendUi(const rm_common::GraphConfig &config, const std::string &co
   uint8_t tx_buffer[128] = {0};
   rm_common::GraphData tx_data;
   int data_len = (int) sizeof(rm_common::GraphData);
-  ROS_INFO(
-      "id = %d, type = %d, color = %d, operation = %d, start_x = %d, start_y = %d, end_x = %d, end_y = %d, width = %d",
-      config.graphic_id_[0],
-      config.graphic_type_,
-      config.color_,
-      config.operate_type_,
-      config.start_x_,
-      config.start_y_,
-      config.end_x_,
-      config.end_y_,
-      config.width_);
   tx_data.header_.sender_id_ = robot_id_;
   tx_data.header_.receiver_id_ = client_id_;
   tx_data.config_ = config;
@@ -276,7 +265,7 @@ void Referee::sendUi(const rm_common::GraphConfig &config, const std::string &co
       else tx_data.content_[i] = ' ';
     }
   }
-  pack(tx_buffer, (uint8_t *) &tx_data, rm_common::RefereeCmdId::INTERACTIVE_DATA_CMD, data_len);
+  pack(tx_buffer, (uint8_t * ) & tx_data, rm_common::RefereeCmdId::INTERACTIVE_DATA_CMD, data_len);
   try {
     serial_.write(tx_buffer, k_header_length_ + k_cmd_id_length_ + k_tail_length_ + data_len);
   } catch (serial::PortNotOpenedException &e) {

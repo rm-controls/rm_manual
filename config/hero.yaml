@@ -67,6 +67,8 @@ rm_manual:
       - { name: "shooter", data: { type: "string", id: 2, start_x: 400, start_y: 700, start_angle: 15, width: 3, title: "shooter:" } }
       - { name: "target", data: { type: "string", id: 3,  start_x: 400, start_y: 650, start_angle: 15, width: 3, title: "target: " } }
     aim:
-      - { name: "3m", data: { type: "line", id: 7, start_x: [ 890,890,890,890 ], start_y: [ 500,500,500,500 ], end_x: [ 1030,1030,1030,1030 ], end_y: [ 500,500,500,500 ], width: 3, color: "pink" } }
+      - { name: "3m", data: { type: "line", id: 7, start_x: [ 920,920,920,920 ], start_y: [ 500,500,500,500 ], end_x: [ 1000,1000,1000,1000 ], end_y: [ 500,500,500,500 ], width: 3, color: "pink" } }
+      - { name: "4m", data: { type: "line", id: 8, start_x: [ 910,910,910,910 ], start_y: [ 525,525,525,525 ], end_x: [ 1010,1010,1010,1010 ], end_y: [ 525,525,525,525 ], width: 3, color: "pink" } }
+      - { name: "5m", data: { type: "line", id: 9, start_x: [ 900,900,900,900 ], start_y: [ 550,550,550,550 ], end_x: [ 1020,1020,1020,1020 ], end_y: [ 550,550,550,550 ], width: 3, color: "pink" } }
     capacitor:
       - { name: "capacitor", data: { type: "string", id: 6, start_x: 900, start_y: 100, start_angle: 15, width: 3 } }
