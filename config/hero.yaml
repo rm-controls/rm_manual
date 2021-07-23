@@ -48,6 +48,7 @@ rm_manual:
     state_controllers:
       - controllers/robot_state_controller
       - controllers/joint_state_controller
+      - controllers/orientation_controller
     main_controllers:
       - controllers/chassis_controller
       - controllers/gimbal_controller
