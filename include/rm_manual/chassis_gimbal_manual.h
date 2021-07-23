@@ -34,7 +34,7 @@ class ChassisGimbalManual : public ManualBase {
   rm_common::GimbalCommandSender *gimbal_cmd_sender_{};
   StateUi *state_ui_{};
   ArmorUi *armor_ui_{};
-  DataUi *capacitor_ui_{};
+  DataUi *data_ui_{};
   WarningUi *warning_ui_{};
 };
 }

@@ -122,22 +122,35 @@ void DataUi::add() {
   }
 }
 
-void DataUi::update(const ros::Time &time) {
-  auto graph = graph_vector_.find("capacitor");
-  if (graph != graph_vector_.end() && data_.referee_.referee_data_.capacity_data.cap_power_ != 0.) {
-    updateConfig(graph->second, data_.referee_.referee_data_.capacity_data.cap_power_ * 100);
-    graph->second->setOperation(rm_common::GraphOperation::UPDATE);
+void DataUi::update(const std::string &name, const ros::Time &time) {
+  auto graph = graph_vector_.find(name);
+  if (graph != graph_vector_.end()) {
+    if (name == "capacitor") setCapacitorData(*graph->second);
+    if (name == "effort") setEffortData(*graph->second);
     graph->second->display(time);
   }
 }
 
-void DataUi::updateConfig(Graph *graph, double data) {
+void DataUi::setCapacitorData(Graph &graph) {
+  if (data_.referee_.referee_data_.capacity_data.cap_power_ != 0.) {
+    char data_str[30] = {' '};
+    double cap_power = data_.referee_.referee_data_.capacity_data.cap_power_ * 100.;
+    sprintf(data_str, "cap:%1.0f%%", cap_power);
+    graph.setContent(data_str);
+    if (cap_power < 30.) graph.setColor(rm_common::GraphColor::ORANGE);
+    else if (cap_power > 70.) graph.setColor(rm_common::GraphColor::GREEN);
+    else graph.setColor(rm_common::GraphColor::YELLOW);
+    graph.setOperation(rm_common::GraphOperation::UPDATE);
+  }
+}
+
+void DataUi::setEffortData(Graph &graph) {
   char data_str[30] = {' '};
-  sprintf(data_str, "cap:%1.0f%%", data);
-  graph->setContent(data_str);
-  if (data < 30.) graph->setColor(rm_common::GraphColor::ORANGE);
-  else if (data > 70.) graph->setColor(rm_common::GraphColor::GREEN);
-  else graph->setColor(rm_common::GraphColor::YELLOW);
+  double max_effort = 0.;
+  for (auto effort:data_.joint_state_.effort) { if (effort > max_effort) max_effort = effort; }
+  sprintf(data_str, "%.2f", max_effort);
+  graph.setContent(data_str);
+  graph.setOperation(rm_common::GraphOperation::UPDATE);
 }
 
 }

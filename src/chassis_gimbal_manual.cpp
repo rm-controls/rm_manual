@@ -15,7 +15,7 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
   ros::NodeHandle ui_nh(nh, "ui");
   state_ui_ = new StateUi(ui_nh, data_);
   armor_ui_ = new ArmorUi(ui_nh, data_);
-  capacitor_ui_ = new DataUi(ui_nh, data_);
+  data_ui_ = new DataUi(ui_nh, data_);
   warning_ui_ = new WarningUi(ui_nh, data_);
 }
 
@@ -62,7 +62,7 @@ void ChassisGimbalManual::rightSwitchUp(ros::Duration duration) {
   vel_cmd_sender_->setZero();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   state_ui_->add();
-  capacitor_ui_->add();
+  data_ui_->add();
 }
 
 void ChassisGimbalManual::leftSwitchDown(ros::Duration duration) {
@@ -89,7 +89,7 @@ void ChassisGimbalManual::ePress(ros::Duration /*duration*/) {
 
 void ChassisGimbalManual::drawUi(const ros::Time &time) {
   state_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
-  capacitor_ui_->update(time);
+  data_ui_->update("capacitor", time);
   armor_ui_->update(time);
   warning_ui_->update("spin", time,
                       chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO
