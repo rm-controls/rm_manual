@@ -135,7 +135,7 @@ void DataUi::add() {
   }
 }
 
-void DataUi::update(const std::string &name, const ros::Time &time, int data) {
+void DataUi::update(const std::string &name, const ros::Time &time, double data) {
   auto graph = graph_vector_.find(name);
   if (graph != graph_vector_.end()) {
     if (name == "capacitor") setCapacitorData(*graph->second);
@@ -167,9 +167,9 @@ void DataUi::setEffortData(Graph &graph) {
   graph.setOperation(rm_common::GraphOperation::UPDATE);
 }
 
-void DataUi::setProgressData(Graph &graph, int data) {
+void DataUi::setProgressData(Graph &graph, double data) {
   char data_str[30] = {' '};
-  sprintf(data_str, "progress:%d%%", data);
+  sprintf(data_str, "progress:%.2f%%", data);
   graph.setContent(data_str);
   graph.setOperation(rm_common::GraphOperation::UPDATE);
 }
