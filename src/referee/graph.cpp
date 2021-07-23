@@ -22,6 +22,8 @@ Graph::Graph(const XmlRpc::XmlRpcValue &config, Referee &referee) : referee_(ref
   if (config.hasMember("delay")) delay_ = ros::Duration((double) config["delay"]);
   if (config.hasMember("title")) title_ = (std::string) config["title"];
   if (config.hasMember("content")) content_ = (std::string) config["content"];
+  config_.operate_type_ = rm_common::GraphOperation::DELETE;
+  last_config_ = config_;
 }
 
 void Graph::display() {

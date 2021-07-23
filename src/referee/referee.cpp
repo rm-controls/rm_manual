@@ -248,7 +248,7 @@ void Referee::addUi(const rm_common::GraphConfig &config, const std::string &con
 }
 
 void Referee::sendUi(const ros::Time &time) {
-  if (ui_queue_.empty() || time - last_send_ < ros::Duration(0.5)) return;
+  if (ui_queue_.empty() || time - last_send_ < ros::Duration(0.05)) return;
   uint8_t tx_buffer[128] = {0};
   rm_common::GraphData tx_data;
   int data_len = (int) sizeof(rm_common::GraphData);

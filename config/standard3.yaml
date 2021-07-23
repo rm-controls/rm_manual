@@ -67,14 +67,19 @@ rm_manual:
       service_name: /controllers/trigger_calibration_controller/is_calibrated
   ui:
     state:
-      - { name: "chassis", data: { type: "string", id: 0, start_x: 400, start_y: 800, start_angle: 15, width: 2, title: "chassis:" } }
-      - { name: "target", data: { type: "string", id: 3,  start_x: 400, start_y: 650, start_angle: 15, width: 2, title: "target: " } }
+      - { name: "chassis", data: { type: "string", id: 0, start_x: 400, start_y: 750, start_angle: 15, width: 2, title: "chassis:" } }
+      - { name: "target", data: { type: "string", id: 1,  start_x: 400, start_y: 700, start_angle: 15, width: 2, title: "target: " } }
+    armor:
+      - { name: "armor0", data: { type: "circle", id: 2, width: 3, radius: 50, color: "yellow", delay: 0.75 } }
+      - { name: "armor1", data: { type: "circle", id: 3, width: 3, radius: 50, color: "yellow", delay: 0.75 } }
+      - { name: "armor2", data: { type: "circle", id: 4, width: 3, radius: 50, color: "yellow", delay: 0.75 } }
+      - { name: "armor3", data: { type: "circle", id: 5, width: 3, radius: 50, color: "yellow", delay: 0.75 } }
     aim:
-      - { name: "3m", data: { type: "line", id: 7, start_x: [ 920,920,920,920 ], start_y: [ 500,500,500,500 ], end_x: [ 1000,1000,1000,1000 ], end_y: [ 500,500,500,500 ], width: 3, color: "yellow" } }
-      - { name: "4m", data: { type: "line", id: 8, start_x: [ 910,910,910,910 ], start_y: [ 525,525,525,525 ], end_x: [ 1010,1010,1010,1010 ], end_y: [ 525,525,525,525 ], width: 3, color: "yellow" } }
-      - { name: "5m", data: { type: "line", id: 9, start_x: [ 900,900,900,900 ], start_y: [ 550,550,550,550 ], end_x: [ 1020,1020,1020,1020 ], end_y: [ 550,550,550,550 ], width: 3, color: "yellow" } }
+      - { name: "3m", data: { type: "line", id: 6, start_x: [ 920,920,920,920 ], start_y: [ 500,500,500,500 ], end_x: [ 1000,1000,1000,1000 ], end_y: [ 500,500,500,500 ], width: 3, color: "yellow" } }
+      - { name: "4m", data: { type: "line", id: 7, start_x: [ 910,910,910,910 ], start_y: [ 525,525,525,525 ], end_x: [ 1010,1010,1010,1010 ], end_y: [ 525,525,525,525 ], width: 3, color: "yellow" } }
+      - { name: "5m", data: { type: "line", id: 8, start_x: [ 900,900,900,900 ], start_y: [ 550,550,550,550 ], end_x: [ 1020,1020,1020,1020 ], end_y: [ 550,550,550,550 ], width: 3, color: "yellow" } }
     capacitor:
-      - { name: "capacitor", data: { type: "string", id: 6, start_x: 900, start_y: 100, start_angle: 15, width: 2, delay: 0.5 } }
+      - { name: "capacitor", data: { type: "string", id: 9, start_x: 900, start_y: 100, start_angle: 15, width: 2, delay: 0.5 } }
 controllers:
   cover_controller:
     type: effort_controllers/JointPositionController
