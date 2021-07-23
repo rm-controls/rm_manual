@@ -86,11 +86,11 @@ class EngineerManual : public ChassisGimbalManual {
     ChassisGimbalManual::rightSwitchUp(time);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   }
-  void leftSwitchUpFall(ros::Duration time) { runStepQueue(5); }
+  void leftSwitchUpFall(ros::Duration time) { runStepQueue("ARM_TEST"); }
   void leftSwitchDownFall(ros::Duration time) { arm_calibration_->reset(); }
-  void runStepQueue(uint8_t step_queue_id) {
+  void runStepQueue(std::string step_queue_name) {
     rm_msgs::EngineerGoal goal;
-    goal.step_queue_id = step_queue_id;
+    goal.step_queue_name = step_queue_name;
     if (action_client_.isServerConnected()) {
       if (operating_mode_ == MANUAL)
         action_client_.sendGoal(goal,
@@ -110,7 +110,7 @@ class EngineerManual : public ChassisGimbalManual {
     operating_mode_ = MANUAL;
   }
   void ctrlCPress(ros::Duration /*duration*/) { action_client_.cancelAllGoals(); }
-  void ctrlRPress(ros::Duration /*duration*/) { runStepQueue(rm_msgs::EngineerGoal::RECOVER); }
+  void ctrlRPress(ros::Duration /*duration*/) { runStepQueue("RECOVER"); }
 
   enum { MANUAL, MIDDLEWARE };
   int operating_mode_;
