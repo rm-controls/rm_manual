@@ -129,9 +129,9 @@ void ChassisGimbalShooterManual::ctrlBPress(ros::Duration) {
 }
 
 void ChassisGimbalShooterManual::drawUi(const ros::Time &time) {
+  ChassisGimbalManual::drawUi(time);
+  aim_ui_->update();
   state_ui_->update("target", switch_detection_srv_->getTarget(), shooter_cmd_sender_->getBurstMode(),
                     switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
-  aim_ui_->update();
-  ChassisGimbalManual::drawUi(time);
 }
 }

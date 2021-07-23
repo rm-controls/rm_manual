@@ -88,13 +88,13 @@ void ChassisGimbalManual::ePress(ros::Duration /*duration*/) {
 }
 
 void ChassisGimbalManual::drawUi(const ros::Time &time) {
-  state_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
+  ManualBase::drawUi(time);
   data_ui_->update("capacitor", time);
-  armor_ui_->update(time);
   warning_ui_->update("spin", time,
                       chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO
                           && vel_cmd_sender_->getMsg()->angular.z != 0.);
-  ManualBase::drawUi(time);
+  state_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
+  armor_ui_->update(time);
 }
 
 }
