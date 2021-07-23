@@ -26,16 +26,25 @@ void UiBase::add() {
   }
 }
 
-void StateUi::update(const std::string &graph_name, uint8_t mode, bool burst_flag, bool color_flag) {
+void StateUi::update(const std::string &graph_name, const std::string &content) {
   auto graph = graph_vector_.find(graph_name);
   if (graph != graph_vector_.end()) {
-    updateConfig(graph_name, graph->second, mode, burst_flag, color_flag);
+    graph->second->setContent(content);
     graph->second->setOperation(rm_common::GraphOperation::UPDATE);
     graph->second->display();
   }
 }
 
-void StateUi::updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool burst_flag, bool color_flag) {
+void StateUi::update(const std::string &graph_name, uint8_t mode, bool burst_flag, bool option_flag) {
+  auto graph = graph_vector_.find(graph_name);
+  if (graph != graph_vector_.end()) {
+    updateConfig(graph_name, graph->second, mode, burst_flag, option_flag);
+    graph->second->setOperation(rm_common::GraphOperation::UPDATE);
+    graph->second->display();
+  }
+}
+
+void StateUi::updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool burst_flag, bool option_flag) {
   if (name == "chassis") {
     graph->setContent(getChassisState(mode));
     if (burst_flag) graph->setColor(rm_common::GraphColor::ORANGE);
@@ -43,8 +52,12 @@ void StateUi::updateConfig(const std::string &name, Graph *graph, uint8_t mode, 
   } else if (name == "target") {
     graph->setContent(getTargetState(mode));
     if (burst_flag) graph->setColor(rm_common::GraphColor::ORANGE);
-    else if (color_flag) graph->setColor(rm_common::GraphColor::PINK);
+    else if (option_flag) graph->setColor(rm_common::GraphColor::PINK);
     else graph->setColor(rm_common::GraphColor::CYAN);
+  } else if (name == "queue") {
+    char data_str[30] = {' '};
+    sprintf(data_str, "%d", mode);
+    graph->setContent(data_str);
   }
 }
 
@@ -115,10 +128,10 @@ void WarningUi::update(const std::string &name, const ros::Time &time, bool stat
 }
 
 void DataUi::add() {
-  auto graph = graph_vector_.find("capacitor");
-  if (graph != graph_vector_.end() && data_.referee_.referee_data_.capacity_data.cap_power_ != 0.) {
-    graph->second->setOperation(rm_common::GraphOperation::ADD);
-    graph->second->display();
+  for (auto graph:graph_vector_) {
+    if (graph.first == "capacitor" && data_.referee_.referee_data_.capacity_data.cap_power_ == 0.) continue;
+    graph.second->setOperation(rm_common::GraphOperation::ADD);
+    graph.second->display();
   }
 }
 
@@ -148,7 +161,7 @@ void DataUi::setEffortData(Graph &graph) {
   char data_str[30] = {' '};
   double max_effort = 0.;
   for (auto effort:data_.joint_state_.effort) { if (effort > max_effort) max_effort = effort; }
-  sprintf(data_str, "%.2f", max_effort);
+  sprintf(data_str, "max effort:%.2f", max_effort);
   graph.setContent(data_str);
   graph.setOperation(rm_common::GraphOperation::UPDATE);
 }

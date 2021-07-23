@@ -37,8 +37,7 @@ void Graph::display() {
 
 void Graph::display(const ros::Time &time) {
   if (time - last_time_ < delay_) return;
-  if (!title_.empty() && !content_.empty()) config_.end_angle_ = (int) (title_ + content_).size();
-  referee_.addUi(config_, title_ + content_);
+  display();
   last_time_ = time;
 }
 

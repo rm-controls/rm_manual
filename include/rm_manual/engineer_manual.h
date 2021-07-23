@@ -98,11 +98,14 @@ class EngineerManual : public ChassisGimbalManual {
                                 boost::bind(&EngineerManual::actionActiveCallback, this),
                                 boost::bind(&EngineerManual::actionFeedbackCb, this, _1));
       operating_mode_ = MIDDLEWARE;
+      state_ui_->update("queue", step_queue_id);
     } else
       ROS_ERROR("Can not connect to middleware");
   }
   void actionActiveCallback() { operating_mode_ = MIDDLEWARE; }
-  void actionFeedbackCb(const rm_msgs::EngineerFeedbackConstPtr &feedback) {}
+  void actionFeedbackCb(const rm_msgs::EngineerFeedbackConstPtr &feedback) {
+    state_ui_->update("step", feedback->current_step);
+  }
   void actionDoneCallback(const actionlib::SimpleClientGoalState &state,
                           const rm_msgs::EngineerResultConstPtr &result) {
     ROS_INFO("Finished in state [%s]", state.toString().c_str());

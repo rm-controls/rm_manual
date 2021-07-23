@@ -27,9 +27,10 @@ class StateUi : public UiBase {
   explicit StateUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "state") {
     for (auto graph:graph_vector_) updateConfig(graph.first, graph.second, 0, false, false);
   }
-  void update(const std::string &graph_name, uint8_t mode, bool burst_flag, bool color_flag = false);
+  void update(const std::string &graph_name, const std::string &content);
+  void update(const std::string &graph_name, uint8_t mode, bool burst_flag = false, bool option_flag = false);
  private:
-  void updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool burst_flag, bool color_flag);
+  void updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool burst_flag, bool option_flag);
   const std::string getChassisState(uint8_t mode);
   const std::string getTargetState(uint8_t mode);
 };
@@ -59,7 +60,7 @@ class WarningUi : public UiBase {
 
 class DataUi : public UiBase {
  public:
-  explicit DataUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "capacitor") {};
+  explicit DataUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "data") {};
   void add() override;
   void update(const std::string &name, const ros::Time &time);
  private:
