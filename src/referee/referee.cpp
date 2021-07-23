@@ -243,6 +243,7 @@ void Referee::sendInteractiveData(int data_cmd_id, int receiver_id, uint8_t data
 }
 
 void Referee::addUi(const rm_common::GraphConfig &config, const std::string &content, bool priority_flag) {
+  for (int i = 0; i < (int) ui_queue_.size() - 20; i++) ui_queue_.erase(ui_queue_.begin());
   if (priority_flag) ui_queue_.push_back(std::pair<rm_common::GraphConfig, std::string>(config, content));
   else ui_queue_.insert(ui_queue_.begin(), std::pair<rm_common::GraphConfig, std::string>(config, content));
 }

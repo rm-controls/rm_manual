@@ -57,9 +57,9 @@ class WarningUi : public UiBase {
   void update(const std::string &name, const ros::Time &time, bool state);
 };
 
-class CapacitorUi : public UiBase {
+class DataUi : public UiBase {
  public:
-  explicit CapacitorUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "capacitor") {};
+  explicit DataUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "capacitor") {};
   void add() override;
   void update(const ros::Time &time);
  private:

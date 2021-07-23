@@ -14,7 +14,7 @@ UiBase::UiBase(ros::NodeHandle &nh, Data &data, const std::string &ui_type) : da
   try {
     for (int i = 0; i < (int) config_param.size(); ++i)
       graph_vector_.insert(std::pair<std::string, Graph *>(config_param[i]["name"],
-                                                           new Graph(config_param[i]["data"], data_.referee_)));
+                                                           new Graph(config_param[i]["config"], data_.referee_)));
   } catch (XmlRpc::XmlRpcException &e) { ROS_ERROR("Wrong ui parameter: %s", e.getMessage().c_str()); }
   for (auto graph:graph_vector_) graph.second->setOperation(rm_common::GraphOperation::DELETE);
 }
@@ -114,7 +114,7 @@ void WarningUi::update(const std::string &name, const ros::Time &time, bool stat
   if (graph != graph_vector_.end()) graph->second->display(time, !state);
 }
 
-void CapacitorUi::add() {
+void DataUi::add() {
   auto graph = graph_vector_.find("capacitor");
   if (graph != graph_vector_.end() && data_.referee_.referee_data_.capacity_data.cap_power_ != 0.) {
     graph->second->setOperation(rm_common::GraphOperation::ADD);
@@ -122,7 +122,7 @@ void CapacitorUi::add() {
   }
 }
 
-void CapacitorUi::update(const ros::Time &time) {
+void DataUi::update(const ros::Time &time) {
   auto graph = graph_vector_.find("capacitor");
   if (graph != graph_vector_.end() && data_.referee_.referee_data_.capacity_data.cap_power_ != 0.) {
     updateConfig(graph->second, data_.referee_.referee_data_.capacity_data.cap_power_ * 100);
@@ -131,7 +131,7 @@ void CapacitorUi::update(const ros::Time &time) {
   }
 }
 
-void CapacitorUi::updateConfig(Graph *graph, double data) {
+void DataUi::updateConfig(Graph *graph, double data) {
   char data_str[30] = {' '};
   sprintf(data_str, "cap:%1.0f%%", data);
   graph->setContent(data_str);

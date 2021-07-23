@@ -15,7 +15,7 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
   ros::NodeHandle ui_nh(nh, "ui");
   state_ui_ = new StateUi(ui_nh, data_);
   armor_ui_ = new ArmorUi(ui_nh, data_);
-  capacitor_ui_ = new CapacitorUi(ui_nh, data_);
+  capacitor_ui_ = new DataUi(ui_nh, data_);
   warning_ui_ = new WarningUi(ui_nh, data_);
 }
 
