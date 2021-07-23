@@ -80,9 +80,9 @@ void ArmorUi::update(const ros::Time &time) {
     if (data_.referee_.referee_data_.robot_hurt_.hurt_type_ == 0x00
         && data_.referee_.referee_data_.robot_hurt_.armor_id_ == getArmorId(graph.first)) {
       updateConfig(graph.first, graph.second);
-      graph.second->display(time, true);
+      graph.second->display(time, true, true);
       data_.referee_.referee_data_.robot_hurt_.hurt_type_ = 9;
-    } else graph.second->display(time, false);
+    } else graph.second->display(time, false, true);
   }
 }
 
@@ -107,6 +107,11 @@ uint8_t ArmorUi::getArmorId(const std::string &name) {
   else if (name == "armor2") return 2;
   else if (name == "armor3") return 3;
   return 9;
+}
+
+void WarningUi::update(const std::string &name, const ros::Time &time, bool state) {
+  auto graph = graph_vector_.find(name);
+  if (graph != graph_vector_.end()) graph->second->display(time, !state);
 }
 
 void CapacitorUi::add() {

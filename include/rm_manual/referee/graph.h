@@ -15,7 +15,7 @@ class Graph {
   explicit Graph(const XmlRpc::XmlRpcValue &config, Referee &referee);
   void display();
   void display(const ros::Time &time);
-  void display(const ros::Time &time, bool state);
+  void display(const ros::Time &time, bool state, bool once = false);
   void updateX(int index);
   void updateY(int index);
   void setOperation(const rm_common::GraphOperation &operation) { config_.operate_type_ = operation; }

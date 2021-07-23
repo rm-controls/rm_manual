@@ -111,7 +111,10 @@ class EngineerManual : public ChassisGimbalManual {
   }
   void ctrlCPress(ros::Duration /*duration*/) { action_client_.cancelAllGoals(); }
   void ctrlRPress(ros::Duration /*duration*/) { runStepQueue(rm_msgs::EngineerGoal::RECOVER); }
-
+  void drawUi(const ros::Time &time) override {
+    ChassisGimbalManual::drawUi(time);
+    warning_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
+  }
   enum { MANUAL, MIDDLEWARE };
   int operating_mode_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;

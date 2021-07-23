@@ -16,6 +16,7 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
   state_ui_ = new StateUi(ui_nh, data_);
   armor_ui_ = new ArmorUi(ui_nh, data_);
   capacitor_ui_ = new CapacitorUi(ui_nh, data_);
+  warning_ui_ = new WarningUi(ui_nh, data_);
 }
 
 void ChassisGimbalManual::sendCommand(const ros::Time &time) {
@@ -90,6 +91,9 @@ void ChassisGimbalManual::drawUi(const ros::Time &time) {
   state_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
   capacitor_ui_->update(time);
   armor_ui_->update(time);
+  warning_ui_->update("spin", time,
+                      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO
+                          && vel_cmd_sender_->getMsg()->angular.z != 0.);
   ManualBase::drawUi(time);
 }
 

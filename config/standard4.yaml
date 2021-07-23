@@ -80,6 +80,10 @@ rm_manual:
       - { name: "5m", data: { type: "line", id: 8, start_x: [ 900,900,900,900 ], start_y: [ 550,550,550,550 ], end_x: [ 1020,1020,1020,1020 ], end_y: [ 550,550,550,550 ], width: 3, color: "yellow" } }
     capacitor:
       - { name: "capacitor", data: { type: "string", id: 9, start_x: 900, start_y: 100, start_angle: 15, width: 2, delay: 0.5 } }
+    warning:
+      - { name: "spin", data: { type: "string", id: 10, start_x: 900, start_y: 750, start_angle: 15, width: 2, color: "yellow", content: "please spin!!", delay: 1.2 } }
+      - { name: "cover", data: { type: "string", id: 11, start_x: 900, start_y: 700, start_angle: 15, width: 2, color: "green", content: "cover open!!", delay: 1.2 } }
+
 controllers:
   cover_controller:
     type: effort_controllers/JointPositionController

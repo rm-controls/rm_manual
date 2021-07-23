@@ -21,6 +21,7 @@ class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual {
   void mouseRightPress(ros::Duration duration) override;
   void mouseRightRelease(ros::Duration duration) override;
   void ctrlZPress(ros::Duration /*duration*/);
+  void drawUi(const ros::Time &time) override;
   rm_common::JointPositionBinaryCommandSender *cover_command_sender_{};
   rm_common::CalibrationQueue *cover_calibration_;
   RisingInputEvent ctrl_z_press_event_;

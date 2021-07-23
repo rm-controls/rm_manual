@@ -78,3 +78,7 @@ rm_manual:
     - start_controller: controllers/hand_calibration_controller
       stop_controller: controllers/hand_controller
       service_name: /controllers/hand_calibration_controller/is_calibrated
+  ui:
+    warning:
+      - { name: "spin", data: { type: "string", id: 10, start_x: 900, start_y: 750, start_angle: 15, width: 2, color: "yellow", content: "please spin!!", delay: 1.2 } }
+      - { name: "calibration", data: { type: "string", id: 11, start_x: 900, start_y: 700, start_angle: 15, width: 2, color: "yellow", content: "please calibrate!!", delay: 1.2 } }

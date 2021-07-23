@@ -80,4 +80,9 @@ void ChassisGimbalShooterCoverManual::ctrlZPress(ros::Duration) {
   }
 }
 
+void ChassisGimbalShooterCoverManual::drawUi(const ros::Time &time) {
+  ChassisGimbalShooterManual::drawUi(time);
+  warning_ui_->update("cover", time, cover_command_sender_->getState());
+}
+
 }

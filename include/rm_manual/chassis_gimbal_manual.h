@@ -35,6 +35,7 @@ class ChassisGimbalManual : public ManualBase {
   StateUi *state_ui_{};
   ArmorUi *armor_ui_{};
   CapacitorUi *capacitor_ui_{};
+  WarningUi *warning_ui_{};
 };
 }
 

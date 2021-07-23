@@ -51,6 +51,12 @@ class ArmorUi : public UiBase {
   uint8_t getArmorId(const std::string &name);
 };
 
+class WarningUi : public UiBase {
+ public:
+  explicit WarningUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "warning") {};
+  void update(const std::string &name, const ros::Time &time, bool state);
+};
+
 class CapacitorUi : public UiBase {
  public:
   explicit CapacitorUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "capacitor") {};

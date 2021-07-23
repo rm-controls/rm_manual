@@ -42,16 +42,20 @@ void Graph::display(const ros::Time &time) {
   last_time_ = time;
 }
 
-void Graph::display(const ros::Time &time, bool state) {
-  if (state) {
+void Graph::display(const ros::Time &time, bool state, bool once) {
+  if (once) {
+    if (state) {
+      last_time_ = time;
+      config_.operate_type_ = rm_common::GraphOperation::ADD;
+    }
+    if (time - last_time_ > delay_) config_.operate_type_ = rm_common::GraphOperation::DELETE;
+  } else if (state && time - last_time_ > delay_) {
+    config_.operate_type_ =
+        config_.operate_type_ == rm_common::GraphOperation::ADD ? rm_common::GraphOperation::DELETE
+                                                                : rm_common::GraphOperation::ADD;
     last_time_ = time;
-    config_.operate_type_ = rm_common::GraphOperation::ADD;
-    display();
   }
-  if (time - last_time_ > delay_) {
-    config_.operate_type_ = rm_common::GraphOperation::DELETE;
-    display();
-  }
+  display();
 }
 
 void Graph::updateX(int index) {
