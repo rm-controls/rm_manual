@@ -62,10 +62,11 @@ class DataUi : public UiBase {
  public:
   explicit DataUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "data") {};
   void add() override;
-  void update(const std::string &name, const ros::Time &time);
+  void update(const std::string &name, const ros::Time &time, int data = 0);
  private:
   void setCapacitorData(Graph &graph);
   void setEffortData(Graph &graph);
+  void setProgressData(Graph &graph, int data);
 };
 
 } // namespace rm_manual

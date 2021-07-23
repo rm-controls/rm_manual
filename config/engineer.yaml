@@ -79,8 +79,12 @@ rm_manual:
       stop_controller: controllers/hand_controller
       service_name: /controllers/hand_calibration_controller/is_calibrated
   ui:
+    state:
+      - { name: "step", config: { type: "string", id: 13, start_x: 400, start_y: 750, start_angle: 15, width: 2, color: "white", title: "step:" } }
+      - { name: "queue", config: { type: "string", id: 14, start_x: 400, start_y: 700, start_angle: 15, width: 2, color: "white",  title: "queue:" } }
+      - { name: "jog", config: { type: "string", id: 15, start_x: 400, start_y: 650, start_angle: 15, width: 2, color: "white",  title: "jog:" } }
     warning:
-      - { name: "spin", config: { type: "string", id: 10, start_x: 900, start_y: 750, start_angle: 15, width: 2, color: "yellow", content: "please spin!!", delay: 1.2 } }
-      - { name: "calibration", config: { type: "string", id: 11, start_x: 900, start_y: 700, start_angle: 15, width: 2, color: "yellow", content: "please calibrate!!", delay: 1.2 } }
+      - { name: "calibration", config: { type: "string", id: 11, start_x: 850, start_y: 700, start_angle: 15, width: 2, color: "yellow", content: "please calibrate!!", delay: 1.2 } }
     data:
-      - { name: "effort", config: { type: "string", id: 12, start_x: 900, start_y: 150, start_angle: 15, width: 2, delay: 0.5 } }
+      - { name: "effort", config: { type: "string", id: 12, start_x: 850, start_y: 150, start_angle: 15, width: 2, delay: 0.8, color: "white" } }
+      - { name: "progress", config: { type: "string", id: 16, start_x: 850, start_y: 200, start_angle: 15, width: 2, delay: 0.8, color: "white" } }

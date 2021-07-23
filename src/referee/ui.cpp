@@ -135,11 +135,12 @@ void DataUi::add() {
   }
 }
 
-void DataUi::update(const std::string &name, const ros::Time &time) {
+void DataUi::update(const std::string &name, const ros::Time &time, int data) {
   auto graph = graph_vector_.find(name);
   if (graph != graph_vector_.end()) {
     if (name == "capacitor") setCapacitorData(*graph->second);
     if (name == "effort") setEffortData(*graph->second);
+    if (name == "progress") setProgressData(*graph->second, data);
     graph->second->display(time);
   }
 }
@@ -162,6 +163,13 @@ void DataUi::setEffortData(Graph &graph) {
   double max_effort = 0.;
   for (auto effort:data_.joint_state_.effort) { if (effort > max_effort) max_effort = effort; }
   sprintf(data_str, "max effort:%.2f", max_effort);
+  graph.setContent(data_str);
+  graph.setOperation(rm_common::GraphOperation::UPDATE);
+}
+
+void DataUi::setProgressData(Graph &graph, int data) {
+  char data_str[30] = {' '};
+  sprintf(data_str, "progress:%d%%", data);
   graph.setContent(data_str);
   graph.setOperation(rm_common::GraphOperation::UPDATE);
 }
