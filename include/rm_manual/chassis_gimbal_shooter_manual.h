@@ -48,7 +48,6 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
   rm_common::SwitchDetectionCaller *switch_detection_srv_{};
   rm_common::CalibrationQueue *trigger_calibration_;
-  AimUi *aim_ui_{};
 };
 }
 

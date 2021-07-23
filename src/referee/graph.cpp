@@ -4,17 +4,26 @@
 #include "rm_manual/referee/graph.h"
 namespace rm_manual {
 Graph::Graph(const XmlRpc::XmlRpcValue &config, Referee &referee) : referee_(referee) {
-  if (config.hasMember("id")) {
-    config_.graphic_id_[0] = (uint8_t) ((int) config["id"] & 0xff);
-    config_.graphic_id_[1] = (uint8_t) (((int) config["id"] >> 8) & 0xff);
-    config_.graphic_id_[2] = (uint8_t) (((int) config["id"] >> 16) & 0xff);
-  }
-  if (config.hasMember("start_x")) config_.start_x_ = setValue(config["start_x"], start_x_array_);
-  if (config.hasMember("start_y")) config_.start_y_ = setValue(config["start_y"], start_y_array_);
-  if (config.hasMember("end_x")) config_.end_x_ = setValue(config["end_x"], end_x_array_);
-  if (config.hasMember("end_y")) config_.end_y_ = setValue(config["end_y"], end_y_array_);
+  graph_id_++;
+  config_.graphic_id_[0] = (uint8_t) (graph_id_ >> 0 & 0xFF);
+  config_.graphic_id_[1] = (uint8_t) (graph_id_ >> 8 & 0xFF);
+  config_.graphic_id_[2] = (uint8_t) (graph_id_ >> 16 & 0xFF);
   if (config.hasMember("type")) config_.graphic_type_ = getType(config["type"]);
-  if (config.hasMember("start_angle")) config_.start_angle_ = (int) config["start_angle"];
+  if (config_.graphic_type_ == getType("string")) {
+    if (config.hasMember("size")) config_.start_angle_ = (int) config["size"];
+  } else {
+    if (config.hasMember("start_angle")) config_.start_angle_ = (int) config["start_angle"];
+  }
+  if (config.hasMember("start_position")) {
+    initPosition(config["start_position"], start_positions_);
+    config_.start_x_ = start_positions_[0].first;
+    config_.start_y_ = start_positions_[0].second;
+  }
+  if (config.hasMember("end_position")) {
+    initPosition(config["end_position"], end_positions_);
+    config_.end_x_ = end_positions_[0].first;
+    config_.end_y_ = end_positions_[0].second;
+  }
   if (config.hasMember("end_angle")) config_.end_angle_ = (int) config["end_angle"];
   if (config.hasMember("radius")) config_.radius_ = (int) config["radius"];
   if (config.hasMember("width")) config_.width_ = (int) config["width"];
@@ -24,6 +33,8 @@ Graph::Graph(const XmlRpc::XmlRpcValue &config, Referee &referee) : referee_(ref
   if (config.hasMember("content")) content_ = (std::string) config["content"];
   config_.operate_type_ = rm_common::GraphOperation::DELETE;
   last_config_ = config_;
+  last_title_ = title_;
+  last_content_ = content_;
 }
 
 void Graph::display() {
@@ -57,21 +68,22 @@ void Graph::display(const ros::Time &time, bool state, bool once) {
   display();
 }
 
-void Graph::updateX(int index) {
-  config_.start_x_ = start_x_array_[index];
-  config_.end_x_ = end_x_array_[index];
+void Graph::updatePosition(int index) {
+  if (start_positions_.size() > 1) {
+    config_.start_x_ = start_positions_[index].first;
+    config_.start_y_ = start_positions_[index].second;
+  }
+  if (end_positions_.size() > 1) {
+    config_.end_x_ = end_positions_[index].first;
+    config_.end_y_ = end_positions_[index].second;
+  }
 }
 
-void Graph::updateY(int index) {
-  config_.start_y_ = start_y_array_[index];
-  config_.end_y_ = end_y_array_[index];
-}
-
-int Graph::setValue(XmlRpc::XmlRpcValue value, int *array) {
-  if (value.getType() == XmlRpc::XmlRpcValue::TypeArray)
-    for (int i = 0; i < 4 && i < (int) value.size(); ++i) array[i] = (int) value[i];
-  else array[0] = (int) value;
-  return array[0];
+void Graph::initPosition(XmlRpc::XmlRpcValue value, std::vector<std::pair<int, int>> positions) {
+  if (value[0].getType() == XmlRpc::XmlRpcValue::TypeArray)
+    initPosition(value, positions);
+  else
+    positions.push_back(std::pair<int, int>((int) value[0], (int) value[1]));
 }
 
 rm_common::GraphColor Graph::getColor(const std::string &color) {

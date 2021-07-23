@@ -35,27 +35,21 @@ class StateUi : public UiBase {
   const std::string getTargetState(uint8_t mode);
 };
 
-class AimUi : public UiBase {
+class FixedUi : public UiBase {
  public:
-  explicit AimUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "aim") {};
+  explicit FixedUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "fixed") {};
   void update();
  private:
-  void updateConfig(Graph *graph, int level);
-};
-
-class ArmorUi : public UiBase {
- public:
-  explicit ArmorUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "armor") {};
-  void update(const ros::Time &time);
- private:
-  void updateConfig(const std::string &name, Graph *graph);
-  uint8_t getArmorId(const std::string &name);
+  int getShootSpeedIndex();
 };
 
 class WarningUi : public UiBase {
  public:
   explicit WarningUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "warning") {};
-  void update(const std::string &name, const ros::Time &time, bool state);
+  void update(const std::string &name, const ros::Time &time, bool state = false);
+ private:
+  void updateArmorPosition(const std::string &name, Graph *graph);
+  uint8_t getArmorId(const std::string &name);
 };
 
 class DataUi : public UiBase {

@@ -13,10 +13,10 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh, data_.referee_.referee_data_);
   ros::NodeHandle ui_nh(nh, "ui");
-  state_ui_ = new StateUi(ui_nh, data_);
-  armor_ui_ = new ArmorUi(ui_nh, data_);
   data_ui_ = new DataUi(ui_nh, data_);
   warning_ui_ = new WarningUi(ui_nh, data_);
+  state_ui_ = new StateUi(ui_nh, data_);
+  fixed_ui_ = new FixedUi(ui_nh, data_);
 }
 
 void ChassisGimbalManual::sendCommand(const ros::Time &time) {
@@ -94,7 +94,10 @@ void ChassisGimbalManual::drawUi(const ros::Time &time) {
                       chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO
                           && vel_cmd_sender_->getMsg()->angular.z != 0.);
   state_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
-  armor_ui_->update(time);
+  warning_ui_->update("armor0", time);
+  warning_ui_->update("armor1", time);
+  warning_ui_->update("armor2", time);
+  warning_ui_->update("armor3", time);
 }
 
 }

@@ -6,15 +6,23 @@
 
 namespace rm_manual {
 UiBase::UiBase(ros::NodeHandle &nh, Data &data, const std::string &ui_type) : data_(data) {
-  XmlRpc::XmlRpcValue config_param;
-  if (!nh.getParam(ui_type, config_param)) {
+  XmlRpc::XmlRpcValue graph_param;
+  if (!nh.getParam(ui_type, graph_param)) {
     ROS_ERROR("%s no defined (namespace %s)", ui_type.c_str(), nh.getNamespace().c_str());
     return;
   }
   try {
-    for (int i = 0; i < (int) config_param.size(); ++i)
-      graph_vector_.insert(std::pair<std::string, Graph *>(config_param[i]["name"],
-                                                           new Graph(config_param[i]["config"], data_.referee_)));
+    int id;
+    for (auto graph:graph_param) {
+      if (graph.first == "chassis") {
+        id = Graph::graph_id_;
+        Graph::graph_id_ = 0;
+        graph_vector_.insert(std::pair<std::string, Graph *>(graph.first, new Graph(graph.second, data_.referee_)));
+        Graph::graph_id_ = id;
+      } else {
+        graph_vector_.insert(std::pair<std::string, Graph *>(graph.first, new Graph(graph.second, data_.referee_)));
+      }
+    }
   } catch (XmlRpc::XmlRpcException &e) { ROS_ERROR("Wrong ui parameter: %s", e.getMessage().c_str()); }
   for (auto graph:graph_vector_) graph.second->setOperation(rm_common::GraphOperation::DELETE);
 }
@@ -75,31 +83,47 @@ const std::string StateUi::getTargetState(uint8_t mode) {
   else return "error";
 }
 
-void AimUi::update() {
+void FixedUi::update() {
   if (data_.referee_.referee_data_.game_robot_status_.robot_level_ >= 4) return;
   for (auto graph:graph_vector_) {
-    updateConfig(graph.second, data_.referee_.referee_data_.game_robot_status_.robot_level_);
+    graph.second->updatePosition(getShootSpeedIndex());
     graph.second->setOperation(rm_common::GraphOperation::UPDATE);
     graph.second->display();
   }
 }
-void AimUi::updateConfig(Graph *graph, int level) {
-  graph->updateX(level);
-  graph->updateY(level);
+
+int FixedUi::getShootSpeedIndex() {
+  uint16_t speed_limit;
+  if (data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::BLUE_HERO
+      || data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::RED_HERO) {
+    speed_limit = data_.referee_.referee_data_.game_robot_status_.shooter_id_1_42_mm_speed_limit_;
+    if (speed_limit == 10) return 0;
+    else if (speed_limit == 16) return 1;
+  } else {
+    speed_limit = data_.referee_.referee_data_.game_robot_status_.shooter_id_1_17_mm_speed_limit_;
+    if (speed_limit == 15) return 0;
+    else if (speed_limit == 18) return 1;
+    else if (speed_limit == 30) return 2;
+  }
+  return 0;
 }
 
-void ArmorUi::update(const ros::Time &time) {
-  for (auto graph:graph_vector_) {
+void WarningUi::update(const std::string &name, const ros::Time &time, bool state) {
+  auto graph = graph_vector_.find(name);
+  if (graph == graph_vector_.end()) return;
+  if (name.find("armor") != std::string::npos) {
     if (data_.referee_.referee_data_.robot_hurt_.hurt_type_ == 0x00
-        && data_.referee_.referee_data_.robot_hurt_.armor_id_ == getArmorId(graph.first)) {
-      updateConfig(graph.first, graph.second);
-      graph.second->display(time, true, true);
+        && data_.referee_.referee_data_.robot_hurt_.armor_id_ == getArmorId(graph->first)) {
+      updateArmorPosition(graph->first, graph->second);
+      graph->second->display(time, true, true);
       data_.referee_.referee_data_.robot_hurt_.hurt_type_ = 9;
-    } else graph.second->display(time, false, true);
+    } else graph->second->display(time, false, true);
+  } else {
+    graph->second->display(time, !state);
   }
 }
 
-void ArmorUi::updateConfig(const std::string &name, Graph *graph) {
+void WarningUi::updateArmorPosition(const std::string &name, Graph *graph) {
   geometry_msgs::TransformStamped yaw2baselink;
   double roll, pitch, yaw;
   try { yaw2baselink = data_.tf_buffer_.lookupTransform("yaw", "base_link", ros::Time(0)); }
@@ -114,17 +138,12 @@ void ArmorUi::updateConfig(const std::string &name, Graph *graph) {
   }
 }
 
-uint8_t ArmorUi::getArmorId(const std::string &name) {
+uint8_t WarningUi::getArmorId(const std::string &name) {
   if (name == "armor0") return 0;
   else if (name == "armor1") return 1;
   else if (name == "armor2") return 2;
   else if (name == "armor3") return 3;
   return 9;
-}
-
-void WarningUi::update(const std::string &name, const ros::Time &time, bool state) {
-  auto graph = graph_vector_.find(name);
-  if (graph != graph_vector_.end()) graph->second->display(time, !state);
 }
 
 void DataUi::add() {
@@ -161,15 +180,20 @@ void DataUi::setCapacitorData(Graph &graph) {
 void DataUi::setEffortData(Graph &graph) {
   char data_str[30] = {' '};
   double max_effort = 0.;
+  std::string name;
   for (auto effort:data_.joint_state_.effort) { if (effort > max_effort) max_effort = effort; }
-  sprintf(data_str, "max effort:%.2f", max_effort);
+  auto i = std::find(data_.joint_state_.effort.begin(), data_.joint_state_.effort.end(), max_effort);
+  if (i != data_.joint_state_.effort.end()) {
+    name = data_.joint_state_.name[std::distance((data_.joint_state_.effort.begin()), i)];
+  }
+  sprintf(data_str, "max %s:%.2f", name.c_str(), max_effort);
   graph.setContent(data_str);
   graph.setOperation(rm_common::GraphOperation::UPDATE);
 }
 
 void DataUi::setProgressData(Graph &graph, double data) {
   char data_str[30] = {' '};
-  sprintf(data_str, "progress:%.2f%%", data);
+  sprintf(data_str, "progress:%1.0f%%", data);
   graph.setContent(data_str);
   graph.setOperation(rm_common::GraphOperation::UPDATE);
 }

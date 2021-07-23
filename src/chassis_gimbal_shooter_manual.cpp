@@ -19,8 +19,6 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle &nh)
   shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, data_.referee_.referee_data_);
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
-  ros::NodeHandle ui_nh(nh, "ui");
-  aim_ui_ = new AimUi(ui_nh, data_);
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("trigger_calibration", rpc_value);
   trigger_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
@@ -106,7 +104,7 @@ void ChassisGimbalShooterManual::mouseRightPress(ros::Duration) {
 
 void ChassisGimbalShooterManual::xPress(ros::Duration duration) {
   ChassisGimbalManual::xPress(duration);
-  aim_ui_->add();
+  fixed_ui_->add();
 }
 
 void ChassisGimbalShooterManual::ctrlVPress(ros::Duration) {
@@ -130,8 +128,8 @@ void ChassisGimbalShooterManual::ctrlBPress(ros::Duration) {
 
 void ChassisGimbalShooterManual::drawUi(const ros::Time &time) {
   ChassisGimbalManual::drawUi(time);
-  aim_ui_->update();
   state_ui_->update("target", switch_detection_srv_->getTarget(), shooter_cmd_sender_->getBurstMode(),
                     switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
+  fixed_ui_->update();
 }
 }

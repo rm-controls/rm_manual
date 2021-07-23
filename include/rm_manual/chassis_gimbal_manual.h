@@ -32,10 +32,10 @@ class ChassisGimbalManual : public ManualBase {
   rm_common::ChassisCommandSender *chassis_cmd_sender_{};
   rm_common::Vel2DCommandSender *vel_cmd_sender_;
   rm_common::GimbalCommandSender *gimbal_cmd_sender_{};
-  StateUi *state_ui_{};
-  ArmorUi *armor_ui_{};
   DataUi *data_ui_{};
   WarningUi *warning_ui_{};
+  StateUi *state_ui_{};
+  FixedUi *fixed_ui_{};
 };
 }
 

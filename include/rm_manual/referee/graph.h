@@ -16,24 +16,23 @@ class Graph {
   void display();
   void display(const ros::Time &time);
   void display(const ros::Time &time, bool state, bool once = false);
-  void updateX(int index);
-  void updateY(int index);
+  void updatePosition(int index);
   void setOperation(const rm_common::GraphOperation &operation) { config_.operate_type_ = operation; }
   void setColor(const rm_common::GraphColor &color) { config_.color_ = color; }
   void setContent(const std::string &content) { content_ = content; }
   void setStartX(int start_x) { config_.start_x_ = start_x; }
   void setStartY(int start_y) { config_.start_y_ = start_y; }
-  const std::string getTitle() { return title_; }
+  static int graph_id_;
  private:
-  int setValue(XmlRpc::XmlRpcValue value, int *array);
+  void initPosition(XmlRpc::XmlRpcValue value, std::vector<std::pair<int, int>> positions);
   rm_common::GraphColor getColor(const std::string &color);
   rm_common::GraphType getType(const std::string &type);
   Referee &referee_;
-  rm_common::GraphConfig config_{}, last_config_{};
-  std::string title_{}, content_{}, last_title_{}, last_content_{};
   ros::Time last_time_ = ros::Time::now();
   ros::Duration delay_ = ros::Duration(0.);
-  int start_x_array_[4]{}, start_y_array_[4]{}, end_x_array_[4]{}, end_y_array_[4]{};
+  rm_common::GraphConfig config_{}, last_config_{};
+  std::string title_{}, content_{}, last_title_{}, last_content_{};
+  std::vector<std::pair<int, int>> start_positions_{}, end_positions_{};
 };
 
 }

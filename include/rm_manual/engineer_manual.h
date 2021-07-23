@@ -106,7 +106,7 @@ class EngineerManual : public ChassisGimbalManual {
   void actionFeedbackCb(const rm_msgs::EngineerFeedbackConstPtr &feedback) {
     state_ui_->update("step", feedback->current_step);
     data_ui_->update("progress", ros::Time::now(),
-                     (((double) feedback->finished_step) / feedback->total_steps * 100);
+                     (double) (feedback->finished_step) / feedback->total_steps * 100);
   }
   void actionDoneCallback(const actionlib::SimpleClientGoalState &state,
                           const rm_msgs::EngineerResultConstPtr &result) {
