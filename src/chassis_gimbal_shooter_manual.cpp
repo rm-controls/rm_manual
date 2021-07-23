@@ -62,6 +62,16 @@ void ChassisGimbalShooterManual::updateRc() {
   }
 }
 
+void ChassisGimbalShooterManual::updatePc() {
+  ChassisGimbalManual::updatePc();
+  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
+    if (vel_cmd_sender_->getMsg()->linear.x != 0 || vel_cmd_sender_->getMsg()->linear.y != 0)
+      vel_cmd_sender_->setAngularZVel(gyro_move_reduction_);
+    else
+      vel_cmd_sender_->setAngularZVel(1.0);
+  }
+}
+
 void ChassisGimbalShooterManual::rightSwitchDown(ros::Duration duration) {
   ChassisGimbalManual::rightSwitchDown(duration);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
@@ -102,6 +112,23 @@ void ChassisGimbalShooterManual::mouseRightPress(ros::Duration) {
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
   gimbal_cmd_sender_->updateCost(data_.track_data_array_);
   shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
+}
+
+void ChassisGimbalManual::gPress(ros::Duration) {
+  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    vel_cmd_sender_->setAngularZVel(0.0);
+  } else {
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+    vel_cmd_sender_->setAngularZVel(1.0);
+  }
+}
+
+void ChassisGimbalManual::ePress(ros::Duration) {
+  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::TWIST)
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+  else
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
 }
 
 void ChassisGimbalShooterManual::xPress(ros::Duration duration) {

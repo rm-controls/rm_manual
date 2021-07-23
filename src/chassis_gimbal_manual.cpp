@@ -10,6 +10,8 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
   chassis_cmd_sender_ = new rm_common::ChassisCommandSender(chassis_nh, data_.referee_.referee_data_);
   ros::NodeHandle vel_nh(nh, "vel");
   vel_cmd_sender_ = new rm_common::Vel2DCommandSender(vel_nh);
+  if (!vel_nh.getParam("gyro_move_reduction", gyro_move_reduction_))
+    ROS_ERROR("Gyro move reduction no defined (namespace: %s)", nh.getNamespace().c_str());
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh, data_.referee_.referee_data_);
   ros::NodeHandle ui_nh(nh, "ui");
@@ -68,21 +70,37 @@ void ChassisGimbalManual::leftSwitchDown(ros::Duration duration) {
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
 }
 
-void ChassisGimbalManual::gPress(ros::Duration /*duration*/) {
-  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    vel_cmd_sender_->setAngularZVel(0.);
-  } else {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
-    vel_cmd_sender_->setAngularZVel(1.);
-  }
+void ChassisGimbalManual::wPress(ros::Duration /*duration*/) {
+  x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
+  vel_cmd_sender_->setLinearXVel(x_scale_);
 }
-
-void ChassisGimbalManual::ePress(ros::Duration /*duration*/) {
-  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::TWIST)
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-  else
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
+void ChassisGimbalManual::wRelease(ros::Duration /*duration*/) {
+  x_scale_ = x_scale_ <= -1.0 ? -1.0 : x_scale_ - 1.0;
+  vel_cmd_sender_->setLinearXVel(x_scale_);
+}
+void ChassisGimbalManual::aPress(ros::Duration /*duration*/) {
+  y_scale_ = y_scale_ >= 1.0 ? 1.0 : y_scale_ + 1.0;
+  vel_cmd_sender_->setLinearYVel(y_scale_);
+}
+void ChassisGimbalManual::aRelease(ros::Duration /*duration*/) {
+  y_scale_ = y_scale_ <= -1.0 ? -1.0 : y_scale_ - 1.0;
+  vel_cmd_sender_->setLinearYVel(y_scale_);
+}
+void ChassisGimbalManual::sPress(ros::Duration /*duration*/) {
+  x_scale_ = x_scale_ <= -1.0 ? -1.0 : x_scale_ - 1.0;
+  vel_cmd_sender_->setLinearXVel(x_scale_);
+}
+void ChassisGimbalManual::sRelease(ros::Duration /*duration*/) {
+  x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
+  vel_cmd_sender_->setLinearXVel(x_scale_);
+}
+void ChassisGimbalManual::dPress(ros::Duration /*duration*/) {
+  y_scale_ = y_scale_ <= -1.0 ? -1.0 : y_scale_ - 1.0;
+  vel_cmd_sender_->setLinearYVel(y_scale_);
+}
+void ChassisGimbalManual::dRelease(ros::Duration /*duration*/) {
+  y_scale_ = y_scale_ >= 1.0 ? 1.0 : y_scale_ + 1.0;
+  vel_cmd_sender_->setLinearYVel(y_scale_);
 }
 
 void ChassisGimbalManual::drawUi() {
