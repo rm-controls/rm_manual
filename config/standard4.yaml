@@ -67,17 +67,46 @@ rm_manual:
       stop_controller: controllers/shooter_controller
       service_name: /controllers/trigger_calibration_controller/is_calibrated
   ui:
-    state:
-      - { name: "chassis", data: { type: "string", id: 0, start_x: 400, start_y: 800, start_angle: 15, width: 2, title: "chassis:" } }
-      - { name: "gimbal", data: { type: "string", id: 1, start_x: 400, start_y: 750, start_angle: 15, width: 2, title: "gimbal: " } }
-      - { name: "shooter", data: { type: "string", id: 2, start_x: 400, start_y: 700, start_angle: 15, width: 2, title: "shooter:" } }
-      - { name: "target", data: { type: "string", id: 3,  start_x: 400, start_y: 650, start_angle: 15, width: 2, title: "target: " } }
-    aim:
-      - { name: "3m", data: { type: "line", id: 7, start_x: [ 920,920,920,920 ], start_y: [ 500,500,500,500 ], end_x: [ 1000,1000,1000,1000 ], end_y: [ 500,500,500,500 ], width: 3, color: "yellow" } }
-      - { name: "4m", data: { type: "line", id: 8, start_x: [ 910,910,910,910 ], start_y: [ 525,525,525,525 ], end_x: [ 1010,1010,1010,1010 ], end_y: [ 525,525,525,525 ], width: 3, color: "yellow" } }
-      - { name: "5m", data: { type: "line", id: 9, start_x: [ 900,900,900,900 ], start_y: [ 550,550,550,550 ], end_x: [ 1020,1020,1020,1020 ], end_y: [ 550,550,550,550 ], width: 3, color: "yellow" } }
-    capacitor:
-      - { name: "capacitor", data: { type: "string", id: 6, start_x: 900, start_y: 100, start_angle: 15, width: 2, delay: 0.5 } }
+    trigger_change:
+      - name: "chassis"
+        config: { start_position: [ 400, 750 ], size: 15, width: 2, title: "chassis:" }
+      - name: "target"
+        config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "target: " }
+    time_change:
+      - name: "capacitor"
+        config: { start_position: [ 900, 100 ], size: 15, width: 2, delay: 0.5 }
+    fixed:
+      - name: "3m"
+        config: { type: "line", width: 7, color: "yellow",
+                  start_position: [ [ 900, 600 ], [ 900, 600 ], [ 900, 600 ] ],
+                  end_position: [ [ 1020, 600 ], [ 1020, 600 ], [ 1020, 600 ] ] }
+      - name: "4m"
+        config: { type: "line", width: 5, color: "yellow",
+                  start_position: [ [ 910,550 ], [ 910, 550 ], [ 910, 550 ] ],
+                  end_position: [ [ 1010,550 ], [ 1010, 550 ], [ 1010, 550 ] ] }
+      - name: "5m"
+        config: { type: "line", width: 3, color: "yellow",
+                  start_position: [ [ 920, 500 ], [ 920, 500 ], [ 920, 500 ] ],
+                  end_position: [ [ 1000, 500 ], [ 1000, 500 ], [ 1000, 500 ] ] }
+      - name: "mid"
+        config: { type: "line", width: 3, color: "yellow",
+                  start_position: [ 960, 500 ], end_position: [ 960, 600 ] }
+    flash:
+      - name: "spin"
+        config: { start_position: [ 900, 750 ], size: 15, width: 2,
+                  color: "yellow", content: "please spin!!", delay: 1.2 }
+      - name: "cover"
+        config: { start_position: [ 900, 700 ], size: 15, width: 2,
+                  color: "green", content: "cover open!!", delay: 1.2 }
+      - name: "armor0"
+        config: { type: "circle", width: 3, radius: 50, color: "yellow", delay: 0.75 }
+      - name: "armor1"
+        config: { type: "circle", width: 3, radius: 50, color: "yellow", delay: 0.75 }
+      - name: "armor2"
+        config: { type: "circle", width: 3, radius: 50, color: "yellow", delay: 0.75 }
+      - name: "armor3"
+        config: { type: "circle", width: 3, radius: 50, color: "yellow", delay: 0.75 }
+
 controllers:
   cover_controller:
     type: effort_controllers/JointPositionController

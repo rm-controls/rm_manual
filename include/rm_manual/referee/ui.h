@@ -6,6 +6,7 @@
 #define RM_MANUAL_REFEREE_UI_H_
 
 #include "rm_manual/referee/graph.h"
+#include "rm_manual/common/data.h"
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <rm_common/ori_tool.h>
@@ -14,42 +15,51 @@
 namespace rm_manual {
 class UiBase {
  public:
-  explicit UiBase(ros::NodeHandle &nh, Referee &referee, const std::string &ui_type);
+  explicit UiBase(ros::NodeHandle &nh, Data &data, const std::string &ui_type);
   virtual void add();
  protected:
-  Referee &referee_;
+  Data &data_;
   std::map<std::string, Graph *> graph_vector_;
+  static int id_;
 };
 
-class StateUi : public UiBase {
+class TriggerChangeUi : public UiBase {
  public:
-  explicit StateUi(ros::NodeHandle &nh, Referee &referee) : UiBase(nh, referee, "state") {
-    for (auto graph:graph_vector_) updateConfig(graph.first, graph.second, 0, false);
-  }
-  void update(const std::string &graph_name, uint8_t mode, bool flag = false);
+  explicit TriggerChangeUi(ros::NodeHandle &nh, Data &data);
+  void update(const std::string &graph_name, const std::string &content);
+  void update(const std::string &graph_name, uint8_t mode, bool burst_flag = false, bool option_flag = false);
  private:
-  void updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool flag);
+  void updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool burst_flag, bool option_flag);
   const std::string getChassisState(uint8_t mode);
-  const std::string getGimbalState(uint8_t mode);
-  const std::string getShooterState(uint8_t mode);
   const std::string getTargetState(uint8_t mode);
 };
 
-class AimUi : public UiBase {
+class TimeChangeUi : public UiBase {
  public:
-  explicit AimUi(ros::NodeHandle &nh, Referee &referee) : UiBase(nh, referee, "aim") {};
-  void update();
+  explicit TimeChangeUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "time_change") {};
+  void add() override;
+  void update(const std::string &name, const ros::Time &time, double data = 0.);
  private:
-  void updatePosition(Graph *graph, int level);
+  void setCapacitorData(Graph &graph);
+  void setEffortData(Graph &graph);
+  void setProgressData(Graph &graph, double data);
 };
 
-class CapacitorUi : public UiBase {
+class FixedUi : public UiBase {
  public:
-  explicit CapacitorUi(ros::NodeHandle &nh, Referee &referee) : UiBase(nh, referee, "capacitor") {};
-  void add() override;
-  void update(const ros::Time &time);
+  explicit FixedUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "fixed") {};
+  void update();
  private:
-  void setConfig(Graph *graph, double data);
+  int getShootSpeedIndex();
+};
+
+class FlashUi : public UiBase {
+ public:
+  explicit FlashUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "flash") {};
+  void update(const std::string &name, const ros::Time &time, bool state = false);
+ private:
+  void updateArmorPosition(const std::string &name, Graph *graph);
+  uint8_t getArmorId(const std::string &name);
 };
 
 } // namespace rm_manual

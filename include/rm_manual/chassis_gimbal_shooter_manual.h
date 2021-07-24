@@ -39,14 +39,13 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void ctrlVPress();
   void ctrlRPress();
   void ctrlBPress();
-  void drawUi() override;
+  void drawUi(const ros::Time &time) override;
 
   InputEvent e_event_, g_event_, q_event_, f_event_, ctrl_c_event_, ctrl_v_event_, ctrl_r_event_,
       ctrl_b_event_, shift_event_;
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
   rm_common::SwitchDetectionCaller *switch_detection_srv_{};
   rm_common::CalibrationQueue *trigger_calibration_;
-  AimUi *aim_ui_{};
 };
 }
 

@@ -32,7 +32,7 @@ class ManualBase {
   virtual void updateRc();
   virtual void updatePc();
   virtual void sendCommand(const ros::Time &time) = 0;
-  virtual void drawUi() {};
+  virtual void drawUi(const ros::Time &time) { data_.referee_.sendUi(time); }
 
   // Referee
   virtual void chassisOutputOn() { ROS_INFO("Chassis output ON"); }

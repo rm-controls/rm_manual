@@ -19,37 +19,64 @@ namespace rm_manual {
 class EngineerManual : public ChassisGimbalManual {
  public:
   explicit EngineerManual(ros::NodeHandle &nh)
-      : ChassisGimbalManual(nh), action_client_("/engineer_middleware/move_arm", true) {
-    ros::NodeHandle arm_servo(nh, "arm_servo");
-
-    arm_servo_sender_ = new rm_common::Vel3DCommandSender(arm_servo);
-    reset_servo_server_ = nh.serviceClient<std_srvs::Empty>("/servo_server/reset_servo_status");
-    ROS_INFO("Waiting for move arm server to start.");
+      : ChassisGimbalManual(nh), operating_mode_(MANUAL), action_client_("/engineer_middleware/move_arm", true),
+        left_switch_up_fall_event_(boost::bind(&EngineerManual::leftSwitchUpFall, this, _1)),
+        left_switch_down_fall_event_(boost::bind(&EngineerManual::leftSwitchDownFall, this, _1)),
+        ctrl_c_press_event_(boost::bind(&EngineerManual::ctrlCPress, this, _1)),
+        ctrl_r_press_event_(boost::bind(&EngineerManual::ctrlRPress, this, _1)) {
+    ROS_INFO("Waiting for middleware to start.");
     action_client_.waitForServer();
-    ROS_INFO("Move arm server started.");
-
-    pub_ = nh.advertise<std_msgs::Float64>("/controllers/mast_controller/command", 1);
+    ROS_INFO("Middleware started.");
+    // Command sender
+    ros::NodeHandle nh_card(nh, "card");
+    card_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_card);
+    ros::NodeHandle nh_mast(nh, "mast");
+    mast_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_mast);
+    // Calibration
+    XmlRpc::XmlRpcValue rpc_value;
+    nh.getParam("power_on_calibration", rpc_value);
+    power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+    nh.getParam("arm_calibration", rpc_value);
+    arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   }
   void run() override {
-    arm_servo_sender_->setZero();
     ChassisGimbalManual::run();
+    arm_calibration_->update(ros::Time::now());
+    power_on_calibration_->update(ros::Time::now());
+  }
+
+ private:
+  void checkKeyboard() override {
+    ChassisGimbalManual::checkKeyboard();
+    ctrl_c_press_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
+    ctrl_r_press_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
   }
   void updateRc() override {
     ChassisGimbalManual::updateRc();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+    left_switch_up_fall_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::UP);
+    left_switch_down_fall_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN);
   }
-
- private:
   void sendCommand(const ros::Time &time) override {
-    ChassisGimbalManual::sendCommand(time);
-    arm_servo_sender_->sendCommand(time);
-    pub_.publish(std_msgs::Float64());
+    mast_command_sender_->sendCommand(time);
+    if (operating_mode_ == MANUAL) {
+      ChassisGimbalManual::sendCommand(time);
+      card_command_sender_->sendCommand(time);
+    }
+  }
+  void remoteControlTurnOff() override {
+    ManualBase::remoteControlTurnOff();
+    action_client_.cancelAllGoals();
+  }
+  void chassisOutputOn(ros::Duration /*duration*/) override {
+    power_on_calibration_->reset();
+    if (MIDDLEWARE)
+      action_client_.cancelAllGoals();
   }
   void rightSwitchDown() override {
     ChassisGimbalManual::rightSwitchDown();
-    if (has_send_step_list_) {
-      action_client_.cancelAllGoals();
-    }
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+    action_client_.cancelAllGoals();
   }
   void rightSwitchMid() override {
     ChassisGimbalManual::rightSwitchMid();
@@ -59,37 +86,49 @@ class EngineerManual : public ChassisGimbalManual {
     ChassisGimbalManual::rightSwitchUp();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   }
-  void leftSwitchMid() override {
-    rm_msgs::EngineerActionGoal g;
-    sendStepList(g.goal.FOLD);
-  }
-  void leftSwitchUp() override {
-    if (state_ == RC)
-      arm_servo_sender_->setAngularVel(data_.dbus_data_.ch_l_x, data_.dbus_data_.ch_l_y, data_.dbus_data_.ch_r_y);
-  }
-  void remoteControlTurnOn() override {
-    std_srvs::Empty srv;
-    ManualBase::remoteControlTurnOn();
-    reset_servo_server_.call(srv);
-  }
-  void sendStepList(uint8_t step_queue_id) {
-    rm_msgs::EngineerActionGoal goal;
-    goal.goal.step_queue_id = step_queue_id;
+  void leftSwitchUpFall(ros::Duration time) { runStepQueue("ARM_TEST"); }
+  void leftSwitchDownFall(ros::Duration time) { arm_calibration_->reset(); }
+  void runStepQueue(std::string step_queue_name) {
+    rm_msgs::EngineerGoal goal;
+    goal.step_queue_name = step_queue_name;
     if (action_client_.isServerConnected()) {
-      if (!has_send_step_list_) {
-        action_client_.sendGoal(goal.goal);
-        has_send_step_list_ = true;
-      } else if (has_send_step_list_ && action_client_.getResult()->finish) {
-        has_send_step_list_ = false;
-      }
+      if (operating_mode_ == MANUAL)
+        action_client_.sendGoal(goal,
+                                boost::bind(&EngineerManual::actionDoneCallback, this, _1, _2),
+                                boost::bind(&EngineerManual::actionActiveCallback, this),
+                                boost::bind(&EngineerManual::actionFeedbackCb, this, _1));
+      operating_mode_ = MIDDLEWARE;
+      trigger_change_ui_->update("step", step_queue_name);
     } else
-      ROS_WARN("Can not connected with move arm server");
+      ROS_ERROR("Can not connect to middleware");
   }
-  ros::Publisher pub_;
-  rm_common::Vel3DCommandSender *arm_servo_sender_{};
-  ros::ServiceClient reset_servo_server_;
-  bool has_send_step_list_{};
+  void actionActiveCallback() { operating_mode_ = MIDDLEWARE; }
+  void actionFeedbackCb(const rm_msgs::EngineerFeedbackConstPtr &feedback) {
+    trigger_change_ui_->update("queue", feedback->current_step);
+    time_change_ui_->update("progress", ros::Time::now(), ((double) feedback->finished_step) / feedback->total_steps);
+  }
+  void actionDoneCallback(const actionlib::SimpleClientGoalState &state,
+                          const rm_msgs::EngineerResultConstPtr &result) {
+    ROS_INFO("Finished in state [%s]", state.toString().c_str());
+    ROS_INFO("Result: %i", result->finish);
+    operating_mode_ = MANUAL;
+  }
+  void ctrlCPress(ros::Duration /*duration*/) { action_client_.cancelAllGoals(); }
+  void ctrlRPress(ros::Duration /*duration*/) { runStepQueue("RECOVER"); }
+  void drawUi(const ros::Time &time) override {
+    ChassisGimbalManual::drawUi(time);
+    time_change_ui_->update("effort", time);
+    flash_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
+//    trigger_change_ui_->update("jog", jog_joint_name);
+  }
+  enum { MANUAL, MIDDLEWARE };
+  int operating_mode_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
+  rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
+  rm_common::JointPositionBinaryCommandSender *mast_command_sender_, *card_command_sender_;
+  FallingInputEvent left_switch_up_fall_event_, left_switch_down_fall_event_;
+  RisingInputEvent ctrl_c_press_event_;
+  ActiveHighInputEvent ctrl_r_press_event_;
 };
 
 }
