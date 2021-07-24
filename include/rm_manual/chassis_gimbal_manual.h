@@ -28,12 +28,14 @@ class ChassisGimbalManual : public ManualBase {
   void dRelease(ros::Duration /*duration*/) override;
   void gPress(ros::Duration /*duration*/) override;
   void ePress(ros::Duration /*duration*/) override;
-  void drawUi() override;
+  void drawUi(const ros::Time &time) override;
   rm_common::ChassisCommandSender *chassis_cmd_sender_{};
   rm_common::Vel2DCommandSender *vel_cmd_sender_;
   rm_common::GimbalCommandSender *gimbal_cmd_sender_{};
-  StateUi *state_ui_{};
-  CapacitorUi *capacitor_ui_{};
+  TimeChangeUi *time_change_ui_{};
+  FlashUi *flash_ui_{};
+  TriggerChangeUi *trigger_change_ui_{};
+  FixedUi *fixed_ui_{};
   double x_scale_{}, y_scale_{};
   double gyro_move_reduction_{};
 };

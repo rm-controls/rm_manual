@@ -90,9 +90,6 @@ rm_manual:
       - name: "spin"
         config: { start_position: [ 900, 750 ], size: 15, width: 2,
                   color: "yellow", content: "please spin!!", delay: 1.2 }
-      - name: "cover"
-        config: { start_position: [ 900, 700 ], size: 15, width: 2,
-                  color: "green", content: "cover open!!", delay: 1.2 }
       - name: "armor0"
         config: { type: "circle", width: 3, radius: 50, color: "yellow", delay: 0.75 }
       - name: "armor1"

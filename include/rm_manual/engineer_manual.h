@@ -98,11 +98,15 @@ class EngineerManual : public ChassisGimbalManual {
                                 boost::bind(&EngineerManual::actionActiveCallback, this),
                                 boost::bind(&EngineerManual::actionFeedbackCb, this, _1));
       operating_mode_ = MIDDLEWARE;
+      trigger_change_ui_->update("step", step_queue_name);
     } else
       ROS_ERROR("Can not connect to middleware");
   }
   void actionActiveCallback() { operating_mode_ = MIDDLEWARE; }
-  void actionFeedbackCb(const rm_msgs::EngineerFeedbackConstPtr &feedback) {}
+  void actionFeedbackCb(const rm_msgs::EngineerFeedbackConstPtr &feedback) {
+    trigger_change_ui_->update("queue", feedback->current_step);
+    time_change_ui_->update("progress", ros::Time::now(), ((double) feedback->finished_step) / feedback->total_steps);
+  }
   void actionDoneCallback(const actionlib::SimpleClientGoalState &state,
                           const rm_msgs::EngineerResultConstPtr &result) {
     ROS_INFO("Finished in state [%s]", state.toString().c_str());
@@ -111,7 +115,12 @@ class EngineerManual : public ChassisGimbalManual {
   }
   void ctrlCPress(ros::Duration /*duration*/) { action_client_.cancelAllGoals(); }
   void ctrlRPress(ros::Duration /*duration*/) { runStepQueue("RECOVER"); }
-
+  void drawUi(const ros::Time &time) override {
+    ChassisGimbalManual::drawUi(time);
+    time_change_ui_->update("effort", time);
+    flash_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
+//    trigger_change_ui_->update("jog", jog_joint_name);
+  }
   enum { MANUAL, MIDDLEWARE };
   int operating_mode_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
