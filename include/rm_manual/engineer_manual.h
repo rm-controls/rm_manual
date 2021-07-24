@@ -86,11 +86,11 @@ class EngineerManual : public ChassisGimbalManual {
     ChassisGimbalManual::rightSwitchUp(time);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   }
-  void leftSwitchUpFall(ros::Duration time) { runStepQueue(5); }
+  void leftSwitchUpFall(ros::Duration time) { runStepQueue("ARM_TEST"); }
   void leftSwitchDownFall(ros::Duration time) { arm_calibration_->reset(); }
-  void runStepQueue(uint8_t step_queue_id) {
+  void runStepQueue(std::string step_queue_name) {
     rm_msgs::EngineerGoal goal;
-    goal.step_queue_id = step_queue_id;
+    goal.step_queue_name = step_queue_name;
     if (action_client_.isServerConnected()) {
       if (operating_mode_ == MANUAL)
         action_client_.sendGoal(goal,
@@ -98,16 +98,11 @@ class EngineerManual : public ChassisGimbalManual {
                                 boost::bind(&EngineerManual::actionActiveCallback, this),
                                 boost::bind(&EngineerManual::actionFeedbackCb, this, _1));
       operating_mode_ = MIDDLEWARE;
-      trigger_change_ui_->update("queue", step_queue_id);
     } else
       ROS_ERROR("Can not connect to middleware");
   }
   void actionActiveCallback() { operating_mode_ = MIDDLEWARE; }
-  void actionFeedbackCb(const rm_msgs::EngineerFeedbackConstPtr &feedback) {
-    trigger_change_ui_->update("step", feedback->current_step);
-    time_change_ui_->update("progress", ros::Time::now(),
-                            (double) (feedback->finished_step) / feedback->total_steps * 100);
-  }
+  void actionFeedbackCb(const rm_msgs::EngineerFeedbackConstPtr &feedback) {}
   void actionDoneCallback(const actionlib::SimpleClientGoalState &state,
                           const rm_msgs::EngineerResultConstPtr &result) {
     ROS_INFO("Finished in state [%s]", state.toString().c_str());
@@ -115,12 +110,8 @@ class EngineerManual : public ChassisGimbalManual {
     operating_mode_ = MANUAL;
   }
   void ctrlCPress(ros::Duration /*duration*/) { action_client_.cancelAllGoals(); }
-  void ctrlRPress(ros::Duration /*duration*/) { runStepQueue(rm_msgs::EngineerGoal::RECOVER); }
-  void drawUi(const ros::Time &time) override {
-    ChassisGimbalManual::drawUi(time);
-    time_change_ui_->update("effort", time);
-    flash_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
-  }
+  void ctrlRPress(ros::Duration /*duration*/) { runStepQueue("RECOVER"); }
+
   enum { MANUAL, MIDDLEWARE };
   int operating_mode_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
