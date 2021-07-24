@@ -62,6 +62,7 @@ class EngineerManual : public ChassisGimbalManual {
   }
   void sendCommand(const ros::Time &time) override {
     mast_command_sender_->sendCommand(time);
+    stone_platform_command_sender_->sendCommand(time);
     if (operating_mode_ == MANUAL) {
       ChassisGimbalManual::sendCommand(time);
       card_command_sender_->sendCommand(time);
@@ -92,12 +93,11 @@ class EngineerManual : public ChassisGimbalManual {
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
     }
 
-    void leftSwitchUpFall(ros::Duration time) { /*runStepQueue("ARM_TEST");*/
-      stone_platform_command_sender_->open();
+    void leftSwitchUpFall(ros::Duration time) { /*runStepQueue("ARM_TEST");*/    stone_platform_command_sender_->open();
     }
 
-    void leftSwitchDownFall(ros::Duration time) { /*arm_calibration_->reset();*/
-      stone_platform_command_sender_->close();
+    void
+    leftSwitchDownFall(ros::Duration time) { /*arm_calibration_->reset();*/ stone_platform_command_sender_->close();
     }
 
     void runStepQueue(std::string step_queue_name) {
