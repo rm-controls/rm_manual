@@ -26,9 +26,9 @@ class ManualBase {
   enum { PASSIVE, IDLE, RC, PC };
   virtual void run();
  protected:
-  void checkReferee(const ros::Time &time);
   void checkSwitch(const ros::Time &time);
-  virtual void checkKeyboard();
+  virtual void checkReferee() {};
+  virtual void checkKeyboard() {};
   virtual void updateRc();
   virtual void updatePc();
   virtual void sendCommand(const ros::Time &time) = 0;
@@ -42,27 +42,12 @@ class ManualBase {
   // Remote Controller
   virtual void remoteControlTurnOff();
   virtual void remoteControlTurnOn();
-  virtual void leftSwitchDown() {};
-  virtual void leftSwitchMid() {};
-  virtual void leftSwitchUp() {};
-  virtual void rightSwitchDown() { state_ = IDLE; }
-  virtual void rightSwitchMid() { state_ = RC; }
-  virtual void rightSwitchUp() { state_ = PC; }
-
-  // Keyboard
-  virtual void wPress() {};
-  virtual void wRelease() {};
-  virtual void sPress() {};
-  virtual void sRelease() {};
-  virtual void aPress() {};
-  virtual void aRelease() {};
-  virtual void dPress() {};
-  virtual void dRelease() {};
-  virtual void mouseLeftPress() {};
-  virtual void mouseLeftRelease() {};
-  virtual void mouseRightPress() {};
-  virtual void mouseRightRelease() {};
-  virtual void xPress() {};
+  virtual void leftSwitchDownRise() {};
+  virtual void leftSwitchMidRise() {};
+  virtual void leftSwitchUpRise() {};
+  virtual void rightSwitchDownRise() { state_ = IDLE; }
+  virtual void rightSwitchMidRise() { state_ = RC; }
+  virtual void rightSwitchUpRise() { state_ = PC; }
 
   Data data_;
   ros::NodeHandle nh_;
@@ -70,9 +55,8 @@ class ManualBase {
 
   bool remote_is_open_{};
   int state_ = PASSIVE;
-  InputEvent switch_right_down_event_, switch_right_mid_event_, switch_right_up_event_, switch_left_down_event_,
-      switch_left_mid_event_, switch_left_up_event_, chassis_power_on_, gimbal_power_on_, shooter_power_on_, x_event_,
-      w_event_, s_event_, a_event_, d_event_, mouse_left_event_, mouse_right_event_;
+  InputEvent right_switch_down_rise_event_, right_switch_mid_rise_event_, right_switch_up_rise_event_,
+      left_switch_down_rise_event_, left_switch_mid_rise_event_, left_switch_up_rise_event_;
 };
 
 }

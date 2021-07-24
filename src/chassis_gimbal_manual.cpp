@@ -19,6 +19,16 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
   flash_ui_ = new FlashUi(ui_nh, data_);
   trigger_change_ui_ = new TriggerChangeUi(ui_nh, data_);
   fixed_ui_ = new FixedUi(ui_nh, data_);
+
+  chassis_power_on_event_.setRising([this] { chassisOutputOn(); });
+  gimbal_power_on_event_.setRising([this] { gimbalOutputOn(); });
+  x_rise_event_.setRising([this] { xPress(); });
+  w_edge_event_.setEdge([this] { wPress(); }, [this] { wRelease(); });
+  s_edge_event_.setEdge([this] { sPress(); }, [this] { sRelease(); });
+  a_edge_event_.setEdge([this] { aPress(); }, [this] { aRelease(); });
+  d_edge_event_.setEdge([this] { dPress(); }, [this] { dRelease(); });
+  mouse_left_edge_event_.setEdge([this] { mouseLeftPress(); }, [this] { mouseLeftRelease(); });
+  mouse_right_edge_event_.setEdge([this] { mouseRightPress(); }, [this] { mouseRightRelease(); });
 }
 
 void ChassisGimbalManual::sendCommand(const ros::Time &time) {
@@ -44,22 +54,37 @@ void ChassisGimbalManual::updatePc() {
   gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
 }
 
-void ChassisGimbalManual::rightSwitchDown() {
-  ManualBase::rightSwitchDown();
+void ChassisGimbalManual::checkReferee() {
+  chassis_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_chassis_output_);
+  gimbal_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_gimbal_output_);
+}
+
+void ChassisGimbalManual::checkKeyboard() {
+  w_edge_event_.update(data_.dbus_data_.key_w);
+  s_edge_event_.update(data_.dbus_data_.key_s);
+  a_edge_event_.update(data_.dbus_data_.key_a);
+  d_edge_event_.update(data_.dbus_data_.key_d);
+  mouse_left_edge_event_.update(data_.dbus_data_.p_l);
+  mouse_right_edge_event_.update(data_.dbus_data_.p_r);
+  x_rise_event_.update(data_.dbus_data_.key_x);
+}
+
+void ChassisGimbalManual::rightSwitchDownRise() {
+  ManualBase::rightSwitchDownRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   vel_cmd_sender_->setZero();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   gimbal_cmd_sender_->setZero();
 }
 
-void ChassisGimbalManual::rightSwitchMid() {
-  ManualBase::rightSwitchMid();
+void ChassisGimbalManual::rightSwitchMidRise() {
+  ManualBase::rightSwitchMidRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
 }
 
-void ChassisGimbalManual::rightSwitchUp() {
-  ManualBase::rightSwitchUp();
+void ChassisGimbalManual::rightSwitchUpRise() {
+  ManualBase::rightSwitchUpRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   vel_cmd_sender_->setZero();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
@@ -67,8 +92,8 @@ void ChassisGimbalManual::rightSwitchUp() {
   time_change_ui_->add();
 }
 
-void ChassisGimbalManual::leftSwitchDown() {
-  ManualBase::leftSwitchDown();
+void ChassisGimbalManual::leftSwitchDownRise() {
+  ManualBase::leftSwitchDownRise();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
 }
 

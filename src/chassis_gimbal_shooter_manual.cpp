@@ -13,15 +13,16 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle &nh) : Ch
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("trigger_calibration", rpc_value);
   trigger_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  e_event_.setRising([this] { ePress(); });
-  g_event_.setRising([this] { gPress(); });
-  q_event_.setRising([this] { qPress(); });
-  f_event_.setRising([this] { fPress(); });
-  ctrl_c_event_.setRising([this] { ctrlCPress(); });
-  ctrl_v_event_.setRising([this] { ctrlVPress(); });
-  ctrl_r_event_.setRising([this] { ctrlRPress(); });
-  ctrl_b_event_.setRising([this] { ctrlBPress(); });
-  shift_event_.setEdge([this] { shiftPress(); }, [this] { shiftRelease(); });
+  shooter_power_on_event_.setRising([this] { shooterOutputOn(); });
+  e_rise_event_.setRising([this] { ePress(); });
+  g_rise_event_.setRising([this] { gPress(); });
+  q_rise_event_.setRising([this] { qPress(); });
+  f_rise_event_.setRising([this] { fPress(); });
+  ctrl_c_rise_event_.setRising([this] { ctrlCPress(); });
+  ctrl_v_rise_event_.setRising([this] { ctrlVPress(); });
+  ctrl_r_rise_event_.setRising([this] { ctrlRPress(); });
+  ctrl_b_rise_event_.setRising([this] { ctrlBPress(); });
+  shift_rise_event_.setEdge([this] { shiftPress(); }, [this] { shiftRelease(); });
 }
 
 void ChassisGimbalShooterManual::run() {
@@ -30,17 +31,21 @@ void ChassisGimbalShooterManual::run() {
   trigger_calibration_->update(ros::Time::now());
 }
 
+void ChassisGimbalShooterManual::checkReferee() {
+  shooter_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_shooter_output_);
+}
+
 void ChassisGimbalShooterManual::checkKeyboard() {
   ChassisGimbalManual::checkKeyboard();
-  e_event_.update(data_.dbus_data_.key_e);
-  g_event_.update(data_.dbus_data_.key_g);
-  q_event_.update(data_.dbus_data_.key_q);
-  f_event_.update(data_.dbus_data_.key_f);
-  ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
-  ctrl_v_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v);
-  ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
-  ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
-  shift_event_.update(data_.dbus_data_.key_shift);
+  e_rise_event_.update(data_.dbus_data_.key_e);
+  g_rise_event_.update(data_.dbus_data_.key_g);
+  q_rise_event_.update(data_.dbus_data_.key_q);
+  f_rise_event_.update(data_.dbus_data_.key_f);
+  ctrl_c_rise_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
+  ctrl_v_rise_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v);
+  ctrl_r_rise_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
+  ctrl_b_rise_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
+  shift_rise_event_.update(data_.dbus_data_.key_shift);
 }
 
 void ChassisGimbalShooterManual::sendCommand(const ros::Time &time) {
@@ -71,35 +76,35 @@ void ChassisGimbalShooterManual::updatePc() {
   }
 }
 
-void ChassisGimbalShooterManual::rightSwitchDown() {
-  ChassisGimbalManual::rightSwitchDown();
+void ChassisGimbalShooterManual::rightSwitchDownRise() {
+  ChassisGimbalManual::rightSwitchDownRise();
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
 }
 
-void ChassisGimbalShooterManual::rightSwitchMid() {
-  ChassisGimbalManual::rightSwitchMid();
+void ChassisGimbalShooterManual::rightSwitchMidRise() {
+  ChassisGimbalManual::rightSwitchMidRise();
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
 }
 
-void ChassisGimbalShooterManual::rightSwitchUp() {
-  ChassisGimbalManual::rightSwitchUp();
+void ChassisGimbalShooterManual::rightSwitchUpRise() {
+  ChassisGimbalManual::rightSwitchUpRise();
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
 }
 
-void ChassisGimbalShooterManual::leftSwitchDown() {
-  ChassisGimbalManual::leftSwitchDown();
+void ChassisGimbalShooterManual::leftSwitchDownRise() {
+  ChassisGimbalManual::leftSwitchDownRise();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
 }
 
-void ChassisGimbalShooterManual::leftSwitchMid() {
-  ChassisGimbalManual::leftSwitchMid();
+void ChassisGimbalShooterManual::leftSwitchMidRise() {
+  ChassisGimbalManual::leftSwitchMidRise();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
 }
 
-void ChassisGimbalShooterManual::leftSwitchUp() {
-  ChassisGimbalManual::leftSwitchUp();
+void ChassisGimbalShooterManual::leftSwitchUpRise() {
+  ChassisGimbalManual::leftSwitchUpRise();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
   gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);

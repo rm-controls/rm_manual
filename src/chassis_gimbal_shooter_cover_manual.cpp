@@ -11,7 +11,7 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("cover_calibration", rpc_value);
   cover_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  ctrl_z_event_.setRising([this] { ctrlZPress(); });
+  ctrl_z_rise_event_.setRising([this] { ctrlZPress(); });
 }
 
 void ChassisGimbalShooterCoverManual::run() {
@@ -21,7 +21,7 @@ void ChassisGimbalShooterCoverManual::run() {
 
 void ChassisGimbalShooterCoverManual::checkKeyboard() {
   ChassisGimbalShooterManual::checkKeyboard();
-  ctrl_z_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
+  ctrl_z_rise_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
 }
 
 void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time &time) {
@@ -34,18 +34,18 @@ void ChassisGimbalShooterCoverManual::shooterOutputOn() {
   cover_calibration_->reset();
 }
 
-void ChassisGimbalShooterCoverManual::rightSwitchDown() {
-  ChassisGimbalShooterManual::rightSwitchDown();
+void ChassisGimbalShooterCoverManual::rightSwitchDownRise() {
+  ChassisGimbalShooterManual::rightSwitchDownRise();
   cover_command_sender_->open();
 }
 
-void ChassisGimbalShooterCoverManual::rightSwitchMid() {
-  ChassisGimbalShooterManual::rightSwitchMid();
+void ChassisGimbalShooterCoverManual::rightSwitchMidRise() {
+  ChassisGimbalShooterManual::rightSwitchMidRise();
   cover_command_sender_->close();
 }
 
-void ChassisGimbalShooterCoverManual::rightSwitchUp() {
-  ChassisGimbalShooterManual::rightSwitchUp();
+void ChassisGimbalShooterCoverManual::rightSwitchUpRise() {
+  ChassisGimbalShooterManual::rightSwitchUpRise();
   cover_command_sender_->close();
 }
 

@@ -19,11 +19,7 @@ namespace rm_manual {
 class EngineerManual : public ChassisGimbalManual {
  public:
   explicit EngineerManual(ros::NodeHandle &nh)
-      : ChassisGimbalManual(nh), operating_mode_(MANUAL), action_client_("/engineer_middleware/move_arm", true),
-        left_switch_up_fall_event_(boost::bind(&EngineerManual::leftSwitchUpFall, this, _1)),
-        left_switch_down_fall_event_(boost::bind(&EngineerManual::leftSwitchDownFall, this, _1)),
-        ctrl_c_press_event_(boost::bind(&EngineerManual::ctrlCPress, this, _1)),
-        ctrl_r_press_event_(boost::bind(&EngineerManual::ctrlRPress, this, _1)) {
+      : ChassisGimbalManual(nh), operating_mode_(MANUAL), action_client_("/engineer_middleware/move_arm", true) {
     ROS_INFO("Waiting for middleware to start.");
     action_client_.waitForServer();
     ROS_INFO("Middleware started.");
@@ -38,6 +34,10 @@ class EngineerManual : public ChassisGimbalManual {
     power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
     nh.getParam("arm_calibration", rpc_value);
     arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+    left_switch_up_fall_event_.setRising([this] { leftSwitchUpFall(); });
+    left_switch_down_fall_event_.setRising([this] { leftSwitchDownFall(); });
+    ctrl_c_rise_event_.setRising([this] { ctrlCPress(); });
+    ctrl_r_rise_event_.setRising([this] { ctrlRPress(); });
   }
   void run() override {
     ChassisGimbalManual::run();
@@ -48,8 +48,8 @@ class EngineerManual : public ChassisGimbalManual {
  private:
   void checkKeyboard() override {
     ChassisGimbalManual::checkKeyboard();
-    ctrl_c_press_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
-    ctrl_r_press_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
+    ctrl_c_rise_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
+    ctrl_r_rise_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
   }
   void updateRc() override {
     ChassisGimbalManual::updateRc();
@@ -68,26 +68,26 @@ class EngineerManual : public ChassisGimbalManual {
     ManualBase::remoteControlTurnOff();
     action_client_.cancelAllGoals();
   }
-  void chassisOutputOn(ros::Duration /*duration*/) override {
+  void chassisOutputOn() override {
     power_on_calibration_->reset();
     if (MIDDLEWARE)
       action_client_.cancelAllGoals();
   }
-  void rightSwitchDown() override {
-    ChassisGimbalManual::rightSwitchDown();
+  void rightSwitchDownRise() override {
+    ChassisGimbalManual::rightSwitchDownRise();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
     action_client_.cancelAllGoals();
   }
-  void rightSwitchMid() override {
-    ChassisGimbalManual::rightSwitchMid();
+  void rightSwitchMidRise() override {
+    ChassisGimbalManual::rightSwitchMidRise();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   }
-  void rightSwitchUp() override {
-    ChassisGimbalManual::rightSwitchUp();
+  void rightSwitchUpRise() override {
+    ChassisGimbalManual::rightSwitchUpRise();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   }
-  void leftSwitchUpFall(ros::Duration time) { runStepQueue("ARM_TEST"); }
-  void leftSwitchDownFall(ros::Duration time) { arm_calibration_->reset(); }
+  void leftSwitchUpFall() { runStepQueue("ARM_TEST"); }
+  void leftSwitchDownFall() { arm_calibration_->reset(); }
   void runStepQueue(std::string step_queue_name) {
     rm_msgs::EngineerGoal goal;
     goal.step_queue_name = step_queue_name;
@@ -113,8 +113,8 @@ class EngineerManual : public ChassisGimbalManual {
     ROS_INFO("Result: %i", result->finish);
     operating_mode_ = MANUAL;
   }
-  void ctrlCPress(ros::Duration /*duration*/) { action_client_.cancelAllGoals(); }
-  void ctrlRPress(ros::Duration /*duration*/) { runStepQueue("RECOVER"); }
+  void ctrlCPress() { action_client_.cancelAllGoals(); }
+  void ctrlRPress() { runStepQueue("RECOVER"); }
   void drawUi(const ros::Time &time) override {
     ChassisGimbalManual::drawUi(time);
     time_change_ui_->update("effort", time);
@@ -126,9 +126,7 @@ class EngineerManual : public ChassisGimbalManual {
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   rm_common::JointPositionBinaryCommandSender *mast_command_sender_, *card_command_sender_;
-  FallingInputEvent left_switch_up_fall_event_, left_switch_down_fall_event_;
-  RisingInputEvent ctrl_c_press_event_;
-  ActiveHighInputEvent ctrl_r_press_event_;
+  InputEvent left_switch_up_fall_event_, left_switch_down_fall_event_, ctrl_c_rise_event_, ctrl_r_rise_event_;
 };
 
 }
