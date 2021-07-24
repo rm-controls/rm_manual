@@ -90,7 +90,7 @@ void ManualBase::updateRc() {
 
 void ManualBase::updatePc() {
   checkKeyboard();
-  drawUi();
+  drawUi(ros::Time::now());
 }
 
 void ManualBase::checkKeyboard() {

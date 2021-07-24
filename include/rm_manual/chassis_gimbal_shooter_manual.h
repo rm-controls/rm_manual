@@ -17,6 +17,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void sendCommand(const ros::Time &time) override;
   void shooterOutputOn(ros::Duration /*duration*/) override;
   void updateRc() override;
+  void updatePc() override;
   void rightSwitchDown(ros::Duration duration) override;
   void rightSwitchMid(ros::Duration duration) override;
   void rightSwitchUp(ros::Duration duration) override;
@@ -36,7 +37,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void ctrlVPress(ros::Duration /*duration*/);
   void ctrlRPress(ros::Duration /*duration*/);
   void ctrlBPress(ros::Duration /*duration*/);
-  void drawUi() override;
+  void drawUi(const ros::Time &time) override;
   RisingInputEvent q_press_event_;
   RisingInputEvent f_press_event_;
   RisingInputEvent shift_press_event_;
@@ -48,7 +49,6 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
   rm_common::SwitchDetectionCaller *switch_detection_srv_{};
   rm_common::CalibrationQueue *trigger_calibration_;
-  AimUi *aim_ui_{};
 };
 }
 

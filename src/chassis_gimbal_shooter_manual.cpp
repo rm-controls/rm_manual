@@ -19,8 +19,6 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle &nh)
   shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, data_.referee_.referee_data_);
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
-  ros::NodeHandle ui_nh(nh, "ui");
-  aim_ui_ = new AimUi(ui_nh, data_.referee_);
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("trigger_calibration", rpc_value);
   trigger_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
@@ -59,6 +57,16 @@ void ChassisGimbalShooterManual::updateRc() {
   if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP) {
     gimbal_cmd_sender_->updateCost(data_.track_data_array_);
     gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
+  }
+}
+
+void ChassisGimbalShooterManual::updatePc() {
+  ChassisGimbalManual::updatePc();
+  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
+    if (vel_cmd_sender_->getMsg()->linear.x != 0 || vel_cmd_sender_->getMsg()->linear.y != 0)
+      vel_cmd_sender_->setAngularZVel(gyro_move_reduction_);
+    else
+      vel_cmd_sender_->setAngularZVel(1.0);
   }
 }
 
@@ -104,9 +112,26 @@ void ChassisGimbalShooterManual::mouseRightPress(ros::Duration) {
   shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
 }
 
+void ChassisGimbalManual::gPress(ros::Duration) {
+  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    vel_cmd_sender_->setAngularZVel(0.0);
+  } else {
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+    vel_cmd_sender_->setAngularZVel(1.0);
+  }
+}
+
+void ChassisGimbalManual::ePress(ros::Duration) {
+  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::TWIST)
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+  else
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
+}
+
 void ChassisGimbalShooterManual::xPress(ros::Duration duration) {
   ChassisGimbalManual::xPress(duration);
-  aim_ui_->add();
+  fixed_ui_->add();
 }
 
 void ChassisGimbalShooterManual::ctrlVPress(ros::Duration) {
@@ -128,11 +153,10 @@ void ChassisGimbalShooterManual::ctrlBPress(ros::Duration) {
   switch_detection_srv_->callService();
 }
 
-void ChassisGimbalShooterManual::drawUi() {
-  ChassisGimbalManual::drawUi();
-  state_ui_->update("shooter", shooter_cmd_sender_->getMsg()->mode, shooter_cmd_sender_->getBurstMode());
-  state_ui_->update("target", switch_detection_srv_->getTarget(),
-                    switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
-  aim_ui_->update();
+void ChassisGimbalShooterManual::drawUi(const ros::Time &time) {
+  ChassisGimbalManual::drawUi(time);
+  trigger_change_ui_->update("target", switch_detection_srv_->getTarget(), shooter_cmd_sender_->getBurstMode(),
+                             switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
+  fixed_ui_->update();
 }
 }
