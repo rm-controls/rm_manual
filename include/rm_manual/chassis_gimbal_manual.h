@@ -14,26 +14,39 @@ class ChassisGimbalManual : public ManualBase {
   void sendCommand(const ros::Time &time) override;
   void updateRc() override;
   void updatePc() override;
-  void rightSwitchDown(ros::Duration duration) override;
-  void rightSwitchMid(ros::Duration duration) override;
-  void rightSwitchUp(ros::Duration duration) override;
-  void leftSwitchDown(ros::Duration duration) override;
-  void wPress(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearXVel(1.); }
-  void wRelease(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearXVel(0.); }
-  void aPress(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearYVel(1.); }
-  void aRelease(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearYVel(0.); }
-  void sPress(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearXVel(-1.); }
-  void sRelease(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearXVel(0.); }
-  void dPress(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearYVel(-1.); }
-  void dRelease(ros::Duration /*duration*/) override { vel_cmd_sender_->setLinearYVel(0.); }
-  void gPress(ros::Duration /*duration*/) override;
-  void ePress(ros::Duration /*duration*/) override;
-  void drawUi() override;
+  void checkReferee() override;
+  void checkKeyboard() override;
+  void rightSwitchDownRise() override;
+  void rightSwitchMidRise() override;
+  void rightSwitchUpRise() override;
+  void leftSwitchDownRise() override;
+  virtual void xPress();
+  virtual void wPress();
+  virtual void wRelease();
+  virtual void aPress();
+  virtual void aRelease();
+  virtual void sPress();
+  virtual void sRelease();
+  virtual void dPress();
+  virtual void dRelease();
+  virtual void mouseLeftPress() {};
+  virtual void mouseLeftRelease() {};
+  virtual void mouseRightPress() {};
+  virtual void mouseRightRelease() {};
+
+  void drawUi(const ros::Time &time) override;
   rm_common::ChassisCommandSender *chassis_cmd_sender_{};
   rm_common::Vel2DCommandSender *vel_cmd_sender_;
   rm_common::GimbalCommandSender *gimbal_cmd_sender_{};
-  StateUi *state_ui_{};
-  CapacitorUi *capacitor_ui_{};
+  TimeChangeUi *time_change_ui_{};
+  FlashUi *flash_ui_{};
+  TriggerChangeUi *trigger_change_ui_{};
+  FixedUi *fixed_ui_{};
+  double x_scale_{}, y_scale_{};
+  double gyro_move_reduction_{};
+
+  InputEvent chassis_power_on_event_, gimbal_power_on_event_, x_rise_event_, w_edge_event_,
+      s_edge_event_, a_edge_event_, d_edge_event_, mouse_left_edge_event_, mouse_right_edge_event_;
 };
 }
 

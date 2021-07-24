@@ -10,11 +10,31 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
   chassis_cmd_sender_ = new rm_common::ChassisCommandSender(chassis_nh, data_.referee_.referee_data_);
   ros::NodeHandle vel_nh(nh, "vel");
   vel_cmd_sender_ = new rm_common::Vel2DCommandSender(vel_nh);
+  if (!vel_nh.getParam("gyro_move_reduction", gyro_move_reduction_))
+    ROS_ERROR("Gyro move reduction no defined (namespace: %s)", nh.getNamespace().c_str());
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh, data_.referee_.referee_data_);
   ros::NodeHandle ui_nh(nh, "ui");
-  state_ui_ = new StateUi(ui_nh, data_.referee_);
-  capacitor_ui_ = new CapacitorUi(ui_nh, data_.referee_);
+  time_change_ui_ = new TimeChangeUi(ui_nh, data_);
+  flash_ui_ = new FlashUi(ui_nh, data_);
+  trigger_change_ui_ = new TriggerChangeUi(ui_nh, data_);
+  fixed_ui_ = new FixedUi(ui_nh, data_);
+
+  chassis_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::chassisOutputOn, this));
+  gimbal_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::gimbalOutputOn, this));
+  x_rise_event_.setRising(boost::bind(&ChassisGimbalManual::xPress, this));
+  w_edge_event_.setEdge(boost::bind(&ChassisGimbalManual::wPress, this),
+                        boost::bind(&ChassisGimbalManual::wRelease, this));
+  s_edge_event_.setEdge(boost::bind(&ChassisGimbalManual::sPress, this),
+                        boost::bind(&ChassisGimbalManual::sRelease, this));
+  a_edge_event_.setEdge(boost::bind(&ChassisGimbalManual::aPress, this),
+                        boost::bind(&ChassisGimbalManual::aRelease, this));
+  d_edge_event_.setEdge(boost::bind(&ChassisGimbalManual::dPress, this),
+                        boost::bind(&ChassisGimbalManual::dRelease, this));
+  mouse_left_edge_event_.setEdge(boost::bind(&ChassisGimbalManual::mouseLeftPress, this),
+                                 boost::bind(&ChassisGimbalManual::mouseLeftRelease, this));
+  mouse_right_edge_event_.setEdge(boost::bind(&ChassisGimbalManual::mouseRightPress, this),
+                                  boost::bind(&ChassisGimbalManual::mouseRightRelease, this));
 }
 
 void ChassisGimbalManual::sendCommand(const ros::Time &time) {
@@ -40,55 +60,97 @@ void ChassisGimbalManual::updatePc() {
   gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
 }
 
-void ChassisGimbalManual::rightSwitchDown(ros::Duration duration) {
-  ManualBase::rightSwitchDown(duration);
+void ChassisGimbalManual::checkReferee() {
+  chassis_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_chassis_output_);
+  gimbal_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_gimbal_output_);
+}
+
+void ChassisGimbalManual::checkKeyboard() {
+  w_edge_event_.update(data_.dbus_data_.key_w);
+  s_edge_event_.update(data_.dbus_data_.key_s);
+  a_edge_event_.update(data_.dbus_data_.key_a);
+  d_edge_event_.update(data_.dbus_data_.key_d);
+  mouse_left_edge_event_.update(data_.dbus_data_.p_l);
+  mouse_right_edge_event_.update(data_.dbus_data_.p_r);
+  x_rise_event_.update(data_.dbus_data_.key_x);
+}
+
+void ChassisGimbalManual::rightSwitchDownRise() {
+  ManualBase::rightSwitchDownRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   vel_cmd_sender_->setZero();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   gimbal_cmd_sender_->setZero();
 }
 
-void ChassisGimbalManual::rightSwitchMid(ros::Duration duration) {
-  ManualBase::rightSwitchMid(duration);
+void ChassisGimbalManual::rightSwitchMidRise() {
+  ManualBase::rightSwitchMidRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
 }
 
-void ChassisGimbalManual::rightSwitchUp(ros::Duration duration) {
-  ManualBase::rightSwitchUp(duration);
+void ChassisGimbalManual::rightSwitchUpRise() {
+  ManualBase::rightSwitchUpRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   vel_cmd_sender_->setZero();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-  state_ui_->add();
-  capacitor_ui_->add();
+  trigger_change_ui_->add();
+  time_change_ui_->add();
 }
 
-void ChassisGimbalManual::leftSwitchDown(ros::Duration duration) {
-  ManualBase::leftSwitchDown(duration);
+void ChassisGimbalManual::leftSwitchDownRise() {
+  ManualBase::leftSwitchDownRise();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
 }
 
-void ChassisGimbalManual::gPress(ros::Duration /*duration*/) {
-  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    vel_cmd_sender_->setAngularZVel(0.);
-  } else {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
-    vel_cmd_sender_->setAngularZVel(1.);
-  }
+void ChassisGimbalManual::xPress() {
+
 }
 
-void ChassisGimbalManual::ePress(ros::Duration /*duration*/) {
-  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::TWIST)
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-  else
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
+void ChassisGimbalManual::wPress() {
+  x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
+  vel_cmd_sender_->setLinearXVel(x_scale_);
+}
+void ChassisGimbalManual::wRelease() {
+  x_scale_ = x_scale_ <= -1.0 ? -1.0 : x_scale_ - 1.0;
+  vel_cmd_sender_->setLinearXVel(x_scale_);
+}
+void ChassisGimbalManual::aPress() {
+  y_scale_ = y_scale_ >= 1.0 ? 1.0 : y_scale_ + 1.0;
+  vel_cmd_sender_->setLinearYVel(y_scale_);
+}
+void ChassisGimbalManual::aRelease() {
+  y_scale_ = y_scale_ <= -1.0 ? -1.0 : y_scale_ - 1.0;
+  vel_cmd_sender_->setLinearYVel(y_scale_);
+}
+void ChassisGimbalManual::sPress() {
+  x_scale_ = x_scale_ <= -1.0 ? -1.0 : x_scale_ - 1.0;
+  vel_cmd_sender_->setLinearXVel(x_scale_);
+}
+void ChassisGimbalManual::sRelease() {
+  x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
+  vel_cmd_sender_->setLinearXVel(x_scale_);
+}
+void ChassisGimbalManual::dPress() {
+  y_scale_ = y_scale_ <= -1.0 ? -1.0 : y_scale_ - 1.0;
+  vel_cmd_sender_->setLinearYVel(y_scale_);
+}
+void ChassisGimbalManual::dRelease() {
+  y_scale_ = y_scale_ >= 1.0 ? 1.0 : y_scale_ + 1.0;
+  vel_cmd_sender_->setLinearYVel(y_scale_);
 }
 
-void ChassisGimbalManual::drawUi() {
-  state_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
-  state_ui_->update("gimbal", gimbal_cmd_sender_->getMsg()->mode);
-  capacitor_ui_->update(ros::Time::now());
+void ChassisGimbalManual::drawUi(const ros::Time &time) {
+  ManualBase::drawUi(time);
+  time_change_ui_->update("capacitor", time);
+  flash_ui_->update("spin", time,
+                    chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO
+                        && vel_cmd_sender_->getMsg()->angular.z != 0.);
+  trigger_change_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
+  flash_ui_->update("armor0", time);
+  flash_ui_->update("armor1", time);
+  flash_ui_->update("armor2", time);
+  flash_ui_->update("armor3", time);
 }
 
 }

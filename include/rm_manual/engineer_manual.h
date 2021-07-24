@@ -32,9 +32,6 @@ class EngineerManual : public ChassisGimbalManual {
     card_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_card);
     ros::NodeHandle nh_mast(nh, "mast");
     mast_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_mast);
-    ros::NodeHandle nh_stone_platform(nh, "stone_platform");
-    stone_platform_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_stone_platform);
-
     // Calibration
     XmlRpc::XmlRpcValue rpc_value;
     nh.getParam("power_on_calibration", rpc_value);
@@ -62,7 +59,6 @@ class EngineerManual : public ChassisGimbalManual {
   }
   void sendCommand(const ros::Time &time) override {
     mast_command_sender_->sendCommand(time);
-    stone_platform_command_sender_->sendCommand(time);
     if (operating_mode_ == MANUAL) {
       ChassisGimbalManual::sendCommand(time);
       card_command_sender_->sendCommand(time);
@@ -82,64 +78,48 @@ class EngineerManual : public ChassisGimbalManual {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
     action_client_.cancelAllGoals();
   }
-
-    void rightSwitchMid(ros::Duration time) override {
-      ChassisGimbalManual::rightSwitchMid(time);
-      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-    }
-
-    void rightSwitchUp(ros::Duration time) override {
-      ChassisGimbalManual::rightSwitchUp(time);
-      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-    }
-
-    void leftSwitchUpFall(ros::Duration time) { /*runStepQueue("ARM_TEST");*/    stone_platform_command_sender_->open();
-    }
-
-    void
-    leftSwitchDownFall(ros::Duration time) { /*arm_calibration_->reset();*/ stone_platform_command_sender_->close();
-    }
-
-    void runStepQueue(std::string step_queue_name) {
-      rm_msgs::EngineerGoal goal;
-      goal.step_queue_name = step_queue_name;
-      if (action_client_.isServerConnected()) {
-        if (operating_mode_ == MANUAL)
-          action_client_.sendGoal(goal,
-                                  boost::bind(&EngineerManual::actionDoneCallback, this, _1, _2),
-                                  boost::bind(&EngineerManual::actionActiveCallback, this),
-                                  boost::bind(&EngineerManual::actionFeedbackCb, this, _1));
-        operating_mode_ = MIDDLEWARE;
+  void rightSwitchMid(ros::Duration time) override {
+    ChassisGimbalManual::rightSwitchMid(time);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  }
+  void rightSwitchUp(ros::Duration time) override {
+    ChassisGimbalManual::rightSwitchUp(time);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  }
+  void leftSwitchUpFall(ros::Duration time) { runStepQueue("ARM_TEST"); }
+  void leftSwitchDownFall(ros::Duration time) { arm_calibration_->reset(); }
+  void runStepQueue(std::string step_queue_name) {
+    rm_msgs::EngineerGoal goal;
+    goal.step_queue_name = step_queue_name;
+    if (action_client_.isServerConnected()) {
+      if (operating_mode_ == MANUAL)
+        action_client_.sendGoal(goal,
+                                boost::bind(&EngineerManual::actionDoneCallback, this, _1, _2),
+                                boost::bind(&EngineerManual::actionActiveCallback, this),
+                                boost::bind(&EngineerManual::actionFeedbackCb, this, _1));
+      operating_mode_ = MIDDLEWARE;
     } else
-        ROS_ERROR("Can not connect to middleware");
-    }
+      ROS_ERROR("Can not connect to middleware");
+  }
+  void actionActiveCallback() { operating_mode_ = MIDDLEWARE; }
+  void actionFeedbackCb(const rm_msgs::EngineerFeedbackConstPtr &feedback) {}
+  void actionDoneCallback(const actionlib::SimpleClientGoalState &state,
+                          const rm_msgs::EngineerResultConstPtr &result) {
+    ROS_INFO("Finished in state [%s]", state.toString().c_str());
+    ROS_INFO("Result: %i", result->finish);
+    operating_mode_ = MANUAL;
+  }
+  void ctrlCPress(ros::Duration /*duration*/) { action_client_.cancelAllGoals(); }
+  void ctrlRPress(ros::Duration /*duration*/) { runStepQueue("RECOVER"); }
 
-    void actionActiveCallback() { operating_mode_ = MIDDLEWARE; }
-
-    void actionFeedbackCb(const rm_msgs::EngineerFeedbackConstPtr &feedback) {}
-
-    void actionDoneCallback(const actionlib::SimpleClientGoalState &state,
-                            const rm_msgs::EngineerResultConstPtr &result) {
-      ROS_INFO("Finished in state [%s]", state.toString().c_str());
-      ROS_INFO("Result: %i", result->finish);
-      operating_mode_ = MANUAL;
-    }
-
-    void ctrlCPress(ros::Duration /*duration*/) { action_client_.cancelAllGoals(); }
-
-    void ctrlRPress(ros::Duration /*duration*/) { runStepQueue("RECOVER"); }
-
-    enum {
-        MANUAL, MIDDLEWARE
-    };
-    int operating_mode_;
-    actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
-    rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
-    rm_common::JointPositionBinaryCommandSender *mast_command_sender_, *card_command_sender_
-    , *stone_platform_command_sender_;
-    FallingInputEvent left_switch_up_fall_event_, left_switch_down_fall_event_;
-    RisingInputEvent ctrl_c_press_event_;
-    ActiveHighInputEvent ctrl_r_press_event_;
+  enum { MANUAL, MIDDLEWARE };
+  int operating_mode_;
+  actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
+  rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
+  rm_common::JointPositionBinaryCommandSender *mast_command_sender_, *card_command_sender_;
+  FallingInputEvent left_switch_up_fall_event_, left_switch_down_fall_event_;
+  RisingInputEvent ctrl_c_press_event_;
+  ActiveHighInputEvent ctrl_r_press_event_;
 };
 
 }

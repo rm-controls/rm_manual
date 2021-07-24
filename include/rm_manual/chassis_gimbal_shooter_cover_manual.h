@@ -14,16 +14,17 @@ class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual {
  protected:
   void checkKeyboard() override;
   void sendCommand(const ros::Time &time) override;
-  void shooterOutputOn(ros::Duration duration) override;
-  void rightSwitchDown(ros::Duration duration) override;
-  void rightSwitchMid(ros::Duration duration) override;
-  void rightSwitchUp(ros::Duration duration) override;
-  void mouseRightPress(ros::Duration duration) override;
-  void mouseRightRelease(ros::Duration duration) override;
-  void ctrlZPress(ros::Duration /*duration*/);
+  void shooterOutputOn() override;
+  void rightSwitchDownRise() override;
+  void rightSwitchMidRise() override;
+  void rightSwitchUpRise() override;
+  void mouseRightPress() override;
+  void mouseRightRelease() override;
+  void ctrlZPress();
+  void drawUi(const ros::Time &time) override;
   rm_common::JointPositionBinaryCommandSender *cover_command_sender_{};
   rm_common::CalibrationQueue *cover_calibration_;
-  RisingInputEvent ctrl_z_press_event_;
+  InputEvent ctrl_z_rise_event_;
 };
 }
 

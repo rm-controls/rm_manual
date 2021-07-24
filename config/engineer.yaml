@@ -89,3 +89,20 @@ rm_manual:
     - start_controller: controllers/hand_calibration_controller
       stop_controller: controllers/hand_controller
       service_name: /controllers/hand_calibration_controller/is_calibrated
+  ui:
+    trigger_change:
+      - name: "step"
+        config: { start_position: [ 400, 750 ], size: 15, width: 2, title: "step: " }
+      - name: "queue"
+        config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "queue:" }
+      - name: "jog"
+        config: { start_position: [ 400, 650 ], size: 15, width: 2, title: "jog:  " }
+    time_change:
+      - name: "effort"
+        config: { start_position: [ 850, 150 ], size: 15, width: 2, delay: 0.8, color: "white" }
+      - name: "progress"
+        config: { start_position: [ 850, 200 ], size: 15, width: 2, delay: 0.8, color: "white" }
+    flash:
+      - name: "calibration"
+        config: { start_position: [ 850, 700 ], size: 15, width: 2,
+                  color: "yellow", content: "please calibrate!!", delay: 1.5 }
