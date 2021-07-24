@@ -34,10 +34,10 @@ class EngineerManual : public ChassisGimbalManual {
     power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
     nh.getParam("arm_calibration", rpc_value);
     arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-    left_switch_up_fall_event_.setRising([this] { leftSwitchUpFall(); });
-    left_switch_down_fall_event_.setRising([this] { leftSwitchDownFall(); });
-    ctrl_c_rise_event_.setRising([this] { ctrlCPress(); });
-    ctrl_r_rise_event_.setRising([this] { ctrlRPress(); });
+    left_switch_up_fall_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpFall, this));
+    left_switch_down_fall_event_.setRising(boost::bind(&EngineerManual::leftSwitchDownFall, this));
+    ctrl_c_rise_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
+    ctrl_r_rise_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
   }
   void run() override {
     ChassisGimbalManual::run();

@@ -11,7 +11,7 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("cover_calibration", rpc_value);
   cover_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  ctrl_z_rise_event_.setRising([this] { ctrlZPress(); });
+  ctrl_z_rise_event_.setRising(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this));
 }
 
 void ChassisGimbalShooterCoverManual::run() {

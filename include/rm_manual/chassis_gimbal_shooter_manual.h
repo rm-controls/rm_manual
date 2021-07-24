@@ -43,7 +43,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void drawUi(const ros::Time &time) override;
 
   InputEvent shooter_power_on_event_, e_rise_event_, g_rise_event_, q_rise_event_, f_rise_event_, ctrl_c_rise_event_,
-      ctrl_v_rise_event_, ctrl_r_rise_event_, ctrl_b_rise_event_, shift_rise_event_;
+      ctrl_v_rise_event_, ctrl_r_rise_event_, ctrl_b_rise_event_, shift_edge_event_;
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
   rm_common::SwitchDetectionCaller *switch_detection_srv_{};
   rm_common::CalibrationQueue *trigger_calibration_;

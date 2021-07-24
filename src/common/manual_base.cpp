@@ -7,12 +7,12 @@ namespace rm_manual {
 
 ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh), controller_manager_(nh) {
   controller_manager_.startStateControllers();
-  right_switch_down_rise_event_.setRising([this] { rightSwitchDownRise(); });
-  right_switch_mid_rise_event_.setRising([this] { rightSwitchMidRise(); });
-  right_switch_up_rise_event_.setRising([this] { rightSwitchUpRise(); });
-  left_switch_down_rise_event_.setRising([this] { leftSwitchDownRise(); });
-  left_switch_mid_rise_event_.setRising([this] { leftSwitchMidRise(); });
-  left_switch_up_rise_event_.setRising([this] { leftSwitchUpRise(); });
+  right_switch_down_rise_event_.setRising(boost::bind(&ManualBase::rightSwitchDownRise, this));
+  right_switch_mid_rise_event_.setRising(boost::bind(&ManualBase::rightSwitchMidRise, this));
+  right_switch_up_rise_event_.setRising(boost::bind(&ManualBase::rightSwitchUpRise, this));
+  left_switch_down_rise_event_.setRising(boost::bind(&ManualBase::leftSwitchDownRise, this));
+  left_switch_mid_rise_event_.setRising(boost::bind(&ManualBase::leftSwitchMidRise, this));
+  left_switch_up_rise_event_.setRising(boost::bind(&ManualBase::leftSwitchUpRise, this));
 }
 
 void ManualBase::run() {
