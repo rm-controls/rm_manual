@@ -8,48 +8,40 @@
 #include <utility>
 
 namespace rm_manual {
-class InputEventBase {
+class InputEvent {
  public:
-  explicit InputEventBase(boost::function<void(ros::Duration)> handler) :
-      last_state_(false), last_change_(ros::Time::now()), handler_(std::move(handler)) {}
-  void callHandle() { handler_(ros::Time::now() - last_change_); }
-  virtual void update(bool key_state) {
-    if (key_state != last_state_) {
-      last_state_ = key_state;
+  InputEvent() : last_state_(false) {}
+  void setRising(boost::function<void()> handler) { rising_handler_ = std::move(handler); }
+  void setFalling(boost::function<void()> handler) { falling_handler_ = std::move(handler); }
+  void setActiveHigh(boost::function<void(ros::Duration)> handler) { active_high_handler_ = std::move(handler); }
+  void setActiveLow(boost::function<void(ros::Duration)> handler) { active_low_handler_ = std::move(handler); }
+  void setEdge(boost::function<void()> rising_handler, boost::function<void()> falling_handler) {
+    rising_handler_ = std::move(rising_handler);
+    falling_handler_ = std::move(falling_handler);
+  }
+  void setActive(boost::function<void(ros::Duration)> high_handler, boost::function<void(ros::Duration)> low_handler) {
+    active_high_handler_ = std::move(high_handler);
+    active_low_handler_ = std::move(low_handler);
+  }
+  void update(bool state) {
+    if (state && active_high_handler_)
+      active_high_handler_(ros::Time::now() - last_change_);
+    if (!state && active_low_handler_)
+      active_low_handler_(ros::Time::now() - last_change_);
+    if (state != last_state_) {
+      if (state && rising_handler_)
+        rising_handler_();
+      else if (!state && falling_handler_)
+        falling_handler_();
+      last_state_ = state;
       last_change_ = ros::Time::now();
     }
   }
- protected:
+ private:
   bool last_state_;
   ros::Time last_change_;
-  boost::function<void(ros::Duration)> handler_;
-};
-
-class RisingInputEvent : public InputEventBase {
- public:
-  using InputEventBase::InputEventBase;
-  void update(bool key_state) override {
-    if (key_state && !last_state_) callHandle();
-    InputEventBase::update(key_state);
-  }
-};
-
-class FallingInputEvent : public InputEventBase {
- public:
-  using InputEventBase::InputEventBase;
-  void update(bool key_state) override {
-    if (!key_state && last_state_) callHandle();
-    InputEventBase::update(key_state);
-  }
-};
-
-class ActiveHighInputEvent : public InputEventBase {
- public:
-  using InputEventBase::InputEventBase;
-  void update(bool key_state) override {
-    if (key_state) callHandle();
-    InputEventBase::update(key_state);
-  }
+  boost::function<void(ros::Duration)> active_high_handler_, active_low_handler_;
+  boost::function<void()> rising_handler_, falling_handler_;
 };
 
 }

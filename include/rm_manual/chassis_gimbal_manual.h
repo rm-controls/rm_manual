@@ -14,20 +14,26 @@ class ChassisGimbalManual : public ManualBase {
   void sendCommand(const ros::Time &time) override;
   void updateRc() override;
   void updatePc() override;
-  void rightSwitchDown(ros::Duration duration) override;
-  void rightSwitchMid(ros::Duration duration) override;
-  void rightSwitchUp(ros::Duration duration) override;
-  void leftSwitchDown(ros::Duration duration) override;
-  void wPress(ros::Duration /*duration*/) override;
-  void wRelease(ros::Duration /*duration*/) override;
-  void aPress(ros::Duration /*duration*/) override;
-  void aRelease(ros::Duration /*duration*/) override;
-  void sPress(ros::Duration /*duration*/) override;
-  void sRelease(ros::Duration /*duration*/) override;
-  void dPress(ros::Duration /*duration*/) override;
-  void dRelease(ros::Duration /*duration*/) override;
-  void gPress(ros::Duration /*duration*/) override;
-  void ePress(ros::Duration /*duration*/) override;
+  void checkReferee() override;
+  void checkKeyboard() override;
+  void rightSwitchDownRise() override;
+  void rightSwitchMidRise() override;
+  void rightSwitchUpRise() override;
+  void leftSwitchDownRise() override;
+  virtual void xPress();
+  virtual void wPress();
+  virtual void wRelease();
+  virtual void aPress();
+  virtual void aRelease();
+  virtual void sPress();
+  virtual void sRelease();
+  virtual void dPress();
+  virtual void dRelease();
+  virtual void mouseLeftPress() {};
+  virtual void mouseLeftRelease() {};
+  virtual void mouseRightPress() {};
+  virtual void mouseRightRelease() {};
+
   void drawUi(const ros::Time &time) override;
   rm_common::ChassisCommandSender *chassis_cmd_sender_{};
   rm_common::Vel2DCommandSender *vel_cmd_sender_;
@@ -38,6 +44,9 @@ class ChassisGimbalManual : public ManualBase {
   FixedUi *fixed_ui_{};
   double x_scale_{}, y_scale_{};
   double gyro_move_reduction_{};
+
+  InputEvent chassis_power_on_event_, gimbal_power_on_event_, x_rise_event_, w_edge_event_,
+      s_edge_event_, a_edge_event_, d_edge_event_, mouse_left_edge_event_, mouse_right_edge_event_;
 };
 }
 

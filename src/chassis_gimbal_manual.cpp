@@ -19,6 +19,16 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
   flash_ui_ = new FlashUi(ui_nh, data_);
   trigger_change_ui_ = new TriggerChangeUi(ui_nh, data_);
   fixed_ui_ = new FixedUi(ui_nh, data_);
+
+  chassis_power_on_event_.setRising([this] { chassisOutputOn(); });
+  gimbal_power_on_event_.setRising([this] { gimbalOutputOn(); });
+  x_rise_event_.setRising([this] { xPress(); });
+  w_edge_event_.setEdge([this] { wPress(); }, [this] { wRelease(); });
+  s_edge_event_.setEdge([this] { sPress(); }, [this] { sRelease(); });
+  a_edge_event_.setEdge([this] { aPress(); }, [this] { aRelease(); });
+  d_edge_event_.setEdge([this] { dPress(); }, [this] { dRelease(); });
+  mouse_left_edge_event_.setEdge([this] { mouseLeftPress(); }, [this] { mouseLeftRelease(); });
+  mouse_right_edge_event_.setEdge([this] { mouseRightPress(); }, [this] { mouseRightRelease(); });
 }
 
 void ChassisGimbalManual::sendCommand(const ros::Time &time) {
@@ -44,22 +54,37 @@ void ChassisGimbalManual::updatePc() {
   gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
 }
 
-void ChassisGimbalManual::rightSwitchDown(ros::Duration duration) {
-  ManualBase::rightSwitchDown(duration);
+void ChassisGimbalManual::checkReferee() {
+  chassis_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_chassis_output_);
+  gimbal_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_gimbal_output_);
+}
+
+void ChassisGimbalManual::checkKeyboard() {
+  w_edge_event_.update(data_.dbus_data_.key_w);
+  s_edge_event_.update(data_.dbus_data_.key_s);
+  a_edge_event_.update(data_.dbus_data_.key_a);
+  d_edge_event_.update(data_.dbus_data_.key_d);
+  mouse_left_edge_event_.update(data_.dbus_data_.p_l);
+  mouse_right_edge_event_.update(data_.dbus_data_.p_r);
+  x_rise_event_.update(data_.dbus_data_.key_x);
+}
+
+void ChassisGimbalManual::rightSwitchDownRise() {
+  ManualBase::rightSwitchDownRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   vel_cmd_sender_->setZero();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   gimbal_cmd_sender_->setZero();
 }
 
-void ChassisGimbalManual::rightSwitchMid(ros::Duration duration) {
-  ManualBase::rightSwitchMid(duration);
+void ChassisGimbalManual::rightSwitchMidRise() {
+  ManualBase::rightSwitchMidRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
 }
 
-void ChassisGimbalManual::rightSwitchUp(ros::Duration duration) {
-  ManualBase::rightSwitchUp(duration);
+void ChassisGimbalManual::rightSwitchUpRise() {
+  ManualBase::rightSwitchUpRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   vel_cmd_sender_->setZero();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
@@ -67,40 +92,44 @@ void ChassisGimbalManual::rightSwitchUp(ros::Duration duration) {
   time_change_ui_->add();
 }
 
-void ChassisGimbalManual::leftSwitchDown(ros::Duration duration) {
-  ManualBase::leftSwitchDown(duration);
+void ChassisGimbalManual::leftSwitchDownRise() {
+  ManualBase::leftSwitchDownRise();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
 }
 
-void ChassisGimbalManual::wPress(ros::Duration /*duration*/) {
+void ChassisGimbalManual::xPress() {
+
+}
+
+void ChassisGimbalManual::wPress() {
   x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
   vel_cmd_sender_->setLinearXVel(x_scale_);
 }
-void ChassisGimbalManual::wRelease(ros::Duration /*duration*/) {
+void ChassisGimbalManual::wRelease() {
   x_scale_ = x_scale_ <= -1.0 ? -1.0 : x_scale_ - 1.0;
   vel_cmd_sender_->setLinearXVel(x_scale_);
 }
-void ChassisGimbalManual::aPress(ros::Duration /*duration*/) {
+void ChassisGimbalManual::aPress() {
   y_scale_ = y_scale_ >= 1.0 ? 1.0 : y_scale_ + 1.0;
   vel_cmd_sender_->setLinearYVel(y_scale_);
 }
-void ChassisGimbalManual::aRelease(ros::Duration /*duration*/) {
+void ChassisGimbalManual::aRelease() {
   y_scale_ = y_scale_ <= -1.0 ? -1.0 : y_scale_ - 1.0;
   vel_cmd_sender_->setLinearYVel(y_scale_);
 }
-void ChassisGimbalManual::sPress(ros::Duration /*duration*/) {
+void ChassisGimbalManual::sPress() {
   x_scale_ = x_scale_ <= -1.0 ? -1.0 : x_scale_ - 1.0;
   vel_cmd_sender_->setLinearXVel(x_scale_);
 }
-void ChassisGimbalManual::sRelease(ros::Duration /*duration*/) {
+void ChassisGimbalManual::sRelease() {
   x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
   vel_cmd_sender_->setLinearXVel(x_scale_);
 }
-void ChassisGimbalManual::dPress(ros::Duration /*duration*/) {
+void ChassisGimbalManual::dPress() {
   y_scale_ = y_scale_ <= -1.0 ? -1.0 : y_scale_ - 1.0;
   vel_cmd_sender_->setLinearYVel(y_scale_);
 }
-void ChassisGimbalManual::dRelease(ros::Duration /*duration*/) {
+void ChassisGimbalManual::dRelease() {
   y_scale_ = y_scale_ >= 1.0 ? 1.0 : y_scale_ + 1.0;
   vel_cmd_sender_->setLinearYVel(y_scale_);
 }
