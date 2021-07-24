@@ -13,9 +13,9 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh, data_.referee_.referee_data_);
   ros::NodeHandle ui_nh(nh, "ui");
-  data_ui_ = new DataUi(ui_nh, data_);
-  warning_ui_ = new WarningUi(ui_nh, data_);
-  state_ui_ = new StateUi(ui_nh, data_);
+  time_change_ui_ = new TimeChangeUi(ui_nh, data_);
+  flash_ui_ = new FlashUi(ui_nh, data_);
+  trigger_change_ui_ = new TriggerChangeUi(ui_nh, data_);
   fixed_ui_ = new FixedUi(ui_nh, data_);
 }
 
@@ -61,8 +61,8 @@ void ChassisGimbalManual::rightSwitchUp(ros::Duration duration) {
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   vel_cmd_sender_->setZero();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-  state_ui_->add();
-  data_ui_->add();
+  trigger_change_ui_->add();
+  time_change_ui_->add();
 }
 
 void ChassisGimbalManual::leftSwitchDown(ros::Duration duration) {
@@ -89,15 +89,15 @@ void ChassisGimbalManual::ePress(ros::Duration /*duration*/) {
 
 void ChassisGimbalManual::drawUi(const ros::Time &time) {
   ManualBase::drawUi(time);
-  data_ui_->update("capacitor", time);
-  warning_ui_->update("spin", time,
-                      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO
-                          && vel_cmd_sender_->getMsg()->angular.z != 0.);
-  state_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
-  warning_ui_->update("armor0", time);
-  warning_ui_->update("armor1", time);
-  warning_ui_->update("armor2", time);
-  warning_ui_->update("armor3", time);
+  time_change_ui_->update("capacitor", time);
+  flash_ui_->update("spin", time,
+                    chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO
+                        && vel_cmd_sender_->getMsg()->angular.z != 0.);
+  trigger_change_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
+  flash_ui_->update("armor0", time);
+  flash_ui_->update("armor1", time);
+  flash_ui_->update("armor2", time);
+  flash_ui_->update("armor3", time);
 }
 
 }

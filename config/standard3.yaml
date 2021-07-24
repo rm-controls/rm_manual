@@ -66,33 +66,36 @@ rm_manual:
       stop_controller: controllers/shooter_controller
       service_name: /controllers/trigger_calibration_controller/is_calibrated
   ui:
-    state:
+    trigger_change:
       - name: "chassis"
-        config: { type: "string", start_position: [ 400, 750 ], size: 15, width: 2, title: "chassis:" }
+        config: { start_position: [ 400, 750 ], size: 15, width: 2, title: "chassis:" }
       - name: "target"
-        config: { type: "string", start_position: [ 400, 700 ], size: 15, width: 2, title: "target: " }
+        config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "target: " }
+    time_change:
+      - name: "capacitor"
+        config: { start_position: [ 900, 100 ], size: 15, width: 2, delay: 0.5 }
     fixed:
       - name: "3m"
+        config: { type: "line", width: 7, color: "yellow",
+                  start_position: [ [ 900, 600 ], [ 900, 600 ], [ 900, 600 ] ],
+                  end_position: [ [ 1020, 600 ], [ 1020, 600 ], [ 1020, 600 ] ] }
+      - name: "4m"
+        config: { type: "line", width: 5, color: "yellow",
+                  start_position: [ [ 910,550 ], [ 910, 550 ], [ 910, 550 ] ],
+                  end_position: [ [ 1010,550 ], [ 1010, 550 ], [ 1010, 550 ] ] }
+      - name: "5m"
         config: { type: "line", width: 3, color: "yellow",
                   start_position: [ [ 920, 500 ], [ 920, 500 ], [ 920, 500 ] ],
                   end_position: [ [ 1000, 500 ], [ 1000, 500 ], [ 1000, 500 ] ] }
-      - name: "4m"
+      - name: "mid"
         config: { type: "line", width: 3, color: "yellow",
-                  start_position: [ [ 910,500 ], [ 910, 500 ], [ 910, 500 ] ],
-                  end_position: [ [ 1010,500 ], [ 1010, 500 ], [ 1010, 500 ] ] }
-      - name: "5m"
-        config: { type: "line", width: 3, color: "yellow",
-                  start_position: [ [ 900, 500 ], [ 900, 500 ], [ 900, 500 ] ],
-                  end_position: [ [ 1020, 500 ], [ 1020, 500 ], [ 1020, 500 ] ] }
-    data:
-      - name: "capacitor"
-        config: { type: "string", start_position: [ 900, 100 ], size: 15, width: 2, delay: 0.5 }
-    warning:
+                  start_position: [ 960, 500 ], end_position: [ 960, 600 ] }
+    flash:
       - name: "spin"
-        config: { type: "string", start_position: [ 900, 750 ], size: 15, width: 2,
+        config: { start_position: [ 900, 750 ], size: 15, width: 2,
                   color: "yellow", content: "please spin!!", delay: 1.2 }
       - name: "cover"
-        config: { type: "string", start_position: [ 900, 700 ], size: 15, width: 2,
+        config: { start_position: [ 900, 700 ], size: 15, width: 2,
                   color: "green", content: "cover open!!", delay: 1.2 }
       - name: "armor0"
         config: { type: "circle", width: 3, radius: 50, color: "yellow", delay: 0.75 }

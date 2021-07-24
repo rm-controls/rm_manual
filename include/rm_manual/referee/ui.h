@@ -20,19 +20,29 @@ class UiBase {
  protected:
   Data &data_;
   std::map<std::string, Graph *> graph_vector_;
+  static int id_;
 };
 
-class StateUi : public UiBase {
+class TriggerChangeUi : public UiBase {
  public:
-  explicit StateUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "state") {
-    for (auto graph:graph_vector_) updateConfig(graph.first, graph.second, 0, false, false);
-  }
+  explicit TriggerChangeUi(ros::NodeHandle &nh, Data &data);
   void update(const std::string &graph_name, const std::string &content);
   void update(const std::string &graph_name, uint8_t mode, bool burst_flag = false, bool option_flag = false);
  private:
   void updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool burst_flag, bool option_flag);
   const std::string getChassisState(uint8_t mode);
   const std::string getTargetState(uint8_t mode);
+};
+
+class TimeChangeUi : public UiBase {
+ public:
+  explicit TimeChangeUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "time_change") {};
+  void add() override;
+  void update(const std::string &name, const ros::Time &time, double data = 0.);
+ private:
+  void setCapacitorData(Graph &graph);
+  void setEffortData(Graph &graph);
+  void setProgressData(Graph &graph, double data);
 };
 
 class FixedUi : public UiBase {
@@ -43,24 +53,13 @@ class FixedUi : public UiBase {
   int getShootSpeedIndex();
 };
 
-class WarningUi : public UiBase {
+class FlashUi : public UiBase {
  public:
-  explicit WarningUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "warning") {};
+  explicit FlashUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "flash") {};
   void update(const std::string &name, const ros::Time &time, bool state = false);
  private:
   void updateArmorPosition(const std::string &name, Graph *graph);
   uint8_t getArmorId(const std::string &name);
-};
-
-class DataUi : public UiBase {
- public:
-  explicit DataUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "data") {};
-  void add() override;
-  void update(const std::string &name, const ros::Time &time, double data = 0.);
- private:
-  void setCapacitorData(Graph &graph);
-  void setEffortData(Graph &graph);
-  void setProgressData(Graph &graph, double data);
 };
 
 } // namespace rm_manual

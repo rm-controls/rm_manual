@@ -128,8 +128,8 @@ void ChassisGimbalShooterManual::ctrlBPress(ros::Duration) {
 
 void ChassisGimbalShooterManual::drawUi(const ros::Time &time) {
   ChassisGimbalManual::drawUi(time);
-  state_ui_->update("target", switch_detection_srv_->getTarget(), shooter_cmd_sender_->getBurstMode(),
-                    switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
+  trigger_change_ui_->update("target", switch_detection_srv_->getTarget(), shooter_cmd_sender_->getBurstMode(),
+                             switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
   fixed_ui_->update();
 }
 }

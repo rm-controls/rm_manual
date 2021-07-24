@@ -98,15 +98,15 @@ class EngineerManual : public ChassisGimbalManual {
                                 boost::bind(&EngineerManual::actionActiveCallback, this),
                                 boost::bind(&EngineerManual::actionFeedbackCb, this, _1));
       operating_mode_ = MIDDLEWARE;
-      state_ui_->update("queue", step_queue_id);
+      trigger_change_ui_->update("queue", step_queue_id);
     } else
       ROS_ERROR("Can not connect to middleware");
   }
   void actionActiveCallback() { operating_mode_ = MIDDLEWARE; }
   void actionFeedbackCb(const rm_msgs::EngineerFeedbackConstPtr &feedback) {
-    state_ui_->update("step", feedback->current_step);
-    data_ui_->update("progress", ros::Time::now(),
-                     (double) (feedback->finished_step) / feedback->total_steps * 100);
+    trigger_change_ui_->update("step", feedback->current_step);
+    time_change_ui_->update("progress", ros::Time::now(),
+                            (double) (feedback->finished_step) / feedback->total_steps * 100);
   }
   void actionDoneCallback(const actionlib::SimpleClientGoalState &state,
                           const rm_msgs::EngineerResultConstPtr &result) {
@@ -118,8 +118,8 @@ class EngineerManual : public ChassisGimbalManual {
   void ctrlRPress(ros::Duration /*duration*/) { runStepQueue(rm_msgs::EngineerGoal::RECOVER); }
   void drawUi(const ros::Time &time) override {
     ChassisGimbalManual::drawUi(time);
-    data_ui_->update("effort", time);
-    warning_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
+    time_change_ui_->update("effort", time);
+    flash_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
   }
   enum { MANUAL, MIDDLEWARE };
   int operating_mode_;

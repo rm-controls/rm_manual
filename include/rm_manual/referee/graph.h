@@ -12,8 +12,8 @@
 namespace rm_manual {
 class Graph {
  public:
-  explicit Graph(const XmlRpc::XmlRpcValue &config, Referee &referee);
-  void display();
+  explicit Graph(const XmlRpc::XmlRpcValue &config, Referee &referee, int id);
+  void display(bool priority_flag = false);
   void display(const ros::Time &time);
   void display(const ros::Time &time, bool state, bool once = false);
   void updatePosition(int index);
@@ -22,9 +22,8 @@ class Graph {
   void setContent(const std::string &content) { content_ = content; }
   void setStartX(int start_x) { config_.start_x_ = start_x; }
   void setStartY(int start_y) { config_.start_y_ = start_y; }
-  static int graph_id_;
  private:
-  void initPosition(XmlRpc::XmlRpcValue value, std::vector<std::pair<int, int>> positions);
+  void initPosition(XmlRpc::XmlRpcValue value, std::vector<std::pair<int, int>> &positions);
   rm_common::GraphColor getColor(const std::string &color);
   rm_common::GraphType getType(const std::string &type);
   Referee &referee_;
