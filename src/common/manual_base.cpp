@@ -5,35 +5,24 @@
 #include "rm_manual/common/manual_base.h"
 namespace rm_manual {
 
-ManualBase::ManualBase(ros::NodeHandle &nh) :
-    data_(nh), nh_(nh),
-    controller_manager_(nh),
-    switch_right_down_event_(boost::bind(&ManualBase::rightSwitchDown, this, _1)),
-    switch_right_mid_event_(boost::bind(&ManualBase::rightSwitchMid, this, _1)),
-    switch_right_up_event_(boost::bind(&ManualBase::rightSwitchUp, this, _1)),
-    switch_left_down_event_(boost::bind(&ManualBase::leftSwitchDown, this, _1)),
-    switch_left_mid_event_(boost::bind(&ManualBase::leftSwitchMid, this, _1)),
-    switch_left_up_event_(boost::bind(&ManualBase::leftSwitchUp, this, _1)),
-    chassis_power_on_(boost::bind(&ManualBase::chassisOutputOn, this, _1)),
-    gimbal_power_on_(boost::bind(&ManualBase::gimbalOutputOn, this, _1)),
-    shooter_power_on_(boost::bind(&ManualBase::shooterOutputOn, this, _1)),
-    w_press_event_(boost::bind(&ManualBase::wPress, this, _1)),
-    w_release_event_(boost::bind(&ManualBase::wRelease, this, _1)),
-    s_press_event_(boost::bind(&ManualBase::sPress, this, _1)),
-    s_release_event_(boost::bind(&ManualBase::sRelease, this, _1)),
-    a_press_event_(boost::bind(&ManualBase::aPress, this, _1)),
-    a_release_event_(boost::bind(&ManualBase::aRelease, this, _1)),
-    d_press_event_(boost::bind(&ManualBase::dPress, this, _1)),
-    d_release_event_(boost::bind(&ManualBase::dRelease, this, _1)),
-    mouse_left_press_event_(boost::bind(&ManualBase::mouseLeftPress, this, _1)),
-    mouse_left_release_event_(boost::bind(&ManualBase::mouseLeftRelease, this, _1)),
-    mouse_right_press_event_(boost::bind(&ManualBase::mouseRightPress, this, _1)),
-    mouse_right_release_event_(boost::bind(&ManualBase::mouseRightRelease, this, _1)),
-    x_press_event_(boost::bind(&ManualBase::xPress, this, _1)),
-    x_release_event_(boost::bind(&ManualBase::xRelease, this, _1)),
-    e_press_event_(boost::bind(&ManualBase::ePress, this, _1)),
-    g_press_event_(boost::bind(&ManualBase::gPress, this, _1)) {
+ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh), controller_manager_(nh) {
   controller_manager_.startStateControllers();
+  switch_right_down_event_.setRising([this] { rightSwitchDown(); });
+  switch_right_mid_event_.setRising([this] { rightSwitchMid(); });
+  switch_right_up_event_.setRising([this] { rightSwitchUp(); });
+  switch_left_down_event_.setRising([this] { leftSwitchDown(); });
+  switch_left_mid_event_.setRising([this] { leftSwitchMid(); });
+  switch_left_up_event_.setRising([this] { leftSwitchUp(); });
+  chassis_power_on_.setRising([this] { chassisOutputOn(); });
+  gimbal_power_on_.setRising([this] { gimbalOutputOn(); });
+  shooter_power_on_.setRising([this] { shooterOutputOn(); });
+  x_event_.setRising([this] { xPress(); });
+  w_event_.setEdge([this] { wPress(); }, [this] { wRelease(); });
+  s_event_.setEdge([this] { sPress(); }, [this] { sRelease(); });
+  a_event_.setEdge([this] { aPress(); }, [this] { aRelease(); });
+  d_event_.setEdge([this] { dPress(); }, [this] { dRelease(); });
+  mouse_left_event_.setEdge([this] { mouseLeftPress(); }, [this] { mouseLeftRelease(); });
+  mouse_right_event_.setEdge([this] { mouseRightPress(); }, [this] { mouseRightRelease(); });
 }
 
 void ManualBase::run() {
@@ -94,22 +83,13 @@ void ManualBase::updatePc() {
 }
 
 void ManualBase::checkKeyboard() {
-  w_press_event_.update(data_.dbus_data_.key_w);
-  w_release_event_.update(data_.dbus_data_.key_w);
-  s_press_event_.update(data_.dbus_data_.key_s);
-  s_release_event_.update(data_.dbus_data_.key_s);
-  a_press_event_.update(data_.dbus_data_.key_a);
-  a_release_event_.update(data_.dbus_data_.key_a);
-  d_press_event_.update(data_.dbus_data_.key_d);
-  d_release_event_.update(data_.dbus_data_.key_d);
-  mouse_left_press_event_.update(data_.dbus_data_.p_l);
-  mouse_left_release_event_.update(data_.dbus_data_.p_l);
-  mouse_right_press_event_.update(data_.dbus_data_.p_r);
-  mouse_right_release_event_.update(data_.dbus_data_.p_r);
-  x_press_event_.update(data_.dbus_data_.key_x);
-  x_release_event_.update(data_.dbus_data_.key_x);
-  e_press_event_.update(data_.dbus_data_.key_e);
-  g_press_event_.update(data_.dbus_data_.key_g);
+  w_event_.update(data_.dbus_data_.key_w);
+  s_event_.update(data_.dbus_data_.key_s);
+  a_event_.update(data_.dbus_data_.key_a);
+  d_event_.update(data_.dbus_data_.key_d);
+  mouse_left_event_.update(data_.dbus_data_.p_l);
+  mouse_right_event_.update(data_.dbus_data_.p_r);
+  x_event_.update(data_.dbus_data_.key_x);
 }
 
 }

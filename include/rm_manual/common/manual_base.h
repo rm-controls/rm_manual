@@ -35,37 +35,34 @@ class ManualBase {
   virtual void drawUi() {};
 
   // Referee
-  virtual void chassisOutputOn(ros::Duration /*duration*/) { ROS_INFO("Chassis output ON"); }
-  virtual void gimbalOutputOn(ros::Duration /*duration*/) { ROS_INFO("Gimbal output ON"); }
-  virtual void shooterOutputOn(ros::Duration /*duration*/) { ROS_INFO("Shooter output ON"); }
+  virtual void chassisOutputOn() { ROS_INFO("Chassis output ON"); }
+  virtual void gimbalOutputOn() { ROS_INFO("Gimbal output ON"); }
+  virtual void shooterOutputOn() { ROS_INFO("Shooter output ON"); }
 
   // Remote Controller
   virtual void remoteControlTurnOff();
   virtual void remoteControlTurnOn();
-  virtual void leftSwitchDown(ros::Duration duration) {};
-  virtual void leftSwitchMid(ros::Duration duration) {};
-  virtual void leftSwitchUp(ros::Duration duration) {};
-  virtual void rightSwitchDown(ros::Duration duration) { state_ = IDLE; }
-  virtual void rightSwitchMid(ros::Duration duration) { state_ = RC; }
-  virtual void rightSwitchUp(ros::Duration duration) { state_ = PC; }
+  virtual void leftSwitchDown() {};
+  virtual void leftSwitchMid() {};
+  virtual void leftSwitchUp() {};
+  virtual void rightSwitchDown() { state_ = IDLE; }
+  virtual void rightSwitchMid() { state_ = RC; }
+  virtual void rightSwitchUp() { state_ = PC; }
 
   // Keyboard
-  virtual void wPress(ros::Duration duration) {};
-  virtual void wRelease(ros::Duration duration) {};
-  virtual void sPress(ros::Duration duration) {};
-  virtual void sRelease(ros::Duration duration) {};
-  virtual void aPress(ros::Duration duration) {};
-  virtual void aRelease(ros::Duration duration) {};
-  virtual void dPress(ros::Duration duration) {};
-  virtual void dRelease(ros::Duration duration) {};
-  virtual void mouseLeftPress(ros::Duration duration) {};
-  virtual void mouseLeftRelease(ros::Duration duration) {};
-  virtual void mouseRightPress(ros::Duration duration) {};
-  virtual void mouseRightRelease(ros::Duration duration) {};
-  virtual void xPress(ros::Duration duration) {};
-  virtual void xRelease(ros::Duration duration) {};
-  virtual void ePress(ros::Duration duration) {};
-  virtual void gPress(ros::Duration duration) {};
+  virtual void wPress() {};
+  virtual void wRelease() {};
+  virtual void sPress() {};
+  virtual void sRelease() {};
+  virtual void aPress() {};
+  virtual void aRelease() {};
+  virtual void dPress() {};
+  virtual void dRelease() {};
+  virtual void mouseLeftPress() {};
+  virtual void mouseLeftRelease() {};
+  virtual void mouseRightPress() {};
+  virtual void mouseRightRelease() {};
+  virtual void xPress() {};
 
   Data data_;
   ros::NodeHandle nh_;
@@ -73,25 +70,9 @@ class ManualBase {
 
   bool remote_is_open_{};
   int state_ = PASSIVE;
-  RisingInputEvent switch_right_down_event_, switch_right_mid_event_, switch_right_up_event_;
-  RisingInputEvent switch_left_down_event_, switch_left_mid_event_, switch_left_up_event_;
-  RisingInputEvent chassis_power_on_, gimbal_power_on_, shooter_power_on_;
-  RisingInputEvent w_press_event_;
-  FallingInputEvent w_release_event_;
-  RisingInputEvent s_press_event_;
-  FallingInputEvent s_release_event_;
-  RisingInputEvent a_press_event_;
-  FallingInputEvent a_release_event_;
-  RisingInputEvent d_press_event_;
-  FallingInputEvent d_release_event_;
-  RisingInputEvent mouse_left_press_event_;
-  FallingInputEvent mouse_left_release_event_;
-  RisingInputEvent mouse_right_press_event_;
-  FallingInputEvent mouse_right_release_event_;
-  RisingInputEvent x_press_event_;
-  FallingInputEvent x_release_event_;
-  RisingInputEvent e_press_event_;
-  RisingInputEvent g_press_event_;
+  InputEvent switch_right_down_event_, switch_right_mid_event_, switch_right_up_event_, switch_left_down_event_,
+      switch_left_mid_event_, switch_left_up_event_, chassis_power_on_, gimbal_power_on_, shooter_power_on_, x_event_,
+      w_event_, s_event_, a_event_, d_event_, mouse_left_event_, mouse_right_event_;
 };
 
 }

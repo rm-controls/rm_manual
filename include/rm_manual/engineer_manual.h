@@ -45,25 +45,25 @@ class EngineerManual : public ChassisGimbalManual {
     arm_servo_sender_->sendCommand(time);
     pub_.publish(std_msgs::Float64());
   }
-  void rightSwitchDown(ros::Duration time) override {
-    ChassisGimbalManual::rightSwitchDown(time);
+  void rightSwitchDown() override {
+    ChassisGimbalManual::rightSwitchDown();
     if (has_send_step_list_) {
       action_client_.cancelAllGoals();
     }
   }
-  void rightSwitchMid(ros::Duration time) override {
-    ChassisGimbalManual::rightSwitchMid(time);
+  void rightSwitchMid() override {
+    ChassisGimbalManual::rightSwitchMid();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   }
-  void rightSwitchUp(ros::Duration time) override {
-    ChassisGimbalManual::rightSwitchUp(time);
+  void rightSwitchUp() override {
+    ChassisGimbalManual::rightSwitchUp();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   }
-  void leftSwitchMid(ros::Duration time) override {
+  void leftSwitchMid() override {
     rm_msgs::EngineerActionGoal g;
     sendStepList(g.goal.FOLD);
   }
-  void leftSwitchUp(ros::Duration time) override {
+  void leftSwitchUp() override {
     if (state_ == RC)
       arm_servo_sender_->setAngularVel(data_.dbus_data_.ch_l_x, data_.dbus_data_.ch_l_y, data_.dbus_data_.ch_r_y);
   }
