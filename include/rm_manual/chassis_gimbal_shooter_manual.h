@@ -17,6 +17,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void sendCommand(const ros::Time &time) override;
   void shooterOutputOn(ros::Duration /*duration*/) override;
   void updateRc() override;
+  void updatePc() override;
   void rightSwitchDown(ros::Duration duration) override;
   void rightSwitchMid(ros::Duration duration) override;
   void rightSwitchUp(ros::Duration duration) override;
