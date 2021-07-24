@@ -13,39 +13,37 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   explicit ChassisGimbalShooterManual(ros::NodeHandle &nh);
   void run() override;
  protected:
+  void checkReferee() override;
   void checkKeyboard() override;
-  void sendCommand(const ros::Time &time) override;
-  void shooterOutputOn(ros::Duration /*duration*/) override;
   void updateRc() override;
   void updatePc() override;
-  void rightSwitchDown(ros::Duration duration) override;
-  void rightSwitchMid(ros::Duration duration) override;
-  void rightSwitchUp(ros::Duration duration) override;
-  void leftSwitchDown(ros::Duration duration) override;
-  void leftSwitchMid(ros::Duration duration) override;
-  void leftSwitchUp(ros::Duration duration) override;
-  void mouseLeftPress(ros::Duration /*duration*/) override { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH); }
-  void mouseLeftRelease(ros::Duration /*duration*/) override { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY); }
-  void mouseRightPress(ros::Duration /*duration*/) override;
-  void mouseRightRelease(ros::Duration /*duration*/) override { gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE); }
-  void xPress(ros::Duration duration) override;
-  void fPress(ros::Duration /*duration*/) { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
-  void qPress(ros::Duration /*duration*/) { shooter_cmd_sender_->setBurstMode(!shooter_cmd_sender_->getBurstMode()); }
-  void shiftPress(ros::Duration /*duration*/) { chassis_cmd_sender_->setBurstMode(true); }
-  void shiftRelease(ros::Duration /*duration*/) { chassis_cmd_sender_->setBurstMode(false); }
-  void ctrlCPress(ros::Duration /*duration*/) { gimbal_cmd_sender_->setBaseOnly(!gimbal_cmd_sender_->getBaseOnly()); }
-  void ctrlVPress(ros::Duration /*duration*/);
-  void ctrlRPress(ros::Duration /*duration*/);
-  void ctrlBPress(ros::Duration /*duration*/);
+  void sendCommand(const ros::Time &time) override;
+  void shooterOutputOn() override;
+  void rightSwitchDownRise() override;
+  void rightSwitchMidRise() override;
+  void rightSwitchUpRise() override;
+  void leftSwitchDownRise() override;
+  void leftSwitchMidRise() override;
+  void leftSwitchUpRise() override;
+  void mouseLeftPress() override { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH); }
+  void mouseLeftRelease() override { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY); }
+  void mouseRightPress() override;
+  void mouseRightRelease() override { gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE); }
+  void xPress() override;
+  void ePress();
+  void gPress();
+  void qPress() { shooter_cmd_sender_->setBurstMode(!shooter_cmd_sender_->getBurstMode()); }
+  void fPress() { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
+  void shiftPress() { chassis_cmd_sender_->setBurstMode(true); }
+  void shiftRelease() { chassis_cmd_sender_->setBurstMode(false); }
+  void ctrlCPress() { gimbal_cmd_sender_->setBaseOnly(!gimbal_cmd_sender_->getBaseOnly()); }
+  void ctrlVPress();
+  void ctrlRPress();
+  void ctrlBPress();
   void drawUi(const ros::Time &time) override;
-  RisingInputEvent q_press_event_;
-  RisingInputEvent f_press_event_;
-  RisingInputEvent shift_press_event_;
-  FallingInputEvent shift_release_event_;
-  RisingInputEvent ctrl_c_press_event_;
-  RisingInputEvent ctrl_v_press_event_;
-  RisingInputEvent ctrl_r_press_event_;
-  RisingInputEvent ctrl_b_press_event_;
+
+  InputEvent shooter_power_on_event_, e_rise_event_, g_rise_event_, q_rise_event_, f_rise_event_, ctrl_c_rise_event_,
+      ctrl_v_rise_event_, ctrl_r_rise_event_, ctrl_b_rise_event_, shift_edge_event_;
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
   rm_common::SwitchDetectionCaller *switch_detection_srv_{};
   rm_common::CalibrationQueue *trigger_calibration_;
