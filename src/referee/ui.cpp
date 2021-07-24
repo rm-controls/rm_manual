@@ -5,7 +5,7 @@
 #include "rm_manual/referee/ui.h"
 
 namespace rm_manual {
-int UiBase::id_(1);
+int UiBase::id_(2);
 UiBase::UiBase(ros::NodeHandle &nh, Data &data, const std::string &ui_type) : data_(data) {
   XmlRpc::XmlRpcValue rpc_value;
   if (!nh.getParam(ui_type, rpc_value)) {
@@ -16,7 +16,7 @@ UiBase::UiBase(ros::NodeHandle &nh, Data &data, const std::string &ui_type) : da
     for (int i = 0; i < (int) rpc_value.size(); ++i) {
       if (rpc_value[i]["name"] == "chassis")
         graph_vector_.insert(std::pair<std::string, Graph *>(rpc_value[i]["name"],
-                                                             new Graph(rpc_value[i]["config"], data_.referee_, 0)));
+                                                             new Graph(rpc_value[i]["config"], data_.referee_, 1)));
       else
         graph_vector_.insert(std::pair<std::string, Graph *>(rpc_value[i]["name"],
                                                              new Graph(rpc_value[i]["config"], data_.referee_, id_++)));
@@ -73,6 +73,7 @@ void TriggerChangeUi::updateConfig(const std::string &name, Graph *graph, uint8_
   if (name == "chassis") {
     graph->setContent(getChassisState(mode));
     if (burst_flag) graph->setColor(rm_common::GraphColor::ORANGE);
+    else if (option_flag) graph->setColor(rm_common::GraphColor::GREEN);
     else graph->setColor(rm_common::GraphColor::WHITE);
   } else if (name == "target") {
     graph->setContent(getTargetState(mode));
