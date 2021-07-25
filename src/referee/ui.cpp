@@ -13,13 +13,11 @@ UiBase::UiBase(ros::NodeHandle &nh, Data &data, const std::string &ui_type) : da
     return;
   }
   try {
-    for (int i = 0; i < (int) rpc_value.size(); ++i) {
-      if (rpc_value[i]["name"] == "chassis")
-        graph_vector_.insert(std::pair<std::string, Graph *>(rpc_value[i]["name"],
-                                                             new Graph(rpc_value[i]["config"], data_.referee_, 1)));
+    for (auto &i : rpc_value) {
+      if (i.first == "chassis")
+        graph_vector_.insert(std::pair<std::string, Graph *>(i.first, new Graph(i.second, data_.referee_, 1)));
       else
-        graph_vector_.insert(std::pair<std::string, Graph *>(rpc_value[i]["name"],
-                                                             new Graph(rpc_value[i]["config"], data_.referee_, id_++)));
+        graph_vector_.insert(std::pair<std::string, Graph *>(i.first, new Graph(i.second, data_.referee_, id_++)));
     }
   } catch (XmlRpc::XmlRpcException &e) { ROS_ERROR("Wrong ui parameter: %s", e.getMessage().c_str()); }
   for (auto graph:graph_vector_) graph.second->setOperation(rm_common::GraphOperation::DELETE);
@@ -34,7 +32,6 @@ void UiBase::add() {
 
 TriggerChangeUi::TriggerChangeUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "trigger_change") {
   for (auto graph:graph_vector_) {
-    graph.second->setColor(rm_common::GraphColor::WHITE);
     if (graph.first == "chassis") {
       if (data.referee_.referee_data_.robot_id_ == rm_common::RobotId::RED_ENGINEER
           || data.referee_.referee_data_.robot_id_ == rm_common::RobotId::BLUE_ENGINEER)
@@ -44,9 +41,7 @@ TriggerChangeUi::TriggerChangeUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, d
       graph.second->setContent("armor");
       if (data.referee_.referee_data_.robot_color_ == "red") graph.second->setColor(rm_common::GraphColor::CYAN);
       else graph.second->setColor(rm_common::GraphColor::PINK);
-    } else if (graph.first == "step") graph.second->setContent("0");
-    else if (graph.first == "jog") graph.second->setContent("0");
-    else if (graph.first == "queue") graph.second->setContent("0");
+    } else graph.second->setContent("0");
   }
 }
 
@@ -83,7 +78,7 @@ void TriggerChangeUi::updateConfig(const std::string &name, Graph *graph, uint8_
   }
 }
 
-const std::string TriggerChangeUi::getChassisState(uint8_t mode) {
+std::string TriggerChangeUi::getChassisState(uint8_t mode) {
   if (mode == rm_msgs::ChassisCmd::RAW) return "raw";
   else if (mode == rm_msgs::ChassisCmd::FOLLOW) return "follow";
   else if (mode == rm_msgs::ChassisCmd::GYRO) return "gyro";
@@ -91,7 +86,7 @@ const std::string TriggerChangeUi::getChassisState(uint8_t mode) {
   else return "error";
 }
 
-const std::string TriggerChangeUi::getTargetState(uint8_t mode) {
+std::string TriggerChangeUi::getTargetState(uint8_t mode) {
   if (mode == rm_msgs::StatusChangeRequest::BUFF) return "buff";
   else if (mode == rm_msgs::StatusChangeRequest::ARMOR) return "armor";
   else return "error";
