@@ -24,7 +24,9 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_down_event_.setFalling(boost::bind(&EngineerManual::leftSwitchDownFall, this));
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
+  ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
   ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
+  ctrl_q_event_.setRising(boost::bind(&EngineerManual::ctrlQPress, this));
 }
 
 void EngineerManual::run() {
@@ -36,7 +38,9 @@ void EngineerManual::run() {
 void EngineerManual::checkKeyboard() {
   ChassisGimbalManual::checkKeyboard();
   ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
+  ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
   ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
+  ctrl_q_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_q);
 }
 
 void EngineerManual::updateRc() {
@@ -44,6 +48,11 @@ void EngineerManual::updateRc() {
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   left_switch_up_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN);
+}
+
+void EngineerManual::updatePc() {
+  ChassisGimbalManual::updatePc();
+  vel_cmd_sender_->setAngularZVel(-data_.dbus_data_.m_x);
 }
 
 void EngineerManual::sendCommand(const ros::Time &time) {

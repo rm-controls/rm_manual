@@ -22,6 +22,7 @@ class EngineerManual : public ChassisGimbalManual {
  private:
   void checkKeyboard() override;
   void updateRc() override;
+  void updatePc() override;
   void sendCommand(const ros::Time &time) override;
   void drawUi(const ros::Time &time) override;
   void remoteControlTurnOff() override;
@@ -38,13 +39,15 @@ class EngineerManual : public ChassisGimbalManual {
                           const rm_msgs::EngineerResultConstPtr &result);
   void ctrlCPress() { action_client_.cancelAllGoals(); }
   void ctrlRPress() { runStepQueue("RECOVER"); }
+  void ctrlFPress() { runStepQueue("ARM_FOLD_LOWER"); }
+  void ctrlQPress() { runStepQueue("PLACE"); }
 
   enum { MANUAL, MIDDLEWARE };
   int operating_mode_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   rm_common::JointPositionBinaryCommandSender *mast_command_sender_, *card_command_sender_;
-  InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_c_event_, ctrl_r_event_;
+  InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_c_event_, ctrl_f_event_, ctrl_r_event_, ctrl_q_event_;
 };
 
 }
