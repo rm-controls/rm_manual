@@ -147,11 +147,6 @@ void ChassisGimbalShooterManual::ePress() {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
 }
 
-void ChassisGimbalShooterManual::xPress() {
-  ChassisGimbalManual::xPress();
-  fixed_ui_->add();
-}
-
 void ChassisGimbalShooterManual::ctrlVPress() {
   switch_detection_srv_->switchEnemyColor();
   switch_detection_srv_->callService();

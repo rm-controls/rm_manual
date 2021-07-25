@@ -124,7 +124,7 @@ void ChassisGimbalManual::leftSwitchDownRise() {
 }
 
 void ChassisGimbalManual::xPress() {
-
+  fixed_ui_->add();
 }
 
 void ChassisGimbalManual::wPress() {

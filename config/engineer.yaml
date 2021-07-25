@@ -96,12 +96,12 @@ rm_manual:
       - name: "queue"
         config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "queue:" }
       - name: "jog"
-        config: { start_position: [ 400, 650 ], size: 15, width: 2, title: "jog:  " }
+        config: { start_position: [ 400, 500 ], size: 15, width: 2, title: "jog:  " }
     time_change:
       - name: "effort"
         config: { start_position: [ 850, 150 ], size: 15, width: 2, delay: 0.8, color: "white" }
-      - name: "progress"
-        config: { start_position: [ 850, 200 ], size: 15, width: 2, delay: 0.8, color: "white" }
+      - name: "progress:"
+        config: { start_position: [ 380, 650 ], size: 15, width: 2, delay: 0.8, color: "white" }
     flash:
       - name: "calibration"
         config: { start_position: [ 850, 700 ], size: 15, width: 2,
