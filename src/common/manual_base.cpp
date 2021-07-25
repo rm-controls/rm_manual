@@ -7,12 +7,12 @@ namespace rm_manual {
 
 ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh), controller_manager_(nh) {
   controller_manager_.startStateControllers();
-  right_switch_down_rise_event_.setRising(boost::bind(&ManualBase::rightSwitchDownRise, this));
-  right_switch_mid_rise_event_.setRising(boost::bind(&ManualBase::rightSwitchMidRise, this));
-  right_switch_up_rise_event_.setRising(boost::bind(&ManualBase::rightSwitchUpRise, this));
-  left_switch_down_rise_event_.setRising(boost::bind(&ManualBase::leftSwitchDownRise, this));
-  left_switch_mid_rise_event_.setRising(boost::bind(&ManualBase::leftSwitchMidRise, this));
-  left_switch_up_rise_event_.setRising(boost::bind(&ManualBase::leftSwitchUpRise, this));
+  right_switch_down_event_.setRising(boost::bind(&ManualBase::rightSwitchDownRise, this));
+  right_switch_mid_event_.setRising(boost::bind(&ManualBase::rightSwitchMidRise, this));
+  right_switch_up_event_.setRising(boost::bind(&ManualBase::rightSwitchUpRise, this));
+  left_switch_down_event_.setRising(boost::bind(&ManualBase::leftSwitchDownRise, this));
+  left_switch_mid_event_.setRising(boost::bind(&ManualBase::leftSwitchMidRise, this));
+  left_switch_up_event_.setRising(boost::bind(&ManualBase::leftSwitchUpRise, this));
 }
 
 void ManualBase::run() {
@@ -46,9 +46,9 @@ void ManualBase::checkSwitch(const ros::Time &time) {
     remoteControlTurnOn();
     remote_is_open_ = true;
   }
-  right_switch_down_rise_event_.update(data_.dbus_data_.s_r == rm_msgs::DbusData::DOWN);
-  right_switch_mid_rise_event_.update(data_.dbus_data_.s_r == rm_msgs::DbusData::MID);
-  right_switch_up_rise_event_.update(data_.dbus_data_.s_r == rm_msgs::DbusData::UP);
+  right_switch_down_event_.update(data_.dbus_data_.s_r == rm_msgs::DbusData::DOWN);
+  right_switch_mid_event_.update(data_.dbus_data_.s_r == rm_msgs::DbusData::MID);
+  right_switch_up_event_.update(data_.dbus_data_.s_r == rm_msgs::DbusData::UP);
   if (state_ == RC)
     updateRc();
   else if (state_ == PC)
@@ -56,9 +56,9 @@ void ManualBase::checkSwitch(const ros::Time &time) {
 }
 
 void ManualBase::updateRc() {
-  left_switch_down_rise_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN);
-  left_switch_mid_rise_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::MID);
-  left_switch_up_rise_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::UP);
+  left_switch_down_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN);
+  left_switch_mid_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::MID);
+  left_switch_up_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::UP);
 }
 
 void ManualBase::updatePc() {
