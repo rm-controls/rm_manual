@@ -14,16 +14,16 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle &nh) : Ch
   nh.getParam("trigger_calibration", rpc_value);
   trigger_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   shooter_power_on_event_.setRising(boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
-  e_rise_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ePress, this));
-  g_rise_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
-  q_rise_event_.setRising(boost::bind(&ChassisGimbalShooterManual::qPress, this));
-  f_rise_event_.setRising(boost::bind(&ChassisGimbalShooterManual::fPress, this));
-  ctrl_c_rise_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlCPress, this));
-  ctrl_v_rise_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
-  ctrl_r_rise_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this));
-  ctrl_b_rise_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
-  shift_edge_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::shiftPress, this),
-                            boost::bind(&ChassisGimbalShooterManual::shiftRelease, this));
+  e_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ePress, this));
+  g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
+  q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::qPress, this));
+  f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::fPress, this));
+  ctrl_c_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlCPress, this));
+  ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
+  ctrl_r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this));
+  ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
+  shift_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::shiftPress, this),
+                       boost::bind(&ChassisGimbalShooterManual::shiftRelease, this));
 }
 
 void ChassisGimbalShooterManual::run() {
@@ -38,15 +38,15 @@ void ChassisGimbalShooterManual::checkReferee() {
 
 void ChassisGimbalShooterManual::checkKeyboard() {
   ChassisGimbalManual::checkKeyboard();
-  e_rise_event_.update(data_.dbus_data_.key_e);
-  g_rise_event_.update(data_.dbus_data_.key_g);
-  q_rise_event_.update(data_.dbus_data_.key_q);
-  f_rise_event_.update(data_.dbus_data_.key_f);
-  ctrl_c_rise_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
-  ctrl_v_rise_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v);
-  ctrl_r_rise_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
-  ctrl_b_rise_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
-  shift_edge_event_.update(data_.dbus_data_.key_shift);
+  e_event_.update(data_.dbus_data_.key_e);
+  g_event_.update(data_.dbus_data_.key_g);
+  q_event_.update(data_.dbus_data_.key_q);
+  f_event_.update(data_.dbus_data_.key_f);
+  ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
+  ctrl_v_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v);
+  ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
+  ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
+  shift_event_.update(data_.dbus_data_.key_shift);
 }
 
 void ChassisGimbalShooterManual::sendCommand(const ros::Time &time) {

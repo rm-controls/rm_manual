@@ -22,19 +22,19 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
 
   chassis_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::chassisOutputOn, this));
   gimbal_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::gimbalOutputOn, this));
-  x_rise_event_.setRising(boost::bind(&ChassisGimbalManual::xPress, this));
-  w_edge_event_.setEdge(boost::bind(&ChassisGimbalManual::wPress, this),
-                        boost::bind(&ChassisGimbalManual::wRelease, this));
-  s_edge_event_.setEdge(boost::bind(&ChassisGimbalManual::sPress, this),
-                        boost::bind(&ChassisGimbalManual::sRelease, this));
-  a_edge_event_.setEdge(boost::bind(&ChassisGimbalManual::aPress, this),
-                        boost::bind(&ChassisGimbalManual::aRelease, this));
-  d_edge_event_.setEdge(boost::bind(&ChassisGimbalManual::dPress, this),
-                        boost::bind(&ChassisGimbalManual::dRelease, this));
-  mouse_left_edge_event_.setEdge(boost::bind(&ChassisGimbalManual::mouseLeftPress, this),
-                                 boost::bind(&ChassisGimbalManual::mouseLeftRelease, this));
-  mouse_right_edge_event_.setEdge(boost::bind(&ChassisGimbalManual::mouseRightPress, this),
-                                  boost::bind(&ChassisGimbalManual::mouseRightRelease, this));
+  x_event_.setRising(boost::bind(&ChassisGimbalManual::xPress, this));
+  w_event_.setEdge(boost::bind(&ChassisGimbalManual::wPress, this),
+                   boost::bind(&ChassisGimbalManual::wRelease, this));
+  s_event_.setEdge(boost::bind(&ChassisGimbalManual::sPress, this),
+                   boost::bind(&ChassisGimbalManual::sRelease, this));
+  a_event_.setEdge(boost::bind(&ChassisGimbalManual::aPress, this),
+                   boost::bind(&ChassisGimbalManual::aRelease, this));
+  d_event_.setEdge(boost::bind(&ChassisGimbalManual::dPress, this),
+                   boost::bind(&ChassisGimbalManual::dRelease, this));
+  mouse_left_event_.setEdge(boost::bind(&ChassisGimbalManual::mouseLeftPress, this),
+                            boost::bind(&ChassisGimbalManual::mouseLeftRelease, this));
+  mouse_right_event_.setEdge(boost::bind(&ChassisGimbalManual::mouseRightPress, this),
+                             boost::bind(&ChassisGimbalManual::mouseRightRelease, this));
 }
 
 void ChassisGimbalManual::sendCommand(const ros::Time &time) {
@@ -66,13 +66,13 @@ void ChassisGimbalManual::checkReferee() {
 }
 
 void ChassisGimbalManual::checkKeyboard() {
-  w_edge_event_.update(data_.dbus_data_.key_w);
-  s_edge_event_.update(data_.dbus_data_.key_s);
-  a_edge_event_.update(data_.dbus_data_.key_a);
-  d_edge_event_.update(data_.dbus_data_.key_d);
-  mouse_left_edge_event_.update(data_.dbus_data_.p_l);
-  mouse_right_edge_event_.update(data_.dbus_data_.p_r);
-  x_rise_event_.update(data_.dbus_data_.key_x);
+  w_event_.update(data_.dbus_data_.key_w);
+  s_event_.update(data_.dbus_data_.key_s);
+  a_event_.update(data_.dbus_data_.key_a);
+  d_event_.update(data_.dbus_data_.key_d);
+  mouse_left_event_.update(data_.dbus_data_.p_l);
+  mouse_right_event_.update(data_.dbus_data_.p_r);
+  x_event_.update(data_.dbus_data_.key_x);
 }
 
 void ChassisGimbalManual::rightSwitchDownRise() {
