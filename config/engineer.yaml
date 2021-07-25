@@ -2,9 +2,9 @@ rm_manual:
   robot_type: "engineer"
   chassis:
     topic: "/cmd_chassis"
-    accel_x: 4.0
-    accel_y: 4.0
-    accel_z: 5.0
+    accel_x: 5.0
+    accel_y: 5.0
+    accel_z: 15.0
     safety_power: 50.0
     capacitor_threshold: 0.1
     charge_power: 0
@@ -12,9 +12,9 @@ rm_manual:
     burst_power: 500
   vel:
     topic: "/cmd_vel"
-    max_linear_x: 4.0
-    max_linear_y: 4.0
-    max_angular_z: 6.0
+    max_linear_x: 3.0
+    max_linear_y: 3.0
+    max_angular_z: 10.0
   gimbal:
     topic: "/cmd_gimbal"
     max_yaw_vel: 12.56
