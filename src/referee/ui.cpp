@@ -104,12 +104,8 @@ void FixedUi::update() {
 
 int FixedUi::getShootSpeedIndex() {
   uint16_t speed_limit;
-  if (data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::BLUE_HERO
-      || data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::RED_HERO) {
-    speed_limit = data_.referee_.referee_data_.game_robot_status_.shooter_id_1_42_mm_speed_limit_;
-    if (speed_limit == 10) return 0;
-    else if (speed_limit == 16) return 1;
-  } else {
+  if (data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::BLUE_HERO
+      || data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::RED_HERO) {
     speed_limit = data_.referee_.referee_data_.game_robot_status_.shooter_id_1_17_mm_speed_limit_;
     if (speed_limit == 15) return 0;
     else if (speed_limit == 18) return 1;
