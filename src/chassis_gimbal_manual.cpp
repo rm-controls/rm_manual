@@ -81,7 +81,8 @@ void ChassisGimbalManual::drawUi(const ros::Time &time) {
   flash_ui_->update("spin", time,
                     chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO
                         && vel_cmd_sender_->getMsg()->angular.z != 0.);
-  trigger_change_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
+  trigger_change_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode,
+                             chassis_cmd_sender_->getBurstMode(), chassis_cmd_sender_->getChargeMode());
   flash_ui_->update("armor0", time);
   flash_ui_->update("armor1", time);
   flash_ui_->update("armor2", time);
