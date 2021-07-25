@@ -213,10 +213,10 @@ void Referee::publishData() {
   referee_pub_data_.bullet_speed = referee_data_.shoot_data_.bullet_speed_;
   referee_pub_data_.stamp = last_get_;
 
-  super_capacitor_pub_data_.capacity = referee_data_.capacity_data.cap_power_;
+  super_capacitor_pub_data_.capacity = (float) referee_data_.capacity_data.cap_power_;
   super_capacitor_pub_data_.chassis_power_buffer = (uint16_t) referee_data_.capacity_data.buffer_power_;
-  super_capacitor_pub_data_.limit_power = referee_data_.capacity_data.limit_power_;
-  super_capacitor_pub_data_.chassis_power = referee_data_.capacity_data.chassis_power_;
+  super_capacitor_pub_data_.limit_power = (float) referee_data_.capacity_data.limit_power_;
+  super_capacitor_pub_data_.chassis_power = (float) referee_data_.capacity_data.chassis_power_;
   super_capacitor_pub_data_.stamp = super_capacitor_.last_get_data_;
 
   referee_pub_.publish(referee_pub_data_);

@@ -13,11 +13,13 @@ UiBase::UiBase(ros::NodeHandle &nh, Data &data, const std::string &ui_type) : da
     return;
   }
   try {
-    for (auto &i : rpc_value) {
-      if (i.first == "chassis")
-        graph_vector_.insert(std::pair<std::string, Graph *>(i.first, new Graph(i.second, data_.referee_, 1)));
+    for (int i = 0; i < (int) rpc_value.size(); i++) {
+      if (rpc_value[i]["name"] == "chassis")
+        graph_vector_.insert(std::pair<std::string, Graph *>(rpc_value[i]["name"],
+                                                             new Graph(rpc_value[i]["config"], data_.referee_, 1)));
       else
-        graph_vector_.insert(std::pair<std::string, Graph *>(i.first, new Graph(i.second, data_.referee_, id_++)));
+        graph_vector_.insert(std::pair<std::string, Graph *>(rpc_value[i]["name"],
+                                                             new Graph(rpc_value[i]["config"], data_.referee_, id_++)));
     }
   } catch (XmlRpc::XmlRpcException &e) { ROS_ERROR("Wrong ui parameter: %s", e.getMessage().c_str()); }
   for (auto graph:graph_vector_) graph.second->setOperation(rm_common::GraphOperation::DELETE);
@@ -194,7 +196,7 @@ void TimeChangeUi::setEffortData(Graph &graph) {
   if (i != data_.joint_state_.effort.end()) {
     name = data_.joint_state_.name[std::distance((data_.joint_state_.effort.begin()), i)];
   }
-  sprintf(data_str, "name %s:%.2f", name.c_str(), max_effort);
+  sprintf(data_str, "%s:%.2f", name.c_str(), max_effort);
   graph.setContent(data_str);
   graph.setOperation(rm_common::GraphOperation::UPDATE);
 }
