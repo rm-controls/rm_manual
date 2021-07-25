@@ -16,6 +16,8 @@ class ChassisGimbalManual : public ManualBase {
   void updatePc() override;
   void checkReferee() override;
   void checkKeyboard() override;
+  void drawUi(const ros::Time &time) override;
+  void remoteControlTurnOff() override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
@@ -34,7 +36,6 @@ class ChassisGimbalManual : public ManualBase {
   virtual void mouseRightPress() {};
   virtual void mouseRightRelease() {};
 
-  void drawUi(const ros::Time &time) override;
   rm_common::ChassisCommandSender *chassis_cmd_sender_{};
   rm_common::Vel2DCommandSender *vel_cmd_sender_;
   rm_common::GimbalCommandSender *gimbal_cmd_sender_{};

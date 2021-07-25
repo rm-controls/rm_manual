@@ -34,6 +34,11 @@ void ChassisGimbalShooterCoverManual::shooterOutputOn() {
   cover_calibration_->reset();
 }
 
+void ChassisGimbalShooterCoverManual::drawUi(const ros::Time &time) {
+  ChassisGimbalShooterManual::drawUi(time);
+  flash_ui_->update("cover", time, cover_command_sender_->getState());
+}
+
 void ChassisGimbalShooterCoverManual::rightSwitchDownRise() {
   ChassisGimbalShooterManual::rightSwitchDownRise();
   cover_command_sender_->open();
@@ -78,10 +83,4 @@ void ChassisGimbalShooterCoverManual::ctrlZPress() {
     }
   }
 }
-
-void ChassisGimbalShooterCoverManual::drawUi(const ros::Time &time) {
-  ChassisGimbalShooterManual::drawUi(time);
-  flash_ui_->update("cover", time, cover_command_sender_->getState());
-}
-
 }

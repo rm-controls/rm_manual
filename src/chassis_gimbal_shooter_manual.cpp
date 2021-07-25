@@ -54,9 +54,20 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time &time) {
   shooter_cmd_sender_->sendCommand(time);
 }
 
+void ChassisGimbalShooterManual::remoteControlTurnOff() {
+  shooter_cmd_sender_->setZero();
+}
+
 void ChassisGimbalShooterManual::shooterOutputOn() {
   ROS_INFO("Shooter Output ON");
   trigger_calibration_->reset();
+}
+
+void ChassisGimbalShooterManual::drawUi(const ros::Time &time) {
+  ChassisGimbalManual::drawUi(time);
+  trigger_change_ui_->update("target", switch_detection_srv_->getTarget(), shooter_cmd_sender_->getBurstMode(),
+                             switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
+  fixed_ui_->update();
 }
 
 void ChassisGimbalShooterManual::updateRc() {
@@ -158,12 +169,5 @@ void ChassisGimbalShooterManual::ctrlRPress() {
 void ChassisGimbalShooterManual::ctrlBPress() {
   switch_detection_srv_->switchExposureLevel();
   switch_detection_srv_->callService();
-}
-
-void ChassisGimbalShooterManual::drawUi(const ros::Time &time) {
-  ChassisGimbalManual::drawUi(time);
-  trigger_change_ui_->update("target", switch_detection_srv_->getTarget(), shooter_cmd_sender_->getBurstMode(),
-                             switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
-  fixed_ui_->update();
 }
 }

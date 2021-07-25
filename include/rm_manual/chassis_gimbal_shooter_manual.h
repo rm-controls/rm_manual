@@ -18,7 +18,9 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void updateRc() override;
   void updatePc() override;
   void sendCommand(const ros::Time &time) override;
+  void remoteControlTurnOff() override;
   void shooterOutputOn() override;
+  void drawUi(const ros::Time &time) override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
@@ -40,7 +42,6 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void ctrlVPress();
   void ctrlRPress();
   void ctrlBPress();
-  void drawUi(const ros::Time &time) override;
 
   InputEvent shooter_power_on_event_, e_event_, g_event_, q_event_, f_event_, ctrl_c_event_, ctrl_v_event_,
       ctrl_r_event_, ctrl_b_event_, shift_event_;

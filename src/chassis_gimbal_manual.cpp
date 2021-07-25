@@ -75,6 +75,26 @@ void ChassisGimbalManual::checkKeyboard() {
   x_event_.update(data_.dbus_data_.key_x);
 }
 
+void ChassisGimbalManual::drawUi(const ros::Time &time) {
+  ManualBase::drawUi(time);
+  time_change_ui_->update("capacitor", time);
+  flash_ui_->update("spin", time,
+                    chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO
+                        && vel_cmd_sender_->getMsg()->angular.z != 0.);
+  trigger_change_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
+  flash_ui_->update("armor0", time);
+  flash_ui_->update("armor1", time);
+  flash_ui_->update("armor2", time);
+  flash_ui_->update("armor3", time);
+}
+
+void ChassisGimbalManual::remoteControlTurnOff() {
+  ManualBase::remoteControlTurnOff();
+  vel_cmd_sender_->setZero();
+  chassis_cmd_sender_->setZero();
+  gimbal_cmd_sender_->setZero();
+}
+
 void ChassisGimbalManual::rightSwitchDownRise() {
   ManualBase::rightSwitchDownRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
@@ -138,19 +158,6 @@ void ChassisGimbalManual::dPress() {
 void ChassisGimbalManual::dRelease() {
   y_scale_ = y_scale_ >= 1.0 ? 1.0 : y_scale_ + 1.0;
   vel_cmd_sender_->setLinearYVel(y_scale_);
-}
-
-void ChassisGimbalManual::drawUi(const ros::Time &time) {
-  ManualBase::drawUi(time);
-  time_change_ui_->update("capacitor", time);
-  flash_ui_->update("spin", time,
-                    chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO
-                        && vel_cmd_sender_->getMsg()->angular.z != 0.);
-  trigger_change_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, chassis_cmd_sender_->getBurstMode());
-  flash_ui_->update("armor0", time);
-  flash_ui_->update("armor1", time);
-  flash_ui_->update("armor2", time);
-  flash_ui_->update("armor3", time);
 }
 
 }
