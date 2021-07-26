@@ -8,15 +8,20 @@ namespace rm_manual {
 ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle &nh) : ChassisGimbalShooterManual(nh) {
   ros::NodeHandle cover_nh(nh, "cover");
   cover_command_sender_ = new rm_common::JointPositionBinaryCommandSender(cover_nh);
-  XmlRpc::XmlRpcValue rpc_value;
-  nh.getParam("cover_calibration", rpc_value);
-  cover_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  try {
+    XmlRpc::XmlRpcValue rpc_value;
+    nh.getParam("cover_calibration", rpc_value);
+    cover_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  } catch (XmlRpc::XmlRpcException &e) {
+    ROS_ERROR("%s", e.getMessage().c_str());
+  }
   ctrl_z_event_.setRising(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this));
 }
 
 void ChassisGimbalShooterCoverManual::run() {
   ChassisGimbalShooterManual::run();
-  cover_calibration_->update(ros::Time::now());
+  if (cover_calibration_ != nullptr)
+    cover_calibration_->update(ros::Time::now());
 }
 
 void ChassisGimbalShooterCoverManual::checkKeyboard() {
@@ -31,7 +36,8 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time &time) {
 
 void ChassisGimbalShooterCoverManual::shooterOutputOn() {
   ChassisGimbalShooterManual::shooterOutputOn();
-  cover_calibration_->reset();
+  if (cover_calibration_ != nullptr)
+    cover_calibration_->reset();
 }
 
 void ChassisGimbalShooterCoverManual::drawUi(const ros::Time &time) {

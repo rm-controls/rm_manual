@@ -10,9 +10,13 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle &nh) : Ch
   shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, data_.referee_.referee_data_);
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
-  XmlRpc::XmlRpcValue rpc_value;
-  nh.getParam("trigger_calibration", rpc_value);
-  trigger_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  try {
+    XmlRpc::XmlRpcValue rpc_value;
+    nh.getParam("trigger_calibration", rpc_value);
+    trigger_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  } catch (XmlRpc::XmlRpcException &e) {
+    ROS_ERROR("%s", e.getMessage().c_str());
+  }
   shooter_power_on_event_.setRising(boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
   e_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ePress, this));
   g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
@@ -30,7 +34,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle &nh) : Ch
 void ChassisGimbalShooterManual::run() {
   ChassisGimbalManual::run();
   switch_detection_srv_->setEnemyColor(data_.referee_.referee_data_);
-  trigger_calibration_->update(ros::Time::now());
+  if (trigger_calibration_ != nullptr)
+    trigger_calibration_->update(ros::Time::now());
 }
 
 void ChassisGimbalShooterManual::checkReferee() {
@@ -68,7 +73,8 @@ void ChassisGimbalShooterManual::chassisOutputOn() {
 
 void ChassisGimbalShooterManual::shooterOutputOn() {
   ChassisGimbalManual::shooterOutputOn();
-  trigger_calibration_->reset();
+  if (trigger_calibration_ != nullptr)
+    trigger_calibration_->reset();
 }
 
 void ChassisGimbalShooterManual::drawUi(const ros::Time &time) {

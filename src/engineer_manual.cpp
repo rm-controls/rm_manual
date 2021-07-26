@@ -16,11 +16,15 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
   ros::NodeHandle nh_mast(nh, "mast");
   mast_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_mast);
   // Calibration
-  XmlRpc::XmlRpcValue rpc_value;
-  nh.getParam("power_on_calibration", rpc_value);
-  power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  nh.getParam("arm_calibration", rpc_value);
-  arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  try {
+    XmlRpc::XmlRpcValue rpc_value;
+    nh.getParam("power_on_calibration", rpc_value);
+    power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+    nh.getParam("arm_calibration", rpc_value);
+    arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  } catch (XmlRpc::XmlRpcException &e) {
+    ROS_ERROR("%s", e.getMessage().c_str());
+  }
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_down_event_.setFalling(boost::bind(&EngineerManual::leftSwitchDownFall, this));
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
@@ -31,8 +35,10 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
 
 void EngineerManual::run() {
   ChassisGimbalManual::run();
-  arm_calibration_->update(ros::Time::now());
-  power_on_calibration_->update(ros::Time::now());
+  if (arm_calibration_ != nullptr)
+    arm_calibration_->update(ros::Time::now());
+  if (power_on_calibration_ != nullptr)
+    power_on_calibration_->update(ros::Time::now());
 }
 
 void EngineerManual::checkKeyboard() {
@@ -66,7 +72,10 @@ void EngineerManual::sendCommand(const ros::Time &time) {
 void EngineerManual::drawUi(const ros::Time &time) {
   ChassisGimbalManual::drawUi(time);
   time_change_ui_->update("effort", time);
-  flash_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
+  if (power_on_calibration_ != nullptr)
+    flash_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
+  else
+    flash_ui_->update("calibration", time, false);
 //    trigger_change_ui_->update("jog", jog_joint_name);
 }
 
@@ -76,7 +85,8 @@ void EngineerManual::remoteControlTurnOff() {
 }
 
 void EngineerManual::chassisOutputOn() {
-  power_on_calibration_->reset();
+  if (power_on_calibration_ != nullptr)
+    power_on_calibration_->reset();
   if (MIDDLEWARE)
     action_client_.cancelAllGoals();
 }

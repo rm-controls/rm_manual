@@ -54,13 +54,6 @@ rm_manual:
       - controllers/chassis_controller
       - controllers/gimbal_controller
       - controllers/shooter_controller
-    calibration_controllers:
-      - controllers/trigger_calibration_controller
-
-  trigger_calibration:
-    - start_controller: controllers/trigger_calibration_controller
-      stop_controller: controllers/shooter_controller
-      service_name: /controllers/trigger_calibration_controller/is_calibrated
 
   ui:
     trigger_change:
