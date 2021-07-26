@@ -18,7 +18,7 @@
 namespace rm_manual {
 class SuperCapacitor {
  public:
-  SuperCapacitor(rm_common::CapacityData &data) : last_get_data_(ros::Time::now()), data_(data) {};
+  explicit SuperCapacitor(rm_common::CapacityData &data) : last_get_data_(ros::Time::now()), data_(data) {};
   void read(const std::vector<uint8_t> &rx_buffer);
   ros::Time last_get_data_;
  private:
