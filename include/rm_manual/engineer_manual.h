@@ -40,6 +40,8 @@ class EngineerManual : public ChassisGimbalManual {
   void ctrlCPress() { action_client_.cancelAllGoals(); }
   void ctrlRPress() { runStepQueue("RECOVER"); }
   void ctrlFPress() { runStepQueue("ARM_FOLD_LOWER"); }
+  void ctrlWPress() { runStepQueue("GRASP_BIG"); }
+  void ctrlSPress() { runStepQueue("STORAGE"); }
   void ctrlQPress() { runStepQueue("PLACE"); }
 
   enum { MANUAL, MIDDLEWARE };
@@ -47,7 +49,8 @@ class EngineerManual : public ChassisGimbalManual {
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   rm_common::JointPositionBinaryCommandSender *mast_command_sender_, *card_command_sender_;
-  InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_c_event_, ctrl_f_event_, ctrl_r_event_, ctrl_q_event_;
+  InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_c_event_, ctrl_f_event_, ctrl_r_event_, ctrl_w_event_,
+      ctrl_s_event_, ctrl_q_event_;
 };
 
 }

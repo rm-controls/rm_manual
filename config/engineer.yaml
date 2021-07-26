@@ -44,6 +44,7 @@ rm_manual:
       - controllers/joint_state_controller
     main_controllers:
       - controllers/chassis_controller
+      #      - controllers/gimbal_controller
       - controllers/arm_trajectory_controller
       - controllers/mast_controller
       - controllers/card_controller
