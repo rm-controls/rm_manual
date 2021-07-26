@@ -44,7 +44,7 @@ rm_manual:
       - controllers/joint_state_controller
     main_controllers:
       - controllers/chassis_controller
-      #      - controllers/gimbal_controller
+      - controllers/gimbal_controller
       - controllers/arm_trajectory_controller
       - controllers/mast_controller
       - controllers/card_controller
@@ -60,6 +60,7 @@ rm_manual:
       - controllers/hand_calibration_controller
       - controllers/card_calibration_controller
       - controllers/stone_platform_calibration_controller
+      - controllers/yaw_calibration_controller
   power_on_calibration:
     - start_controller: controllers/card_calibration_controller
       stop_controller: controllers/card_controller
@@ -67,6 +68,9 @@ rm_manual:
     - start_controller: controllers/stone_platform_calibration_controller
       stop_controller: controllers/stone_platform_controller
       service_name: /controllers/stone_platform_calibration_controller/is_calibrated
+    - start_controller: controllers/yaw_calibration_controller
+      stop_controller: controllers/gimbal_controller
+      service_name: /controllers/yaw_calibration_controller/is_calibrated
   mast_calibration:
     - start_controller: controllers/mast_calibration_controller
       stop_controller: controllers/mast_controller
