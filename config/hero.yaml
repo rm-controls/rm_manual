@@ -1,7 +1,7 @@
 rm_manual:
   robot_type: "hero"
   chassis:
-    topic: "/cmd_chassis"
+    topic: "/controllers/chassis_controller/command"
     accel_x: 7
     accel_y: 10.0
     accel_z: 20
@@ -17,7 +17,7 @@ rm_manual:
     max_angular_z: 10.0
     gyro_move_reduction: 0.5
   gimbal:
-    topic: "/cmd_gimbal"
+    topic: "/controllers/gimbal_controller/command"
     max_yaw_vel: 12.56
     max_pitch_vel: 8.37
     track_timeout: 0.5
@@ -28,7 +28,7 @@ rm_manual:
       k_freq: 99.0
       timeout: 0.1
   shooter:
-    topic: "/cmd_shoot"
+    topic: "/controllers/shooter_controller/command"
     gimbal_error_limit: 0.05
     heat_limit:
       expect_shoot_frequency_1: 1
