@@ -22,7 +22,6 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
 
   chassis_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::chassisOutputOn, this));
   gimbal_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::gimbalOutputOn, this));
-  x_event_.setRising(boost::bind(&ChassisGimbalManual::xPress, this));
   w_event_.setEdge(boost::bind(&ChassisGimbalManual::wPress, this),
                    boost::bind(&ChassisGimbalManual::wRelease, this));
   s_event_.setEdge(boost::bind(&ChassisGimbalManual::sPress, this),
@@ -72,7 +71,6 @@ void ChassisGimbalManual::checkKeyboard() {
   d_event_.update(data_.dbus_data_.key_d);
   mouse_left_event_.update(data_.dbus_data_.p_l);
   mouse_right_event_.update(data_.dbus_data_.p_r);
-  x_event_.update(data_.dbus_data_.key_x);
 }
 
 void ChassisGimbalManual::drawUi(const ros::Time &time) {
@@ -117,15 +115,12 @@ void ChassisGimbalManual::rightSwitchUpRise() {
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   trigger_change_ui_->add();
   time_change_ui_->add();
+  fixed_ui_->add();
 }
 
 void ChassisGimbalManual::leftSwitchDownRise() {
   ManualBase::leftSwitchDownRise();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-}
-
-void ChassisGimbalManual::xPress() {
-  fixed_ui_->add();
 }
 
 void ChassisGimbalManual::wPress() {

@@ -165,11 +165,6 @@ void ChassisGimbalShooterManual::ePress() {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
 }
 
-void ChassisGimbalShooterManual::xPress() {
-  ChassisGimbalManual::xPress();
-  fixed_ui_->add();
-}
-
 void ChassisGimbalShooterManual::bPress() {
   chassis_cmd_sender_->setBurstMode(false);
   chassis_cmd_sender_->setChargeMode(true);

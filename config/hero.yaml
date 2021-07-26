@@ -72,18 +72,27 @@ rm_manual:
       - name: "capacitor"
         config: { start_position: [ 900, 100 ], size: 15, width: 2, delay: 0.5 }
     fixed:
-      - name: "3m"
-        config: { type: "line", width: 4, color: "yellow",
-                  start_position: [ 937, 370 ], end_position: [ 983, 370 ] }
-      - name: "5m"
-        config: { type: "line", width: 4, color: "yellow",
-                  start_position: [ 947, 350 ], end_position: [ 973, 350 ] }
-      - name: "6m"
-        config: { type: "line", width: 4, color: "yellow",
-                  start_position: [ 952, 340 ], end_position: [ 968, 340 ] }
+      - name: "4.5m_str"
+        config: { type: "string", size: 10, width: 1, color: "yellow",
+                  start_position: [ 1000, 375 ], content: "4.5" }
+      - name: "4.5m_line"
+        config: { type: "line", width: 2, color: "yellow",
+                  start_position: [ 948, 373 ], end_position: [ 972, 373 ] }
+      - name: "6m_str"
+        config: { type: "string", size: 10, width: 1, color: "yellow",
+                  start_position: [ 1000, 345 ], content: "6" }
+      - name: "6m_line"
+        config: { type: "line", width: 2, color: "yellow",
+                  start_position: [ 950, 335 ], end_position: [ 970, 335 ] }
+      - name: "10m_str"
+        config: { type: "string", size: 10, width: 1, color: "yellow",
+                  start_position: [ 1000, 310 ], content: "10" }
+      - name: "10m_line"
+        config: { type: "line", width: 2, color: "yellow",
+                  start_position: [ 953, 302 ], end_position: [ 967, 302 ] }
       - name: "mid"
-        config: { type: "line", width: 4, color: "yellow",
-                  start_position: [ 960, 300 ], end_position: [ 960, 400 ] }
+        config: { type: "line", width: 2, color: "yellow",
+                  start_position: [ 960, 302 ], end_position: [ 960, 540 ] }
     flash:
       - name: "spin"
         config: { start_position: [ 900, 750 ], size: 15, width: 2,
