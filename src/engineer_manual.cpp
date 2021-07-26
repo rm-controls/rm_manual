@@ -19,6 +19,8 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("power_on_calibration", rpc_value);
   power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  nh.getParam("mast_calibration", rpc_value);
+  mast_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   nh.getParam("arm_calibration", rpc_value);
   arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
@@ -33,8 +35,9 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
 
 void EngineerManual::run() {
   ChassisGimbalManual::run();
-  arm_calibration_->update(ros::Time::now());
   power_on_calibration_->update(ros::Time::now());
+  mast_calibration_->update(ros::Time::now());
+  arm_calibration_->update(ros::Time::now());
 }
 
 void EngineerManual::checkKeyboard() {
@@ -81,6 +84,7 @@ void EngineerManual::remoteControlTurnOff() {
 
 void EngineerManual::chassisOutputOn() {
   power_on_calibration_->reset();
+  mast_calibration_->reset();
   if (MIDDLEWARE)
     action_client_.cancelAllGoals();
 }
@@ -99,6 +103,11 @@ void EngineerManual::rightSwitchMidRise() {
 void EngineerManual::rightSwitchUpRise() {
   ChassisGimbalManual::rightSwitchUpRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+}
+
+void EngineerManual::leftSwitchDownFall() {
+  mast_calibration_->reset();
+  arm_calibration_->reset();
 }
 
 void EngineerManual::runStepQueue(std::string step_queue_name) {
