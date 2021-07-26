@@ -1,7 +1,7 @@
 rm_manual:
   robot_type: "engineer"
   chassis:
-    topic: "/cmd_chassis"
+    topic: "/controllers/chassis_controller/command"
     accel_x: 5.0
     accel_y: 5.0
     accel_z: 15.0
@@ -16,7 +16,7 @@ rm_manual:
     max_linear_y: 3.0
     max_angular_z: 10.0
   gimbal:
-    topic: "/cmd_gimbal"
+    topic: "/controllers/gimbal_controller/command"
     max_yaw_vel: 12.56
     max_pitch_vel: 8.37
     target_cost_function:
@@ -101,12 +101,14 @@ rm_manual:
       - name: "queue"
         config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "queue:" }
       - name: "jog"
-        config: { start_position: [ 400, 650 ], size: 15, width: 2, title: "jog:  " }
+        config: { start_position: [ 400, 500 ], size: 15, width: 2, title: "jog:  " }
+      - name: "stone"
+        config: { start_position: [ 400, 400 ], size: 15, width: 2, title: "stone:" }
     time_change:
       - name: "effort"
         config: { start_position: [ 850, 150 ], size: 15, width: 2, delay: 0.8, color: "white" }
-      - name: "progress"
-        config: { start_position: [ 850, 200 ], size: 15, width: 2, delay: 0.8, color: "white" }
+      - name: "progress:"
+        config: { start_position: [ 380, 650 ], size: 15, width: 2, delay: 0.8, color: "white" }
     flash:
       - name: "calibration"
         config: { start_position: [ 850, 700 ], size: 15, width: 2,

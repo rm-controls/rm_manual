@@ -22,7 +22,6 @@ class ChassisGimbalManual : public ManualBase {
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
   void leftSwitchDownRise() override;
-  virtual void xPress();
   virtual void wPress();
   virtual void wRelease();
   virtual void aPress();
@@ -46,7 +45,7 @@ class ChassisGimbalManual : public ManualBase {
   double x_scale_{}, y_scale_{};
   double gyro_move_reduction_{};
 
-  InputEvent chassis_power_on_event_, gimbal_power_on_event_, x_event_, w_event_, s_event_, a_event_, d_event_,
+  InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_,
       mouse_left_event_, mouse_right_event_;
 };
 }

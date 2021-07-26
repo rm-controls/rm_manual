@@ -21,6 +21,7 @@ void ManualBase::run() {
   checkReferee();
   checkSwitch(time);
   sendCommand(time);
+  drawUi(time);
   controller_manager_.update();
 }
 
@@ -63,7 +64,6 @@ void ManualBase::updateRc() {
 
 void ManualBase::updatePc() {
   checkKeyboard();
-  drawUi(ros::Time::now());
 }
 
 }

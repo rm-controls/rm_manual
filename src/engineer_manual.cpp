@@ -126,13 +126,17 @@ void EngineerManual::runStepQueue(std::string step_queue_name) {
                               boost::bind(&EngineerManual::actionActiveCallback, this),
                               boost::bind(&EngineerManual::actionFeedbackCb, this, _1));
     operating_mode_ = MIDDLEWARE;
+    trigger_change_ui_->update("step", step_queue_name);
   } else
     ROS_ERROR("Can not connect to middleware");
 }
 
 void EngineerManual::actionFeedbackCb(const rm_msgs::EngineerFeedbackConstPtr &feedback) {
   trigger_change_ui_->update("queue", feedback->current_step);
-  time_change_ui_->update("progress", ros::Time::now(), ((double) feedback->finished_step) / feedback->total_steps);
+  if (feedback->total_steps != 0.)
+    time_change_ui_->update("progress", ros::Time::now(), ((double) feedback->finished_step) / feedback->total_steps);
+  else
+    time_change_ui_->update("progress", ros::Time::now(), 0.);
 }
 
 void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState &state,

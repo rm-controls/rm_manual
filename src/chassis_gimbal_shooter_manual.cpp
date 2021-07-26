@@ -18,6 +18,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle &nh) : Ch
   g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
   q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::qPress, this));
   f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::fPress, this));
+  b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::bPress, this));
   ctrl_c_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlCPress, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this));
@@ -42,6 +43,7 @@ void ChassisGimbalShooterManual::checkKeyboard() {
   g_event_.update(data_.dbus_data_.key_g);
   q_event_.update(data_.dbus_data_.key_q);
   f_event_.update(data_.dbus_data_.key_f);
+  b_event_.update((!data_.dbus_data_.key_ctrl) & data_.dbus_data_.key_b);
   ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
   ctrl_v_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v);
   ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
@@ -55,11 +57,18 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time &time) {
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOff() {
+  ChassisGimbalManual::remoteControlTurnOff();
   shooter_cmd_sender_->setZero();
 }
 
+void ChassisGimbalShooterManual::chassisOutputOn() {
+  ChassisGimbalManual::chassisOutputOn();
+  chassis_cmd_sender_->setBurstMode(false);
+  chassis_cmd_sender_->setChargeMode(true);
+}
+
 void ChassisGimbalShooterManual::shooterOutputOn() {
-  ROS_INFO("Shooter Output ON");
+  ChassisGimbalManual::shooterOutputOn();
   trigger_calibration_->reset();
 }
 
@@ -90,16 +99,22 @@ void ChassisGimbalShooterManual::updatePc() {
 
 void ChassisGimbalShooterManual::rightSwitchDownRise() {
   ChassisGimbalManual::rightSwitchDownRise();
+  chassis_cmd_sender_->setBurstMode(false);
+  chassis_cmd_sender_->setChargeMode(true);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
 }
 
 void ChassisGimbalShooterManual::rightSwitchMidRise() {
   ChassisGimbalManual::rightSwitchMidRise();
+  chassis_cmd_sender_->setBurstMode(false);
+  chassis_cmd_sender_->setChargeMode(true);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
 }
 
 void ChassisGimbalShooterManual::rightSwitchUpRise() {
   ChassisGimbalManual::rightSwitchUpRise();
+  chassis_cmd_sender_->setBurstMode(false);
+  chassis_cmd_sender_->setChargeMode(true);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
 }
 
@@ -134,9 +149,13 @@ void ChassisGimbalShooterManual::gPress() {
   if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setAngularZVel(0.0);
+    chassis_cmd_sender_->setBurstMode(false);
+    chassis_cmd_sender_->setChargeMode(false);
   } else {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
     vel_cmd_sender_->setAngularZVel(1.0);
+    chassis_cmd_sender_->setBurstMode(true);
+    chassis_cmd_sender_->setChargeMode(false);
   }
 }
 
@@ -147,9 +166,23 @@ void ChassisGimbalShooterManual::ePress() {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
 }
 
-void ChassisGimbalShooterManual::xPress() {
-  ChassisGimbalManual::xPress();
-  fixed_ui_->add();
+void ChassisGimbalShooterManual::bPress() {
+  chassis_cmd_sender_->setBurstMode(false);
+  chassis_cmd_sender_->setChargeMode(true);
+}
+
+void ChassisGimbalShooterManual::shiftPress() {
+  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    vel_cmd_sender_->setAngularZVel(0.);
+  }
+  chassis_cmd_sender_->setChargeMode(false);
+  chassis_cmd_sender_->setBurstMode(true);
+}
+
+void ChassisGimbalShooterManual::shiftRelease() {
+  if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::GYRO)
+    chassis_cmd_sender_->setBurstMode(false);
 }
 
 void ChassisGimbalShooterManual::ctrlVPress() {
