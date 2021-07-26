@@ -50,7 +50,10 @@ TriggerChangeUi::TriggerChangeUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, d
 void TriggerChangeUi::update(const std::string &graph_name, const std::string &content) {
   auto graph = graph_vector_.find(graph_name);
   if (graph != graph_vector_.end()) {
-    graph->second->setContent(content);
+    if (graph_name == "stone") {
+      if (content == "0") graph->second->setContent("upper");
+      else graph->second->setContent("lower");
+    } else graph->second->setContent(content);
     graph->second->setOperation(rm_common::GraphOperation::UPDATE);
     graph->second->display();
   }

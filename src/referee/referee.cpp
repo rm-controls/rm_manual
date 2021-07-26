@@ -363,6 +363,7 @@ void SuperCapacitor::read(const std::vector<uint8_t> &rx_buffer) {
 void SuperCapacitor::receiveCallBack(unsigned char package_id, const unsigned char *data) {
   if (package_id == 0) {
     last_get_data_ = ros::Time::now();
+    data_.is_online_ = true;
     data_.chassis_power_ = (double) int16ToFloat((data[0] << 8) | data[1]);
     data_.limit_power_ = (double) int16ToFloat((data[2] << 8) | data[3]);
     data_.buffer_power_ = (double) int16ToFloat((data[4] << 8) | data[5]);

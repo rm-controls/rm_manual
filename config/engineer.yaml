@@ -97,6 +97,8 @@ rm_manual:
         config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "queue:" }
       - name: "jog"
         config: { start_position: [ 400, 500 ], size: 15, width: 2, title: "jog:  " }
+      - name: "stone"
+        config: { start_position: [ 400, 400 ], size: 15, width: 2, title: "stone:" }
     time_change:
       - name: "effort"
         config: { start_position: [ 850, 150 ], size: 15, width: 2, delay: 0.8, color: "white" }
