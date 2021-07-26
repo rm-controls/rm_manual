@@ -9,7 +9,7 @@ rm_manual:
     capacitor_threshold: 0.1
     charge_power: 20
     extra_power: 30
-    burst_power: 220
+    burst_power: 200
   vel:
     topic: "/cmd_vel"
     max_linear_x: 4.0
@@ -58,11 +58,11 @@ rm_manual:
       - controllers/trigger_calibration_controller
       - controllers/cover_calibration_controller
 
-  trigger_calibration:
+  cover_calibration:
     - start_controller: controllers/cover_calibration_controller
       stop_controller: controllers/cover_controller
       service_name: /controllers/cover_calibration_controller/is_calibrated
-  cover_calibration:
+  trigger_calibration:
     - start_controller: controllers/trigger_calibration_controller
       stop_controller: controllers/shooter_controller
       service_name: /controllers/trigger_calibration_controller/is_calibrated
