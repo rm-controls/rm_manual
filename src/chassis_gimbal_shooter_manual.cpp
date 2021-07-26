@@ -57,6 +57,7 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time &time) {
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOff() {
+  ChassisGimbalManual::remoteControlTurnOff();
   shooter_cmd_sender_->setZero();
 }
 
