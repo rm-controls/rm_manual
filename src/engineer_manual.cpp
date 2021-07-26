@@ -35,8 +35,8 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
 
 void EngineerManual::run() {
   ChassisGimbalManual::run();
-  power_on_calibration_->update(ros::Time::now());
-  mast_calibration_->update(ros::Time::now());
+  power_on_calibration_->update(ros::Time::now(), state_ != PASSIVE);
+  mast_calibration_->update(ros::Time::now(), state_ != PASSIVE);
   arm_calibration_->update(ros::Time::now());
 }
 
@@ -53,6 +53,12 @@ void EngineerManual::checkKeyboard() {
 void EngineerManual::updateRc() {
   ChassisGimbalManual::updateRc();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
+  gimbal_cmd_sender_->getMsg()->aim_point.header.frame_id = "base_link";
+  gimbal_cmd_sender_->getMsg()->aim_point.header.stamp = ros::Time::now() - ros::Duration(0.1);
+  gimbal_cmd_sender_->getMsg()->aim_point.point.x = -10.;
+  gimbal_cmd_sender_->getMsg()->aim_point.point.y = 0.;
+  gimbal_cmd_sender_->getMsg()->aim_point.point.z = 0.5;
   left_switch_up_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN);
 }
