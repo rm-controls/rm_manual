@@ -192,16 +192,17 @@ void TimeChangeUi::setCapacitorData(Graph &graph) {
 
 void TimeChangeUi::setEffortData(Graph &graph) {
   char data_str[30] = {' '};
-  double max_effort = 0.;
-  std::string name;
-  for (auto effort:data_.joint_state_.effort) { if (effort > max_effort) max_effort = effort; }
-  auto i = std::find(data_.joint_state_.effort.begin(), data_.joint_state_.effort.end(), max_effort);
-  if (i != data_.joint_state_.effort.end()) {
-    name = data_.joint_state_.name[std::distance((data_.joint_state_.effort.begin()), i)];
+  int max_index = 0;
+  if (!data_.joint_state_.name.empty()) {
+    for (int i = 0; i < data_.joint_state_.effort.size(); ++i)
+      if (data_.joint_state_.name[i] != "right_finger_joint_motor"
+          && data_.joint_state_.name[i] != "left_finger_joint_motor"
+          && data_.joint_state_.effort[i] > data_.joint_state_.effort[max_index])
+        max_index = i;
+    sprintf(data_str, "name %s:%.2f", data_.joint_state_.name[max_index].c_str(), data_.joint_state_.effort[max_index]);
+    graph.setContent(data_str);
+    graph.setOperation(rm_common::GraphOperation::UPDATE);
   }
-  sprintf(data_str, "name %s:%.2f", name.c_str(), max_effort);
-  graph.setContent(data_str);
-  graph.setOperation(rm_common::GraphOperation::UPDATE);
 }
 
 void TimeChangeUi::setProgressData(Graph &graph, double data) {
