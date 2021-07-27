@@ -87,16 +87,6 @@ void ChassisGimbalShooterManual::updateRc() {
   }
 }
 
-void ChassisGimbalShooterManual::updatePc() {
-  ChassisGimbalManual::updatePc();
-  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
-    if (vel_cmd_sender_->getMsg()->linear.x != 0 || vel_cmd_sender_->getMsg()->linear.y != 0)
-      vel_cmd_sender_->setAngularZVel(gyro_move_reduction_);
-    else
-      vel_cmd_sender_->setAngularZVel(1.0);
-  }
-}
-
 void ChassisGimbalShooterManual::rightSwitchDownRise() {
   ChassisGimbalManual::rightSwitchDownRise();
   chassis_cmd_sender_->setBurstMode(false);

@@ -15,7 +15,7 @@ rm_manual:
     max_linear_x: 4.0
     max_linear_y: 4.0
     max_angular_z: 10.0
-    gyro_move_reduction: 0.5
+    gyro_move_reduction: 0.25
   gimbal:
     topic: "/controllers/gimbal_controller/command"
     max_yaw_vel: 12.56
