@@ -70,7 +70,7 @@ void ChassisGimbalShooterCoverManual::ctrlZPress() {
     if (cover_command_sender_->getState()) {
       geometry_msgs::PointStamped aim_point{};
       aim_point.header.frame_id = "yaw";
-      aim_point.header.stamp = ros::Time::now();
+      aim_point.header.stamp = ros::Time(0);
       aim_point.point.x = 1000;
       aim_point.point.y = 0;
       aim_point.point.z = 0;
