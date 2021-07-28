@@ -38,7 +38,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void fPress() { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
   void shiftPress();
   void shiftRelease();
-  void ctrlCPress() { gimbal_cmd_sender_->setBaseOnly(!gimbal_cmd_sender_->getBaseOnly()); }
+  void ctrlCPress();
   void ctrlVPress();
   void ctrlRPress();
   void ctrlBPress();

@@ -74,7 +74,8 @@ void ChassisGimbalShooterManual::shooterOutputOn() {
 
 void ChassisGimbalShooterManual::drawUi(const ros::Time &time) {
   ChassisGimbalManual::drawUi(time);
-  trigger_change_ui_->update("target", switch_detection_srv_->getTarget(), shooter_cmd_sender_->getBurstMode(),
+  trigger_change_ui_->update("target", switch_detection_srv_->getTarget(),
+                             shooter_cmd_sender_->getBurstMode(), switch_detection_srv_->getArmorTarget(),
                              switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
   fixed_ui_->update();
 }
@@ -173,6 +174,11 @@ void ChassisGimbalShooterManual::shiftPress() {
 void ChassisGimbalShooterManual::shiftRelease() {
   if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::GYRO)
     chassis_cmd_sender_->setBurstMode(false);
+}
+
+void ChassisGimbalShooterManual::ctrlCPress() {
+  switch_detection_srv_->switchArmorTargetType();
+  switch_detection_srv_->callService();
 }
 
 void ChassisGimbalShooterManual::ctrlVPress() {
