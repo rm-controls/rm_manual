@@ -75,6 +75,7 @@ void TriggerChangeUi::updateConfig(const std::string &name, Graph *graph, uint8_
     graph->setContent(getChassisState(main_mode));
     if (main_flag) graph->setColor(rm_common::GraphColor::ORANGE);
     else if (sub_flag) graph->setColor(rm_common::GraphColor::GREEN);
+    else if (sub_mode == 1) graph->setColor(rm_common::GraphColor::PINK);
     else graph->setColor(rm_common::GraphColor::WHITE);
   } else if (name == "target") {
     graph->setContent(getTargetState(main_mode, sub_mode));

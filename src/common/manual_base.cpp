@@ -11,8 +11,9 @@ ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh), controller_man
   right_switch_mid_event_.setRising(boost::bind(&ManualBase::rightSwitchMidRise, this));
   right_switch_up_event_.setRising(boost::bind(&ManualBase::rightSwitchUpRise, this));
   left_switch_down_event_.setRising(boost::bind(&ManualBase::leftSwitchDownRise, this));
-  left_switch_mid_event_.setRising(boost::bind(&ManualBase::leftSwitchMidRise, this));
   left_switch_up_event_.setRising(boost::bind(&ManualBase::leftSwitchUpRise, this));
+  left_switch_mid_event_.setEdge(boost::bind(&ManualBase::leftSwitchMidRise, this),
+                                 boost::bind(&ManualBase::leftSwitchMidFall, this));
   robot_hp_event_.setEdge(boost::bind(&ManualBase::robotRevive, this), boost::bind(&ManualBase::robotDie, this));
 }
 

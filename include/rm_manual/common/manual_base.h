@@ -46,6 +46,7 @@ class ManualBase {
   virtual void remoteControlTurnOn();
   virtual void leftSwitchDownRise() {};
   virtual void leftSwitchMidRise() {};
+  virtual void leftSwitchMidFall() {};
   virtual void leftSwitchUpRise() {};
   virtual void rightSwitchDownRise() { state_ = IDLE; }
   virtual void rightSwitchMidRise() { state_ = RC; }

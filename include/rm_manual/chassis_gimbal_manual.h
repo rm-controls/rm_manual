@@ -21,6 +21,7 @@ class ChassisGimbalManual : public ManualBase {
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
+  void leftSwitchMidFall() override;
   void leftSwitchDownRise() override;
   virtual void wPress();
   virtual void wRelease();
