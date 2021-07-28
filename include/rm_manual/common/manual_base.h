@@ -27,7 +27,7 @@ class ManualBase {
   virtual void run();
  protected:
   void checkSwitch(const ros::Time &time);
-  virtual void checkReferee() {};
+  virtual void checkReferee();
   virtual void checkKeyboard() {};
   virtual void updateRc();
   virtual void updatePc();
@@ -38,6 +38,8 @@ class ManualBase {
   virtual void chassisOutputOn() { ROS_INFO("Chassis output ON"); }
   virtual void gimbalOutputOn() { ROS_INFO("Gimbal output ON"); }
   virtual void shooterOutputOn() { ROS_INFO("Shooter output ON"); }
+  virtual void robotDie();
+  virtual void robotRevive();
 
   // Remote Controller
   virtual void remoteControlTurnOff();
@@ -55,8 +57,8 @@ class ManualBase {
 
   bool remote_is_open_{};
   int state_ = PASSIVE;
-  InputEvent right_switch_down_event_, right_switch_mid_event_, right_switch_up_event_, left_switch_down_event_,
-      left_switch_mid_event_, left_switch_up_event_;
+  InputEvent robot_hp_event_, right_switch_down_event_, right_switch_mid_event_, right_switch_up_event_,
+      left_switch_down_event_, left_switch_mid_event_, left_switch_up_event_;
 };
 
 }

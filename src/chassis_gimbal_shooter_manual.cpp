@@ -34,6 +34,7 @@ void ChassisGimbalShooterManual::run() {
 }
 
 void ChassisGimbalShooterManual::checkReferee() {
+  ChassisGimbalManual::checkReferee();
   shooter_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_shooter_output_);
 }
 

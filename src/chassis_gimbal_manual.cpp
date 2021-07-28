@@ -60,11 +60,13 @@ void ChassisGimbalManual::updatePc() {
 }
 
 void ChassisGimbalManual::checkReferee() {
+  ManualBase::checkReferee();
   chassis_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_chassis_output_);
   gimbal_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_gimbal_output_);
 }
 
 void ChassisGimbalManual::checkKeyboard() {
+  ManualBase::checkKeyboard();
   w_event_.update(data_.dbus_data_.key_w);
   s_event_.update(data_.dbus_data_.key_s);
   a_event_.update(data_.dbus_data_.key_a);

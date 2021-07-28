@@ -17,9 +17,9 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void checkKeyboard() override;
   void updateRc() override;
   void sendCommand(const ros::Time &time) override;
-  void remoteControlTurnOff() override;
   void chassisOutputOn() override;
   void shooterOutputOn() override;
+  void remoteControlTurnOff() override;
   void drawUi(const ros::Time &time) override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;

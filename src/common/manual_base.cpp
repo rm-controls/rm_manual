@@ -13,6 +13,7 @@ ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh), controller_man
   left_switch_down_event_.setRising(boost::bind(&ManualBase::leftSwitchDownRise, this));
   left_switch_mid_event_.setRising(boost::bind(&ManualBase::leftSwitchMidRise, this));
   left_switch_up_event_.setRising(boost::bind(&ManualBase::leftSwitchUpRise, this));
+  robot_hp_event_.setEdge(boost::bind(&ManualBase::robotRevive, this), boost::bind(&ManualBase::robotDie, this));
 }
 
 void ManualBase::run() {
@@ -25,15 +26,8 @@ void ManualBase::run() {
   controller_manager_.update();
 }
 
-void ManualBase::remoteControlTurnOff() {
-  controller_manager_.stopMainControllers();
-  controller_manager_.stopCalibrationControllers();
-  state_ = PASSIVE;
-}
-
-void ManualBase::remoteControlTurnOn() {
-  controller_manager_.startMainControllers();
-  state_ = IDLE;
+void ManualBase::checkReferee() {
+  robot_hp_event_.update(data_.referee_.referee_data_.game_robot_status_.remain_hp_ != 0);
 }
 
 void ManualBase::checkSwitch(const ros::Time &time) {
@@ -64,6 +58,28 @@ void ManualBase::updateRc() {
 
 void ManualBase::updatePc() {
   checkKeyboard();
+}
+
+void ManualBase::remoteControlTurnOff() {
+  controller_manager_.stopMainControllers();
+  controller_manager_.stopCalibrationControllers();
+  state_ = PASSIVE;
+}
+
+void ManualBase::remoteControlTurnOn() {
+  controller_manager_.startMainControllers();
+  state_ = IDLE;
+}
+
+void ManualBase::robotRevive() {
+  if (remote_is_open_) controller_manager_.startMainControllers();
+}
+
+void ManualBase::robotDie() {
+  if (remote_is_open_) {
+    controller_manager_.stopMainControllers();
+    controller_manager_.stopCalibrationControllers();
+  }
 }
 
 }
