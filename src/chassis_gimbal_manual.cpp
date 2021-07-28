@@ -81,12 +81,27 @@ void ChassisGimbalManual::drawUi(const ros::Time &time) {
   flash_ui_->update("spin", time,
                     chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO
                         && vel_cmd_sender_->getMsg()->angular.z != 0.);
-  if (data_.dbus_data_.s_l == rm_msgs::DbusData::MID && data_.dbus_data_.s_r == rm_msgs::DbusData::UP)
-    trigger_change_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode,
-                               false, 1, false);
-  else
-    trigger_change_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode,
-                               chassis_cmd_sender_->getBurstMode(), 0, chassis_cmd_sender_->getChargeMode());
+  if (data_.dbus_data_.s_l == rm_msgs::DbusData::MID && data_.dbus_data_.s_r == rm_msgs::DbusData::UP){
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::TEST);
+    ROS_INFO("test");
+    trigger_change_ui_->update("chassis",
+                               chassis_cmd_sender_->getMsg()->mode,
+                               false,
+                               1,
+                               false);
+  }
+
+
+  else{
+    ROS_INFO("bust or charge");
+    trigger_change_ui_->update("chassis",
+                               chassis_cmd_sender_->getMsg()->mode,
+                               (chassis_cmd_sender_->power_limit_->getState() == rm_common::PowerLimit::BURST),
+                               0,
+                               (chassis_cmd_sender_->power_limit_->getState() == rm_common::PowerLimit::CHARGE));
+  }
+
+
   flash_ui_->update("armor0", time);
   flash_ui_->update("armor1", time);
   flash_ui_->update("armor2", time);
@@ -125,8 +140,7 @@ void ChassisGimbalManual::rightSwitchUpRise() {
 }
 
 void ChassisGimbalManual::leftSwitchMidFall() {
-  chassis_cmd_sender_->setBurstMode(false);
-  chassis_cmd_sender_->setChargeMode(true);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
 }
 
 void ChassisGimbalManual::leftSwitchDownRise() {

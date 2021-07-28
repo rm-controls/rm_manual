@@ -64,8 +64,7 @@ void ChassisGimbalShooterManual::remoteControlTurnOff() {
 
 void ChassisGimbalShooterManual::chassisOutputOn() {
   ChassisGimbalManual::chassisOutputOn();
-  chassis_cmd_sender_->setBurstMode(false);
-  chassis_cmd_sender_->setChargeMode(true);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
 }
 
 void ChassisGimbalShooterManual::shooterOutputOn() {
@@ -91,22 +90,19 @@ void ChassisGimbalShooterManual::updateRc() {
 
 void ChassisGimbalShooterManual::rightSwitchDownRise() {
   ChassisGimbalManual::rightSwitchDownRise();
-  chassis_cmd_sender_->setBurstMode(false);
-  chassis_cmd_sender_->setChargeMode(true);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
 }
 
 void ChassisGimbalShooterManual::rightSwitchMidRise() {
   ChassisGimbalManual::rightSwitchMidRise();
-  chassis_cmd_sender_->setBurstMode(false);
-  chassis_cmd_sender_->setChargeMode(true);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
 }
 
 void ChassisGimbalShooterManual::rightSwitchUpRise() {
   ChassisGimbalManual::rightSwitchUpRise();
-  chassis_cmd_sender_->setBurstMode(false);
-  chassis_cmd_sender_->setChargeMode(true);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
 }
 
@@ -141,13 +137,11 @@ void ChassisGimbalShooterManual::gPress() {
   if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setAngularZVel(0.0);
-    chassis_cmd_sender_->setBurstMode(false);
-    chassis_cmd_sender_->setChargeMode(false);
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   } else {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
     vel_cmd_sender_->setAngularZVel(1.0);
-    chassis_cmd_sender_->setBurstMode(true);
-    chassis_cmd_sender_->setChargeMode(false);
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
   }
 }
 
@@ -159,8 +153,7 @@ void ChassisGimbalShooterManual::ePress() {
 }
 
 void ChassisGimbalShooterManual::bPress() {
-  chassis_cmd_sender_->setBurstMode(false);
-  chassis_cmd_sender_->setChargeMode(true);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
 }
 
 void ChassisGimbalShooterManual::wPress() {
@@ -204,13 +197,12 @@ void ChassisGimbalShooterManual::shiftPress() {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setAngularZVel(0.);
   }
-  chassis_cmd_sender_->setChargeMode(false);
-  chassis_cmd_sender_->setBurstMode(true);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
 }
 
 void ChassisGimbalShooterManual::shiftRelease() {
   if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::GYRO)
-    chassis_cmd_sender_->setBurstMode(false);
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
 }
 
 void ChassisGimbalShooterManual::ctrlCPress() {
