@@ -29,9 +29,9 @@ class TriggerChangeUi : public UiBase {
   void update(const std::string &graph_name, const std::string &content);
   void update(const std::string &graph_name, uint8_t mode, bool burst_flag = false, bool option_flag = false);
  private:
-  void updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool burst_flag, bool option_flag);
-  const std::string getChassisState(uint8_t mode);
-  const std::string getTargetState(uint8_t mode);
+  static void updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool burst_flag, bool option_flag);
+  static std::string getChassisState(uint8_t mode);
+  static std::string getTargetState(uint8_t mode);
 };
 
 class TimeChangeUi : public UiBase {
@@ -42,7 +42,7 @@ class TimeChangeUi : public UiBase {
  private:
   void setCapacitorData(Graph &graph);
   void setEffortData(Graph &graph);
-  void setProgressData(Graph &graph, double data);
+  static void setProgressData(Graph &graph, double data);
 };
 
 class FixedUi : public UiBase {
@@ -59,7 +59,7 @@ class FlashUi : public UiBase {
   void update(const std::string &name, const ros::Time &time, bool state = false);
  private:
   void updateArmorPosition(const std::string &name, Graph *graph);
-  uint8_t getArmorId(const std::string &name);
+  static uint8_t getArmorId(const std::string &name);
 };
 
 } // namespace rm_manual

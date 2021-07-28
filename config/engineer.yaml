@@ -1,10 +1,10 @@
 rm_manual:
   robot_type: "engineer"
   chassis:
-    topic: "/cmd_chassis"
-    accel_x: 4.0
-    accel_y: 4.0
-    accel_z: 5.0
+    topic: "/controllers/chassis_controller/command"
+    accel_x: 5.0
+    accel_y: 5.0
+    accel_z: 15.0
     safety_power: 50.0
     capacitor_threshold: 0.1
     charge_power: 0
@@ -12,11 +12,11 @@ rm_manual:
     burst_power: 500
   vel:
     topic: "/cmd_vel"
-    max_linear_x: 4.0
-    max_linear_y: 4.0
-    max_angular_z: 6.0
+    max_linear_x: 3.0
+    max_linear_y: 3.0
+    max_angular_z: 10.0
   gimbal:
-    topic: "/cmd_gimbal"
+    topic: "/controllers/gimbal_controller/command"
     max_yaw_vel: 12.56
     max_pitch_vel: 8.37
     target_cost_function:
@@ -33,6 +33,11 @@ rm_manual:
     topic: "/controllers/card_controller/command"
     open_pos: 0.
     close_pos: 0.1
+  stone_platform:
+    topic: "/controllers/stone_platform_controller/command"
+    open_pos: 0.19
+    close_pos: 0.0
+
   controllers_list:
     state_controllers:
       - controllers/robot_state_controller
@@ -43,6 +48,7 @@ rm_manual:
       - controllers/mast_controller
       - controllers/card_controller
       - controllers/hand_controller
+      - controllers/stone_platform_controller
     calibration_controllers:
       - controllers/mast_calibration_controller
       - controllers/joint5_calibration_controller
@@ -52,6 +58,7 @@ rm_manual:
       - controllers/joint1_calibration_controller
       - controllers/hand_calibration_controller
       - controllers/card_calibration_controller
+      - controllers/stone_platform_calibration_controller
   power_on_calibration:
     - start_controller: controllers/mast_calibration_controller
       stop_controller: controllers/mast_controller
@@ -59,6 +66,10 @@ rm_manual:
     - start_controller: controllers/card_calibration_controller
       stop_controller: controllers/card_controller
       service_name: /controllers/card_calibration_controller/is_calibrated
+    - start_controller: controllers/stone_platform_calibration_controller
+      stop_controller: controllers/stone_platform_controller
+      service_name: /controllers/stone_platform_calibration_controller/is_calibrated
+
   arm_calibration:
     - start_controller: controllers/joint1_calibration_controller
       stop_controller: controllers/arm_trajectory_controller
@@ -85,12 +96,14 @@ rm_manual:
       - name: "queue"
         config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "queue:" }
       - name: "jog"
-        config: { start_position: [ 400, 650 ], size: 15, width: 2, title: "jog:  " }
+        config: { start_position: [ 400, 500 ], size: 15, width: 2, title: "jog:  " }
+      - name: "stone"
+        config: { start_position: [ 400, 400 ], size: 15, width: 2, title: "stone:" }
     time_change:
       - name: "effort"
         config: { start_position: [ 850, 150 ], size: 15, width: 2, delay: 0.8, color: "white" }
-      - name: "progress"
-        config: { start_position: [ 850, 200 ], size: 15, width: 2, delay: 0.8, color: "white" }
+      - name: "progress:"
+        config: { start_position: [ 380, 650 ], size: 15, width: 2, delay: 0.8, color: "white" }
     flash:
       - name: "calibration"
         config: { start_position: [ 850, 700 ], size: 15, width: 2,

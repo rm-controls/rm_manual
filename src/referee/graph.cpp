@@ -28,10 +28,11 @@ Graph::Graph(const XmlRpc::XmlRpcValue &config, Referee &referee, int id) : refe
       config_.end_y_ = end_positions_[0].second;
     }
   }
+  if (config.hasMember("color")) config_.color_ = getColor(config["color"]);
+  else { config_.color_ = rm_common::GraphColor::WHITE; }
   if (config.hasMember("end_angle")) config_.end_angle_ = (int) config["end_angle"];
   if (config.hasMember("radius")) config_.radius_ = (int) config["radius"];
   if (config.hasMember("width")) config_.width_ = (int) config["width"];
-  if (config.hasMember("color")) config_.color_ = getColor(config["color"]);
   if (config.hasMember("delay")) delay_ = ros::Duration((double) config["delay"]);
   if (config.hasMember("title")) title_ = (std::string) config["title"];
   if (config.hasMember("content")) content_ = (std::string) config["content"];

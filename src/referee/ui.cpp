@@ -13,7 +13,7 @@ UiBase::UiBase(ros::NodeHandle &nh, Data &data, const std::string &ui_type) : da
     return;
   }
   try {
-    for (int i = 0; i < (int) rpc_value.size(); ++i) {
+    for (int i = 0; i < (int) rpc_value.size(); i++) {
       if (rpc_value[i]["name"] == "chassis")
         graph_vector_.insert(std::pair<std::string, Graph *>(rpc_value[i]["name"],
                                                              new Graph(rpc_value[i]["config"], data_.referee_, 1)));
@@ -34,7 +34,6 @@ void UiBase::add() {
 
 TriggerChangeUi::TriggerChangeUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, data, "trigger_change") {
   for (auto graph:graph_vector_) {
-    graph.second->setColor(rm_common::GraphColor::WHITE);
     if (graph.first == "chassis") {
       if (data.referee_.referee_data_.robot_id_ == rm_common::RobotId::RED_ENGINEER
           || data.referee_.referee_data_.robot_id_ == rm_common::RobotId::BLUE_ENGINEER)
@@ -44,16 +43,17 @@ TriggerChangeUi::TriggerChangeUi(ros::NodeHandle &nh, Data &data) : UiBase(nh, d
       graph.second->setContent("armor");
       if (data.referee_.referee_data_.robot_color_ == "red") graph.second->setColor(rm_common::GraphColor::CYAN);
       else graph.second->setColor(rm_common::GraphColor::PINK);
-    } else if (graph.first == "step") graph.second->setContent("0");
-    else if (graph.first == "jog") graph.second->setContent("0");
-    else if (graph.first == "queue") graph.second->setContent("0");
+    } else graph.second->setContent("0");
   }
 }
 
 void TriggerChangeUi::update(const std::string &graph_name, const std::string &content) {
   auto graph = graph_vector_.find(graph_name);
   if (graph != graph_vector_.end()) {
-    graph->second->setContent(content);
+    if (graph_name == "stone") {
+      if (content == "0") graph->second->setContent("upper");
+      else graph->second->setContent("lower");
+    } else graph->second->setContent(content);
     graph->second->setOperation(rm_common::GraphOperation::UPDATE);
     graph->second->display();
   }
@@ -83,7 +83,7 @@ void TriggerChangeUi::updateConfig(const std::string &name, Graph *graph, uint8_
   }
 }
 
-const std::string TriggerChangeUi::getChassisState(uint8_t mode) {
+std::string TriggerChangeUi::getChassisState(uint8_t mode) {
   if (mode == rm_msgs::ChassisCmd::RAW) return "raw";
   else if (mode == rm_msgs::ChassisCmd::FOLLOW) return "follow";
   else if (mode == rm_msgs::ChassisCmd::GYRO) return "gyro";
@@ -91,7 +91,7 @@ const std::string TriggerChangeUi::getChassisState(uint8_t mode) {
   else return "error";
 }
 
-const std::string TriggerChangeUi::getTargetState(uint8_t mode) {
+std::string TriggerChangeUi::getTargetState(uint8_t mode) {
   if (mode == rm_msgs::StatusChangeRequest::BUFF) return "buff";
   else if (mode == rm_msgs::StatusChangeRequest::ARMOR) return "armor";
   else return "error";
@@ -107,12 +107,8 @@ void FixedUi::update() {
 
 int FixedUi::getShootSpeedIndex() {
   uint16_t speed_limit;
-  if (data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::BLUE_HERO
-      || data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::RED_HERO) {
-    speed_limit = data_.referee_.referee_data_.game_robot_status_.shooter_id_1_42_mm_speed_limit_;
-    if (speed_limit == 10) return 0;
-    else if (speed_limit == 16) return 1;
-  } else {
+  if (data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::BLUE_HERO
+      || data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::RED_HERO) {
     speed_limit = data_.referee_.referee_data_.game_robot_status_.shooter_id_1_17_mm_speed_limit_;
     if (speed_limit == 15) return 0;
     else if (speed_limit == 18) return 1;
