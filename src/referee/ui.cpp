@@ -99,7 +99,7 @@ std::string TriggerChangeUi::getTargetState(uint8_t target, uint8_t armor_target
       && armor_target == rm_msgs::StatusChangeRequest::ARMOR_ALL)
     return "armor_all";
   else if (target == rm_msgs::StatusChangeRequest::ARMOR
-      && armor_target == rm_msgs::StatusChangeRequest::ARMOR_BASE)
+      && armor_target == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
     return "armor_base";
   else return "error";
 }
