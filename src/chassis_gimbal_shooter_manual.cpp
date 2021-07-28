@@ -163,6 +163,42 @@ void ChassisGimbalShooterManual::bPress() {
   chassis_cmd_sender_->setChargeMode(true);
 }
 
+void ChassisGimbalShooterManual::wPress() {
+  ChassisGimbalManual::wPress();
+  if ((data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::BLUE_HERO
+      || data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::RED_HERO) && gimbal_cmd_sender_->getEject()) {
+    gimbal_cmd_sender_->setEject(false);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+  }
+}
+
+void ChassisGimbalShooterManual::aPress() {
+  ChassisGimbalManual::aPress();
+  if ((data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::BLUE_HERO
+      || data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::RED_HERO) && gimbal_cmd_sender_->getEject()) {
+    gimbal_cmd_sender_->setEject(false);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+  }
+}
+
+void ChassisGimbalShooterManual::sPress() {
+  ChassisGimbalManual::sPress();
+  if ((data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::BLUE_HERO
+      || data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::RED_HERO) && gimbal_cmd_sender_->getEject()) {
+    gimbal_cmd_sender_->setEject(false);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+  }
+}
+
+void ChassisGimbalShooterManual::dPress() {
+  ChassisGimbalManual::dPress();
+  if ((data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::BLUE_HERO
+      || data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::RED_HERO) && gimbal_cmd_sender_->getEject()) {
+    gimbal_cmd_sender_->setEject(false);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+  }
+}
+
 void ChassisGimbalShooterManual::shiftPress() {
   if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
@@ -188,12 +224,18 @@ void ChassisGimbalShooterManual::ctrlVPress() {
 }
 
 void ChassisGimbalShooterManual::ctrlRPress() {
-  switch_detection_srv_->switchTargetType();
-  switch_detection_srv_->callService();
-  if (switch_detection_srv_->getTarget())
+  if (data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::BLUE_HERO
+      || data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::RED_HERO) {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
-  else
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    gimbal_cmd_sender_->setEject(true);
+  } else {
+    switch_detection_srv_->switchTargetType();
+    switch_detection_srv_->callService();
+    if (switch_detection_srv_->getTarget())
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+    else
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+  }
 }
 
 void ChassisGimbalShooterManual::ctrlBPress() {

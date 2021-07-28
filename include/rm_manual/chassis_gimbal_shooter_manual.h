@@ -31,6 +31,10 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void mouseLeftRelease() override { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY); }
   void mouseRightPress() override;
   void mouseRightRelease() override { gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE); }
+  void wPress() override;
+  void aPress() override;
+  void sPress() override;
+  void dPress() override;
   void ePress();
   void gPress();
   void bPress();

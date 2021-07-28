@@ -31,12 +31,12 @@ void ManualBase::checkReferee() {
 }
 
 void ManualBase::checkSwitch(const ros::Time &time) {
-  if (remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() > 0.1) {
+  if (remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() > 0.3) {
     ROS_INFO("Remote controller OFF");
     remoteControlTurnOff();
     remote_is_open_ = false;
   }
-  if (!remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() < 0.1) {
+  if (!remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() < 0.3) {
     ROS_INFO("Remote controller ON");
     remoteControlTurnOn();
     remote_is_open_ = true;
