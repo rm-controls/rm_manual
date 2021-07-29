@@ -41,8 +41,8 @@ rm_manual:
       type: "ID1_42MM"
   cover:
     topic: "/controllers/cover_controller/command"
-    open_pos: -2.0
-    close_pos: 0.0
+    on_pos: -2.0
+    off_pos: 0.0
   detection_switch:
     fail_limit: 10
 

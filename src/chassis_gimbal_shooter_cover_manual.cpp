@@ -41,17 +41,17 @@ void ChassisGimbalShooterCoverManual::drawUi(const ros::Time &time) {
 
 void ChassisGimbalShooterCoverManual::rightSwitchDownRise() {
   ChassisGimbalShooterManual::rightSwitchDownRise();
-  cover_command_sender_->open();
+  cover_command_sender_->on();
 }
 
 void ChassisGimbalShooterCoverManual::rightSwitchMidRise() {
   ChassisGimbalShooterManual::rightSwitchMidRise();
-  cover_command_sender_->close();
+  cover_command_sender_->off();
 }
 
 void ChassisGimbalShooterCoverManual::rightSwitchUpRise() {
   ChassisGimbalShooterManual::rightSwitchUpRise();
-  cover_command_sender_->close();
+  cover_command_sender_->off();
 }
 
 void ChassisGimbalShooterCoverManual::mouseRightPress() {
@@ -74,10 +74,10 @@ void ChassisGimbalShooterCoverManual::ctrlZPress() {
     aim_point.point.z = 0;
     gimbal_cmd_sender_->setAimPoint(aim_point);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
-    cover_command_sender_->open();
+    cover_command_sender_->on();
   } else {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-    cover_command_sender_->close();
+    cover_command_sender_->off();
   }
 }
 }
