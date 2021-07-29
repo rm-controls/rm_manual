@@ -14,6 +14,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle &nh) : Ch
   nh.getParam("trigger_calibration", rpc_value);
   trigger_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   shooter_power_on_event_.setRising(boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
+  self_inspection_event_.setRising(boost::bind(&ChassisGimbalShooterManual::selfInspectionStart, this));
+  game_start_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gameStart, this));
   e_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ePress, this));
   g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
   q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::qPress, this));
@@ -36,6 +38,8 @@ void ChassisGimbalShooterManual::run() {
 void ChassisGimbalShooterManual::checkReferee() {
   ChassisGimbalManual::checkReferee();
   shooter_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_shooter_output_);
+  self_inspection_event_.update(data_.referee_.referee_data_.game_status_.game_progress_ == 2);
+  game_start_event_.update(data_.referee_.referee_data_.game_status_.game_progress_ == 4);
 }
 
 void ChassisGimbalShooterManual::checkKeyboard() {
