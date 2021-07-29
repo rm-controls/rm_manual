@@ -30,10 +30,6 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
                    boost::bind(&ChassisGimbalManual::aRelease, this));
   d_event_.setEdge(boost::bind(&ChassisGimbalManual::dPress, this),
                    boost::bind(&ChassisGimbalManual::dRelease, this));
-  mouse_left_event_.setEdge(boost::bind(&ChassisGimbalManual::mouseLeftPress, this),
-                            boost::bind(&ChassisGimbalManual::mouseLeftRelease, this));
-  mouse_right_event_.setEdge(boost::bind(&ChassisGimbalManual::mouseRightPress, this),
-                             boost::bind(&ChassisGimbalManual::mouseRightRelease, this));
 }
 
 void ChassisGimbalManual::sendCommand(const ros::Time &time) {
@@ -71,8 +67,6 @@ void ChassisGimbalManual::checkKeyboard() {
   s_event_.update(data_.dbus_data_.key_s);
   a_event_.update(data_.dbus_data_.key_a);
   d_event_.update(data_.dbus_data_.key_d);
-  mouse_left_event_.update(data_.dbus_data_.p_l);
-  mouse_right_event_.update(data_.dbus_data_.p_r);
 }
 
 void ChassisGimbalManual::drawUi(const ros::Time &time) {

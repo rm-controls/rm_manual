@@ -64,16 +64,6 @@ void ChassisGimbalShooterCoverManual::rightSwitchUpRise() {
   cover_command_sender_->off();
 }
 
-void ChassisGimbalShooterCoverManual::mouseRightPress() {
-  if (cover_command_sender_->getState())
-    ChassisGimbalShooterManual::mouseRightPress();
-}
-
-void ChassisGimbalShooterCoverManual::mouseRightRelease() {
-  if (cover_command_sender_->getState())
-    ChassisGimbalShooterManual::mouseRightRelease();
-}
-
 void ChassisGimbalShooterCoverManual::ctrlZPress() {
   if (cover_command_sender_->getState()) {
     geometry_msgs::PointStamped aim_point{};
