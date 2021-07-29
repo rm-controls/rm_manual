@@ -60,6 +60,12 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time &time) {
 void ChassisGimbalShooterManual::remoteControlTurnOff() {
   ChassisGimbalManual::remoteControlTurnOff();
   shooter_cmd_sender_->setZero();
+  trigger_calibration_->stop();
+}
+
+void ChassisGimbalShooterManual::remoteControlTurnOn() {
+  ChassisGimbalManual::remoteControlTurnOn();
+  trigger_calibration_->stopController();
 }
 
 void ChassisGimbalShooterManual::chassisOutputOn() {
