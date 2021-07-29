@@ -51,6 +51,15 @@ void Graph::display(bool priority_flag) {
   last_config_ = config_;
 }
 
+void Graph::displayTwice(bool priority_flag) {
+  if (config_ == last_config_ && title_ == last_title_ && content_ == last_content_) return;
+  if (!title_.empty() && !content_.empty()) config_.end_angle_ = (int) (title_ + content_).size();
+  for (int i = 0; i < 2; ++i) referee_.addUi(config_, title_ + content_, priority_flag);
+  last_content_ = content_;
+  last_title_ = title_;
+  last_config_ = config_;
+}
+
 void Graph::display(const ros::Time &time) {
   if (time - last_time_ < delay_) return;
   display();

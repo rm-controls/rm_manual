@@ -65,7 +65,8 @@ void TriggerChangeUi::update(const std::string &graph_name, uint8_t main_mode, b
   if (graph != graph_vector_.end()) {
     updateConfig(graph_name, graph->second, main_mode, main_flag, sub_mode, sub_flag);
     graph->second->setOperation(rm_common::GraphOperation::UPDATE);
-    graph->second->display();
+    if (graph->first == "chassis") graph->second->displayTwice(true);
+    else graph->second->display();
   }
 }
 

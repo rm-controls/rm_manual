@@ -14,6 +14,7 @@ class Graph {
  public:
   explicit Graph(const XmlRpc::XmlRpcValue &config, Referee &referee, int id);
   void display(bool priority_flag = false);
+  void displayTwice(bool priority_flag = false);
   void display(const ros::Time &time);
   void display(const ros::Time &time, bool state, bool once = false);
   void updatePosition(int index);
