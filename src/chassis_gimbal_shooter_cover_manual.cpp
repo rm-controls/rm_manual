@@ -34,6 +34,16 @@ void ChassisGimbalShooterCoverManual::shooterOutputOn() {
   cover_calibration_->reset();
 }
 
+void ChassisGimbalShooterCoverManual::remoteControlTurnOff() {
+  ChassisGimbalShooterManual::remoteControlTurnOff();
+  cover_calibration_->stop();
+}
+
+void ChassisGimbalShooterCoverManual::remoteControlTurnOn() {
+  ChassisGimbalShooterManual::remoteControlTurnOn();
+  cover_calibration_->stopController();
+}
+
 void ChassisGimbalShooterCoverManual::drawUi(const ros::Time &time) {
   ChassisGimbalShooterManual::drawUi(time);
   flash_ui_->update("cover", time, cover_command_sender_->getState());
@@ -52,16 +62,6 @@ void ChassisGimbalShooterCoverManual::rightSwitchMidRise() {
 void ChassisGimbalShooterCoverManual::rightSwitchUpRise() {
   ChassisGimbalShooterManual::rightSwitchUpRise();
   cover_command_sender_->off();
-}
-
-void ChassisGimbalShooterCoverManual::mouseRightPress() {
-  if (cover_command_sender_->getState())
-    ChassisGimbalShooterManual::mouseRightPress();
-}
-
-void ChassisGimbalShooterCoverManual::mouseRightRelease() {
-  if (cover_command_sender_->getState())
-    ChassisGimbalShooterManual::mouseRightRelease();
 }
 
 void ChassisGimbalShooterCoverManual::ctrlZPress() {

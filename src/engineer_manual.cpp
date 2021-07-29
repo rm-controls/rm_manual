@@ -76,6 +76,7 @@ void EngineerManual::sendCommand(const ros::Time &time) {
 void EngineerManual::drawUi(const ros::Time &time) {
   ChassisGimbalManual::drawUi(time);
   time_change_ui_->update("effort", time);
+  trigger_change_ui_->update("card", 0, card_command_sender_->getState());
   flash_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
 //    trigger_change_ui_->update("jog", jog_joint_name);
 }
@@ -130,7 +131,7 @@ void EngineerManual::runStepQueue(const std::string &step_queue_name) {
 
 void EngineerManual::actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr &feedback) {
   trigger_change_ui_->update("queue", feedback->current_step);
-  if (feedback->total_steps != 0.)
+  if (feedback->total_steps != 0)
     time_change_ui_->update("progress", ros::Time::now(), ((double) feedback->finished_step) / feedback->total_steps);
   else
     time_change_ui_->update("progress", ros::Time::now(), 0.);

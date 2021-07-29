@@ -30,10 +30,6 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
                    boost::bind(&ChassisGimbalManual::aRelease, this));
   d_event_.setEdge(boost::bind(&ChassisGimbalManual::dPress, this),
                    boost::bind(&ChassisGimbalManual::dRelease, this));
-  mouse_left_event_.setEdge(boost::bind(&ChassisGimbalManual::mouseLeftPress, this),
-                            boost::bind(&ChassisGimbalManual::mouseLeftRelease, this));
-  mouse_right_event_.setEdge(boost::bind(&ChassisGimbalManual::mouseRightPress, this),
-                             boost::bind(&ChassisGimbalManual::mouseRightRelease, this));
 }
 
 void ChassisGimbalManual::sendCommand(const ros::Time &time) {
@@ -71,32 +67,21 @@ void ChassisGimbalManual::checkKeyboard() {
   s_event_.update(data_.dbus_data_.key_s);
   a_event_.update(data_.dbus_data_.key_a);
   d_event_.update(data_.dbus_data_.key_d);
-  mouse_left_event_.update(data_.dbus_data_.p_l);
-  mouse_right_event_.update(data_.dbus_data_.p_r);
 }
 
 void ChassisGimbalManual::drawUi(const ros::Time &time) {
   ManualBase::drawUi(time);
   time_change_ui_->update("capacitor", time);
-  flash_ui_->update("spin", time,
-                    chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO
-                        && vel_cmd_sender_->getMsg()->angular.z != 0.);
-  if (data_.dbus_data_.s_l == rm_msgs::DbusData::MID && data_.dbus_data_.s_r == rm_msgs::DbusData::UP){
+  if (data_.dbus_data_.s_l == rm_msgs::DbusData::MID && data_.dbus_data_.s_r == rm_msgs::DbusData::UP) {
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::TEST);
-    trigger_change_ui_->update("chassis",
-                               chassis_cmd_sender_->getMsg()->mode,
-                               false,
-                               1,
-                               false);
-  } else{
-    trigger_change_ui_->update("chassis",
-                               chassis_cmd_sender_->getMsg()->mode,
-                               (chassis_cmd_sender_->power_limit_->getState() == rm_common::PowerLimit::BURST),
-                               0,
-                               (chassis_cmd_sender_->power_limit_->getState() == rm_common::PowerLimit::CHARGE));
+    trigger_change_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, false, 1, false);
+  } else {
+    trigger_change_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode,
+                               chassis_cmd_sender_->power_limit_->getState() == rm_common::PowerLimit::BURST, 0,
+                               chassis_cmd_sender_->power_limit_->getState() == rm_common::PowerLimit::CHARGE);
   }
-
-
+  flash_ui_->update("spin", time, chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO
+      && vel_cmd_sender_->getMsg()->angular.z != 0.);
   flash_ui_->update("armor0", time);
   flash_ui_->update("armor1", time);
   flash_ui_->update("armor2", time);

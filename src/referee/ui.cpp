@@ -65,7 +65,8 @@ void TriggerChangeUi::update(const std::string &graph_name, uint8_t main_mode, b
   if (graph != graph_vector_.end()) {
     updateConfig(graph_name, graph->second, main_mode, main_flag, sub_mode, sub_flag);
     graph->second->setOperation(rm_common::GraphOperation::UPDATE);
-    graph->second->display();
+    if (graph->first == "chassis") graph->second->displayTwice(true);
+    else graph->second->display();
   }
 }
 
@@ -82,6 +83,9 @@ void TriggerChangeUi::updateConfig(const std::string &name, Graph *graph, uint8_
     if (main_flag) graph->setColor(rm_common::GraphColor::ORANGE);
     else if (sub_flag) graph->setColor(rm_common::GraphColor::PINK);
     else graph->setColor(rm_common::GraphColor::CYAN);
+  } else if (name == "card") {
+    if (main_flag) graph->setContent("true");
+    else graph->setContent("false");
   }
 }
 
@@ -136,6 +140,7 @@ void FlashUi::update(const std::string &name, const ros::Time &time, bool state)
       data_.referee_.referee_data_.robot_hurt_.hurt_type_ = 9;
     } else graph->second->display(time, false, true);
   } else {
+    if (state) graph->second->setOperation(rm_common::GraphOperation::DELETE);
     graph->second->display(time, !state);
   }
 }
@@ -201,9 +206,10 @@ void TimeChangeUi::setEffortData(Graph &graph) {
     for (int i = 0; i < (int) data_.joint_state_.effort.size(); ++i)
       if (data_.joint_state_.name[i] != "right_finger_joint_motor"
           && data_.joint_state_.name[i] != "left_finger_joint_motor"
+          && data_.joint_state_.name[i] != "mast_joint_motor"
           && data_.joint_state_.effort[i] > data_.joint_state_.effort[max_index])
         max_index = i;
-    sprintf(data_str, "name %s:%.2f", data_.joint_state_.name[max_index].c_str(), data_.joint_state_.effort[max_index]);
+    sprintf(data_str, "%s:%.2f", data_.joint_state_.name[max_index].c_str(), data_.joint_state_.effort[max_index]);
     graph.setContent(data_str);
     graph.setOperation(rm_common::GraphOperation::UPDATE);
   }

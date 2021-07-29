@@ -25,6 +25,10 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle &nh) : Ch
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
   shift_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::shiftPress, this),
                        boost::bind(&ChassisGimbalShooterManual::shiftRelease, this));
+  mouse_left_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::mouseLeftPress, this),
+                            boost::bind(&ChassisGimbalShooterManual::mouseLeftRelease, this));
+  mouse_right_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseRightPress, this));
+  mouse_right_event_.setFalling(boost::bind(&ChassisGimbalShooterManual::mouseRightRelease, this));
 }
 
 void ChassisGimbalShooterManual::run() {
@@ -50,6 +54,8 @@ void ChassisGimbalShooterManual::checkKeyboard() {
   ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
   ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
   shift_event_.update(data_.dbus_data_.key_shift);
+  mouse_left_event_.update(data_.dbus_data_.p_l);
+  mouse_right_event_.update(data_.dbus_data_.p_r);
 }
 
 void ChassisGimbalShooterManual::sendCommand(const ros::Time &time) {
@@ -60,6 +66,12 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time &time) {
 void ChassisGimbalShooterManual::remoteControlTurnOff() {
   ChassisGimbalManual::remoteControlTurnOff();
   shooter_cmd_sender_->setZero();
+  trigger_calibration_->stop();
+}
+
+void ChassisGimbalShooterManual::remoteControlTurnOn() {
+  ChassisGimbalManual::remoteControlTurnOn();
+  trigger_calibration_->stopController();
 }
 
 void ChassisGimbalShooterManual::chassisOutputOn() {
@@ -128,7 +140,6 @@ void ChassisGimbalShooterManual::leftSwitchUpRise() {
 
 void ChassisGimbalShooterManual::mouseRightPress() {
   gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
-  gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
   gimbal_cmd_sender_->updateCost(data_.track_data_array_);
   shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
 }
