@@ -27,11 +27,13 @@ class TriggerChangeUi : public UiBase {
  public:
   explicit TriggerChangeUi(ros::NodeHandle &nh, Data &data);
   void update(const std::string &graph_name, const std::string &content);
-  void update(const std::string &graph_name, uint8_t mode, bool burst_flag = false, bool option_flag = false);
+  void update(const std::string &graph_name, uint8_t main_mode, bool main_flag,
+              uint8_t sub_mode = 0, bool sub_flag = false);
  private:
-  static void updateConfig(const std::string &name, Graph *graph, uint8_t mode, bool burst_flag, bool option_flag);
+  static void updateConfig(const std::string &name, Graph *graph, uint8_t main_mode, bool main_flag,
+                           uint8_t sub_mode, bool sub_flag);
   static std::string getChassisState(uint8_t mode);
-  static std::string getTargetState(uint8_t mode);
+  static std::string getTargetState(uint8_t target, uint8_t armor_target);
 };
 
 class TimeChangeUi : public UiBase {

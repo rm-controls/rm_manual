@@ -59,26 +59,28 @@ void TriggerChangeUi::update(const std::string &graph_name, const std::string &c
   }
 }
 
-void TriggerChangeUi::update(const std::string &graph_name, uint8_t mode, bool burst_flag, bool option_flag) {
+void TriggerChangeUi::update(const std::string &graph_name, uint8_t main_mode, bool main_flag,
+                             uint8_t sub_mode, bool sub_flag) {
   auto graph = graph_vector_.find(graph_name);
   if (graph != graph_vector_.end()) {
-    updateConfig(graph_name, graph->second, mode, burst_flag, option_flag);
+    updateConfig(graph_name, graph->second, main_mode, main_flag, sub_mode, sub_flag);
     graph->second->setOperation(rm_common::GraphOperation::UPDATE);
     graph->second->display();
   }
 }
 
-void TriggerChangeUi::updateConfig(const std::string &name, Graph *graph, uint8_t mode,
-                                   bool burst_flag, bool option_flag) {
+void TriggerChangeUi::updateConfig(const std::string &name, Graph *graph, uint8_t main_mode,
+                                   bool main_flag, uint8_t sub_mode, bool sub_flag) {
   if (name == "chassis") {
-    graph->setContent(getChassisState(mode));
-    if (burst_flag) graph->setColor(rm_common::GraphColor::ORANGE);
-    else if (option_flag) graph->setColor(rm_common::GraphColor::GREEN);
+    graph->setContent(getChassisState(main_mode));
+    if (main_flag) graph->setColor(rm_common::GraphColor::ORANGE);
+    else if (sub_flag) graph->setColor(rm_common::GraphColor::GREEN);
+    else if (sub_mode == 1) graph->setColor(rm_common::GraphColor::PINK);
     else graph->setColor(rm_common::GraphColor::WHITE);
   } else if (name == "target") {
-    graph->setContent(getTargetState(mode));
-    if (burst_flag) graph->setColor(rm_common::GraphColor::ORANGE);
-    else if (option_flag) graph->setColor(rm_common::GraphColor::PINK);
+    graph->setContent(getTargetState(main_mode, sub_mode));
+    if (main_flag) graph->setColor(rm_common::GraphColor::ORANGE);
+    else if (sub_flag) graph->setColor(rm_common::GraphColor::PINK);
     else graph->setColor(rm_common::GraphColor::CYAN);
   }
 }
@@ -91,9 +93,15 @@ std::string TriggerChangeUi::getChassisState(uint8_t mode) {
   else return "error";
 }
 
-std::string TriggerChangeUi::getTargetState(uint8_t mode) {
-  if (mode == rm_msgs::StatusChangeRequest::BUFF) return "buff";
-  else if (mode == rm_msgs::StatusChangeRequest::ARMOR) return "armor";
+std::string TriggerChangeUi::getTargetState(uint8_t target, uint8_t armor_target) {
+  if (target == rm_msgs::StatusChangeRequest::BUFF)
+    return "buff";
+  else if (target == rm_msgs::StatusChangeRequest::ARMOR
+      && armor_target == rm_msgs::StatusChangeRequest::ARMOR_ALL)
+    return "armor_all";
+  else if (target == rm_msgs::StatusChangeRequest::ARMOR
+      && armor_target == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
+    return "armor_base";
   else return "error";
 }
 
@@ -188,16 +196,17 @@ void TimeChangeUi::setCapacitorData(Graph &graph) {
 
 void TimeChangeUi::setEffortData(Graph &graph) {
   char data_str[30] = {' '};
-  double max_effort = 0.;
-  std::string name;
-  for (auto effort:data_.joint_state_.effort) { if (effort > max_effort) max_effort = effort; }
-  auto i = std::find(data_.joint_state_.effort.begin(), data_.joint_state_.effort.end(), max_effort);
-  if (i != data_.joint_state_.effort.end()) {
-    name = data_.joint_state_.name[std::distance((data_.joint_state_.effort.begin()), i)];
+  int max_index = 0;
+  if (!data_.joint_state_.name.empty()) {
+    for (int i = 0; i < (int) data_.joint_state_.effort.size(); ++i)
+      if (data_.joint_state_.name[i] != "right_finger_joint_motor"
+          && data_.joint_state_.name[i] != "left_finger_joint_motor"
+          && data_.joint_state_.effort[i] > data_.joint_state_.effort[max_index])
+        max_index = i;
+    sprintf(data_str, "name %s:%.2f", data_.joint_state_.name[max_index].c_str(), data_.joint_state_.effort[max_index]);
+    graph.setContent(data_str);
+    graph.setOperation(rm_common::GraphOperation::UPDATE);
   }
-  sprintf(data_str, "%s:%.2f", name.c_str(), max_effort);
-  graph.setContent(data_str);
-  graph.setOperation(rm_common::GraphOperation::UPDATE);
 }
 
 void TimeChangeUi::setProgressData(Graph &graph, double data) {

@@ -16,11 +16,10 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void checkReferee() override;
   void checkKeyboard() override;
   void updateRc() override;
-  void updatePc() override;
   void sendCommand(const ros::Time &time) override;
-  void remoteControlTurnOff() override;
   void chassisOutputOn() override;
   void shooterOutputOn() override;
+  void remoteControlTurnOff() override;
   void drawUi(const ros::Time &time) override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
@@ -32,6 +31,10 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void mouseLeftRelease() override { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY); }
   void mouseRightPress() override;
   void mouseRightRelease() override { gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE); }
+  void wPress() override;
+  void aPress() override;
+  void sPress() override;
+  void dPress() override;
   void ePress();
   void gPress();
   void bPress();
@@ -39,7 +42,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void fPress() { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP); }
   void shiftPress();
   void shiftRelease();
-  void ctrlCPress() { gimbal_cmd_sender_->setBaseOnly(!gimbal_cmd_sender_->getBaseOnly()); }
+  void ctrlCPress();
   void ctrlVPress();
   void ctrlRPress();
   void ctrlBPress();
