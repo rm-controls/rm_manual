@@ -75,6 +75,11 @@ void ChassisGimbalShooterCoverManual::ctrlZPress() {
     gimbal_cmd_sender_->setAimPoint(aim_point);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
     cover_command_sender_->on();
+    if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+      vel_cmd_sender_->setZero();
+    }
   } else {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     cover_command_sender_->off();
