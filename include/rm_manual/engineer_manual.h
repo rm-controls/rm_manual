@@ -32,17 +32,18 @@ class EngineerManual : public ChassisGimbalManual {
   void rightSwitchUpRise() override;
   void leftSwitchUpFall() { runStepQueue("ARM_TEST"); }
   void leftSwitchDownFall();
-  void runStepQueue(std::string step_queue_name);
+  void runStepQueue(const std::string &step_queue_name);
   void actionActiveCallback() { operating_mode_ = MIDDLEWARE; }
-  void actionFeedbackCb(const rm_msgs::EngineerFeedbackConstPtr &feedback);
+  void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr &feedback);
   void actionDoneCallback(const actionlib::SimpleClientGoalState &state,
                           const rm_msgs::EngineerResultConstPtr &result);
   void ctrlCPress() { action_client_.cancelAllGoals(); }
   void ctrlRPress() { runStepQueue("RECOVER"); }
-  void ctrlFPress() { runStepQueue("ARM_FOLD_LOWER"); }
+  void ctrlFPress() { runStepQueue("ARM_FOLD_UPPER"); }
   void ctrlWPress() { runStepQueue("GRASP_BIG"); }
   void ctrlSPress() { runStepQueue("STORAGE"); }
   void ctrlQPress() { runStepQueue("PLACE"); }
+  void cPress(ros::Duration duration);
 
   enum { MANUAL, MIDDLEWARE };
   int operating_mode_;
@@ -50,7 +51,7 @@ class EngineerManual : public ChassisGimbalManual {
   rm_common::CalibrationQueue *power_on_calibration_{}, *mast_calibration_{}, *arm_calibration_{};
   rm_common::JointPositionBinaryCommandSender *mast_command_sender_, *card_command_sender_;
   InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_c_event_, ctrl_f_event_, ctrl_r_event_, ctrl_w_event_,
-      ctrl_s_event_, ctrl_q_event_;
+      ctrl_s_event_, ctrl_q_event_, c_event_;
 };
 
 }
