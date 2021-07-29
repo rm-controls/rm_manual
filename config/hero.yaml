@@ -59,9 +59,11 @@ rm_manual:
   ui:
     trigger_change:
       - name: "chassis"
-        config: { start_position: [ 400, 750 ], size: 15, width: 2, title: "chassis:" }
+        config: { start_position: [ 400, 750 ], size: 15, width: 2, title: "chassis: " }
       - name: "target"
-        config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "target: " }
+        config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "target:  " }
+      - name: "exposure"
+        config: { start_position: [ 400, 650 ], size: 15, width: 2, title: "exposure:" }
     time_change:
       - name: "capacitor"
         config: { start_position: [ 900, 100 ], size: 15, width: 2, delay: 0.5 }

@@ -34,6 +34,7 @@ class TriggerChangeUi : public UiBase {
                            uint8_t sub_mode, bool sub_flag);
   static std::string getChassisState(uint8_t mode);
   static std::string getTargetState(uint8_t target, uint8_t armor_target);
+  static std::string getExposureState(uint8_t level);
 };
 
 class TimeChangeUi : public UiBase {

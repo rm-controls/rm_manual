@@ -86,7 +86,7 @@ void TriggerChangeUi::updateConfig(const std::string &name, Graph *graph, uint8_
   } else if (name == "card") {
     if (main_flag) graph->setContent("true");
     else graph->setContent("false");
-  }
+  } else if (name == "exposure") { graph->setContent(getExposureState(main_mode)); }
 }
 
 std::string TriggerChangeUi::getChassisState(uint8_t mode) {
@@ -106,6 +106,15 @@ std::string TriggerChangeUi::getTargetState(uint8_t target, uint8_t armor_target
   else if (target == rm_msgs::StatusChangeRequest::ARMOR
       && armor_target == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
     return "armor_base";
+  else return "error";
+}
+
+std::string TriggerChangeUi::getExposureState(uint8_t level) {
+  if (level == rm_msgs::StatusChangeRequest::EXPOSURE_LEVEL_0) return "0";
+  else if (level == rm_msgs::StatusChangeRequest::EXPOSURE_LEVEL_1) return "1";
+  else if (level == rm_msgs::StatusChangeRequest::EXPOSURE_LEVEL_2) return "2";
+  else if (level == rm_msgs::StatusChangeRequest::EXPOSURE_LEVEL_3) return "3";
+  else if (level == rm_msgs::StatusChangeRequest::EXPOSURE_LEVEL_4) return "4";
   else return "error";
 }
 

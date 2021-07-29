@@ -63,10 +63,18 @@ void ChassisGimbalManual::checkReferee() {
 
 void ChassisGimbalManual::checkKeyboard() {
   ManualBase::checkKeyboard();
-  w_event_.update(data_.dbus_data_.key_w);
-  s_event_.update(data_.dbus_data_.key_s);
-  a_event_.update(data_.dbus_data_.key_a);
-  d_event_.update(data_.dbus_data_.key_d);
+  if (data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::RED_ENGINEER
+      || data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::BLUE_ENGINEER) {
+    w_event_.update((!data_.dbus_data_.key_ctrl) & (!data_.dbus_data_.key_shift) & data_.dbus_data_.key_w);
+    s_event_.update((!data_.dbus_data_.key_ctrl) & (!data_.dbus_data_.key_shift) & data_.dbus_data_.key_s);
+    a_event_.update((!data_.dbus_data_.key_ctrl) & (!data_.dbus_data_.key_shift) & data_.dbus_data_.key_a);
+    d_event_.update((!data_.dbus_data_.key_ctrl) & (!data_.dbus_data_.key_shift) & data_.dbus_data_.key_d);
+  } else {
+    w_event_.update(data_.dbus_data_.key_w);
+    s_event_.update(data_.dbus_data_.key_s);
+    a_event_.update(data_.dbus_data_.key_a);
+    d_event_.update(data_.dbus_data_.key_d);
+  }
 }
 
 void ChassisGimbalManual::drawUi(const ros::Time &time) {
