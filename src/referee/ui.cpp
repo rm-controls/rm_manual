@@ -83,6 +83,9 @@ void TriggerChangeUi::updateConfig(const std::string &name, Graph *graph, uint8_
     if (main_flag) graph->setColor(rm_common::GraphColor::ORANGE);
     else if (sub_flag) graph->setColor(rm_common::GraphColor::PINK);
     else graph->setColor(rm_common::GraphColor::CYAN);
+  } else if (name == "card") {
+    if (main_flag) graph->setContent("true");
+    else graph->setContent("false");
   }
 }
 
@@ -203,9 +206,10 @@ void TimeChangeUi::setEffortData(Graph &graph) {
     for (int i = 0; i < (int) data_.joint_state_.effort.size(); ++i)
       if (data_.joint_state_.name[i] != "right_finger_joint_motor"
           && data_.joint_state_.name[i] != "left_finger_joint_motor"
+          && data_.joint_state_.name[i] != "mast_joint_motor"
           && data_.joint_state_.effort[i] > data_.joint_state_.effort[max_index])
         max_index = i;
-    sprintf(data_str, "name %s:%.2f", data_.joint_state_.name[max_index].c_str(), data_.joint_state_.effort[max_index]);
+    sprintf(data_str, "%s:%.2f", data_.joint_state_.name[max_index].c_str(), data_.joint_state_.effort[max_index]);
     graph.setContent(data_str);
     graph.setOperation(rm_common::GraphOperation::UPDATE);
   }
