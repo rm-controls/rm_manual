@@ -31,10 +31,6 @@ class ChassisGimbalManual : public ManualBase {
   virtual void sRelease();
   virtual void dPress();
   virtual void dRelease();
-  virtual void mouseLeftPress() {};
-  virtual void mouseLeftRelease() {};
-  virtual void mouseRightPress() {};
-  virtual void mouseRightRelease() {};
 
   rm_common::ChassisCommandSender *chassis_cmd_sender_{};
   rm_common::Vel2DCommandSender *vel_cmd_sender_;
@@ -46,8 +42,7 @@ class ChassisGimbalManual : public ManualBase {
   double x_scale_{}, y_scale_{};
   double gyro_move_reduction_{};
 
-  InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_,
-      mouse_left_event_, mouse_right_event_;
+  InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_;
 };
 }
 
