@@ -213,9 +213,9 @@ void TimeChangeUi::setEffortData(Graph &graph) {
   int max_index = 0;
   if (!data_.joint_state_.name.empty()) {
     for (int i = 0; i < (int) data_.joint_state_.effort.size(); ++i)
-      if (data_.joint_state_.name[i] != "right_finger_joint_motor"
-          && data_.joint_state_.name[i] != "left_finger_joint_motor"
-          && data_.joint_state_.name[i] != "mast_joint_motor"
+      if (data_.joint_state_.name[i] != "right_finger_joint"
+          && data_.joint_state_.name[i] != "left_finger_joint"
+          && data_.joint_state_.name[i] != "mast_joint"
           && data_.joint_state_.effort[i] > data_.joint_state_.effort[max_index])
         max_index = i;
     sprintf(data_str, "%s:%.2f", data_.joint_state_.name[max_index].c_str(), data_.joint_state_.effort[max_index]);
