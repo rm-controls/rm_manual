@@ -137,6 +137,7 @@ void FlashUi::update(const std::string &name, const ros::Time &time, bool state)
       data_.referee_.referee_data_.robot_hurt_.hurt_type_ = 9;
     } else graph->second->display(time, false, true);
   } else {
+    if (state) graph->second->setOperation(rm_common::GraphOperation::DELETE);
     graph->second->display(time, !state);
   }
 }
