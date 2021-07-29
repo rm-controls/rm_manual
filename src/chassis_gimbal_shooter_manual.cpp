@@ -162,10 +162,12 @@ void ChassisGimbalShooterManual::gPress() {
 }
 
 void ChassisGimbalShooterManual::ePress() {
-  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::TWIST)
+  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::TWIST) {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-  else
+  } else {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
+    chassis_cmd_sender_->setMode(rm_common::PowerLimit::NORMAL);
+  }
 }
 
 void ChassisGimbalShooterManual::bPress() {
@@ -209,7 +211,7 @@ void ChassisGimbalShooterManual::dPress() {
 }
 
 void ChassisGimbalShooterManual::shiftPress() {
-  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
+  if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::FOLLOW) {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setAngularZVel(0.);
   }
