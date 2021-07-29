@@ -46,7 +46,7 @@ void ChassisGimbalShooterCoverManual::remoteControlTurnOn() {
 
 void ChassisGimbalShooterCoverManual::drawUi(const ros::Time &time) {
   ChassisGimbalShooterManual::drawUi(time);
-  flash_ui_->update("cover", time, cover_command_sender_->getState());
+  flash_ui_->update("cover", time, !cover_command_sender_->getState());
 }
 
 void ChassisGimbalShooterCoverManual::rightSwitchDownRise() {
@@ -65,7 +65,7 @@ void ChassisGimbalShooterCoverManual::rightSwitchUpRise() {
 }
 
 void ChassisGimbalShooterCoverManual::ctrlZPress() {
-  if (cover_command_sender_->getState()) {
+  if (!cover_command_sender_->getState()) {
     geometry_msgs::PointStamped aim_point{};
     aim_point.header.frame_id = "yaw";
     aim_point.header.stamp = ros::Time(0);

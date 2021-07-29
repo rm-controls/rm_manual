@@ -27,8 +27,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle &nh) : Ch
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
   shift_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::shiftPress, this),
                        boost::bind(&ChassisGimbalShooterManual::shiftRelease, this));
-  mouse_left_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::mouseLeftPress, this),
-                            boost::bind(&ChassisGimbalShooterManual::mouseLeftRelease, this));
+  mouse_left_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseLeftPress, this));
+  mouse_left_event_.setFalling(boost::bind(&ChassisGimbalShooterManual::mouseLeftRelease, this));
   mouse_right_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseRightPress, this));
   mouse_right_event_.setFalling(boost::bind(&ChassisGimbalShooterManual::mouseRightRelease, this));
 }
@@ -142,11 +142,15 @@ void ChassisGimbalShooterManual::leftSwitchUpRise() {
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
   shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
 }
+void ChassisGimbalShooterManual::mouseLeftPress() {
+  shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+  if (data_.dbus_data_.p_r)
+    shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
+}
 
 void ChassisGimbalShooterManual::mouseRightPress() {
   gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
   gimbal_cmd_sender_->updateCost(data_.track_data_array_);
-  shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
 }
 
 void ChassisGimbalShooterManual::gPress() {

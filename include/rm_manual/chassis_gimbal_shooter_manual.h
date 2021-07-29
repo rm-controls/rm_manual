@@ -30,7 +30,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void leftSwitchDownRise() override;
   void leftSwitchMidRise() override;
   void leftSwitchUpRise() override;
-  void mouseLeftPress() { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH); }
+  void mouseLeftPress();
   void mouseLeftRelease() { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY); }
   void mouseRightPress();
   void mouseRightRelease() { gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE); }
