@@ -93,6 +93,7 @@ void ChassisGimbalShooterManual::drawUi(const ros::Time &time) {
   trigger_change_ui_->update("target", switch_detection_srv_->getTarget(),
                              shooter_cmd_sender_->getBurstMode(), switch_detection_srv_->getArmorTarget(),
                              switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
+  trigger_change_ui_->update("exposure", switch_detection_srv_->getExposureLevel(), false);
   fixed_ui_->update();
 }
 

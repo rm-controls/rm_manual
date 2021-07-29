@@ -30,10 +30,10 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void leftSwitchDownRise() override;
   void leftSwitchMidRise() override;
   void leftSwitchUpRise() override;
-  void mouseLeftPress() override { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH); }
-  void mouseLeftRelease() override { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY); }
-  void mouseRightPress() override;
-  void mouseRightRelease() override { gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE); }
+  void mouseLeftPress() { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH); }
+  void mouseLeftRelease() { shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY); }
+  void mouseRightPress();
+  void mouseRightRelease() { gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE); }
   void wPress() override;
   void aPress() override;
   void sPress() override;
@@ -51,7 +51,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void ctrlBPress();
 
   InputEvent shooter_power_on_event_, self_inspection_event_, game_start_event_, e_event_, g_event_, q_event_, f_event_,
-      b_event_, ctrl_c_event_, ctrl_v_event_, ctrl_r_event_, ctrl_b_event_, shift_event_;
+      b_event_, ctrl_c_event_, ctrl_v_event_, ctrl_r_event_, ctrl_b_event_, shift_event_, mouse_left_event_,
+      mouse_right_event_;
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
   rm_common::SwitchDetectionCaller *switch_detection_srv_{};
   rm_common::CalibrationQueue *trigger_calibration_;
