@@ -103,20 +103,20 @@ rm_manual:
   ui:
     trigger_change:
       - name: "step"
-        config: { start_position: [ 450, 750 ], size: 15, width: 2, title: "step: " }
+        config: { start_position: [ 400, 750 ], size: 15, width: 2, title: "step: " }
       - name: "queue"
-        config: { start_position: [ 450, 700 ], size: 15, width: 2, title: "queue:" }
+        config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "queue:" }
       - name: "jog"
-        config: { start_position: [ 450, 600 ], size: 15, width: 2, title: "jog:  " }
+        config: { start_position: [ 400, 600 ], size: 15, width: 2, title: "jog:  " }
       - name: "stone"
-        config: { start_position: [ 450, 500 ], size: 15, width: 2, title: "stone:" }
+        config: { start_position: [ 400, 500 ], size: 15, width: 2, title: "stone:" }
       - name: "card"
-        config: { start_position: [ 450, 400 ], size: 15, width: 2, title: "card: " }
+        config: { start_position: [ 400, 400 ], size: 15, width: 2, title: "card: " }
     time_change:
       - name: "effort"
         config: { start_position: [ 850, 150 ], size: 15, width: 2, delay: 0.8, color: "white" }
       - name: "progress:"
-        config: { start_position: [ 850, 200 ], size: 15, width: 2, delay: 0.8, color: "white" }
+        config: { start_position: [ 850, 100 ], size: 15, width: 2, delay: 0.8, color: "white" }
     flash:
       - name: "calibration"
         config: { start_position: [ 850, 700 ], size: 15, width: 2,
