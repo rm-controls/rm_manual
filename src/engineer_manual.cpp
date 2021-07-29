@@ -6,7 +6,9 @@
 
 namespace rm_manual {
 EngineerManual::EngineerManual(ros::NodeHandle &nh)
-    : ChassisGimbalManual(nh), operating_mode_(MANUAL), action_client_("/engineer_middleware/move_arm", true) {
+    : ChassisGimbalManual(nh),
+      operating_mode_(MANUAL), target_index_(0), prefix_index_(0),
+      action_client_("/engineer_middleware/move_arm", true) {
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
@@ -26,11 +28,19 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_down_event_.setFalling(boost::bind(&EngineerManual::leftSwitchDownFall, this));
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
-  ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
   ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
-  ctrl_w_event_.setRising(boost::bind(&EngineerManual::ctrlWPress, this));
+  ctrl_z_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
+  ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
+  ctrl_x_event_.setRising(boost::bind(&EngineerManual::ctrlXPress, this));
+  ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
   ctrl_s_event_.setRising(boost::bind(&EngineerManual::ctrlSPress, this));
+  ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
   ctrl_q_event_.setRising(boost::bind(&EngineerManual::ctrlQPress, this));
+  ctrl_w_event_.setRising(boost::bind(&EngineerManual::ctrlWPress, this));
+  ctrl_e_event_.setRising(boost::bind(&EngineerManual::ctrlEPress, this));
+
+  shift_w_event_.setRising(boost::bind(&EngineerManual::shiftWPress, this));
+  shift_s_event_.setRising(boost::bind(&EngineerManual::shiftSPress, this));
   c_event_.setActiveHigh(boost::bind(&EngineerManual::cPress, this, _1));
 }
 
@@ -44,12 +54,21 @@ void EngineerManual::run() {
 void EngineerManual::checkKeyboard() {
   ChassisGimbalManual::checkKeyboard();
   ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
-  ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
   ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
-  ctrl_w_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_w);
+  ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
+  ctrl_z_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
+  ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
+  ctrl_x_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_x);
+  ctrl_g_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_g);
   ctrl_s_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_s);
+  ctrl_d_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_d);
   ctrl_q_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_q);
-  c_event_.update(data_.dbus_data_.key_c);
+  ctrl_w_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_w);
+  ctrl_e_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_e);
+
+  shift_w_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_w);
+  shift_s_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_s);
+  c_event_.update(data_.dbus_data_.key_c & !data_.dbus_data_.key_ctrl);
 }
 
 void EngineerManual::updateRc() {
