@@ -19,6 +19,8 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("power_on_calibration", rpc_value);
   power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  nh.getParam("mast_calibration", rpc_value);
+  mast_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   nh.getParam("arm_calibration", rpc_value);
   arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
@@ -26,13 +28,16 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
   ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
   ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
+  ctrl_w_event_.setRising(boost::bind(&EngineerManual::ctrlWPress, this));
+  ctrl_s_event_.setRising(boost::bind(&EngineerManual::ctrlSPress, this));
   ctrl_q_event_.setRising(boost::bind(&EngineerManual::ctrlQPress, this));
 }
 
 void EngineerManual::run() {
   ChassisGimbalManual::run();
+  power_on_calibration_->update(ros::Time::now(), state_ != PASSIVE);
+  mast_calibration_->update(ros::Time::now(), state_ != PASSIVE);
   arm_calibration_->update(ros::Time::now());
-  power_on_calibration_->update(ros::Time::now());
 }
 
 void EngineerManual::checkKeyboard() {
@@ -40,12 +45,20 @@ void EngineerManual::checkKeyboard() {
   ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
   ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
   ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
+  ctrl_w_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_w);
+  ctrl_s_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_s);
   ctrl_q_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_q);
 }
 
 void EngineerManual::updateRc() {
   ChassisGimbalManual::updateRc();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
+  gimbal_cmd_sender_->getMsg()->aim_point.header.frame_id = "base_link";
+  gimbal_cmd_sender_->getMsg()->aim_point.header.stamp = ros::Time::now() - ros::Duration(0.1);
+  gimbal_cmd_sender_->getMsg()->aim_point.point.x = -10.;
+  gimbal_cmd_sender_->getMsg()->aim_point.point.y = 0.;
+  gimbal_cmd_sender_->getMsg()->aim_point.point.z = 0.5;
   left_switch_up_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN);
 }
@@ -78,6 +91,7 @@ void EngineerManual::remoteControlTurnOff() {
 
 void EngineerManual::chassisOutputOn() {
   power_on_calibration_->reset();
+  mast_calibration_->reset();
   if (MIDDLEWARE)
     action_client_.cancelAllGoals();
 }
@@ -96,6 +110,11 @@ void EngineerManual::rightSwitchMidRise() {
 void EngineerManual::rightSwitchUpRise() {
   ChassisGimbalManual::rightSwitchUpRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+}
+
+void EngineerManual::leftSwitchDownFall() {
+  mast_calibration_->reset();
+  arm_calibration_->reset();
 }
 
 void EngineerManual::runStepQueue(std::string step_queue_name) {
