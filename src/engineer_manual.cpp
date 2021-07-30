@@ -6,9 +6,7 @@
 
 namespace rm_manual {
 EngineerManual::EngineerManual(ros::NodeHandle &nh)
-    : ChassisGimbalManual(nh),
-      operating_mode_(MANUAL), target_index_(0), prefix_index_(0),
-      action_client_("/engineer_middleware/move_arm", true) {
+    : ChassisGimbalManual(nh), operating_mode_(MANUAL), action_client_("/engineer_middleware/move_arm", true) {
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
@@ -41,7 +39,8 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
 
   shift_w_event_.setRising(boost::bind(&EngineerManual::shiftWPress, this));
   shift_s_event_.setRising(boost::bind(&EngineerManual::shiftSPress, this));
-  c_event_.setActiveHigh(boost::bind(&EngineerManual::cPress, this, _1));
+
+  c_event_.setRising(boost::bind(&EngineerManual::cPress, this));
 }
 
 void EngineerManual::run() {
@@ -68,6 +67,7 @@ void EngineerManual::checkKeyboard() {
 
   shift_w_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_w);
   shift_s_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_s);
+
   c_event_.update(data_.dbus_data_.key_c & !data_.dbus_data_.key_ctrl);
 }
 
@@ -163,11 +163,9 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState &
   operating_mode_ = MANUAL;
 }
 
-void EngineerManual::cPress(ros::Duration duration) {
-  if (duration.toSec() > 1.5) {
-    if (card_command_sender_->getState()) card_command_sender_->off();
-    else card_command_sender_->on();
-  }
+void EngineerManual::cPress() {
+  if (card_command_sender_->getState()) card_command_sender_->off();
+  else card_command_sender_->on();
 }
 
 }
