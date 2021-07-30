@@ -14,8 +14,8 @@ rm_manual:
     topic: "/cmd_vel"
     max_linear_x: 4.0
     max_linear_y: 4.0
-    max_angular_z: 10.0
-    gyro_move_reduction: 0.25
+    max_angular_z: 8.0
+    gyro_move_reduction: 0.3
   gimbal:
     topic: "/controllers/gimbal_controller/command"
     max_yaw_vel: 12.56
@@ -31,9 +31,9 @@ rm_manual:
     topic: "/controllers/shooter_controller/command"
     gimbal_error_limit: 0.05
     heat_limit:
-      expect_shoot_frequency_1: 5
-      expect_shoot_frequency_2: 8
-      expect_shoot_frequency_3: 12
+      expect_shoot_frequency_1: 6
+      expect_shoot_frequency_2: 12
+      expect_shoot_frequency_3: 20
       burst_shoot_frequency: 20
       safe_shoot_frequency: 5
       heat_coeff: 8.0
@@ -70,28 +70,27 @@ rm_manual:
   ui:
     trigger_change:
       - name: "chassis"
-        config: { start_position: [ 400, 750 ], size: 15, width: 2, title: "chassis:" }
+        config: { start_position: [ 400, 750 ], size: 15, width: 2, title: "chassis: " }
       - name: "target"
-        config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "target: " }
+        config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "target:  " }
+      - name: "exposure"
+        config: { start_position: [ 400, 650 ], size: 15, width: 2, title: "exposure:" }
     time_change:
       - name: "capacitor"
         config: { start_position: [ 900, 100 ], size: 15, width: 2, delay: 0.5 }
     fixed:
+      - name: "2m"
+        config: { type: "line", width: 2, color: "yellow",
+                  start_position: [ 910, 520 ], end_position: [ 1010, 520 ] }
       - name: "3m"
-        config: { type: "line", width: 7, color: "yellow",
-                  start_position: [ [ 900, 600 ], [ 900, 600 ], [ 900, 600 ] ],
-                  end_position: [ [ 1020, 600 ], [ 1020, 600 ], [ 1020, 600 ] ] }
-      - name: "4m"
-        config: { type: "line", width: 5, color: "yellow",
-                  start_position: [ [ 910,550 ], [ 910, 550 ], [ 910, 550 ] ],
-                  end_position: [ [ 1010,550 ], [ 1010, 550 ], [ 1010, 550 ] ] }
+        config: { type: "line", width: 2, color: "yellow",
+                  start_position: [ 935, 530 ], end_position: [ 985, 530 ] }
       - name: "5m"
-        config: { type: "line", width: 3, color: "yellow",
-                  start_position: [ [ 920, 500 ], [ 920, 500 ], [ 920, 500 ] ],
-                  end_position: [ [ 1000, 500 ], [ 1000, 500 ], [ 1000, 500 ] ] }
+        config: { type: "line", width: 2, color: "yellow",
+                  start_position: [ 925, 500 ], end_position: [ 985, 500 ] }
       - name: "mid"
-        config: { type: "line", width: 3, color: "yellow",
-                  start_position: [ 960, 500 ], end_position: [ 960, 600 ] }
+        config: { type: "line", width: 2, color: "yellow",
+                  start_position: [ 960, 500 ], end_position: [ 960, 540 ] }
     flash:
       - name: "spin"
         config: { start_position: [ 900, 750 ], size: 15, width: 2,

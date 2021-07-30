@@ -46,7 +46,7 @@ void ChassisGimbalShooterCoverManual::remoteControlTurnOn() {
 
 void ChassisGimbalShooterCoverManual::drawUi(const ros::Time &time) {
   ChassisGimbalShooterManual::drawUi(time);
-  flash_ui_->update("cover", time, cover_command_sender_->getState());
+  flash_ui_->update("cover", time, !cover_command_sender_->getState());
 }
 
 void ChassisGimbalShooterCoverManual::rightSwitchDownRise() {
@@ -64,18 +64,8 @@ void ChassisGimbalShooterCoverManual::rightSwitchUpRise() {
   cover_command_sender_->off();
 }
 
-void ChassisGimbalShooterCoverManual::mouseRightPress() {
-  if (cover_command_sender_->getState())
-    ChassisGimbalShooterManual::mouseRightPress();
-}
-
-void ChassisGimbalShooterCoverManual::mouseRightRelease() {
-  if (cover_command_sender_->getState())
-    ChassisGimbalShooterManual::mouseRightRelease();
-}
-
 void ChassisGimbalShooterCoverManual::ctrlZPress() {
-  if (cover_command_sender_->getState()) {
+  if (!cover_command_sender_->getState()) {
     geometry_msgs::PointStamped aim_point{};
     aim_point.header.frame_id = "yaw";
     aim_point.header.stamp = ros::Time(0);
@@ -85,6 +75,11 @@ void ChassisGimbalShooterCoverManual::ctrlZPress() {
     gimbal_cmd_sender_->setAimPoint(aim_point);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
     cover_command_sender_->on();
+    if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+      vel_cmd_sender_->setZero();
+    }
   } else {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     cover_command_sender_->off();
