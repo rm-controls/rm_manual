@@ -81,16 +81,16 @@ rm_manual:
     fixed:
       - name: "2m"
         config: { type: "line", width: 2, color: "yellow",
-                  start_position: [ 910, 520 ], end_position: [ 1010, 520 ] }
+                  start_position: [ 925, 435 ], end_position: [ 995, 435 ] }
       - name: "3m"
         config: { type: "line", width: 2, color: "yellow",
-                  start_position: [ 935, 530 ], end_position: [ 985, 530 ] }
+                  start_position: [ 935, 420 ], end_position: [ 985, 420 ] }
       - name: "5m"
         config: { type: "line", width: 2, color: "yellow",
-                  start_position: [ 925, 500 ], end_position: [ 985, 500 ] }
+                  start_position: [ 948, 400 ], end_position: [ 972, 400 ] }
       - name: "mid"
         config: { type: "line", width: 2, color: "yellow",
-                  start_position: [ 960, 500 ], end_position: [ 960, 540 ] }
+                  start_position: [ 960, 400 ], end_position: [ 960, 540 ] }
     flash:
       - name: "spin"
         config: { start_position: [ 900, 750 ], size: 15, width: 2,

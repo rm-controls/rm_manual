@@ -191,6 +191,7 @@ void TimeChangeUi::update(const std::string &name, const ros::Time &time, double
     if (name == "capacitor") setCapacitorData(*graph->second);
     if (name == "effort") setEffortData(*graph->second);
     if (name == "progress") setProgressData(*graph->second, data);
+    if (name == "temperature") setTemperatureData(*graph->second);
     graph->second->display(time);
   }
 }
@@ -213,21 +214,38 @@ void TimeChangeUi::setEffortData(Graph &graph) {
   int max_index = 0;
   if (!data_.joint_state_.name.empty()) {
     for (int i = 0; i < (int) data_.joint_state_.effort.size(); ++i)
-      if (data_.joint_state_.name[i] != "right_finger_joint_motor"
-          && data_.joint_state_.name[i] != "left_finger_joint_motor"
-          && data_.joint_state_.name[i] != "mast_joint_motor"
+      if ((data_.joint_state_.name[i] == "joint1" || data_.joint_state_.name[i] == "joint2" ||
+          data_.joint_state_.name[i] == "joint3" || data_.joint_state_.name[i] == "joint4" ||
+          data_.joint_state_.name[i] == "joint5")
           && data_.joint_state_.effort[i] > data_.joint_state_.effort[max_index])
         max_index = i;
-    sprintf(data_str, "%s:%.2f", data_.joint_state_.name[max_index].c_str(), data_.joint_state_.effort[max_index]);
+    sprintf(data_str, "%s:%.2f N*m", data_.joint_state_.name[max_index].c_str(), data_.joint_state_.effort[max_index]);
     graph.setContent(data_str);
+    if (data_.joint_state_.effort[max_index] > 20.) graph.setColor(rm_common::GraphColor::ORANGE);
+    else if (data_.joint_state_.effort[max_index] < 10.) graph.setColor(rm_common::GraphColor::GREEN);
+    else graph.setColor(rm_common::GraphColor::YELLOW);
     graph.setOperation(rm_common::GraphOperation::UPDATE);
   }
 }
 
 void TimeChangeUi::setProgressData(Graph &graph, double data) {
   char data_str[30] = {' '};
-  sprintf(data_str, "progress:%1.0f%%", data);
+  sprintf(data_str, " %.1f%%", data * 100.);
   graph.setContent(data_str);
+  graph.setOperation(rm_common::GraphOperation::UPDATE);
+}
+
+void TimeChangeUi::setTemperatureData(Graph &graph) {
+  char data_str[30] = {' '};
+  for (int i = 0; i < (int) data_.actuator_state_.name.size(); ++i) {
+    if (data_.actuator_state_.name[i] == "right_finger_joint_motor") {
+      sprintf(data_str, " %.1hhu C", data_.actuator_state_.temperature[i]);
+      graph.setContent(data_str);
+      if (data_.actuator_state_.temperature[i] > 70.) graph.setColor(rm_common::GraphColor::ORANGE);
+      else if (data_.actuator_state_.temperature[i] < 30.) graph.setColor(rm_common::GraphColor::GREEN);
+      else graph.setColor(rm_common::GraphColor::YELLOW);
+    }
+  }
   graph.setOperation(rm_common::GraphOperation::UPDATE);
 }
 

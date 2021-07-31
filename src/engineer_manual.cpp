@@ -26,11 +26,21 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_down_event_.setFalling(boost::bind(&EngineerManual::leftSwitchDownFall, this));
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
-  ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
   ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
-  ctrl_w_event_.setRising(boost::bind(&EngineerManual::ctrlWPress, this));
+  ctrl_z_event_.setRising(boost::bind(&EngineerManual::ctrlZPress, this));
+  ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
+  ctrl_x_event_.setRising(boost::bind(&EngineerManual::ctrlXPress, this));
+  ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
   ctrl_s_event_.setRising(boost::bind(&EngineerManual::ctrlSPress, this));
+  ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
   ctrl_q_event_.setRising(boost::bind(&EngineerManual::ctrlQPress, this));
+  ctrl_w_event_.setRising(boost::bind(&EngineerManual::ctrlWPress, this));
+  ctrl_e_event_.setRising(boost::bind(&EngineerManual::ctrlEPress, this));
+
+  shift_w_event_.setRising(boost::bind(&EngineerManual::shiftWPress, this));
+  shift_s_event_.setRising(boost::bind(&EngineerManual::shiftSPress, this));
+
+  c_event_.setRising(boost::bind(&EngineerManual::cPress, this));
 }
 
 void EngineerManual::run() {
@@ -43,22 +53,27 @@ void EngineerManual::run() {
 void EngineerManual::checkKeyboard() {
   ChassisGimbalManual::checkKeyboard();
   ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
-  ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
   ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
-  ctrl_w_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_w);
+  ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
+  ctrl_z_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
+  ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
+  ctrl_x_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_x);
+  ctrl_g_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_g);
   ctrl_s_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_s);
+  ctrl_d_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_d);
   ctrl_q_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_q);
+  ctrl_w_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_w);
+  ctrl_e_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_e);
+
+  shift_w_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_w);
+  shift_s_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_s);
+
+  c_event_.update(data_.dbus_data_.key_c & !data_.dbus_data_.key_ctrl);
 }
 
 void EngineerManual::updateRc() {
   ChassisGimbalManual::updateRc();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
-  gimbal_cmd_sender_->getMsg()->aim_point.header.frame_id = "base_link";
-  gimbal_cmd_sender_->getMsg()->aim_point.header.stamp = ros::Time::now() - ros::Duration(0.1);
-  gimbal_cmd_sender_->getMsg()->aim_point.point.x = -10.;
-  gimbal_cmd_sender_->getMsg()->aim_point.point.y = 0.;
-  gimbal_cmd_sender_->getMsg()->aim_point.point.z = 0.5;
   left_switch_up_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN);
 }
@@ -71,7 +86,8 @@ void EngineerManual::updatePc() {
 void EngineerManual::sendCommand(const ros::Time &time) {
   mast_command_sender_->sendCommand(time);
   if (operating_mode_ == MANUAL) {
-    ChassisGimbalManual::sendCommand(time);
+    chassis_cmd_sender_->sendCommand(time);
+    vel_cmd_sender_->sendCommand(time);
     card_command_sender_->sendCommand(time);
   }
 }
@@ -79,7 +95,10 @@ void EngineerManual::sendCommand(const ros::Time &time) {
 void EngineerManual::drawUi(const ros::Time &time) {
   ChassisGimbalManual::drawUi(time);
   time_change_ui_->update("effort", time);
+  time_change_ui_->update("temperature", time);
   trigger_change_ui_->update("card", 0, card_command_sender_->getState());
+  trigger_change_ui_->update("grasp_target", target_);
+  trigger_change_ui_->update("prefix", prefix_);
   flash_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
 //    trigger_change_ui_->update("jog", jog_joint_name);
 }
@@ -117,22 +136,22 @@ void EngineerManual::leftSwitchDownFall() {
   arm_calibration_->reset();
 }
 
-void EngineerManual::runStepQueue(std::string step_queue_name) {
+void EngineerManual::runStepQueue(const std::string &step_queue_name) {
   rm_msgs::EngineerGoal goal;
-  goal.step_queue_name = std::move(step_queue_name);
+  goal.step_queue_name = step_queue_name;
   if (action_client_.isServerConnected()) {
     if (operating_mode_ == MANUAL)
       action_client_.sendGoal(goal,
                               boost::bind(&EngineerManual::actionDoneCallback, this, _1, _2),
                               boost::bind(&EngineerManual::actionActiveCallback, this),
-                              boost::bind(&EngineerManual::actionFeedbackCb, this, _1));
+                              boost::bind(&EngineerManual::actionFeedbackCallback, this, _1));
     operating_mode_ = MIDDLEWARE;
     trigger_change_ui_->update("step", step_queue_name);
   } else
     ROS_ERROR("Can not connect to middleware");
 }
 
-void EngineerManual::actionFeedbackCb(const rm_msgs::EngineerFeedbackConstPtr &feedback) {
+void EngineerManual::actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr &feedback) {
   trigger_change_ui_->update("queue", feedback->current_step);
   if (feedback->total_steps != 0)
     time_change_ui_->update("progress", ros::Time::now(), ((double) feedback->finished_step) / feedback->total_steps);
@@ -145,6 +164,11 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState &
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
   operating_mode_ = MANUAL;
+}
+
+void EngineerManual::cPress() {
+  if (card_command_sender_->getState()) card_command_sender_->off();
+  else card_command_sender_->on();
 }
 
 }

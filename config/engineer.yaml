@@ -4,7 +4,7 @@ rm_manual:
     topic: "/controllers/chassis_controller/command"
     accel_x: 5.0
     accel_y: 5.0
-    accel_z: 15.0
+    accel_z: 20.0
     safety_power: 50.0
     capacitor_threshold: 0.1
     charge_power: 0
@@ -14,7 +14,7 @@ rm_manual:
     topic: "/cmd_vel"
     max_linear_x: 3.0
     max_linear_y: 3.0
-    max_angular_z: 10.0
+    max_angular_z: 20.0
   gimbal:
     topic: "/controllers/gimbal_controller/command"
     max_yaw_vel: 12.56
@@ -102,21 +102,27 @@ rm_manual:
       service_name: /controllers/hand_calibration_controller/is_calibrated
   ui:
     trigger_change:
+      - name: "grasp_target"
+        config: { start_position: [ 400, 850 ], size: 15, width: 2, title: "target:", color: "white" }
+      - name: "prefix"
+        config: { start_position: [ 400, 800 ], size: 15, width: 2, title: "prefix:", color: "white" }
       - name: "step"
-        config: { start_position: [ 450, 750 ], size: 15, width: 2, title: "step: " }
+        config: { start_position: [ 400, 750 ], size: 15, width: 2, title: "step:  ", color: "white" }
       - name: "queue"
-        config: { start_position: [ 450, 700 ], size: 15, width: 2, title: "queue:" }
+        config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "queue: ", color: "yellow" }
       - name: "jog"
-        config: { start_position: [ 450, 600 ], size: 15, width: 2, title: "jog:  " }
+        config: { start_position: [ 1300, 750 ], size: 15, width: 2, title: "jog:  ", color: "white" }
       - name: "stone"
-        config: { start_position: [ 450, 500 ], size: 15, width: 2, title: "stone:" }
+        config: { start_position: [ 1300, 700 ], size: 15, width: 2, title: "stone:", color: "yellow" }
       - name: "card"
-        config: { start_position: [ 450, 400 ], size: 15, width: 2, title: "card: " }
+        config: { start_position: [ 1300, 650 ], size: 15, width: 2, title: "card: ", color: "green" }
     time_change:
       - name: "effort"
-        config: { start_position: [ 850, 150 ], size: 15, width: 2, delay: 0.8, color: "white" }
-      - name: "progress:"
-        config: { start_position: [ 850, 200 ], size: 15, width: 2, delay: 0.8, color: "white" }
+        config: { start_position: [ 1500, 550 ], size: 15, width: 2, delay: 0.8 }
+      - name: "temperature"
+        config: { start_position: [ 1500, 500 ], size: 15, width: 2, delay: 0.8, title: "temp:   " }
+      - name: "progress"
+        config: { start_position: [ 400, 650 ], size: 15, width: 2, delay: 0.8, color: "green", title: "progress:" }
     flash:
       - name: "calibration"
         config: { start_position: [ 850, 700 ], size: 15, width: 2,

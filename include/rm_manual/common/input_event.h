@@ -24,10 +24,6 @@ class InputEvent {
     active_low_handler_ = std::move(low_handler);
   }
   void update(bool state) {
-    if (state && active_high_handler_)
-      active_high_handler_(ros::Time::now() - last_change_);
-    if (!state && active_low_handler_)
-      active_low_handler_(ros::Time::now() - last_change_);
     if (state != last_state_) {
       if (state && rising_handler_)
         rising_handler_();
@@ -36,6 +32,10 @@ class InputEvent {
       last_state_ = state;
       last_change_ = ros::Time::now();
     }
+    if (state && active_high_handler_)
+      active_high_handler_(ros::Time::now() - last_change_);
+    if (!state && active_low_handler_)
+      active_low_handler_(ros::Time::now() - last_change_);
   }
  private:
   bool last_state_;
