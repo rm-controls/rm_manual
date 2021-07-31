@@ -98,15 +98,22 @@ std::string TriggerChangeUi::getChassisState(uint8_t mode) {
 }
 
 std::string TriggerChangeUi::getTargetState(uint8_t target, uint8_t armor_target) {
-  if (target == rm_msgs::StatusChangeRequest::BUFF)
-    return "buff";
-  else if (target == rm_msgs::StatusChangeRequest::ARMOR
-      && armor_target == rm_msgs::StatusChangeRequest::ARMOR_ALL)
-    return "armor_all";
-  else if (target == rm_msgs::StatusChangeRequest::ARMOR
-      && armor_target == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
-    return "armor_base";
-  else return "error";
+  if (data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::BLUE_HERO
+      && data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::RED_HERO) {
+    if (target == rm_msgs::StatusChangeRequest::BUFF) return "buff";
+    else if (target == rm_msgs::StatusChangeRequest::ARMOR
+        && armor_target == rm_msgs::StatusChangeRequest::ARMOR_ALL)
+      return "armor_all";
+    else if (target == rm_msgs::StatusChangeRequest::ARMOR
+        && armor_target == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
+      return "armor_base";
+    else return "error";
+  } else {
+    if (target == 1) return "eject";
+    else if (armor_target == rm_msgs::StatusChangeRequest::ARMOR_ALL) return "all";
+    else if (armor_target == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE) return "base";
+    else return "error";
+  }
 }
 
 std::string TriggerChangeUi::getExposureState(uint8_t level) {
@@ -129,7 +136,7 @@ void FixedUi::update() {
 int FixedUi::getShootSpeedIndex() {
   uint16_t speed_limit;
   if (data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::BLUE_HERO
-      || data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::RED_HERO) {
+      && data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::RED_HERO) {
     speed_limit = data_.referee_.referee_data_.game_robot_status_.shooter_id_1_17_mm_speed_limit_;
     if (speed_limit == 15) return 0;
     else if (speed_limit == 18) return 1;

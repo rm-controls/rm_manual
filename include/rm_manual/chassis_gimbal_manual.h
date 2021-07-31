@@ -38,7 +38,7 @@ class ChassisGimbalManual : public ManualBase {
   void mouseMidRise();
 
   rm_common::ChassisCommandSender *chassis_cmd_sender_{};
-  rm_common::Vel2DCommandSender *vel_cmd_sender_;
+  rm_common::Vel2DCommandSender *vel_cmd_sender_{};
   rm_common::GimbalCommandSender *gimbal_cmd_sender_{};
   TimeChangeUi *time_change_ui_{};
   FlashUi *flash_ui_{};
