@@ -35,6 +35,7 @@ class ChassisGimbalManual : public ManualBase {
   void aPressing();
   void sPressing();
   void dPressing();
+  void mouseMidRise();
 
   rm_common::ChassisCommandSender *chassis_cmd_sender_{};
   rm_common::Vel2DCommandSender *vel_cmd_sender_;
@@ -44,9 +45,10 @@ class ChassisGimbalManual : public ManualBase {
   TriggerChangeUi *trigger_change_ui_{};
   FixedUi *fixed_ui_{};
   double x_scale_{}, y_scale_{};
+  double gimbal_scale_{1.};
   double gyro_move_reduction_{1.};
 
-  InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_;
+  InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_, mouse_mid_event_;
 };
 }
 

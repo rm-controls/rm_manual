@@ -34,6 +34,7 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
   d_event_.setEdge(boost::bind(&ChassisGimbalManual::dPress, this),
                    boost::bind(&ChassisGimbalManual::dRelease, this));
   d_event_.setActiveHigh(boost::bind(&ChassisGimbalManual::dPressing, this));
+  mouse_mid_event_.setRising(boost::bind(&ChassisGimbalManual::mouseMidRise, this));
 }
 
 void ChassisGimbalManual::sendCommand(const ros::Time &time) {
@@ -56,7 +57,7 @@ void ChassisGimbalManual::updateRc() {
 
 void ChassisGimbalManual::updatePc() {
   ManualBase::updatePc();
-  gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x, data_.dbus_data_.m_y);
+  gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x * gimbal_scale_, data_.dbus_data_.m_y * gimbal_scale_);
 }
 
 void ChassisGimbalManual::checkReferee() {
@@ -79,6 +80,7 @@ void ChassisGimbalManual::checkKeyboard() {
     a_event_.update(data_.dbus_data_.key_a);
     d_event_.update(data_.dbus_data_.key_d);
   }
+  mouse_mid_event_.update(data_.dbus_data_.m_z != 0.);
 }
 
 void ChassisGimbalManual::drawUi(const ros::Time &time) {
@@ -178,6 +180,13 @@ void ChassisGimbalManual::dPressing() {
 void ChassisGimbalManual::dRelease() {
   y_scale_ = y_scale_ >= 1.0 ? 1.0 : y_scale_ + 1.0;
   vel_cmd_sender_->setLinearYVel(y_scale_);
+}
+
+void ChassisGimbalManual::mouseMidRise() {
+  if (gimbal_scale_ >= 0. && gimbal_scale_ <= 3.) {
+    if (gimbal_scale_ + 0.2 <= 3. && data_.dbus_data_.m_z > 0.) gimbal_scale_ += 0.2;
+    else if (gimbal_scale_ - 0.2 >= 0. && data_.dbus_data_.m_z < 0.) gimbal_scale_ -= 0.2;
+  }
 }
 
 }
