@@ -15,21 +15,25 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh, data_.referee_.referee_data_);
   ros::NodeHandle ui_nh(nh, "ui");
+  trigger_change_ui_ = new TriggerChangeUi(ui_nh, data_);
   time_change_ui_ = new TimeChangeUi(ui_nh, data_);
   flash_ui_ = new FlashUi(ui_nh, data_);
-  trigger_change_ui_ = new TriggerChangeUi(ui_nh, data_);
   fixed_ui_ = new FixedUi(ui_nh, data_);
 
   chassis_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::chassisOutputOn, this));
   gimbal_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::gimbalOutputOn, this));
   w_event_.setEdge(boost::bind(&ChassisGimbalManual::wPress, this),
                    boost::bind(&ChassisGimbalManual::wRelease, this));
+  w_event_.setActiveHigh(boost::bind(&ChassisGimbalManual::wPressing, this));
   s_event_.setEdge(boost::bind(&ChassisGimbalManual::sPress, this),
                    boost::bind(&ChassisGimbalManual::sRelease, this));
+  s_event_.setActiveHigh(boost::bind(&ChassisGimbalManual::sPressing, this));
   a_event_.setEdge(boost::bind(&ChassisGimbalManual::aPress, this),
                    boost::bind(&ChassisGimbalManual::aRelease, this));
+  a_event_.setActiveHigh(boost::bind(&ChassisGimbalManual::aPressing, this));
   d_event_.setEdge(boost::bind(&ChassisGimbalManual::dPress, this),
                    boost::bind(&ChassisGimbalManual::dRelease, this));
+  d_event_.setActiveHigh(boost::bind(&ChassisGimbalManual::dPressing, this));
 }
 
 void ChassisGimbalManual::sendCommand(const ros::Time &time) {
@@ -136,45 +140,44 @@ void ChassisGimbalManual::leftSwitchDownRise() {
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
 }
 
-void ChassisGimbalManual::wPress() {
-  x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
+void ChassisGimbalManual::wPressing() {
   vel_cmd_sender_->setLinearXVel(
       chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? x_scale_ * gyro_move_reduction_ : x_scale_);
 }
+
 void ChassisGimbalManual::wRelease() {
   x_scale_ = x_scale_ <= -1.0 ? -1.0 : x_scale_ - 1.0;
+  vel_cmd_sender_->setLinearXVel(x_scale_);
+}
+
+void ChassisGimbalManual::sPressing() {
   vel_cmd_sender_->setLinearXVel(
       chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? x_scale_ * gyro_move_reduction_ : x_scale_);
 }
-void ChassisGimbalManual::aPress() {
-  y_scale_ = y_scale_ >= 1.0 ? 1.0 : y_scale_ + 1.0;
-  vel_cmd_sender_->setLinearYVel(
-      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? y_scale_ * gyro_move_reduction_ : y_scale_);
-}
-void ChassisGimbalManual::aRelease() {
-  y_scale_ = y_scale_ <= -1.0 ? -1.0 : y_scale_ - 1.0;
-  vel_cmd_sender_->setLinearYVel(
-      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? y_scale_ * gyro_move_reduction_ : y_scale_);
-}
-void ChassisGimbalManual::sPress() {
-  x_scale_ = x_scale_ <= -1.0 ? -1.0 : x_scale_ - 1.0;
-  vel_cmd_sender_->setLinearXVel(
-      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? x_scale_ * gyro_move_reduction_ : x_scale_);
-}
+
 void ChassisGimbalManual::sRelease() {
   x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
-  vel_cmd_sender_->setLinearXVel(
-      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? x_scale_ * gyro_move_reduction_ : x_scale_);
+  vel_cmd_sender_->setLinearXVel(x_scale_);
 }
-void ChassisGimbalManual::dPress() {
-  y_scale_ = y_scale_ <= -1.0 ? -1.0 : y_scale_ - 1.0;
+
+void ChassisGimbalManual::aPressing() {
   vel_cmd_sender_->setLinearYVel(
       chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? y_scale_ * gyro_move_reduction_ : y_scale_);
 }
+
+void ChassisGimbalManual::aRelease() {
+  y_scale_ = y_scale_ <= -1.0 ? -1.0 : y_scale_ - 1.0;
+  vel_cmd_sender_->setLinearYVel(y_scale_);
+}
+
+void ChassisGimbalManual::dPressing() {
+  vel_cmd_sender_->setLinearYVel(
+      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? y_scale_ * gyro_move_reduction_ : y_scale_);
+}
+
 void ChassisGimbalManual::dRelease() {
   y_scale_ = y_scale_ >= 1.0 ? 1.0 : y_scale_ + 1.0;
-  vel_cmd_sender_->setLinearYVel(
-      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? y_scale_ * gyro_move_reduction_ : y_scale_);
+  vel_cmd_sender_->setLinearYVel(y_scale_);
 }
 
 }
