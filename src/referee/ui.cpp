@@ -219,7 +219,7 @@ void TimeChangeUi::setEffortData(Graph &graph) {
           data_.joint_state_.name[i] == "joint5")
           && data_.joint_state_.effort[i] > data_.joint_state_.effort[max_index])
         max_index = i;
-    sprintf(data_str, "%s:%.2fN*m", data_.joint_state_.name[max_index].c_str(), data_.joint_state_.effort[max_index]);
+    sprintf(data_str, "%s:%.2f N*m", data_.joint_state_.name[max_index].c_str(), data_.joint_state_.effort[max_index]);
     graph.setContent(data_str);
     if (data_.joint_state_.effort[max_index] > 20.) graph.setColor(rm_common::GraphColor::ORANGE);
     else if (data_.joint_state_.effort[max_index] < 10.) graph.setColor(rm_common::GraphColor::GREEN);
@@ -230,7 +230,7 @@ void TimeChangeUi::setEffortData(Graph &graph) {
 
 void TimeChangeUi::setProgressData(Graph &graph, double data) {
   char data_str[30] = {' '};
-  sprintf(data_str, "%1.0f%%", data * 100);
+  sprintf(data_str, " %.1f%%", data * 100.);
   graph.setContent(data_str);
   graph.setOperation(rm_common::GraphOperation::UPDATE);
 }
@@ -239,7 +239,7 @@ void TimeChangeUi::setTemperatureData(Graph &graph) {
   char data_str[30] = {' '};
   for (int i = 0; i < (int) data_.actuator_state_.name.size(); ++i) {
     if (data_.actuator_state_.name[i] == "right_finger_joint_motor") {
-      sprintf(data_str, "%.1hhu°C", data_.actuator_state_.temperature[i]);
+      sprintf(data_str, " %.1hhu C", data_.actuator_state_.temperature[i]);
       graph.setContent(data_str);
       if (data_.actuator_state_.temperature[i] > 70.) graph.setColor(rm_common::GraphColor::ORANGE);
       else if (data_.actuator_state_.temperature[i] < 30.) graph.setColor(rm_common::GraphColor::GREEN);

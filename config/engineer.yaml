@@ -102,10 +102,14 @@ rm_manual:
       service_name: /controllers/hand_calibration_controller/is_calibrated
   ui:
     trigger_change:
+      - name: "grasp_target"
+        config: { start_position: [ 400, 850 ], size: 15, width: 2, title: "target:", color: "white" }
+      - name: "prefix"
+        config: { start_position: [ 400, 800 ], size: 15, width: 2, title: "prefix:", color: "white" }
       - name: "step"
-        config: { start_position: [ 400, 750 ], size: 15, width: 2, title: "step: ", color: "white" }
+        config: { start_position: [ 400, 750 ], size: 15, width: 2, title: "step:  ", color: "white" }
       - name: "queue"
-        config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "queue:", color: "yellow" }
+        config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "queue: ", color: "yellow" }
       - name: "jog"
         config: { start_position: [ 1300, 750 ], size: 15, width: 2, title: "jog:  ", color: "white" }
       - name: "stone"
@@ -114,11 +118,11 @@ rm_manual:
         config: { start_position: [ 1300, 650 ], size: 15, width: 2, title: "card: ", color: "green" }
     time_change:
       - name: "effort"
-        config: { start_position: [ 1300, 550 ], size: 15, width: 2, delay: 0.8 }
+        config: { start_position: [ 1500, 550 ], size: 15, width: 2, delay: 0.8 }
       - name: "temperature"
-        config: { start_position: [ 1300, 500 ], size: 15, width: 2, delay: 0.8, title: "temperature:" }
+        config: { start_position: [ 1500, 500 ], size: 15, width: 2, delay: 0.8, title: "temp:   " }
       - name: "progress"
-        config: { start_position: [ 400, 650 ], size: 15, width: 2, delay: 0.8, color: "green", title: "progress:   " }
+        config: { start_position: [ 400, 650 ], size: 15, width: 2, delay: 0.8, color: "green", title: "progress:" }
     flash:
       - name: "calibration"
         config: { start_position: [ 850, 700 ], size: 15, width: 2,
