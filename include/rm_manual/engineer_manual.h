@@ -30,7 +30,10 @@ class EngineerManual : public ChassisGimbalManual {
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
-  void leftSwitchUpFall() { runStepQueue("ARM_TEST"); }
+  void leftSwitchUpFall() {
+    runStepQueue("ARM_TEST");
+    trigger_change_ui_->update("step", "ARM_TEST");
+  }
   void leftSwitchDownFall();
   void runStepQueue(const std::string &step_queue_name);
   void actionActiveCallback() { operating_mode_ = MIDDLEWARE; }
@@ -38,25 +41,65 @@ class EngineerManual : public ChassisGimbalManual {
   void actionDoneCallback(const actionlib::SimpleClientGoalState &state,
                           const rm_msgs::EngineerResultConstPtr &result);
   void ctrlCPress() { action_client_.cancelAllGoals(); }
-  void ctrlRPress() { runStepQueue("RECOVER"); }
-  void ctrlZPress() { runStepQueue("ARM_FOLD_LOWER"); }
-  void ctrlBPress() { target_ = "BIG_"; }
-  void ctrlFPress() { target_ = "FLOOR_"; }
+  void ctrlRPress() {
+    runStepQueue("RECOVER");
+    trigger_change_ui_->update("step", "RECOVER");
+  }
+  void ctrlZPress() {
+    runStepQueue("ARM_FOLD_LOWER");
+    trigger_change_ui_->update("step", "ARM_FOLD_LOWER");
+  }
+  void ctrlBPress() {
+    target_ = "BIG_";
+    trigger_change_ui_->update("step", prefix_ + target_);
+  }
+  void ctrlFPress() {
+    target_ = "FLOOR_";
+    trigger_change_ui_->update("step", prefix_ + target_);
+  }
   void ctrlXPress() {
     target_ = "EXCHANGE_";
     prefix_ = "";
+    trigger_change_ui_->update("step", prefix_ + target_);
   }
-  void ctrlVPress() { target_ = "LIGHT_BAR_"; }
+  void ctrlGPress() {
+    prefix_ = "GRASP_";
+    trigger_change_ui_->update("step", prefix_ + target_);
+  }
+  void ctrlSPress() {
+    prefix_ = "STORAGE_";
+    trigger_change_ui_->update("step", prefix_ + target_);
+  }
+  void ctrlDPress() {
+    target_ = "DRAG_";
+    trigger_change_ui_->update("step", prefix_ + target_);
+  }
+  void ctrlQPress() {
+    runStepQueue(prefix_ + target_ + "PRE");
+    trigger_change_ui_->update("step", prefix_ + target_ + "PRE");
+  }
+  void ctrlWPress() {
+    runStepQueue(prefix_ + target_ + "PROC");
+    trigger_change_ui_->update("step", prefix_ + target_ + "PROC");
+  }
+  void ctrlEPress() {
+    runStepQueue(prefix_ + target_ + "AFTER");
+    trigger_change_ui_->update("step", prefix_ + target_ + "AFTER");
+  }
+  void ctrlVPress() {
+    target_ = "LIGHT_BAR_";
+    trigger_change_ui_->update("step", prefix_ + target_);
+  }
 
-  void ctrlGPress() { prefix_ = "GRASP_"; }
-  void ctrlSPress() { prefix_ = "STORAGE_"; }
-  void ctrlDPress() { prefix_ = "DRAG_"; }
-  void ctrlQPress() { runStepQueue(prefix_ + target_ + "PRE"); }
-  void ctrlWPress() { runStepQueue(prefix_ + target_ + "PROC"); }
-  void ctrlEPress() { runStepQueue(prefix_ + target_ + "AFTER"); }
 
-  void shiftWPress() { runStepQueue("GIMBAL_FORWARD_UPPER"); }
-  void shiftSPress() { runStepQueue("GIMBAL_FORWARD_LOWER"); }
+  void shiftWPress() {
+    runStepQueue("GIMBAL_FORWARD_UPPER");
+    trigger_change_ui_->update("step", "GIMBAL_FORWARD_UPPER");
+  }
+  void shiftSPress() {
+    runStepQueue("GIMBAL_FORWARD_LOWER");
+    trigger_change_ui_->update("step", "GIMBAL_FORWARD_LOWER");
+  }
 
   void cPress();
 
