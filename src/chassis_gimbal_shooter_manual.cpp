@@ -16,6 +16,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle &nh) : Ch
   shooter_power_on_event_.setRising(boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
   self_inspection_event_.setRising(boost::bind(&ChassisGimbalShooterManual::selfInspectionStart, this));
   game_start_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gameStart, this));
+  left_switch_up_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::leftSwitchUpOn, this, _1));
   e_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ePress, this));
   g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
   q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::qPress, this));
@@ -139,9 +140,16 @@ void ChassisGimbalShooterManual::leftSwitchUpRise() {
   ChassisGimbalManual::leftSwitchUpRise();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
   gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
-  shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-  shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
 }
+
+void ChassisGimbalShooterManual::leftSwitchUpOn(ros::Duration duration) {
+  if (duration > ros::Duration(1.)) {
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+    shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
+  } else if (duration < ros::Duration(0.02)) shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+  else shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+}
+
 void ChassisGimbalShooterManual::mouseLeftPress() {
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
   if (data_.dbus_data_.p_r)
