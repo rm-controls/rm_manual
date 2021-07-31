@@ -213,9 +213,9 @@ void TimeChangeUi::setEffortData(Graph &graph) {
   int max_index = 0;
   if (!data_.joint_state_.name.empty()) {
     for (int i = 0; i < (int) data_.joint_state_.effort.size(); ++i)
-      if (data_.joint_state_.name[i] != "right_finger_joint"
-          && data_.joint_state_.name[i] != "left_finger_joint"
-          && data_.joint_state_.name[i] != "mast_joint"
+      if ((data_.joint_state_.name[i] == "joint1" || data_.joint_state_.name[i] == "joint2" ||
+          data_.joint_state_.name[i] == "joint3" || data_.joint_state_.name[i] == "joint4" ||
+          data_.joint_state_.name[i] == "joint5")
           && data_.joint_state_.effort[i] > data_.joint_state_.effort[max_index])
         max_index = i;
     sprintf(data_str, "%s:%.2f", data_.joint_state_.name[max_index].c_str(), data_.joint_state_.effort[max_index]);
@@ -226,7 +226,7 @@ void TimeChangeUi::setEffortData(Graph &graph) {
 
 void TimeChangeUi::setProgressData(Graph &graph, double data) {
   char data_str[30] = {' '};
-  sprintf(data_str, "progress:%1.0f%%", data);
+  sprintf(data_str, "%1.0f%%", data);
   graph.setContent(data_str);
   graph.setOperation(rm_common::GraphOperation::UPDATE);
 }

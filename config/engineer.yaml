@@ -103,20 +103,20 @@ rm_manual:
   ui:
     trigger_change:
       - name: "step"
-        config: { start_position: [ 400, 750 ], size: 15, width: 2, title: "step: " }
+        config: { start_position: [ 400, 750 ], size: 15, width: 2, title: "step: ", color: "white" }
       - name: "queue"
-        config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "queue:" }
+        config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "queue:", color: "yellow" }
       - name: "jog"
-        config: { start_position: [ 400, 600 ], size: 15, width: 2, title: "jog:  " }
+        config: { start_position: [ 1100, 750 ], size: 15, width: 2, title: "jog:  ", color: "white" }
       - name: "stone"
-        config: { start_position: [ 400, 500 ], size: 15, width: 2, title: "stone:" }
+        config: { start_position: [ 1100, 700 ], size: 15, width: 2, title: "stone:", color: "yellow" }
       - name: "card"
-        config: { start_position: [ 400, 400 ], size: 15, width: 2, title: "card: " }
+        config: { start_position: [ 1100, 650 ], size: 15, width: 2, title: "card: ", color: "green" }
     time_change:
       - name: "effort"
         config: { start_position: [ 850, 150 ], size: 15, width: 2, delay: 0.8, color: "white" }
-      - name: "progress:"
-        config: { start_position: [ 850, 100 ], size: 15, width: 2, delay: 0.8, color: "white" }
+      - name: "progress"
+        config: { start_position: [ 400, 650 ], size: 15, width: 2, delay: 0.8, color: "green", title: "progress:" }
     flash:
       - name: "calibration"
         config: { start_position: [ 850, 700 ], size: 15, width: 2,
