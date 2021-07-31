@@ -95,6 +95,7 @@ void EngineerManual::sendCommand(const ros::Time &time) {
 void EngineerManual::drawUi(const ros::Time &time) {
   ChassisGimbalManual::drawUi(time);
   time_change_ui_->update("effort", time);
+  time_change_ui_->update("temperature", time);
   trigger_change_ui_->update("card", 0, card_command_sender_->getState());
   flash_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
 //    trigger_change_ui_->update("jog", jog_joint_name);

@@ -107,16 +107,18 @@ rm_manual:
       - name: "queue"
         config: { start_position: [ 400, 700 ], size: 15, width: 2, title: "queue:", color: "yellow" }
       - name: "jog"
-        config: { start_position: [ 1100, 750 ], size: 15, width: 2, title: "jog:  ", color: "white" }
+        config: { start_position: [ 1300, 750 ], size: 15, width: 2, title: "jog:  ", color: "white" }
       - name: "stone"
-        config: { start_position: [ 1100, 700 ], size: 15, width: 2, title: "stone:", color: "yellow" }
+        config: { start_position: [ 1300, 700 ], size: 15, width: 2, title: "stone:", color: "yellow" }
       - name: "card"
-        config: { start_position: [ 1100, 650 ], size: 15, width: 2, title: "card: ", color: "green" }
+        config: { start_position: [ 1300, 650 ], size: 15, width: 2, title: "card: ", color: "green" }
     time_change:
       - name: "effort"
-        config: { start_position: [ 850, 150 ], size: 15, width: 2, delay: 0.8, color: "white" }
+        config: { start_position: [ 1300, 550 ], size: 15, width: 2, delay: 0.8 }
+      - name: "temperature"
+        config: { start_position: [ 1300, 500 ], size: 15, width: 2, delay: 0.8, title: "temperature:" }
       - name: "progress"
-        config: { start_position: [ 400, 650 ], size: 15, width: 2, delay: 0.8, color: "green", title: "progress:" }
+        config: { start_position: [ 400, 650 ], size: 15, width: 2, delay: 0.8, color: "green", title: "progress:   " }
     flash:
       - name: "calibration"
         config: { start_position: [ 850, 700 ], size: 15, width: 2,

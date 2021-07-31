@@ -45,6 +45,7 @@ class TimeChangeUi : public UiBase {
  private:
   void setCapacitorData(Graph &graph);
   void setEffortData(Graph &graph);
+  void setTemperatureData(Graph &graph);
   static void setProgressData(Graph &graph, double data);
 };
 
