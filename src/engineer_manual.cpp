@@ -29,10 +29,10 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
   ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
   ctrl_z_event_.setRising(boost::bind(&EngineerManual::ctrlZPress, this));
   ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
+  ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
   ctrl_x_event_.setRising(boost::bind(&EngineerManual::ctrlXPress, this));
   ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
   ctrl_s_event_.setRising(boost::bind(&EngineerManual::ctrlSPress, this));
-  ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
   ctrl_q_event_.setRising(boost::bind(&EngineerManual::ctrlQPress, this));
   ctrl_w_event_.setRising(boost::bind(&EngineerManual::ctrlWPress, this));
   ctrl_e_event_.setRising(boost::bind(&EngineerManual::ctrlEPress, this));
@@ -57,10 +57,10 @@ void EngineerManual::checkKeyboard() {
   ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
   ctrl_z_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
   ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
+  ctrl_d_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_d);
   ctrl_x_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_x);
   ctrl_g_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_g);
   ctrl_s_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_s);
-  ctrl_d_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_d);
   ctrl_q_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_q);
   ctrl_w_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_w);
   ctrl_e_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_e);

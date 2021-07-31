@@ -41,14 +41,17 @@ class EngineerManual : public ChassisGimbalManual {
   void ctrlRPress() { runStepQueue("RECOVER"); }
   void ctrlFPress() { runStepQueue("ARM_FOLD_UPPER"); }
   void ctrlZPress() { runStepQueue("ARM_FOLD_LOWER"); }
-  void ctrlBPress() { target_ = "BIG"; }
-  void ctrlXPress() { target_ = "EXCHANGE"; }
+  void ctrlBPress() { target_ = "BIG_"; }
+  void ctrlDPress() { target_ = "GROUND_"; }
+  void ctrlXPress() {
+    target_ = "EXCHANGE_";
+    prefix_ = "";
+  }
   void ctrlGPress() { prefix_ = "GRASP_"; }
   void ctrlSPress() { prefix_ = "STORAGE_"; }
-  void ctrlDPress() { prefix_ = "DEPART_"; }
-  void ctrlQPress() { runStepQueue(prefix_ + target_ + "_PRE"); }
-  void ctrlWPress() { runStepQueue(prefix_ + target_ + "_PROC"); }
-  void ctrlEPress() { runStepQueue(prefix_ + target_ + "_AFTER"); }
+  void ctrlQPress() { runStepQueue(prefix_ + target_ + "PRE"); }
+  void ctrlWPress() { runStepQueue(prefix_ + target_ + "PROC"); }
+  void ctrlEPress() { runStepQueue(prefix_ + target_ + "AFTER"); }
 
   void shiftWPress() { runStepQueue("GIMBAL_FORWARD_UPPER"); }
   void shiftSPress() { runStepQueue("GIMBAL_FORWARD_LOWER"); }
