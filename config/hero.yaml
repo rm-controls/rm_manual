@@ -18,10 +18,10 @@ rm_manual:
     gyro_move_reduction: 0.25
   gimbal:
     topic: "/controllers/gimbal_controller/command"
-    max_yaw_vel: 12.56
+    max_yaw_vel: 16
     max_pitch_vel: 8.37
     track_timeout: 0.5
-    eject_sensitivity: 0.5
+    eject_sensitivity: 0.38
     target_cost_function:
       k_pos: 1.0
       k_vel: 0.0
@@ -71,21 +71,12 @@ rm_manual:
       - name: "4.5m_str"
         config: { type: "string", size: 10, width: 1, color: "yellow",
                   start_position: [ 1000, 375 ], content: "4.5" }
-      - name: "4.5m_line"
-        config: { type: "line", width: 2, color: "yellow",
-                  start_position: [ 948, 373 ], end_position: [ 972, 373 ] }
-      - name: "6m_str"
+      - name: "5.3m_str"
         config: { type: "string", size: 10, width: 1, color: "yellow",
-                  start_position: [ 1000, 345 ], content: "6" }
-      - name: "6m_line"
-        config: { type: "line", width: 2, color: "yellow",
-                  start_position: [ 950, 335 ], end_position: [ 970, 335 ] }
-      - name: "10m_str"
-        config: { type: "string", size: 10, width: 1, color: "yellow",
-                  start_position: [ 1000, 310 ], content: "10" }
-      - name: "10m_line"
-        config: { type: "line", width: 2, color: "yellow",
-                  start_position: [ 953, 302 ], end_position: [ 967, 302 ] }
+                  start_position: [ 1000, 393 ], content: "5.3m" }
+      - name: "5.3m_line"
+        config: { type: "line", width: 2, color: "orange",
+                  start_position: [ 954, 391 ], end_position: [ 976, 391 ] }
       - name: "mid"
         config: { type: "line", width: 2, color: "yellow",
                   start_position: [ 960, 302 ], end_position: [ 960, 540 ] }
