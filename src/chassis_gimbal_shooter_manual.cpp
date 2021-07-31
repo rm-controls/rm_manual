@@ -157,7 +157,7 @@ void ChassisGimbalShooterManual::gPress() {
   if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setAngularZVel(0.0);
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    if (!data_.dbus_data_.key_shift) chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   } else {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
     vel_cmd_sender_->setAngularZVel(1.0);
