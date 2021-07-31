@@ -22,9 +22,10 @@ class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual {
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
   void ctrlZPress();
+  void ctrlQPress();
   rm_common::JointPositionBinaryCommandSender *cover_command_sender_{};
   rm_common::CalibrationQueue *cover_calibration_;
-  InputEvent ctrl_z_event_;
+  InputEvent ctrl_z_event_, ctrl_q_event_;
 };
 }
 
