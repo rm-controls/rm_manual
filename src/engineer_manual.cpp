@@ -55,13 +55,13 @@ void EngineerManual::checkKeyboard() {
   ChassisGimbalManual::checkKeyboard();
   ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
   ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
-  ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
   ctrl_z_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
   ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
-  ctrl_d_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_d);
+  ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
   ctrl_x_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_x);
   ctrl_g_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_g);
   ctrl_s_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_s);
+  ctrl_d_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_d);
   ctrl_q_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_q);
   ctrl_w_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_w);
   ctrl_e_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_e);
@@ -101,7 +101,8 @@ void EngineerManual::drawUi(const ros::Time &time) {
   trigger_change_ui_->update("grasp_target", target_);
   trigger_change_ui_->update("prefix", prefix_);
   flash_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
-  flash_ui_->update("card_warning", time, data_.joint_state_.effort[0] < 1.5);
+  if (!data_.joint_state_.name.empty())
+    flash_ui_->update("card_warning", time, data_.joint_state_.effort[0] < 1.5);
 //    trigger_change_ui_->update("jog", jog_joint_name);
 }
 
