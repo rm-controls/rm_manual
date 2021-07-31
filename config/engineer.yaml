@@ -122,8 +122,11 @@ rm_manual:
       - name: "temperature"
         config: { start_position: [ 1500, 500 ], size: 15, width: 2, delay: 0.8, title: "temp:   " }
       - name: "progress"
-        config: { start_position: [ 400, 650 ], size: 15, width: 2, delay: 0.8, color: "green", title: "progress:" }
+        config: { start_position: [ 400, 650 ], size: 15, width: 2, delay: 0.4, color: "green", title: "progress:" }
     flash:
       - name: "calibration"
         config: { start_position: [ 850, 700 ], size: 15, width: 2,
                   color: "yellow", content: "please calibrate!!", delay: 1.5 }
+      - name: "card_warning"
+        config: { start_position: [ 850, 750 ], size: 15, width: 2,
+                  color: "green", content: "card stuck!!", delay: 1.5 }

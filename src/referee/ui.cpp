@@ -219,12 +219,15 @@ void TimeChangeUi::setEffortData(Graph &graph) {
           data_.joint_state_.name[i] == "joint5")
           && data_.joint_state_.effort[i] > data_.joint_state_.effort[max_index])
         max_index = i;
-    sprintf(data_str, "%s:%.2f N*m", data_.joint_state_.name[max_index].c_str(), data_.joint_state_.effort[max_index]);
-    graph.setContent(data_str);
-    if (data_.joint_state_.effort[max_index] > 20.) graph.setColor(rm_common::GraphColor::ORANGE);
-    else if (data_.joint_state_.effort[max_index] < 10.) graph.setColor(rm_common::GraphColor::GREEN);
-    else graph.setColor(rm_common::GraphColor::YELLOW);
-    graph.setOperation(rm_common::GraphOperation::UPDATE);
+    if (max_index != 0) {
+      sprintf(data_str, "%s:%.2f N.m", data_.joint_state_.name[max_index].c_str(),
+              data_.joint_state_.effort[max_index]);
+      graph.setContent(data_str);
+      if (data_.joint_state_.effort[max_index] > 20.) graph.setColor(rm_common::GraphColor::ORANGE);
+      else if (data_.joint_state_.effort[max_index] < 10.) graph.setColor(rm_common::GraphColor::GREEN);
+      else graph.setColor(rm_common::GraphColor::YELLOW);
+      graph.setOperation(rm_common::GraphOperation::UPDATE);
+    }
   }
 }
 
