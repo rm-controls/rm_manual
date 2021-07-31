@@ -29,10 +29,11 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
   ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
   ctrl_z_event_.setRising(boost::bind(&EngineerManual::ctrlZPress, this));
   ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
-  ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
+  ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
   ctrl_x_event_.setRising(boost::bind(&EngineerManual::ctrlXPress, this));
   ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
   ctrl_s_event_.setRising(boost::bind(&EngineerManual::ctrlSPress, this));
+  ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
   ctrl_q_event_.setRising(boost::bind(&EngineerManual::ctrlQPress, this));
   ctrl_w_event_.setRising(boost::bind(&EngineerManual::ctrlWPress, this));
   ctrl_e_event_.setRising(boost::bind(&EngineerManual::ctrlEPress, this));

@@ -39,16 +39,16 @@ class EngineerManual : public ChassisGimbalManual {
                           const rm_msgs::EngineerResultConstPtr &result);
   void ctrlCPress() { action_client_.cancelAllGoals(); }
   void ctrlRPress() { runStepQueue("RECOVER"); }
-  void ctrlFPress() { runStepQueue("ARM_FOLD_UPPER"); }
   void ctrlZPress() { runStepQueue("ARM_FOLD_LOWER"); }
   void ctrlBPress() { target_ = "BIG_"; }
-  void ctrlDPress() { target_ = "GROUND_"; }
+  void ctrlFPress() { target_ = "FLOOR_"; }
   void ctrlXPress() {
     target_ = "EXCHANGE_";
     prefix_ = "";
   }
   void ctrlGPress() { prefix_ = "GRASP_"; }
   void ctrlSPress() { prefix_ = "STORAGE_"; }
+  void ctrlDPress() { target_ = "DRAG_"; }
   void ctrlQPress() { runStepQueue(prefix_ + target_ + "PRE"); }
   void ctrlWPress() { runStepQueue(prefix_ + target_ + "PROC"); }
   void ctrlEPress() { runStepQueue(prefix_ + target_ + "AFTER"); }
