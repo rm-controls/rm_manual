@@ -102,10 +102,6 @@ rm_manual:
       service_name: /controllers/hand_calibration_controller/is_calibrated
   ui:
     trigger_change:
-      - name: "grasp_target"
-        config: { start_position: [ 400, 850 ], size: 15, width: 2, title: "target:", color: "white" }
-      - name: "prefix"
-        config: { start_position: [ 400, 800 ], size: 15, width: 2, title: "prefix:", color: "white" }
       - name: "step"
         config: { start_position: [ 400, 750 ], size: 15, width: 2, title: "step:  ", color: "white" }
       - name: "queue"
