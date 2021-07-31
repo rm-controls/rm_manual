@@ -170,7 +170,7 @@ void ChassisGimbalShooterManual::ePress() {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   } else {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
-    chassis_cmd_sender_->setMode(rm_common::PowerLimit::NORMAL);
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
 }
 
