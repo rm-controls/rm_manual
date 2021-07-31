@@ -33,8 +33,8 @@ class TriggerChangeUi : public UiBase {
   static void updateConfig(const std::string &name, Graph *graph, uint8_t main_mode, bool main_flag,
                            uint8_t sub_mode, bool sub_flag);
   static std::string getChassisState(uint8_t mode);
-  static std::string getTargetState(uint8_t target, uint8_t armor_target);
   static std::string getExposureState(uint8_t level);
+  std::string getTargetState(uint8_t target, uint8_t armor_target);
 };
 
 class TimeChangeUi : public UiBase {

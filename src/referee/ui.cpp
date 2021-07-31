@@ -98,15 +98,22 @@ std::string TriggerChangeUi::getChassisState(uint8_t mode) {
 }
 
 std::string TriggerChangeUi::getTargetState(uint8_t target, uint8_t armor_target) {
-  if (target == rm_msgs::StatusChangeRequest::BUFF)
-    return "buff";
-  else if (target == rm_msgs::StatusChangeRequest::ARMOR
-      && armor_target == rm_msgs::StatusChangeRequest::ARMOR_ALL)
-    return "armor_all";
-  else if (target == rm_msgs::StatusChangeRequest::ARMOR
-      && armor_target == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
-    return "armor_base";
-  else return "error";
+  if (data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::BLUE_HERO
+      && data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::RED_HERO) {
+    if (target == rm_msgs::StatusChangeRequest::BUFF) return "buff";
+    else if (target == rm_msgs::StatusChangeRequest::ARMOR
+        && armor_target == rm_msgs::StatusChangeRequest::ARMOR_ALL)
+      return "armor_all";
+    else if (target == rm_msgs::StatusChangeRequest::ARMOR
+        && armor_target == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
+      return "armor_base";
+    else return "error";
+  } else {
+    if (target == 1) return "eject";
+    else if (armor_target == rm_msgs::StatusChangeRequest::ARMOR_ALL) return "all";
+    else if (armor_target == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE) return "base";
+    else return "error";
+  }
 }
 
 std::string TriggerChangeUi::getExposureState(uint8_t level) {
@@ -129,7 +136,7 @@ void FixedUi::update() {
 int FixedUi::getShootSpeedIndex() {
   uint16_t speed_limit;
   if (data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::BLUE_HERO
-      || data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::RED_HERO) {
+      && data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::RED_HERO) {
     speed_limit = data_.referee_.referee_data_.game_robot_status_.shooter_id_1_17_mm_speed_limit_;
     if (speed_limit == 15) return 0;
     else if (speed_limit == 18) return 1;
@@ -219,18 +226,21 @@ void TimeChangeUi::setEffortData(Graph &graph) {
           data_.joint_state_.name[i] == "joint5")
           && data_.joint_state_.effort[i] > data_.joint_state_.effort[max_index])
         max_index = i;
-    sprintf(data_str, "%s:%.2fN*m", data_.joint_state_.name[max_index].c_str(), data_.joint_state_.effort[max_index]);
-    graph.setContent(data_str);
-    if (data_.joint_state_.effort[max_index] > 20.) graph.setColor(rm_common::GraphColor::ORANGE);
-    else if (data_.joint_state_.effort[max_index] < 10.) graph.setColor(rm_common::GraphColor::GREEN);
-    else graph.setColor(rm_common::GraphColor::YELLOW);
-    graph.setOperation(rm_common::GraphOperation::UPDATE);
+    if (max_index != 0) {
+      sprintf(data_str, "%s:%.2f N.m", data_.joint_state_.name[max_index].c_str(),
+              data_.joint_state_.effort[max_index]);
+      graph.setContent(data_str);
+      if (data_.joint_state_.effort[max_index] > 20.) graph.setColor(rm_common::GraphColor::ORANGE);
+      else if (data_.joint_state_.effort[max_index] < 10.) graph.setColor(rm_common::GraphColor::GREEN);
+      else graph.setColor(rm_common::GraphColor::YELLOW);
+      graph.setOperation(rm_common::GraphOperation::UPDATE);
+    }
   }
 }
 
 void TimeChangeUi::setProgressData(Graph &graph, double data) {
   char data_str[30] = {' '};
-  sprintf(data_str, "%1.0f%%", data * 100);
+  sprintf(data_str, " %.1f%%", data * 100.);
   graph.setContent(data_str);
   graph.setOperation(rm_common::GraphOperation::UPDATE);
 }
@@ -239,7 +249,7 @@ void TimeChangeUi::setTemperatureData(Graph &graph) {
   char data_str[30] = {' '};
   for (int i = 0; i < (int) data_.actuator_state_.name.size(); ++i) {
     if (data_.actuator_state_.name[i] == "right_finger_joint_motor") {
-      sprintf(data_str, "%.1hhu°C", data_.actuator_state_.temperature[i]);
+      sprintf(data_str, " %.1hhu C", data_.actuator_state_.temperature[i]);
       graph.setContent(data_str);
       if (data_.actuator_state_.temperature[i] > 70.) graph.setColor(rm_common::GraphColor::ORANGE);
       else if (data_.actuator_state_.temperature[i] < 30.) graph.setColor(rm_common::GraphColor::GREEN);

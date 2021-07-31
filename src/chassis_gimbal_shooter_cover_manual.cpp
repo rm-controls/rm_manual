@@ -12,6 +12,7 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   nh.getParam("cover_calibration", rpc_value);
   cover_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   ctrl_z_event_.setRising(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this));
+  ctrl_q_event_.setRising(boost::bind(&ChassisGimbalShooterCoverManual::ctrlQPress, this));
 }
 
 void ChassisGimbalShooterCoverManual::run() {
@@ -22,6 +23,7 @@ void ChassisGimbalShooterCoverManual::run() {
 void ChassisGimbalShooterCoverManual::checkKeyboard() {
   ChassisGimbalShooterManual::checkKeyboard();
   ctrl_z_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
+  ctrl_q_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_q);
 }
 
 void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time &time) {
@@ -74,15 +76,17 @@ void ChassisGimbalShooterCoverManual::ctrlZPress() {
     aim_point.point.z = 0;
     gimbal_cmd_sender_->setAimPoint(aim_point);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
-    cover_command_sender_->on();
     if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
       chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
       vel_cmd_sender_->setZero();
     }
-  } else {
+  } else
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-    cover_command_sender_->off();
-  }
+  cover_command_sender_->getState() ? cover_command_sender_->off() : cover_command_sender_->on();
+}
+
+void ChassisGimbalShooterCoverManual::ctrlQPress() {
+  cover_calibration_->reset();
 }
 }
