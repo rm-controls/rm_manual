@@ -23,6 +23,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void gameStart() { trigger_calibration_->reset(); };
   void remoteControlTurnOff() override;
   void remoteControlTurnOn() override;
+  void robotDie() override;
   void drawUi(const ros::Time &time) override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;

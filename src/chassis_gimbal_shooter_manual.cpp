@@ -79,6 +79,11 @@ void ChassisGimbalShooterManual::remoteControlTurnOn() {
   trigger_calibration_->stopController();
 }
 
+void ChassisGimbalShooterManual::robotDie() {
+  ManualBase::robotDie();
+  shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+}
+
 void ChassisGimbalShooterManual::chassisOutputOn() {
   ChassisGimbalManual::chassisOutputOn();
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
@@ -86,6 +91,7 @@ void ChassisGimbalShooterManual::chassisOutputOn() {
 
 void ChassisGimbalShooterManual::shooterOutputOn() {
   ChassisGimbalManual::shooterOutputOn();
+  shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   trigger_calibration_->reset();
 }
 
@@ -275,4 +281,5 @@ void ChassisGimbalShooterManual::ctrlBPress() {
   switch_detection_srv_->switchExposureLevel();
   switch_detection_srv_->callService();
 }
+
 }
