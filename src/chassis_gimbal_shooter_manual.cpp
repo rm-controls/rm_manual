@@ -51,7 +51,7 @@ void ChassisGimbalShooterManual::checkKeyboard() {
   ChassisGimbalManual::checkKeyboard();
   e_event_.update(data_.dbus_data_.key_e);
   g_event_.update(data_.dbus_data_.key_g);
-  q_event_.update(data_.dbus_data_.key_q);
+  q_event_.update((!data_.dbus_data_.key_ctrl) & data_.dbus_data_.key_q);
   f_event_.update(data_.dbus_data_.key_f);
   b_event_.update((!data_.dbus_data_.key_ctrl) & data_.dbus_data_.key_b);
   ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
