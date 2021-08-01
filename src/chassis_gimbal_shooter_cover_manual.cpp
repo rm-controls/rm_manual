@@ -77,7 +77,7 @@ void ChassisGimbalShooterCoverManual::ctrlZPress() {
   geometry_msgs::PointStamped aim_point{};
   aim_point.header.frame_id = "yaw";
   aim_point.header.stamp = ros::Time(0);
-  aim_point.point.x = 1000;
+  aim_point.point.x = 1;
   aim_point.point.y = 0;
   aim_point.point.z = 0;
   gimbal_cmd_sender_->setAimPoint(aim_point);
