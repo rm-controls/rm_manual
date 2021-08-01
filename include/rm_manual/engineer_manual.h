@@ -71,7 +71,7 @@ class EngineerManual : public ChassisGimbalManual {
     trigger_change_ui_->update("step", prefix_ + target_);
   }
   void ctrlDPress() {
-    target_ = "DRAG_";
+    prefix_ = "DRAG_";
     trigger_change_ui_->update("step", prefix_ + target_);
   }
   void ctrlQPress() {
