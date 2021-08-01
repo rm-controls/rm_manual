@@ -122,7 +122,7 @@ rm_manual:
     flash:
       - name: "calibration"
         config: { start_position: [ 850, 700 ], size: 15, width: 2,
-                  color: "yellow", content: "please calibrate!!", delay: 1.5 }
+                  color: "yellow", content: "please calibrate!!", delay: 0.8 }
       - name: "card_warning"
         config: { start_position: [ 850, 750 ], size: 15, width: 2,
-                  color: "green", content: "card stuck!!", delay: 1.5 }
+                  color: "green", content: "card stuck!!", delay: 0.8 }

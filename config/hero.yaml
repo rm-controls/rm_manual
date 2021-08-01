@@ -91,7 +91,7 @@ rm_manual:
     flash:
       - name: "spin"
         config: { start_position: [ 900, 750 ], size: 15, width: 2,
-                  color: "yellow", content: "please spin!!", delay: 1.2 }
+                  color: "yellow", content: "please spin!!", delay: 0.8 }
       - name: "armor0"
         config: { type: "circle", width: 3, radius: 50, color: "yellow", delay: 0.75 }
       - name: "armor1"
