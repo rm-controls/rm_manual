@@ -12,9 +12,10 @@ class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual {
   explicit ChassisGimbalShooterCoverManual(ros::NodeHandle &nh);
   void run() override;
  protected:
+  void updatePc() override;
   void checkKeyboard() override;
   void sendCommand(const ros::Time &time) override;
-  void shooterOutputOn() override;
+  void gimbalOutputOn() override;
   void remoteControlTurnOff() override;
   void remoteControlTurnOn() override;
   void drawUi(const ros::Time &time) override;
@@ -22,6 +23,7 @@ class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual {
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
   void ctrlZPress();
+  void ctrlZRelease() { gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE); };
   void ctrlQPress();
   rm_common::JointPositionBinaryCommandSender *cover_command_sender_{};
   rm_common::CalibrationQueue *cover_calibration_;

@@ -30,7 +30,10 @@ class EngineerManual : public ChassisGimbalManual {
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
-  void leftSwitchUpFall() { runStepQueue("ARM_TEST"); }
+  void leftSwitchUpFall() {
+    runStepQueue("ARM_TEST");
+    trigger_change_ui_->update("step", "ARM_TEST");
+  }
   void leftSwitchDownFall();
   void runStepQueue(const std::string &step_queue_name);
   void actionActiveCallback() { operating_mode_ = MIDDLEWARE; }
@@ -38,20 +41,65 @@ class EngineerManual : public ChassisGimbalManual {
   void actionDoneCallback(const actionlib::SimpleClientGoalState &state,
                           const rm_msgs::EngineerResultConstPtr &result);
   void ctrlCPress() { action_client_.cancelAllGoals(); }
-  void ctrlRPress() { runStepQueue("RECOVER"); }
-  void ctrlFPress() { runStepQueue("ARM_FOLD_UPPER"); }
-  void ctrlZPress() { runStepQueue("ARM_FOLD_LOWER"); }
-  void ctrlBPress() { target_ = "BIG"; }
-  void ctrlXPress() { target_ = "EXCHANGE"; }
-  void ctrlGPress() { prefix_ = "GRASP_"; }
-  void ctrlSPress() { prefix_ = "STORAGE_"; }
-  void ctrlDPress() { prefix_ = "DEPART_"; }
-  void ctrlQPress() { runStepQueue(prefix_ + target_ + "_PRE"); }
-  void ctrlWPress() { runStepQueue(prefix_ + target_ + "_PROC"); }
-  void ctrlEPress() { runStepQueue(prefix_ + target_ + "_AFTER"); }
+  void ctrlRPress() {
+    runStepQueue("RECOVER");
+    trigger_change_ui_->update("step", "RECOVER");
+  }
+  void ctrlZPress() {
+    runStepQueue("ARM_FOLD_LOWER");
+    trigger_change_ui_->update("step", "ARM_FOLD_LOWER");
+  }
+  void ctrlBPress() {
+    target_ = "BIG_";
+    trigger_change_ui_->update("step", prefix_ + target_);
+  }
+  void ctrlFPress() {
+    target_ = "FLOOR_";
+    trigger_change_ui_->update("step", prefix_ + target_);
+  }
+  void ctrlXPress() {
+    target_ = "EXCHANGE_";
+    prefix_ = "";
+    trigger_change_ui_->update("step", prefix_ + target_);
+  }
+  void ctrlGPress() {
+    prefix_ = "GRASP_";
+    trigger_change_ui_->update("step", prefix_ + target_);
+  }
+  void ctrlSPress() {
+    prefix_ = "STORAGE_";
+    trigger_change_ui_->update("step", prefix_ + target_);
+  }
+  void ctrlDPress() {
+    target_ = "DRAG_";
+    trigger_change_ui_->update("step", prefix_ + target_);
+  }
+  void ctrlQPress() {
+    runStepQueue(prefix_ + target_ + "PRE");
+    trigger_change_ui_->update("step", prefix_ + target_ + "PRE");
+  }
+  void ctrlWPress() {
+    runStepQueue(prefix_ + target_ + "PROC");
+    trigger_change_ui_->update("step", prefix_ + target_ + "PROC");
+  }
+  void ctrlEPress() {
+    runStepQueue(prefix_ + target_ + "AFTER");
+    trigger_change_ui_->update("step", prefix_ + target_ + "AFTER");
+  }
+  void ctrlVPress() {
+    target_ = "LIGHT_BAR_";
+    trigger_change_ui_->update("step", prefix_ + target_);
+  }
 
-  void shiftWPress() { runStepQueue("GIMBAL_FORWARD_UPPER"); }
-  void shiftSPress() { runStepQueue("GIMBAL_FORWARD_LOWER"); }
+
+  void shiftWPress() {
+    runStepQueue("GIMBAL_FORWARD_UPPER");
+    trigger_change_ui_->update("step", "GIMBAL_FORWARD_UPPER");
+  }
+  void shiftSPress() {
+    runStepQueue("GIMBAL_FORWARD_LOWER");
+    trigger_change_ui_->update("step", "GIMBAL_FORWARD_LOWER");
+  }
 
   void cPress();
 
@@ -62,8 +110,8 @@ class EngineerManual : public ChassisGimbalManual {
   rm_common::CalibrationQueue *power_on_calibration_{}, *mast_calibration_{}, *arm_calibration_{};
   rm_common::JointPositionBinaryCommandSender *mast_command_sender_, *card_command_sender_;
   InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_c_event_, ctrl_r_event_, ctrl_f_event_,
-      ctrl_z_event_, ctrl_b_event_, ctrl_x_event_, ctrl_g_event_, ctrl_s_event_, ctrl_d_event_, ctrl_q_event_,
-      ctrl_w_event_, ctrl_e_event_, shift_w_event_, shift_s_event_, c_event_;
+      ctrl_z_event_, ctrl_b_event_, ctrl_x_event_, ctrl_v_event_, ctrl_g_event_, ctrl_s_event_, ctrl_d_event_,
+      ctrl_q_event_, ctrl_w_event_, ctrl_e_event_, shift_w_event_, shift_s_event_, c_event_;
 };
 
 }

@@ -44,6 +44,7 @@ rm_manual:
     off_pos: 0.0
   detection_switch:
     fail_limit: 10
+    service_name: "/detection_nodelet/status_switch"
 
   controllers_list:
     state_controllers:
@@ -92,11 +93,11 @@ rm_manual:
                   start_position: [ 960, 400 ], end_position: [ 960, 540 ] }
     flash:
       - name: "spin"
-        config: { start_position: [ 900, 750 ], size: 15, width: 2,
-                  color: "yellow", content: "please spin!!", delay: 1.2 }
+        config: { start_position: [ 850, 750 ], size: 20, width: 2,
+                  color: "yellow", content: "please spin!!", delay: 0.5 }
       - name: "cover"
-        config: { start_position: [ 900, 700 ], size: 15, width: 2,
-                  color: "green", content: "cover open!!", delay: 1.2 }
+        config: { start_position: [ 830, 700 ], size: 25, width: 2,
+                  color: "green", content: "cover open!!", delay: 0.3 }
       - name: "armor0"
         config: { type: "circle", width: 3, radius: 50, color: "yellow", delay: 0.75 }
       - name: "armor1"

@@ -29,7 +29,9 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
   ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
   ctrl_z_event_.setRising(boost::bind(&EngineerManual::ctrlZPress, this));
   ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
+  ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
   ctrl_x_event_.setRising(boost::bind(&EngineerManual::ctrlXPress, this));
+  ctrl_v_event_.setRising(boost::bind(&EngineerManual::ctrlVPress, this));
   ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
   ctrl_s_event_.setRising(boost::bind(&EngineerManual::ctrlSPress, this));
   ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
@@ -54,10 +56,11 @@ void EngineerManual::checkKeyboard() {
   ChassisGimbalManual::checkKeyboard();
   ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
   ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
-  ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
   ctrl_z_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
   ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
+  ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
   ctrl_x_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_x);
+  ctrl_v_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v);
   ctrl_g_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_g);
   ctrl_s_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_s);
   ctrl_d_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_d);
@@ -97,10 +100,9 @@ void EngineerManual::drawUi(const ros::Time &time) {
   time_change_ui_->update("effort", time);
   time_change_ui_->update("temperature", time);
   trigger_change_ui_->update("card", 0, card_command_sender_->getState());
-  trigger_change_ui_->update("grasp_target", target_);
-  trigger_change_ui_->update("prefix", prefix_);
   flash_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
-  flash_ui_->update("card_warning", time, data_.joint_state_.effort[0] < 1.5);
+  if (!data_.joint_state_.name.empty())
+    flash_ui_->update("card_warning", time, data_.joint_state_.effort[0] < 1.5);
 //    trigger_change_ui_->update("jog", jog_joint_name);
 }
 
@@ -147,7 +149,6 @@ void EngineerManual::runStepQueue(const std::string &step_queue_name) {
                               boost::bind(&EngineerManual::actionActiveCallback, this),
                               boost::bind(&EngineerManual::actionFeedbackCallback, this, _1));
     operating_mode_ = MIDDLEWARE;
-    trigger_change_ui_->update("step", step_queue_name);
   } else
     ROS_ERROR("Can not connect to middleware");
 }
