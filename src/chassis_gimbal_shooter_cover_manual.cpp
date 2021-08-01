@@ -11,13 +11,20 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("cover_calibration", rpc_value);
   cover_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  ctrl_z_event_.setRising(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this));
+  ctrl_z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this),
+                        boost::bind(&ChassisGimbalShooterCoverManual::ctrlZRelease, this));
   ctrl_q_event_.setRising(boost::bind(&ChassisGimbalShooterCoverManual::ctrlQPress, this));
 }
 
 void ChassisGimbalShooterCoverManual::run() {
   ChassisGimbalShooterManual::run();
   cover_calibration_->update(ros::Time::now());
+}
+
+void ChassisGimbalShooterCoverManual::updatePc() {
+  ChassisGimbalShooterManual::updatePc();
+  gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x * gimbal_scale_,
+                              cover_command_sender_->getState() ? 0.0 : data_.dbus_data_.m_y * gimbal_scale_);
 }
 
 void ChassisGimbalShooterCoverManual::checkKeyboard() {
@@ -67,22 +74,16 @@ void ChassisGimbalShooterCoverManual::rightSwitchUpRise() {
 }
 
 void ChassisGimbalShooterCoverManual::ctrlZPress() {
-  if (!cover_command_sender_->getState()) {
-    geometry_msgs::PointStamped aim_point{};
-    aim_point.header.frame_id = "yaw";
-    aim_point.header.stamp = ros::Time(0);
-    aim_point.point.x = 1000;
-    aim_point.point.y = 0;
-    aim_point.point.z = 0;
-    gimbal_cmd_sender_->setAimPoint(aim_point);
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
-    if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO) {
-      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-      vel_cmd_sender_->setZero();
-    }
-  } else
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+  geometry_msgs::PointStamped aim_point{};
+  aim_point.header.frame_id = "yaw";
+  aim_point.header.stamp = ros::Time(0);
+  aim_point.point.x = 1000;
+  aim_point.point.y = 0;
+  aim_point.point.z = 0;
+  gimbal_cmd_sender_->setAimPoint(aim_point);
+  gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   cover_command_sender_->getState() ? cover_command_sender_->off() : cover_command_sender_->on();
 }
 
