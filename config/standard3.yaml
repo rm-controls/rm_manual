@@ -44,6 +44,7 @@ rm_manual:
     off_pos: 0.0
   detection_switch:
     fail_limit: 10
+    service_name: "/detection_nodelet/status_switch"
 
   controllers_list:
     state_controllers:
