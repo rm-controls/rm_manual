@@ -14,7 +14,7 @@ class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual {
  protected:
   void checkKeyboard() override;
   void sendCommand(const ros::Time &time) override;
-  void shooterOutputOn() override;
+  void gimbalOutputOn() override;
   void remoteControlTurnOff() override;
   void remoteControlTurnOn() override;
   void drawUi(const ros::Time &time) override;

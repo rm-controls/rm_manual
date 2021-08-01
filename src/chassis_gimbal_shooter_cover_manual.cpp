@@ -31,8 +31,8 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time &time) {
   cover_command_sender_->sendCommand(time);
 }
 
-void ChassisGimbalShooterCoverManual::shooterOutputOn() {
-  ChassisGimbalShooterManual::shooterOutputOn();
+void ChassisGimbalShooterCoverManual::gimbalOutputOn() {
+  ChassisGimbalShooterManual::gimbalOutputOn();
   cover_calibration_->reset();
 }
 
