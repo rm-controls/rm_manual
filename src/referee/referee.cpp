@@ -356,7 +356,6 @@ void SuperCapacitor::read(const std::vector<uint8_t> &rx_buffer) {
   if (data_.buffer_power_ >= 25.) data_.buffer_power_ = 25.;
   if (data_.buffer_power_ <= 0.) data_.buffer_power_ = 0.;
   if (data_.cap_power_ >= 1.) data_.cap_power_ = 1.;
-  if (data_.cap_power_ <= 0.) data_.cap_power_ = 0.;
   if (ros::Time::now() - last_get_data_ > ros::Duration(0.1)) data_.is_online_ = false;
 }
 

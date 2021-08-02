@@ -112,6 +112,13 @@ rm_manual:
         config: { start_position: [ 1300, 700 ], size: 15, width: 2, title: "stone:", color: "yellow" }
       - name: "card"
         config: { start_position: [ 1300, 650 ], size: 15, width: 2, title: "card: ", color: "green" }
+    fixed:
+      - name: "stone_left"
+        config: { type: "line", width: 2, color: "cyan",
+                  start_position: [ 780, 401 ], end_position: [ 858, 571 ] }
+      - name: "stone_right"
+        config: { type: "line", width: 2, color: "cyan",
+                  start_position: [ 1124, 386 ], end_position: [ 1140, 509 ] }
     time_change:
       - name: "effort"
         config: { start_position: [ 1500, 550 ], size: 15, width: 2, delay: 0.8 }
