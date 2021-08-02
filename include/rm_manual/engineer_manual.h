@@ -71,7 +71,7 @@ class EngineerManual : public ChassisGimbalManual {
     trigger_change_ui_->update("step", prefix_ + target_);
   }
   void ctrlDPress() {
-    target_ = "DRAG_";
+    prefix_ = "DRAG_";
     trigger_change_ui_->update("step", prefix_ + target_);
   }
   void ctrlQPress() {
@@ -91,7 +91,6 @@ class EngineerManual : public ChassisGimbalManual {
     trigger_change_ui_->update("step", prefix_ + target_);
   }
 
-
   void shiftWPress() {
     runStepQueue("GIMBAL_FORWARD_UPPER");
     trigger_change_ui_->update("step", "GIMBAL_FORWARD_UPPER");
@@ -100,6 +99,7 @@ class EngineerManual : public ChassisGimbalManual {
     runStepQueue("GIMBAL_FORWARD_LOWER");
     trigger_change_ui_->update("step", "GIMBAL_FORWARD_LOWER");
   }
+  void shiftCPress() { power_on_calibration_->reset(); }
 
   void cPress();
 
@@ -111,7 +111,7 @@ class EngineerManual : public ChassisGimbalManual {
   rm_common::JointPositionBinaryCommandSender *mast_command_sender_, *card_command_sender_;
   InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_c_event_, ctrl_r_event_, ctrl_f_event_,
       ctrl_z_event_, ctrl_b_event_, ctrl_x_event_, ctrl_v_event_, ctrl_g_event_, ctrl_s_event_, ctrl_d_event_,
-      ctrl_q_event_, ctrl_w_event_, ctrl_e_event_, shift_w_event_, shift_s_event_, c_event_;
+      ctrl_q_event_, ctrl_w_event_, ctrl_e_event_, shift_w_event_, shift_s_event_, shift_c_event_, c_event_;
 };
 
 }
