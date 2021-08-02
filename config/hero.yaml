@@ -84,7 +84,7 @@ rm_manual:
                   start_position: [ 1000, 393 ], content: "5.3m" }
       - name: "5.3m_line"
         config: { type: "line", width: 2, color: "orange",
-                  start_position: [ 954, 391 ], end_position: [ 976, 391 ] }
+                  start_position: [ 949, 391 ], end_position: [ 971, 391 ] }
       - name: "mid"
         config: { type: "line", width: 2, color: "yellow",
                   start_position: [ 960, 302 ], end_position: [ 960, 540 ] }
