@@ -41,6 +41,7 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
 
   shift_w_event_.setRising(boost::bind(&EngineerManual::shiftWPress, this));
   shift_s_event_.setRising(boost::bind(&EngineerManual::shiftSPress, this));
+  shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
 
   c_event_.setRising(boost::bind(&EngineerManual::cPress, this));
 }
@@ -70,6 +71,7 @@ void EngineerManual::checkKeyboard() {
 
   shift_w_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_w);
   shift_s_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_s);
+  shift_x_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_x);
 
   c_event_.update(data_.dbus_data_.key_c & !data_.dbus_data_.key_ctrl);
 }
