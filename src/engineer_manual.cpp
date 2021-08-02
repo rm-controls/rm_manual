@@ -73,7 +73,7 @@ void EngineerManual::checkKeyboard() {
   shift_s_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_s);
   shift_c_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_c);
 
-  c_event_.update(data_.dbus_data_.key_c & !data_.dbus_data_.key_ctrl);
+  c_event_.update(data_.dbus_data_.key_c & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
 }
 
 void EngineerManual::updateRc() {
