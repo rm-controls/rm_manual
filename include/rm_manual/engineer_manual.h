@@ -101,16 +101,14 @@ class EngineerManual : public ChassisGimbalManual {
   }
   void shiftCPress() { power_on_calibration_->reset(); }
   void shiftXPress() {
-    data_.referee_.sendInteractiveData(0x0200, data_.referee_.referee_data_.robot_color_ == "blue"
-                                               ? rm_common::RobotId::BLUE_SENTRY : rm_common::RED_SENTRY,
-                                       data_.referee_.referee_data_.interactive_data.data_ == 0 ? 1 : 0);
+    sentry_mode_ = sentry_mode_ == 0 ? 1 : 0;
   }
 
   void cPress();
 
   enum { MANUAL, MIDDLEWARE };
   std::string target_, prefix_;
-  int operating_mode_;
+  int operating_mode_, sentry_mode_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *mast_calibration_{}, *arm_calibration_{};
   rm_common::JointPositionBinaryCommandSender *mast_command_sender_, *card_command_sender_;

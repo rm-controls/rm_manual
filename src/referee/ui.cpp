@@ -86,6 +86,9 @@ void TriggerChangeUi::updateConfig(const std::string &name, Graph *graph, uint8_
   } else if (name == "card") {
     if (main_flag) graph->setContent("on");
     else graph->setContent("off");
+  } else if (name == "sentry") {
+    if (main_mode == 0) graph->setContent("stop");
+    else graph->setContent("move");
   } else if (name == "exposure") { graph->setContent(getExposureState(main_mode)); }
 }
 
