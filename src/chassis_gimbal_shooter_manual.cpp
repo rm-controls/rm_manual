@@ -118,6 +118,17 @@ void ChassisGimbalShooterManual::updateRc() {
   }
 }
 
+void ChassisGimbalShooterManual::updatePc() {
+  ChassisGimbalManual::updatePc();
+  if (chassis_cmd_sender_->power_limit_->getState() != rm_common::PowerLimit::CHARGE) {
+    if (!data_.dbus_data_.key_shift && chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW && std::sqrt(
+        std::pow(vel_cmd_sender_->getMsg()->linear.x, 2) + std::pow(vel_cmd_sender_->getMsg()->linear.y, 2)) > 0.0)
+      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    else if (data_.referee_.referee_data_.capacity_data.chassis_power_ < 1.0)
+      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
+  }
+}
+
 void ChassisGimbalShooterManual::rightSwitchDownRise() {
   ChassisGimbalManual::rightSwitchDownRise();
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
