@@ -2,11 +2,10 @@
 
 ## Overview
 
-This is a package about the referee system, including the sending and receiving of various data and the drawing of the 
+This is a package about the referee system, including the sending and receiving of various data and the drawing of the
 operation auxiliary interface
 
 **Keywords:** referee, auxiliary, ROS
-
 
 ### License
 
@@ -16,8 +15,8 @@ The source code is released under a [BSD 3-Clause license](LICENSE).
 Affiliation: [Dynamicx]()<br />
 Maintainer: QiayuanLiao, liaoqiayuan@gmail.com**
 
-The rm_base package has been tested under [ROS] Melodic and Noetic on respectively 18.04 and 20.04. This is research
-code, expect that it changes often and any fitness for a particular purpose is disclaimed.
+The rm_hw package has been tested under [ROS] Melodic and Noetic on respectively 18.04 and 20.04. This is research code,
+expect that it changes often and any fitness for a particular purpose is disclaimed.
 
 [![Build Status](http://rsl-ci.ethz.ch/buildStatus/icon?job=ros_best_practices)](http://rsl-ci.ethz.ch/job/ros_best_practices/)
 
@@ -157,18 +156,17 @@ Config file rm_manual/config
 
 * **engineer.yaml** Shortly explain the content of this config file
 
-
 ## Launch files
 
 * **launch_file_1.launch:** shortly explain what is launched (e.g standard simulation, simulation with gdb,...)
 
   Argument set 1
 
-    - **`argument_1`** Short description (e.g. as commented in launch file). Default: `default_value`.
+  - **`argument_1`** Short description (e.g. as commented in launch file). Default: `default_value`.
 
   Argument set 2
 
-    - **`...`**
+  - **`...`**
 
 * **...**
 
