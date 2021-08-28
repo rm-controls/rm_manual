@@ -1,6 +1,6 @@
 <launch>
 
-  <rosparam file="$(find rm_base)/config/actuator_coefficient.yaml" command="load" ns="rm_base"/>
+  <rosparam file="$(find rm_hw)/config/actuator_coefficient.yaml" command="load" ns="rm_hw"/>
   <rosparam file="$(find rm_chassis_controllers)/test/config/test_standard_chassis.yaml" command="load"/>
 
   <rosparam file="$(find rm_chassis_controllers)/test/urdf/test_standard_chassis.xacro" command="load"
@@ -15,13 +15,13 @@
   <node name="controller_spawner" pkg="controller_manager" type="spawner"
         respawn="false"
         output="screen" args="
-      rm_base/robot_state_controller
-      rm_base/joint_state_controller
-      rm_base/chassis_standard_controller
+      rm_hw/robot_state_controller
+      rm_hw/joint_state_controller
+      rm_hw/chassis_standard_controller
 "/>
 
-    <node name="rm_base" pkg="rm_base" type="rm_base" respawn="false"/>
-    <node name="dbus_node" pkg="rm_base" type="dbus_node" respawn="false"/>
+    <node name="rm_hw" pkg="rm_hw" type="rm_hw" respawn="false"/>
+    <node name="dbus_node" pkg="rm_hw" type="dbus_node" respawn="false"/>
     <node name="rm_fsm" pkg="rm_fsm" type="rm_fsm" respawn="false"/>
 
 </launch>
