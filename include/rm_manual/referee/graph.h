@@ -5,14 +5,14 @@
 #ifndef RM_MANUAL_INCLUDE_GRAPH_H_
 #define RM_MANUAL_INCLUDE_GRAPH_H_
 
-#include "rm_manual/referee/referee.h"
+#include <rm_common/referee/referee.h>
 #include <rm_common/ros_utilities.h>
 #include <rm_common/referee/protocol.h>
 
 namespace rm_manual {
 class Graph {
  public:
-  explicit Graph(const XmlRpc::XmlRpcValue &config, Referee &referee, int id);
+  explicit Graph(const XmlRpc::XmlRpcValue &config, rm_common::Referee &referee, int id);
   void display(bool priority_flag = false);
   void displayTwice(bool priority_flag = false);
   void display(const ros::Time &time);
@@ -27,7 +27,7 @@ class Graph {
   void initPosition(XmlRpc::XmlRpcValue value, std::vector<std::pair<int, int>> &positions);
   rm_common::GraphColor getColor(const std::string &color);
   rm_common::GraphType getType(const std::string &type);
-  Referee &referee_;
+  rm_common::Referee &referee_;
   ros::Time last_time_ = ros::Time::now();
   ros::Duration delay_ = ros::Duration(0.);
   rm_common::GraphConfig config_{}, last_config_{};
