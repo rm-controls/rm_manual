@@ -19,12 +19,23 @@ ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh), controller_man
 
 void ManualBase::run() {
   ros::Time time = ros::Time::now();
+  try {
+    if (data_.serial_.available()) {
+      data_.referee_.rx_len_ = (int) data_.serial_.available();
+      data_.serial_.read(data_.referee_.rx_buffer_, data_.referee_.rx_len_);
+    }
+  } catch (serial::IOException &e) {}
   data_.referee_.read();
   checkReferee();
   checkSwitch(time);
   sendCommand(time);
   drawUi(time);
   controller_manager_.update();
+  try {
+    data_.serial_.write(data_.referee_.tx_buffer_, data_.referee_.tx_len_);
+  }
+  catch (serial::PortNotOpenedException &e) {}
+  data_.referee_.clearBuffer();
 }
 
 void ManualBase::checkReferee() {

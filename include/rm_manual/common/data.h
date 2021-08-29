@@ -6,6 +6,7 @@
 #define RM_MANUAL_COMMON_DATA_H_
 
 #include <ros/ros.h>
+#include <serial/serial.h>
 #include <rm_common/decision/target_cost_function.h>
 #include <rm_common/referee/referee.h>
 #include <nav_msgs/Odometry.h>
@@ -34,7 +35,7 @@ class Data {
     ros::NodeHandle root_nh;
     referee_.referee_pub_ = root_nh.advertise<rm_msgs::Referee>("/referee", 1);
     referee_.super_capacitor_pub_ = root_nh.advertise<rm_msgs::SuperCapacitor>("/super_capacitor", 1);
-    referee_.init();
+    initSerial();
   }
 
   void jointStateCallback(const sensor_msgs::JointState::ConstPtr &joint_state) { joint_state_ = *joint_state; }
@@ -43,6 +44,19 @@ class Data {
   void trackCallback(const rm_msgs::TrackDataArray::ConstPtr &data) { track_data_array_ = *data; }
   void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr &data) { gimbal_des_error_ = *data; }
   void odomCallback(const nav_msgs::Odometry::ConstPtr &data) { odom_ = *data; }
+  void initSerial() {
+    serial::Timeout timeout = serial::Timeout::simpleTimeout(50);
+    serial_.setPort("/dev/usbReferee");
+    serial_.setBaudrate(115200);
+    serial_.setTimeout(timeout);
+    if (serial_.isOpen()) return;
+    try {
+      serial_.open();
+    }
+    catch (serial::IOException &e) {
+      ROS_ERROR("Cannot open referee port");
+    }
+  }
 
   ros::Subscriber joint_state_sub_;
   ros::Subscriber actuator_state_sub_;
@@ -59,6 +73,7 @@ class Data {
   nav_msgs::Odometry odom_;
 
   rm_common::Referee referee_;
+  serial::Serial serial_;
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;

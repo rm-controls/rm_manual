@@ -3,7 +3,7 @@
 //
 #include "rm_manual/referee/graph.h"
 namespace rm_manual {
-Graph::Graph(const XmlRpc::XmlRpcValue &config, Referee &referee, int id) : referee_(referee) {
+Graph::Graph(const XmlRpc::XmlRpcValue &config, rm_common::Referee &referee, int id) : referee_(referee) {
   config_.graphic_id_[0] = (uint8_t) (id >> 0 & 0xFF);
   config_.graphic_id_[1] = (uint8_t) (id >> 8 & 0xFF);
   config_.graphic_id_[2] = (uint8_t) (id >> 16 & 0xFF);
