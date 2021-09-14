@@ -95,6 +95,3 @@ void ManualBase::robotDie() {
 }
 
 }
-
-
-
