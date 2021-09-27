@@ -80,7 +80,6 @@ void ChassisGimbalShooterCoverManual::ctrlZPress() {
   aim_point.point.x = 1;
   aim_point.point.y = 0;
   aim_point.point.z = 0;
-  gimbal_cmd_sender_->setAimPoint(aim_point);
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
