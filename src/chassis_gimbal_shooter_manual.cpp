@@ -7,22 +7,30 @@
 namespace rm_manual {
 ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle &nh) : ChassisGimbalManual(nh) {
   ros::NodeHandle shooter_nh(nh, "shooter");
-  shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, data_.referee_.referee_data_);
+  shooter_cmd_sender_ = new rm_common::ShooterCommandSender(
+      shooter_nh, data_.referee_.referee_data_);
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
-  switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
+  switch_detection_srv_ =
+      new rm_common::SwitchDetectionCaller(detection_switch_nh);
   XmlRpc::XmlRpcValue rpc_value;
-  nh.getParam("trigger_calibration", rpc_value);
-  trigger_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  shooter_power_on_event_.setRising(boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
-  self_inspection_event_.setRising(boost::bind(&ChassisGimbalShooterManual::selfInspectionStart, this));
-  game_start_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gameStart, this));
-  left_switch_up_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::leftSwitchUpOn, this, _1));
+  nh.getParam("shooter_calibration", rpc_value);
+  shooter_calibration_ =
+      new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  shooter_power_on_event_.setRising(
+      boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
+  self_inspection_event_.setRising(
+      boost::bind(&ChassisGimbalShooterManual::selfInspectionStart, this));
+  game_start_event_.setRising(
+      boost::bind(&ChassisGimbalShooterManual::gameStart, this));
+  left_switch_up_event_.setActiveHigh(
+      boost::bind(&ChassisGimbalShooterManual::leftSwitchUpOn, this, _1));
   e_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ePress, this));
   g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
   q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::qPress, this));
   f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::fPress, this));
   b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::bPress, this));
-  ctrl_c_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlCPress, this));
+  ctrl_c_event_.setRising(
+      boost::bind(&ChassisGimbalShooterManual::ctrlCPress, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this));
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
@@ -37,7 +45,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle &nh) : Ch
 void ChassisGimbalShooterManual::run() {
   ChassisGimbalManual::run();
   switch_detection_srv_->setEnemyColor(data_.referee_.referee_data_);
-  trigger_calibration_->update(ros::Time::now());
+  shooter_calibration_->update(ros::Time::now());
 }
 
 void ChassisGimbalShooterManual::checkReferee() {
@@ -71,12 +79,12 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time &time) {
 void ChassisGimbalShooterManual::remoteControlTurnOff() {
   ChassisGimbalManual::remoteControlTurnOff();
   shooter_cmd_sender_->setZero();
-  trigger_calibration_->stop();
+  shooter_calibration_->stop();
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOn() {
   ChassisGimbalManual::remoteControlTurnOn();
-  trigger_calibration_->stopController();
+  shooter_calibration_->stopController();
 }
 
 void ChassisGimbalShooterManual::robotDie() {
@@ -92,7 +100,7 @@ void ChassisGimbalShooterManual::chassisOutputOn() {
 void ChassisGimbalShooterManual::shooterOutputOn() {
   ChassisGimbalManual::shooterOutputOn();
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
-  trigger_calibration_->reset();
+  shooter_calibration_->reset();
 }
 
 void ChassisGimbalShooterManual::drawUi(const ros::Time &time) {

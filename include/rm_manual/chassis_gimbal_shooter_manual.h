@@ -12,7 +12,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
  public:
   explicit ChassisGimbalShooterManual(ros::NodeHandle &nh);
   void run() override;
- protected:
+
+protected:
   void checkReferee() override;
   void checkKeyboard() override;
   void updateRc() override;
@@ -20,8 +21,8 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
   void sendCommand(const ros::Time &time) override;
   void chassisOutputOn() override;
   void shooterOutputOn() override;
-  void selfInspectionStart() { trigger_calibration_->reset(); };
-  void gameStart() { trigger_calibration_->reset(); };
+  void selfInspectionStart() { shooter_calibration_->reset(); };
+  void gameStart() { shooter_calibration_->reset(); };
   void remoteControlTurnOff() override;
   void remoteControlTurnOn() override;
   void robotDie() override;
@@ -58,7 +59,7 @@ class ChassisGimbalShooterManual : public ChassisGimbalManual {
       mouse_right_event_;
   rm_common::ShooterCommandSender *shooter_cmd_sender_{};
   rm_common::SwitchDetectionCaller *switch_detection_srv_{};
-  rm_common::CalibrationQueue *trigger_calibration_;
+  rm_common::CalibrationQueue *shooter_calibration_;
 };
 }
 

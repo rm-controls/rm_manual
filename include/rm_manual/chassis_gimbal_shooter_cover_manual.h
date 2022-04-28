@@ -26,7 +26,7 @@ class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual {
   void ctrlZRelease() { gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE); };
   void ctrlQPress();
   rm_common::JointPositionBinaryCommandSender *cover_command_sender_{};
-  rm_common::CalibrationQueue *cover_calibration_;
+  rm_common::CalibrationQueue *gimbal_calibration_;
   InputEvent ctrl_z_event_, ctrl_q_event_;
 };
 }
