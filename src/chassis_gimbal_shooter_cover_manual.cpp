@@ -7,6 +7,7 @@
 namespace rm_manual {
 ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle &nh) : ChassisGimbalShooterManual(nh) {
   ros::NodeHandle cover_nh(nh, "cover");
+  nh.param("supply_frame", supply_frame_);
   cover_command_sender_ =
       new rm_common::JointPositionBinaryCommandSender(cover_nh);
   XmlRpc::XmlRpcValue rpc_value;
@@ -38,6 +39,32 @@ void ChassisGimbalShooterCoverManual::checkKeyboard() {
 }
 
 void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time &time) {
+  if (supply_) {
+    chassis_cmd_sender_->getMsg()->follow_source_frame = supply_frame_;
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    chassis_cmd_sender_->power_limit_->updateState(
+        rm_common::PowerLimit::NORMAL);
+    double roll, pitch, yaw;
+    quatToRPY(data_.tf_buffer_
+                  .lookupTransform("base_link", supply_frame_, ros::Time(0))
+                  .transform.rotation,
+              roll, pitch, yaw);
+    if (std::abs(yaw) < 0.05)
+      cover_command_sender_->on();
+  } else {
+    cover_command_sender_->off();
+    double roll, pitch, yaw;
+    quatToRPY(
+        data_.tf_buffer_.lookupTransform("base_link", "cover", ros::Time(0))
+            .transform.rotation,
+        roll, pitch, yaw);
+    if (std::abs(pitch) > 0.05) {
+      chassis_cmd_sender_->getMsg()->follow_source_frame = supply_frame_;
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+      chassis_cmd_sender_->power_limit_->updateState(
+          rm_common::PowerLimit::NORMAL);
+    }
+  }
   ChassisGimbalShooterManual::sendCommand(time);
   cover_command_sender_->sendCommand(time);
 }
@@ -64,30 +91,21 @@ void ChassisGimbalShooterCoverManual::drawUi(const ros::Time &time) {
 
 void ChassisGimbalShooterCoverManual::rightSwitchDownRise() {
   ChassisGimbalShooterManual::rightSwitchDownRise();
-  cover_command_sender_->on();
+  supply_ = true;
 }
 
 void ChassisGimbalShooterCoverManual::rightSwitchMidRise() {
   ChassisGimbalShooterManual::rightSwitchMidRise();
-  cover_command_sender_->off();
+  supply_ = false;
 }
 
 void ChassisGimbalShooterCoverManual::rightSwitchUpRise() {
   ChassisGimbalShooterManual::rightSwitchUpRise();
-  cover_command_sender_->off();
+  supply_ = false;
 }
 
 void ChassisGimbalShooterCoverManual::ctrlZPress() {
-  geometry_msgs::PointStamped aim_point{};
-  aim_point.header.frame_id = "yaw";
-  aim_point.header.stamp = ros::Time(0);
-  aim_point.point.x = 1;
-  aim_point.point.y = 0;
-  aim_point.point.z = 0;
-  gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-  cover_command_sender_->getState() ? cover_command_sender_->off() : cover_command_sender_->on();
+  supply_ = !cover_command_sender_->getState();
 }
 
 void ChassisGimbalShooterCoverManual::ctrlQPress() {

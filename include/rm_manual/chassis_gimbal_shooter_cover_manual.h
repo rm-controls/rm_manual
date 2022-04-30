@@ -8,10 +8,11 @@
 
 namespace rm_manual {
 class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual {
- public:
+public:
   explicit ChassisGimbalShooterCoverManual(ros::NodeHandle &nh);
   void run() override;
- protected:
+
+protected:
   void updatePc() override;
   void checkKeyboard() override;
   void sendCommand(const ros::Time &time) override;
@@ -23,11 +24,15 @@ class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual {
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
   void ctrlZPress();
-  void ctrlZRelease() { gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE); };
+  void ctrlZRelease() {
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+  };
   void ctrlQPress();
   rm_common::JointPositionBinaryCommandSender *cover_command_sender_{};
   rm_common::CalibrationQueue *gimbal_calibration_;
   InputEvent ctrl_z_event_, ctrl_q_event_;
+  std::string supply_frame_;
+  bool supply_;
 };
 }
 
