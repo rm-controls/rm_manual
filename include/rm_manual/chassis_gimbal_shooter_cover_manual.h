@@ -18,7 +18,6 @@ class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual {
   void gimbalOutputOn() override;
   void remoteControlTurnOff() override;
   void remoteControlTurnOn() override;
-  void drawUi(const ros::Time &time) override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;

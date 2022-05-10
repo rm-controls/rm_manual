@@ -16,7 +16,6 @@ class ChassisGimbalManual : public ManualBase {
   void updatePc() override;
   void checkReferee() override;
   void checkKeyboard() override;
-  void drawUi(const ros::Time &time) override;
   void remoteControlTurnOff() override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
@@ -40,10 +39,6 @@ class ChassisGimbalManual : public ManualBase {
   rm_common::ChassisCommandSender *chassis_cmd_sender_{};
   rm_common::Vel2DCommandSender *vel_cmd_sender_{};
   rm_common::GimbalCommandSender *gimbal_cmd_sender_{};
-  TimeChangeUi *time_change_ui_{};
-  FlashUi *flash_ui_{};
-  TriggerChangeUi *trigger_change_ui_{};
-  FixedUi *fixed_ui_{};
   double x_scale_{}, y_scale_{};
   double gimbal_scale_{1.};
   double gyro_move_reduction_{1.};

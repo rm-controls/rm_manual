@@ -95,21 +95,6 @@ void ChassisGimbalShooterManual::shooterOutputOn() {
   trigger_calibration_->reset();
 }
 
-void ChassisGimbalShooterManual::drawUi(const ros::Time &time) {
-  ChassisGimbalManual::drawUi(time);
-  if (data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::BLUE_HERO
-      && data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::RED_HERO)
-    trigger_change_ui_->update("target", switch_detection_srv_->getTarget(),
-                               shooter_cmd_sender_->getBurstMode(), switch_detection_srv_->getArmorTarget(),
-                               switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
-  else
-    trigger_change_ui_->update("target", gimbal_cmd_sender_->getEject() ? 1 : 0,
-                               shooter_cmd_sender_->getBurstMode(), switch_detection_srv_->getArmorTarget(),
-                               switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
-  trigger_change_ui_->update("exposure", switch_detection_srv_->getExposureLevel(), false);
-  fixed_ui_->update();
-}
-
 void ChassisGimbalShooterManual::updateRc() {
   ChassisGimbalManual::updateRc();
   if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP) {

@@ -14,11 +14,6 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle &nh) : ManualBase(nh) {
     ROS_ERROR("Gyro move reduction no defined (namespace: %s)", nh.getNamespace().c_str());
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh, data_.referee_.referee_data_);
-  ros::NodeHandle ui_nh(nh, "ui");
-  trigger_change_ui_ = new TriggerChangeUi(ui_nh, data_);
-  time_change_ui_ = new TimeChangeUi(ui_nh, data_);
-  flash_ui_ = new FlashUi(ui_nh, data_);
-  fixed_ui_ = new FixedUi(ui_nh, data_);
 
   chassis_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::chassisOutputOn, this));
   gimbal_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::gimbalOutputOn, this));
@@ -83,25 +78,6 @@ void ChassisGimbalManual::checkKeyboard() {
   mouse_mid_event_.update(data_.dbus_data_.m_z != 0.);
 }
 
-void ChassisGimbalManual::drawUi(const ros::Time &time) {
-  ManualBase::drawUi(time);
-  time_change_ui_->update("capacitor", time);
-  if (data_.dbus_data_.s_l == rm_msgs::DbusData::MID && data_.dbus_data_.s_r == rm_msgs::DbusData::UP) {
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::TEST);
-    trigger_change_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode, false, 1, false);
-  } else {
-    trigger_change_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode,
-                               chassis_cmd_sender_->power_limit_->getState() == rm_common::PowerLimit::BURST, 0,
-                               chassis_cmd_sender_->power_limit_->getState() == rm_common::PowerLimit::CHARGE);
-  }
-  flash_ui_->update("spin", time, chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO
-      && vel_cmd_sender_->getMsg()->angular.z != 0.);
-  flash_ui_->update("armor0", time);
-  flash_ui_->update("armor1", time);
-  flash_ui_->update("armor2", time);
-  flash_ui_->update("armor3", time);
-}
-
 void ChassisGimbalManual::remoteControlTurnOff() {
   ManualBase::remoteControlTurnOff();
   vel_cmd_sender_->setZero();
@@ -128,9 +104,6 @@ void ChassisGimbalManual::rightSwitchUpRise() {
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   vel_cmd_sender_->setZero();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-  trigger_change_ui_->add();
-  time_change_ui_->add();
-  fixed_ui_->add();
 }
 
 void ChassisGimbalManual::leftSwitchMidFall() {

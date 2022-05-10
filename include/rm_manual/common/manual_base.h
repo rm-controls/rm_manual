@@ -7,7 +7,6 @@
 
 #include "rm_manual/common/data.h"
 #include "rm_manual/common/input_event.h"
-#include "rm_manual/referee/ui.h"
 
 #include <iostream>
 #include <queue>
@@ -32,7 +31,6 @@ class ManualBase {
   virtual void updateRc();
   virtual void updatePc();
   virtual void sendCommand(const ros::Time &time) = 0;
-  virtual void drawUi(const ros::Time &time) { data_.referee_.sendUi(time); }
 
   // Referee
   virtual void chassisOutputOn() { ROS_INFO("Chassis output ON"); }

@@ -53,11 +53,6 @@ void ChassisGimbalShooterCoverManual::remoteControlTurnOn() {
   cover_calibration_->stopController();
 }
 
-void ChassisGimbalShooterCoverManual::drawUi(const ros::Time &time) {
-  ChassisGimbalShooterManual::drawUi(time);
-  flash_ui_->update("cover", time, !cover_command_sender_->getState());
-}
-
 void ChassisGimbalShooterCoverManual::rightSwitchDownRise() {
   ChassisGimbalShooterManual::rightSwitchDownRise();
   cover_command_sender_->on();

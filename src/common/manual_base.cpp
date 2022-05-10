@@ -29,7 +29,6 @@ void ManualBase::run() {
   checkReferee();
   checkSwitch(time);
   sendCommand(time);
-  drawUi(time);
   controller_manager_.update();
   try {
     data_.serial_.write(data_.referee_.tx_buffer_, data_.referee_.tx_len_);
