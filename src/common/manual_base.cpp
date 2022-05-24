@@ -3,9 +3,10 @@
 //
 
 #include "rm_manual/common/manual_base.h"
-namespace rm_manual {
-
-ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh), controller_manager_(nh) {
+namespace rm_manual
+{
+ManualBase::ManualBase(ros::NodeHandle& nh) : data_(nh), nh_(nh), controller_manager_(nh)
+{
   controller_manager_.startStateControllers();
   right_switch_down_event_.setRising(boost::bind(&ManualBase::rightSwitchDownRise, this));
   right_switch_mid_event_.setRising(boost::bind(&ManualBase::rightSwitchMidRise, this));
@@ -17,38 +18,51 @@ ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh), controller_man
   robot_hp_event_.setEdge(boost::bind(&ManualBase::robotRevive, this), boost::bind(&ManualBase::robotDie, this));
 }
 
-void ManualBase::run() {
+void ManualBase::run()
+{
   ros::Time time = ros::Time::now();
-  try {
-    if (data_.serial_.available()) {
-      data_.referee_.rx_len_ = (int) data_.serial_.available();
+  try
+  {
+    if (data_.serial_.available())
+    {
+      data_.referee_.rx_len_ = (int)data_.serial_.available();
       data_.serial_.read(data_.referee_.rx_buffer_, data_.referee_.rx_len_);
     }
-  } catch (serial::IOException &e) {}
+  }
+  catch (serial::IOException& e)
+  {
+  }
   data_.referee_.read();
   checkReferee();
   checkSwitch(time);
   sendCommand(time);
   drawUi(time);
   controller_manager_.update();
-  try {
+  try
+  {
     data_.serial_.write(data_.referee_.tx_buffer_, data_.referee_.tx_len_);
   }
-  catch (serial::PortNotOpenedException &e) {}
+  catch (serial::PortNotOpenedException& e)
+  {
+  }
   data_.referee_.clearBuffer();
 }
 
-void ManualBase::checkReferee() {
+void ManualBase::checkReferee()
+{
   robot_hp_event_.update(data_.referee_.referee_data_.game_robot_status_.remain_hp_ != 0);
 }
 
-void ManualBase::checkSwitch(const ros::Time &time) {
-  if (remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() > 0.3) {
+void ManualBase::checkSwitch(const ros::Time& time)
+{
+  if (remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() > 0.3)
+  {
     ROS_INFO("Remote controller OFF");
     remoteControlTurnOff();
     remote_is_open_ = false;
   }
-  if (!remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() < 0.3) {
+  if (!remote_is_open_ && (time - data_.dbus_data_.stamp).toSec() < 0.3)
+  {
     ROS_INFO("Remote controller ON");
     remoteControlTurnOn();
     remote_is_open_ = true;
@@ -62,36 +76,44 @@ void ManualBase::checkSwitch(const ros::Time &time) {
     updatePc();
 }
 
-void ManualBase::updateRc() {
+void ManualBase::updateRc()
+{
   left_switch_down_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN);
   left_switch_mid_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::MID);
   left_switch_up_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::UP);
 }
 
-void ManualBase::updatePc() {
+void ManualBase::updatePc()
+{
   checkKeyboard();
 }
 
-void ManualBase::remoteControlTurnOff() {
+void ManualBase::remoteControlTurnOff()
+{
   controller_manager_.stopMainControllers();
   controller_manager_.stopCalibrationControllers();
   state_ = PASSIVE;
 }
 
-void ManualBase::remoteControlTurnOn() {
+void ManualBase::remoteControlTurnOn()
+{
   controller_manager_.startMainControllers();
   state_ = IDLE;
 }
 
-void ManualBase::robotRevive() {
-  if (remote_is_open_) controller_manager_.startMainControllers();
+void ManualBase::robotRevive()
+{
+  if (remote_is_open_)
+    controller_manager_.startMainControllers();
 }
 
-void ManualBase::robotDie() {
-  if (remote_is_open_) {
+void ManualBase::robotDie()
+{
+  if (remote_is_open_)
+  {
     controller_manager_.stopMainControllers();
     controller_manager_.stopCalibrationControllers();
   }
 }
 
-}
+}  // namespace rm_manual

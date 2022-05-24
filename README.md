@@ -139,5 +139,3 @@ Run the main node with
 Config file rm_manual/config
 
 * **engineer.yaml** Shortly explain the content of this config file
-
-
