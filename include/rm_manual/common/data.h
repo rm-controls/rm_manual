@@ -7,13 +7,15 @@
 
 #include <ros/ros.h>
 #include <serial/serial.h>
-#include <rm_common/decision/target_cost_function.h>
 #include <rm_common/referee/referee.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/JointState.h>
 #include <rm_msgs/ActuatorState.h>
 #include <rm_msgs/DbusData.h>
 #include <rm_msgs/GimbalDesError.h>
+#include <rm_msgs/TrackData.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
 
 namespace rm_manual
 {
@@ -27,8 +29,7 @@ public:
     actuator_state_sub_ =
         nh.subscribe<rm_msgs::ActuatorState>("/actuator_states", 10, &Data::actuatorStateCallback, this);
     dbus_sub_ = nh.subscribe<rm_msgs::DbusData>("/dbus_data", 10, &Data::dbusDataCallback, this);
-    track_sub_ =
-        nh.subscribe<rm_msgs::TrackDataArray>("/controllers/gimbal_controller/track", 10, &Data::trackCallback, this);
+    track_sub_ = nh.subscribe<rm_msgs::TrackData>("/track", 10, &Data::trackCallback, this);
     gimbal_des_error_sub_ = nh.subscribe<rm_msgs::GimbalDesError>("/controllers/gimbal_controller/error_des", 10,
                                                                   &Data::gimbalDesErrorCallback, this);
     odom_sub_ = nh.subscribe<nav_msgs::Odometry>("/odom", 10, &Data::odomCallback, this);
@@ -51,9 +52,9 @@ public:
   {
     dbus_data_ = *data;
   }
-  void trackCallback(const rm_msgs::TrackDataArray::ConstPtr& data)
+  void trackCallback(const rm_msgs::TrackData::ConstPtr& data)
   {
-    track_data_array_ = *data;
+    track_data_ = *data;
   }
   void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
   {
@@ -91,7 +92,7 @@ public:
   sensor_msgs::JointState joint_state_;
   rm_msgs::ActuatorState actuator_state_;
   rm_msgs::DbusData dbus_data_;
-  rm_msgs::TrackDataArray track_data_array_;
+  rm_msgs::TrackData track_data_;
   rm_msgs::GimbalDesError gimbal_des_error_;
   nav_msgs::Odometry odom_;
 

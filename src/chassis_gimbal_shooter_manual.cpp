@@ -126,10 +126,7 @@ void ChassisGimbalShooterManual::updateRc()
 {
   ChassisGimbalManual::updateRc();
   if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP)
-  {
-    gimbal_cmd_sender_->updateCost(data_.track_data_array_);
     gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
-  }
 }
 
 void ChassisGimbalShooterManual::updatePc()
@@ -177,7 +174,10 @@ void ChassisGimbalShooterManual::leftSwitchDownRise()
 void ChassisGimbalShooterManual::leftSwitchMidRise()
 {
   ChassisGimbalManual::leftSwitchMidRise();
-  gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+  if (data_.track_data_.id == 0)
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+  else
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
 }
 
@@ -185,7 +185,6 @@ void ChassisGimbalShooterManual::leftSwitchUpRise()
 {
   ChassisGimbalManual::leftSwitchUpRise();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
-  gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
 }
 
 void ChassisGimbalShooterManual::leftSwitchUpOn(ros::Duration duration)
@@ -210,8 +209,13 @@ void ChassisGimbalShooterManual::mouseLeftPress()
 
 void ChassisGimbalShooterManual::mouseRightPress()
 {
-  gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
-  gimbal_cmd_sender_->updateCost(data_.track_data_array_);
+  if (data_.track_data_.id == 0)
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+  else
+  {
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+    gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
+  }
 }
 
 void ChassisGimbalShooterManual::gPress()
