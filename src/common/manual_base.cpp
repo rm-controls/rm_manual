@@ -5,16 +5,24 @@
 #include "rm_manual/common/manual_base.h"
 namespace rm_manual {
 
-ManualBase::ManualBase(ros::NodeHandle &nh) : data_(nh), nh_(nh), controller_manager_(nh) {
+ManualBase::ManualBase(ros::NodeHandle &nh)
+    : data_(nh), nh_(nh), controller_manager_(nh) {
   controller_manager_.startStateControllers();
-  right_switch_down_event_.setRising(boost::bind(&ManualBase::rightSwitchDownRise, this));
-  right_switch_mid_event_.setRising(boost::bind(&ManualBase::rightSwitchMidRise, this));
-  right_switch_up_event_.setRising(boost::bind(&ManualBase::rightSwitchUpRise, this));
-  left_switch_down_event_.setRising(boost::bind(&ManualBase::leftSwitchDownRise, this));
-  left_switch_up_event_.setRising(boost::bind(&ManualBase::leftSwitchUpRise, this));
-  left_switch_mid_event_.setEdge(boost::bind(&ManualBase::leftSwitchMidRise, this),
-                                 boost::bind(&ManualBase::leftSwitchMidFall, this));
-  robot_hp_event_.setEdge(boost::bind(&ManualBase::robotRevive, this), boost::bind(&ManualBase::robotDie, this));
+  right_switch_down_event_.setRising(
+      boost::bind(&ManualBase::rightSwitchDownRise, this));
+  right_switch_mid_event_.setRising(
+      boost::bind(&ManualBase::rightSwitchMidRise, this));
+  right_switch_up_event_.setRising(
+      boost::bind(&ManualBase::rightSwitchUpRise, this));
+  left_switch_down_event_.setRising(
+      boost::bind(&ManualBase::leftSwitchDownRise, this));
+  left_switch_up_event_.setRising(
+      boost::bind(&ManualBase::leftSwitchUpRise, this));
+  left_switch_mid_event_.setEdge(
+      boost::bind(&ManualBase::leftSwitchMidRise, this),
+      boost::bind(&ManualBase::leftSwitchMidFall, this));
+  robot_hp_event_.setEdge(boost::bind(&ManualBase::robotRevive, this),
+                          boost::bind(&ManualBase::robotDie, this));
 }
 
 void ManualBase::run() {
@@ -26,6 +34,7 @@ void ManualBase::run() {
 }
 
 void ManualBase::checkReferee() {
+  data_.updateRefereeData();
   robot_hp_event_.update(data_.referee_data_.game_robot_status_.remain_hp_ !=
                          0);
 }
@@ -41,8 +50,10 @@ void ManualBase::checkSwitch(const ros::Time &time) {
     remoteControlTurnOn();
     remote_is_open_ = true;
   }
-  right_switch_down_event_.update(data_.dbus_data_.s_r == rm_msgs::DbusData::DOWN);
-  right_switch_mid_event_.update(data_.dbus_data_.s_r == rm_msgs::DbusData::MID);
+  right_switch_down_event_.update(data_.dbus_data_.s_r ==
+                                  rm_msgs::DbusData::DOWN);
+  right_switch_mid_event_.update(data_.dbus_data_.s_r ==
+                                 rm_msgs::DbusData::MID);
   right_switch_up_event_.update(data_.dbus_data_.s_r == rm_msgs::DbusData::UP);
   if (state_ == RC)
     updateRc();
@@ -51,14 +62,13 @@ void ManualBase::checkSwitch(const ros::Time &time) {
 }
 
 void ManualBase::updateRc() {
-  left_switch_down_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN);
+  left_switch_down_event_.update(data_.dbus_data_.s_l ==
+                                 rm_msgs::DbusData::DOWN);
   left_switch_mid_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::MID);
   left_switch_up_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::UP);
 }
 
-void ManualBase::updatePc() {
-  checkKeyboard();
-}
+void ManualBase::updatePc() { checkKeyboard(); }
 
 void ManualBase::remoteControlTurnOff() {
   controller_manager_.stopMainControllers();
@@ -72,7 +82,8 @@ void ManualBase::remoteControlTurnOn() {
 }
 
 void ManualBase::robotRevive() {
-  if (remote_is_open_) controller_manager_.startMainControllers();
+  if (remote_is_open_)
+    controller_manager_.startMainControllers();
 }
 
 void ManualBase::robotDie() {
@@ -82,4 +93,4 @@ void ManualBase::robotDie() {
   }
 }
 
-}
+} // namespace rm_manual

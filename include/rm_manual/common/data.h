@@ -5,20 +5,20 @@
 #ifndef RM_MANUAL_COMMON_DATA_H_
 #define RM_MANUAL_COMMON_DATA_H_
 
-#include <ros/ros.h>
-#include <serial/serial.h>
-#include <rm_common/decision/target_cost_function.h>
 #include <nav_msgs/Odometry.h>
-#include <sensor_msgs/JointState.h>
+#include <rm_common/decision/target_cost_function.h>
 #include <rm_msgs/ActuatorState.h>
 #include <rm_msgs/DbusData.h>
 #include <rm_msgs/GimbalDesError.h>
+#include <ros/ros.h>
+#include <sensor_msgs/JointState.h>
+#include <serial/serial.h>
 
+#include <rm_msgs/CapacityData.h>
+#include <rm_msgs/GameRobotHp.h>
 #include <rm_msgs/GameRobotStatus.h>
 #include <rm_msgs/GameStatus.h>
-#include <rm_msgs/GameRobotHp.h>
 #include <rm_msgs/PowerHeatData.h>
-#include <rm_msgs/CapacityData.h>
 
 namespace rm_manual {
 
@@ -49,7 +49,6 @@ public:
         "/capacity_data", 10, &Data::capacityDataCallback, this);
     power_heat_data_sub_ = nh.subscribe<rm_msgs::PowerHeatData>(
         "/power_heat_data", 10, &Data::powerHeatDataCallback, this);
-    updateRefereeData();
   }
 
   void
@@ -188,5 +187,5 @@ public:
   tf2_ros::TransformListener tf_listener_;
 };
 
-}
+} // namespace rm_manual
 #endif // RM_MANUAL_COMMON_DATA_H_
