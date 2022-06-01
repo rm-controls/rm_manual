@@ -27,6 +27,9 @@ class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual {
   rm_common::JointPositionBinaryCommandSender *cover_command_sender_{};
   rm_common::CalibrationQueue *cover_calibration_;
   InputEvent ctrl_z_event_, ctrl_q_event_;
+  std::string supply_frame_;
+  bool supply_ = false;
+  bool cover_colse_ = true;
 };
 }
 
