@@ -9,8 +9,7 @@ namespace rm_manual
 ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh) : ManualBase(nh)
 {
   ros::NodeHandle chassis_nh(nh, "chassis");
-  chassis_cmd_sender_ =
-      new rm_common::ChassisCommandSender(chassis_nh, data_.referee_data_);
+  chassis_cmd_sender_ = new rm_common::ChassisCommandSender(chassis_nh, data_.referee_data_);
   ros::NodeHandle vel_nh(nh, "vel");
   vel_cmd_sender_ = new rm_common::Vel2DCommandSender(vel_nh);
   if (!vel_nh.getParam("gyro_move_reduction", gyro_move_reduction_))
@@ -18,7 +17,7 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh) : ManualBase(nh)
   if (!vel_nh.getParam("gyro_rotate_reduction", gyro_rotate_reduction_))
     ROS_ERROR("Gyro rotate reduction no defined (namespace: %s)", nh.getNamespace().c_str());
   ros::NodeHandle gimbal_nh(nh, "gimbal");
-  gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh, data_.referee_.referee_data_);
+  gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh, data_.referee_data_);
   ros::NodeHandle ui_nh(nh, "ui");
 
   chassis_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::chassisOutputOn, this));
@@ -72,25 +71,23 @@ void ChassisGimbalManual::updatePc()
 void ChassisGimbalManual::checkReferee()
 {
   ManualBase::checkReferee();
-  chassis_power_on_event_.update(
-      data_.referee_data_.game_robot_status_.mains_power_chassis_output_);
-  gimbal_power_on_event_.update(
-      data_.referee_data_.game_robot_status_.mains_power_gimbal_output_);
+  chassis_power_on_event_.update(data_.referee_data_.game_robot_status_.mains_power_chassis_output_);
+  gimbal_power_on_event_.update(data_.referee_data_.game_robot_status_.mains_power_gimbal_output_);
 }
 
-void ChassisGimbalManual::checkKeyboard() {
+void ChassisGimbalManual::checkKeyboard()
+{
   ManualBase::checkKeyboard();
   if (data_.referee_data_.robot_id_ == rm_common::RobotId::RED_ENGINEER ||
-      data_.referee_data_.robot_id_ == rm_common::RobotId::BLUE_ENGINEER) {
-    w_event_.update((!data_.dbus_data_.key_ctrl) &
-                    (!data_.dbus_data_.key_shift) & data_.dbus_data_.key_w);
-    s_event_.update((!data_.dbus_data_.key_ctrl) &
-                    (!data_.dbus_data_.key_shift) & data_.dbus_data_.key_s);
-    a_event_.update((!data_.dbus_data_.key_ctrl) &
-                    (!data_.dbus_data_.key_shift) & data_.dbus_data_.key_a);
-    d_event_.update((!data_.dbus_data_.key_ctrl) &
-                    (!data_.dbus_data_.key_shift) & data_.dbus_data_.key_d);
-  } else {
+      data_.referee_data_.robot_id_ == rm_common::RobotId::BLUE_ENGINEER)
+  {
+    w_event_.update((!data_.dbus_data_.key_ctrl) & (!data_.dbus_data_.key_shift) & data_.dbus_data_.key_w);
+    s_event_.update((!data_.dbus_data_.key_ctrl) & (!data_.dbus_data_.key_shift) & data_.dbus_data_.key_s);
+    a_event_.update((!data_.dbus_data_.key_ctrl) & (!data_.dbus_data_.key_shift) & data_.dbus_data_.key_a);
+    d_event_.update((!data_.dbus_data_.key_ctrl) & (!data_.dbus_data_.key_shift) & data_.dbus_data_.key_d);
+  }
+  else
+  {
     w_event_.update(data_.dbus_data_.key_w);
     s_event_.update(data_.dbus_data_.key_s);
     a_event_.update(data_.dbus_data_.key_a);
@@ -99,7 +96,8 @@ void ChassisGimbalManual::checkKeyboard() {
   mouse_mid_event_.update(data_.dbus_data_.m_z != 0.);
 }
 
-void ChassisGimbalManual::remoteControlTurnOff() {
+void ChassisGimbalManual::remoteControlTurnOff()
+{
   ManualBase::remoteControlTurnOff();
   vel_cmd_sender_->setZero();
   chassis_cmd_sender_->setZero();
@@ -212,4 +210,4 @@ void ChassisGimbalManual::mouseMidRise()
   }
 }
 
-}
+}  // namespace rm_manual
