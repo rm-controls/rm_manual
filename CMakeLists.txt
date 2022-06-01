@@ -42,8 +42,8 @@ catkin_package(
         INCLUDE_DIRS
         include
         LIBRARIES
-        ${PROJECT_NAME}
         CATKIN_DEPENDS
+        roscpp
         sensor_msgs
         roslint
         rm_msgs
@@ -101,7 +101,7 @@ install(
 
 ## Mark other files for installation
 install(
-        DIRECTORY config launch
+        DIRECTORY launch
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
