@@ -14,6 +14,8 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh) : ManualBase(nh)
   vel_cmd_sender_ = new rm_common::Vel2DCommandSender(vel_nh);
   if (!vel_nh.getParam("gyro_move_reduction", gyro_move_reduction_))
     ROS_ERROR("Gyro move reduction no defined (namespace: %s)", nh.getNamespace().c_str());
+  if (!vel_nh.getParam("gyro_rotate_reduction", gyro_rotate_reduction_))
+    ROS_ERROR("Gyro rotate reduction no defined (namespace: %s)", nh.getNamespace().c_str());
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh, data_.referee_.referee_data_);
   ros::NodeHandle ui_nh(nh, "ui");
@@ -51,9 +53,16 @@ void ChassisGimbalManual::updateRc()
   }
   else
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-  vel_cmd_sender_->setAngularZVel(data_.dbus_data_.wheel);
-  vel_cmd_sender_->setLinearXVel(data_.dbus_data_.ch_r_y);
-  vel_cmd_sender_->setLinearYVel(-data_.dbus_data_.ch_r_x);
+  vel_cmd_sender_->setAngularZVel(
+      (std::abs(data_.dbus_data_.ch_r_y) > 0.01 || std::abs(data_.dbus_data_.ch_r_x) > 0.01) ?
+          data_.dbus_data_.wheel * gyro_rotate_reduction_ :
+          data_.dbus_data_.wheel);
+  vel_cmd_sender_->setLinearXVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
+                                     data_.dbus_data_.ch_r_y * gyro_move_reduction_ :
+                                     data_.dbus_data_.ch_r_y);
+  vel_cmd_sender_->setLinearYVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
+                                     -data_.dbus_data_.ch_r_x * gyro_move_reduction_ :
+                                     -data_.dbus_data_.ch_r_x);
   gimbal_cmd_sender_->setRate(-data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y);
 }
 
@@ -165,48 +174,60 @@ void ChassisGimbalManual::wPressing()
 {
   vel_cmd_sender_->setLinearXVel(
       chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? x_scale_ * gyro_move_reduction_ : x_scale_);
+  vel_cmd_sender_->setAngularZVel(
+      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? gyro_rotate_reduction_ : 0);
 }
 
 void ChassisGimbalManual::wRelease()
 {
   x_scale_ = x_scale_ <= -1.0 ? -1.0 : x_scale_ - 1.0;
   vel_cmd_sender_->setLinearXVel(x_scale_);
+  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
 }
 
 void ChassisGimbalManual::sPressing()
 {
   vel_cmd_sender_->setLinearXVel(
       chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? x_scale_ * gyro_move_reduction_ : x_scale_);
+  vel_cmd_sender_->setAngularZVel(
+      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? gyro_rotate_reduction_ : 0);
 }
 
 void ChassisGimbalManual::sRelease()
 {
   x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
   vel_cmd_sender_->setLinearXVel(x_scale_);
+  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
 }
 
 void ChassisGimbalManual::aPressing()
 {
   vel_cmd_sender_->setLinearYVel(
       chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? y_scale_ * gyro_move_reduction_ : y_scale_);
+  vel_cmd_sender_->setAngularZVel(
+      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? gyro_rotate_reduction_ : 0);
 }
 
 void ChassisGimbalManual::aRelease()
 {
   y_scale_ = y_scale_ <= -1.0 ? -1.0 : y_scale_ - 1.0;
   vel_cmd_sender_->setLinearYVel(y_scale_);
+  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
 }
 
 void ChassisGimbalManual::dPressing()
 {
   vel_cmd_sender_->setLinearYVel(
       chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? y_scale_ * gyro_move_reduction_ : y_scale_);
+  vel_cmd_sender_->setAngularZVel(
+      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? gyro_rotate_reduction_ : 0);
 }
 
 void ChassisGimbalManual::dRelease()
 {
   y_scale_ = y_scale_ >= 1.0 ? 1.0 : y_scale_ + 1.0;
   vel_cmd_sender_->setLinearYVel(y_scale_);
+  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
 }
 
 void ChassisGimbalManual::mouseMidRise()
