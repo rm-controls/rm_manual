@@ -5,14 +5,16 @@
 #ifndef RM_MANUAL_COMMON_DATA_H_
 #define RM_MANUAL_COMMON_DATA_H_
 
+#include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
-#include <rm_common/decision/target_cost_function.h>
 #include <rm_msgs/ActuatorState.h>
 #include <rm_msgs/DbusData.h>
 #include <rm_msgs/GimbalDesError.h>
-#include <ros/ros.h>
+#include <rm_msgs/TrackDataArray.h>
 #include <sensor_msgs/JointState.h>
 #include <serial/serial.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <rm_msgs/CapacityData.h>
 #include <rm_msgs/GameRobotHp.h>
@@ -20,11 +22,13 @@
 #include <rm_msgs/GameStatus.h>
 #include <rm_msgs/PowerHeatData.h>
 
-namespace rm_manual {
-
-class Data {
+namespace rm_manual
+{
+class Data
+{
 public:
-  explicit Data(ros::NodeHandle &nh) : tf_listener_(tf_buffer_) {
+  explicit Data(ros::NodeHandle& nh) : tf_listener_(tf_buffer_)
+  {
     // sub
     joint_state_sub_ = nh.subscribe<sensor_msgs::JointState>(
         "/joint_states", 10, &Data::jointStateCallback, this);
@@ -187,5 +191,5 @@ public:
   tf2_ros::TransformListener tf_listener_;
 };
 
-} // namespace rm_manual
-#endif // RM_MANUAL_COMMON_DATA_H_
+}  // namespace rm_manual
+#endif  // RM_MANUAL_COMMON_DATA_H_

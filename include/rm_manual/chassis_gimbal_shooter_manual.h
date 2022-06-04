@@ -39,6 +39,7 @@ protected:
   void rightSwitchUpRise() override;
   void leftSwitchDownRise() override;
   void leftSwitchMidRise() override;
+  void leftSwitchMidOn(ros::Duration duration);
   void leftSwitchUpRise() override;
   void leftSwitchUpOn(ros::Duration duration);
   void mouseLeftPress();
