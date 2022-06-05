@@ -204,7 +204,10 @@ void ChassisGimbalShooterManual::leftSwitchUpOn(ros::Duration duration)
     shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
   }
   else if (duration < ros::Duration(0.02))
+  {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+    shooter_cmd_sender_->checkError(data_.gimbal_des_error_, ros::Time::now());
+  }
   else
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
 }
