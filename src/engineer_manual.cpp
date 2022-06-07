@@ -13,8 +13,10 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
   // Command sender
-  ros::NodeHandle nh_card(nh, "drag");
-  drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_card);
+  ros::NodeHandle nh_drag(nh, "drag");
+  drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_drag);
+  ros::NodeHandle nh_card(nh, "card");
+  card_command_sender_ = new rm_common::CardCommandSender(nh_card);
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("power_on_calibration", rpc_value);
@@ -42,6 +44,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
   shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
 
+  z_event_.setRising(boost::bind(&EngineerManual::zPress, this));
+  x_event_.setRising(boost::bind(&EngineerManual::xPress, this));
   c_event_.setRising(boost::bind(&EngineerManual::cPress, this));
   sentry_mode_ = 1;
 }
@@ -75,6 +79,8 @@ void EngineerManual::checkKeyboard()
   shift_c_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_c);
   shift_x_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_x);
 
+  z_event_.update(data_.dbus_data_.key_z & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
+  x_event_.update(data_.dbus_data_.key_x & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
   c_event_.update(data_.dbus_data_.key_c & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
 }
 
@@ -100,6 +106,7 @@ void EngineerManual::sendCommand(const ros::Time& time)
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
     drag_command_sender_->sendCommand(time);
+    card_command_sender_->sendCommand(time);
   }
 }
 
@@ -190,6 +197,22 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
   operating_mode_ = MANUAL;
+}
+
+void EngineerManual::zPress()
+{
+  if (card_command_sender_->getState())
+    card_command_sender_->off();
+  else
+    card_command_sender_->long_off();
+}
+
+void EngineerManual::xPress()
+{
+  if (card_command_sender_->getState())
+    card_command_sender_->off();
+  else
+    card_command_sender_->short_on();
 }
 
 void EngineerManual::cPress()

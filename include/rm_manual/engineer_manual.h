@@ -131,6 +131,8 @@ private:
     sentry_mode_ = sentry_mode_ == 0 ? 1 : 0;
   }
 
+  void zPress();
+  void xPress();
   void cPress();
 
   enum
@@ -143,9 +145,11 @@ private:
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   rm_common::JointPositionBinaryCommandSender* drag_command_sender_;
+  rm_common::CardCommandSender* card_command_sender_;
   InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_c_event_, ctrl_r_event_, ctrl_f_event_, ctrl_z_event_,
       ctrl_b_event_, ctrl_x_event_, ctrl_v_event_, ctrl_g_event_, ctrl_s_event_, ctrl_d_event_, ctrl_q_event_,
-      ctrl_w_event_, ctrl_e_event_, shift_w_event_, shift_s_event_, shift_c_event_, shift_x_event_, c_event_;
+      ctrl_w_event_, ctrl_e_event_, shift_w_event_, shift_s_event_, shift_c_event_, shift_x_event_, z_event_, x_event_,
+      c_event_;
 };
 
 }  // namespace rm_manual
