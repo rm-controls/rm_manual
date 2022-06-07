@@ -13,16 +13,12 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
   // Command sender
-  ros::NodeHandle nh_card(nh, "card");
-  card_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_card);
-  ros::NodeHandle nh_mast(nh, "mast");
-  mast_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_mast);
+  ros::NodeHandle nh_card(nh, "drag");
+  drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_card);
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("power_on_calibration", rpc_value);
   power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  nh.getParam("mast_calibration", rpc_value);
-  mast_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   nh.getParam("arm_calibration", rpc_value);
   arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
@@ -54,7 +50,6 @@ void EngineerManual::run()
 {
   ChassisGimbalManual::run();
   power_on_calibration_->update(ros::Time::now(), state_ != PASSIVE);
-  mast_calibration_->update(ros::Time::now(), state_ != PASSIVE);
   arm_calibration_->update(ros::Time::now());
 }
 
@@ -99,12 +94,12 @@ void EngineerManual::updatePc()
 
 void EngineerManual::sendCommand(const ros::Time& time)
 {
-  mast_command_sender_->sendCommand(time);
   if (operating_mode_ == MANUAL)
   {
+    gimbal_cmd_sender_->sendCommand(time);
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
-    card_command_sender_->sendCommand(time);
+    drag_command_sender_->sendCommand(time);
   }
 }
 
@@ -113,7 +108,7 @@ void EngineerManual::drawUi(const ros::Time& time)
   ChassisGimbalManual::drawUi(time);
   time_change_ui_->update("effort", time);
   time_change_ui_->update("temperature", time);
-  trigger_change_ui_->update("card", 0, card_command_sender_->getState());
+  trigger_change_ui_->update("drag", 0, drag_command_sender_->getState());
   if (data_.referee_.referee_data_.interactive_data.header_data_.data_cmd_id_ == 0x0201 &&
       data_.referee_.referee_data_.interactive_data.data_ != sentry_mode_)
     data_.referee_.sendInteractiveData(
@@ -136,7 +131,6 @@ void EngineerManual::remoteControlTurnOff()
 void EngineerManual::chassisOutputOn()
 {
   power_on_calibration_->reset();
-  mast_calibration_->reset();
   if (MIDDLEWARE)
     action_client_.cancelAllGoals();
 }
@@ -162,7 +156,6 @@ void EngineerManual::rightSwitchUpRise()
 
 void EngineerManual::leftSwitchDownFall()
 {
-  mast_calibration_->reset();
   arm_calibration_->reset();
 }
 
@@ -201,10 +194,10 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
 
 void EngineerManual::cPress()
 {
-  if (card_command_sender_->getState())
-    card_command_sender_->off();
+  if (drag_command_sender_->getState())
+    drag_command_sender_->off();
   else
-    card_command_sender_->on();
+    drag_command_sender_->on();
 }
 
 }  // namespace rm_manual
