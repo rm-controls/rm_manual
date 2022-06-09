@@ -156,11 +156,7 @@ void EngineerManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  if (card_command_sender_->getState())
-    card_command_sender_->off();
-  else
-    card_command_sender_->long_on();
-  //  action_client_.cancelAllGoals();
+  action_client_.cancelAllGoals();
 }
 
 void EngineerManual::rightSwitchMidRise()
@@ -172,11 +168,7 @@ void EngineerManual::rightSwitchMidRise()
 void EngineerManual::rightSwitchUpRise()
 {
   ChassisGimbalManual::rightSwitchUpRise();
-  //  runStepQueue("BACK_HOME");
-  if (card_command_sender_->getState())
-    card_command_sender_->off();
-  else
-    card_command_sender_->short_on();
+  runStepQueue("BACK_HOME");
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
