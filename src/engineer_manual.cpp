@@ -26,23 +26,28 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_down_event_.setFalling(boost::bind(&EngineerManual::leftSwitchDownFall, this));
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
-  ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
-  ctrl_z_event_.setRising(boost::bind(&EngineerManual::ctrlZPress, this));
   ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
-  ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
-  ctrl_x_event_.setRising(boost::bind(&EngineerManual::ctrlXPress, this));
-  ctrl_v_event_.setRising(boost::bind(&EngineerManual::ctrlVPress, this));
-  ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
-  ctrl_s_event_.setRising(boost::bind(&EngineerManual::ctrlSPress, this));
-  ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
+  ctrl_n_event_.setRising(boost::bind(&EngineerManual::ctrlNPress, this));
+  ctrl_j_event_.setRising(boost::bind(&EngineerManual::ctrlJPress, this));
+  ctrl_k_event_.setRising(boost::bind(&EngineerManual::ctrlKPress, this));
+  ctrl_l_event_.setRising(boost::bind(&EngineerManual::ctrlLPress, this));
+  ctrl_u_event_.setRising(boost::bind(&EngineerManual::ctrlUPress, this));
+  ctrl_i_event_.setRising(boost::bind(&EngineerManual::ctrlIPress, this));
+  ctrl_o_event_.setRising(boost::bind(&EngineerManual::ctrlOPress, this));
+  ctrl_p_event_.setRising(boost::bind(&EngineerManual::ctrlPPress, this));
+  ctrl_m_event_.setRising(boost::bind(&EngineerManual::ctrlMPress, this));
   ctrl_q_event_.setRising(boost::bind(&EngineerManual::ctrlQPress, this));
   ctrl_w_event_.setRising(boost::bind(&EngineerManual::ctrlWPress, this));
   ctrl_e_event_.setRising(boost::bind(&EngineerManual::ctrlEPress, this));
+  ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
+  ctrl_t_event_.setRising(boost::bind(&EngineerManual::ctrlTPress, this));
+  ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
+  ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
 
-  shift_w_event_.setRising(boost::bind(&EngineerManual::shiftWPress, this));
-  shift_s_event_.setRising(boost::bind(&EngineerManual::shiftSPress, this));
-  shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
-  shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
+  //  shift_w_event_.setRising(boost::bind(&EngineerManual::shiftWPress, this));
+  //  shift_s_event_.setRising(boost::bind(&EngineerManual::shiftSPress, this));
+  //  shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
+  //  shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
 
   z_event_.setRising(boost::bind(&EngineerManual::zPress, this));
   x_event_.setRising(boost::bind(&EngineerManual::xPress, this));
@@ -61,23 +66,28 @@ void EngineerManual::checkKeyboard()
 {
   ChassisGimbalManual::checkKeyboard();
   ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
-  ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
-  ctrl_z_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
   ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
-  ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
-  ctrl_x_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_x);
-  ctrl_v_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v);
-  ctrl_g_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_g);
-  ctrl_s_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_s);
-  ctrl_d_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_d);
+  ctrl_n_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_n);
+  ctrl_j_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_j);
+  ctrl_k_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_k);
+  ctrl_l_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_l);
+  ctrl_u_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_u);
+  ctrl_i_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_i);
+  ctrl_o_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_o);
+  ctrl_p_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_p);
+  ctrl_m_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_m);
   ctrl_q_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_q);
   ctrl_w_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_w);
   ctrl_e_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_e);
+  ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
+  ctrl_t_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_t);
+  ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
+  ctrl_g_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_g);
 
-  shift_w_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_w);
-  shift_s_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_s);
-  shift_c_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_c);
-  shift_x_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_x);
+  //  shift_w_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_w);
+  //  shift_s_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_s);
+  //  shift_c_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_c);
+  //  shift_x_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_x);
 
   z_event_.update(data_.dbus_data_.key_z & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
   x_event_.update(data_.dbus_data_.key_x & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
@@ -146,7 +156,11 @@ void EngineerManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  action_client_.cancelAllGoals();
+  if (card_command_sender_->getState())
+    card_command_sender_->off();
+  else
+    card_command_sender_->long_on();
+  //  action_client_.cancelAllGoals();
 }
 
 void EngineerManual::rightSwitchMidRise()
@@ -158,6 +172,11 @@ void EngineerManual::rightSwitchMidRise()
 void EngineerManual::rightSwitchUpRise()
 {
   ChassisGimbalManual::rightSwitchUpRise();
+  //  runStepQueue("BACK_HOME");
+  if (card_command_sender_->getState())
+    card_command_sender_->off();
+  else
+    card_command_sender_->short_on();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
@@ -204,7 +223,7 @@ void EngineerManual::zPress()
   if (card_command_sender_->getState())
     card_command_sender_->off();
   else
-    card_command_sender_->long_off();
+    card_command_sender_->long_on();
 }
 
 void EngineerManual::xPress()

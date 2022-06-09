@@ -35,8 +35,8 @@ private:
   void rightSwitchUpRise() override;
   void leftSwitchUpFall()
   {
-    runStepQueue("ARM_TEST");
-    trigger_change_ui_->update("step", "ARM_TEST");
+    runStepQueue("BACK_HOME");
+    trigger_change_ui_->update("step", "BACK_HOME");
   }
   void leftSwitchDownFall();
   void runStepQueue(const std::string& step_queue_name);
@@ -50,106 +50,111 @@ private:
   {
     action_client_.cancelAllGoals();
   }
-  void ctrlRPress()
-  {
-    runStepQueue("RECOVER");
-    trigger_change_ui_->update("step", "RECOVER");
-  }
-  void ctrlZPress()
-  {
-    runStepQueue("ARM_FOLD_LOWER");
-    trigger_change_ui_->update("step", "ARM_FOLD_LOWER");
-  }
   void ctrlBPress()
   {
-    target_ = "BIG_";
-    trigger_change_ui_->update("step", prefix_ + target_);
+    runStepQueue("BACK_HOME");
+    trigger_change_ui_->update("step", "BACK_HOME");
+  }
+  void ctrlNPress()
+  {
+    runStepQueue("BACK_HOME2");
+    trigger_change_ui_->update("step", "BACK_HOME2");
+  }
+  void ctrlJPress()
+  {
+    runStepQueue("EXCHANGE");
+    trigger_change_ui_->update("step", "EXCHANGE");
+  }
+  void ctrlKPress()
+  {
+    runStepQueue("GROUND_STONE");
+    trigger_change_ui_->update("step", "GROUND_STONE");
+  }
+  void ctrlLPress()
+  {
+    runStepQueue("SMALL_STONE");
+    trigger_change_ui_->update("step", "SMALL_STONE");
+  }
+  void ctrlUPress()
+  {
+    runStepQueue("STORE");
+    trigger_change_ui_->update("step", "STORE");
+  }
+  void ctrlIPress()
+  {
+    runStepQueue("GET_STONE");
+    trigger_change_ui_->update("step", "GET_STONE");
+  }
+  void ctrlOPress()
+  {
+    runStepQueue("GET_STONE_SKY");
+    trigger_change_ui_->update("step", "GET_STONE_SKY");
+  }
+  void ctrlPPress()
+  {
+    runStepQueue("GET_BARRIER");
+    trigger_change_ui_->update("step", "GET_BARRIER");
+  }
+  void ctrlMPress()
+  {
+    runStepQueue("RELEASE_BARRIER");
+    trigger_change_ui_->update("step", "RELEASE_BARRIER");
   }
   void ctrlFPress()
   {
-    target_ = "FLOOR_";
-    trigger_change_ui_->update("step", prefix_ + target_);
-  }
-  void ctrlXPress()
-  {
-    target_ = "EXCHANGE_";
-    prefix_ = "";
-    trigger_change_ui_->update("step", prefix_ + target_);
+    prefix_ = "GRASP_BIG";
+    trigger_change_ui_->update("step", prefix_);
   }
   void ctrlGPress()
   {
-    prefix_ = "GRASP_";
-    trigger_change_ui_->update("step", prefix_ + target_);
-  }
-  void ctrlSPress()
-  {
-    prefix_ = "STORAGE_";
-    trigger_change_ui_->update("step", prefix_ + target_);
-  }
-  void ctrlDPress()
-  {
-    prefix_ = "DRAG_";
-    trigger_change_ui_->update("step", prefix_ + target_);
+    prefix_ = "SKY";
+    trigger_change_ui_->update("step", prefix_);
   }
   void ctrlQPress()
   {
-    runStepQueue(prefix_ + target_ + "PRE");
-    trigger_change_ui_->update("step", prefix_ + target_ + "PRE");
+    toward_ = "_LF_";
+    trigger_change_ui_->update("step", prefix_ + toward_);
   }
   void ctrlWPress()
   {
-    runStepQueue(prefix_ + target_ + "PROC");
-    trigger_change_ui_->update("step", prefix_ + target_ + "PROC");
+    toward_ = "_MID_";
+    trigger_change_ui_->update("step", prefix_ + toward_);
   }
   void ctrlEPress()
   {
-    runStepQueue(prefix_ + target_ + "AFTER");
-    trigger_change_ui_->update("step", prefix_ + target_ + "AFTER");
+    toward_ = "_RT_";
+    trigger_change_ui_->update("step", prefix_ + toward_);
   }
-  void ctrlVPress()
+  void ctrlRPress()
   {
-    target_ = "LIGHT_BAR_";
-    trigger_change_ui_->update("step", prefix_ + target_);
+    runStepQueue(prefix_ + toward_ + "PRE");
+    trigger_change_ui_->update("steps", prefix_ + toward_ + "PRE");
+  }
+  void ctrlTPress()
+  {
+    runStepQueue(prefix_ + toward_ + "PROC");
+    trigger_change_ui_->update("steps", prefix_ + toward_ + "PROC");
   }
 
-  void shiftWPress()
-  {
-    runStepQueue("GIMBAL_FORWARD_UPPER");
-    trigger_change_ui_->update("step", "GIMBAL_FORWARD_UPPER");
-  }
-  void shiftSPress()
-  {
-    runStepQueue("GIMBAL_FORWARD_LOWER");
-    trigger_change_ui_->update("step", "GIMBAL_FORWARD_LOWER");
-  }
-  void shiftCPress()
-  {
-    power_on_calibration_->reset();
-  }
-  void shiftXPress()
-  {
-    sentry_mode_ = sentry_mode_ == 0 ? 1 : 0;
-  }
-
-  void zPress();
-  void xPress();
-  void cPress();
+  void zPress();  // card long
+  void xPress();  // card short
+  void cPress();  // drag
 
   enum
   {
     MANUAL,
     MIDDLEWARE
   };
-  std::string target_, prefix_;
+  std::string prefix_, toward_;
   int operating_mode_, sentry_mode_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   rm_common::JointPositionBinaryCommandSender* drag_command_sender_;
   rm_common::CardCommandSender* card_command_sender_;
-  InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_c_event_, ctrl_r_event_, ctrl_f_event_, ctrl_z_event_,
-      ctrl_b_event_, ctrl_x_event_, ctrl_v_event_, ctrl_g_event_, ctrl_s_event_, ctrl_d_event_, ctrl_q_event_,
-      ctrl_w_event_, ctrl_e_event_, shift_w_event_, shift_s_event_, shift_c_event_, shift_x_event_, z_event_, x_event_,
-      c_event_;
+  InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_c_event_, ctrl_b_event_, ctrl_n_event_, ctrl_j_event_,
+      ctrl_k_event_, ctrl_l_event_, ctrl_u_event_, ctrl_i_event_, ctrl_o_event_, ctrl_p_event_, ctrl_m_event_,
+      ctrl_q_event_, ctrl_w_event_, ctrl_e_event_, ctrl_r_event_, ctrl_t_event_, ctrl_f_event_, ctrl_g_event_, z_event_,
+      x_event_, c_event_;
 };
 
 }  // namespace rm_manual
