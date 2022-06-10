@@ -39,7 +39,8 @@ private:
                     bool sub_flag);
   std::string getTargetState(uint8_t target, uint8_t armor_target);
   static std::string getChassisState(uint8_t mode);
-  static std::string getExposureState(uint8_t level);
+  static std::string getGimbalState(uint8_t mode);
+  static std::string getShooterState(uint8_t mode);
 };
 
 class TimeChangeUi : public UiBase

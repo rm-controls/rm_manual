@@ -96,7 +96,7 @@ void TriggerChangeUi::update(const std::string& graph_name, uint8_t main_mode, b
   {
     updateConfig(graph_name, graph->second, main_mode, main_flag, sub_mode, sub_flag);
     graph->second->setOperation(rm_common::GraphOperation::UPDATE);
-    if (graph->first == "chassis")
+    if (graph->first == "chassis" || graph->first == "gimbal")
       graph->second->displayTwice(true);
     else
       graph->second->display();
@@ -117,6 +117,22 @@ void TriggerChangeUi::updateConfig(const std::string& name, Graph* graph, uint8_
       graph->setColor(rm_common::GraphColor::PINK);
     else
       graph->setColor(rm_common::GraphColor::WHITE);
+  }
+  else if (name == "shooter")
+  {
+    graph->setContent(getShooterState(main_mode));
+    if (main_flag)
+      graph->setColor(rm_common::GraphColor::ORANGE);
+    else if (sub_flag)
+      graph->setColor(rm_common::GraphColor::GREEN);
+    else if (sub_mode == 1)
+      graph->setColor(rm_common::GraphColor::PINK);
+    else
+      graph->setColor(rm_common::GraphColor::WHITE);
+  }
+  else if (name == "gimbal")
+  {
+    graph->setContent(getGimbalState(main_mode));
   }
   else if (name == "target")
   {
@@ -142,10 +158,18 @@ void TriggerChangeUi::updateConfig(const std::string& name, Graph* graph, uint8_
     else
       graph->setContent("move");
   }
-  else if (name == "exposure")
-  {
-    graph->setContent(getExposureState(main_mode));
-  }
+}
+
+std::string TriggerChangeUi::getShooterState(uint8_t mode)
+{
+  if (mode == rm_msgs::ShootCmd::READY)
+    return "ready";
+  else if (mode == rm_msgs::ShootCmd::PUSH)
+    return "push";
+  else if (mode == rm_msgs::ShootCmd::STOP)
+    return "stop";
+  else
+    return "error";
 }
 
 std::string TriggerChangeUi::getChassisState(uint8_t mode)
@@ -190,18 +214,14 @@ std::string TriggerChangeUi::getTargetState(uint8_t target, uint8_t armor_target
   }
 }
 
-std::string TriggerChangeUi::getExposureState(uint8_t level)
+std::string TriggerChangeUi::getGimbalState(uint8_t mode)
 {
-  if (level == rm_msgs::StatusChangeRequest::EXPOSURE_LEVEL_0)
-    return "0";
-  else if (level == rm_msgs::StatusChangeRequest::EXPOSURE_LEVEL_1)
-    return "1";
-  else if (level == rm_msgs::StatusChangeRequest::EXPOSURE_LEVEL_2)
-    return "2";
-  else if (level == rm_msgs::StatusChangeRequest::EXPOSURE_LEVEL_3)
-    return "3";
-  else if (level == rm_msgs::StatusChangeRequest::EXPOSURE_LEVEL_4)
-    return "4";
+  if (mode == rm_msgs::GimbalCmd::DIRECT)
+    return "direct";
+  else if (mode == rm_msgs::GimbalCmd::RATE)
+    return "rate";
+  else if (mode == rm_msgs::GimbalCmd::TRACK)
+    return "track";
   else
     return "error";
 }
