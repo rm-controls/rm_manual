@@ -33,11 +33,8 @@ private:
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
-  void leftSwitchUpFall()
-  {
-    runStepQueue("BACK_HOME");
-    trigger_change_ui_->update("step", "BACK_HOME");
-  }
+  void leftSwitchUpRise() override;
+  void leftSwitchUpFall();
   void leftSwitchDownFall();
   void runStepQueue(const std::string& step_queue_name);
   void actionActiveCallback()
@@ -46,95 +43,24 @@ private:
   }
   void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback);
   void actionDoneCallback(const actionlib::SimpleClientGoalState& state, const rm_msgs::EngineerResultConstPtr& result);
-  void ctrlCPress()
-  {
-    action_client_.cancelAllGoals();
-  }
-  void ctrlBPress()
-  {
-    runStepQueue("BACK_HOME");
-    trigger_change_ui_->update("step", "BACK_HOME");
-  }
-  void ctrlNPress()
-  {
-    runStepQueue("BACK_HOME2");
-    trigger_change_ui_->update("step", "BACK_HOME2");
-  }
-  void ctrlJPress()
-  {
-    runStepQueue("EXCHANGE");
-    trigger_change_ui_->update("step", "EXCHANGE");
-  }
-  void ctrlKPress()
-  {
-    runStepQueue("GROUND_STONE");
-    trigger_change_ui_->update("step", "GROUND_STONE");
-  }
-  void ctrlLPress()
-  {
-    runStepQueue("SMALL_STONE");
-    trigger_change_ui_->update("step", "SMALL_STONE");
-  }
-  void ctrlUPress()
-  {
-    runStepQueue("STORE");
-    trigger_change_ui_->update("step", "STORE");
-  }
-  void ctrlIPress()
-  {
-    runStepQueue("GET_STONE");
-    trigger_change_ui_->update("step", "GET_STONE");
-  }
-  void ctrlOPress()
-  {
-    runStepQueue("GET_STONE_SKY");
-    trigger_change_ui_->update("step", "GET_STONE_SKY");
-  }
-  void ctrlPPress()
-  {
-    runStepQueue("GET_BARRIER");
-    trigger_change_ui_->update("step", "GET_BARRIER");
-  }
-  void ctrlMPress()
-  {
-    runStepQueue("RELEASE_BARRIER");
-    trigger_change_ui_->update("step", "RELEASE_BARRIER");
-  }
-  void ctrlFPress()
-  {
-    prefix_ = "GRASP_BIG";
-    trigger_change_ui_->update("step", prefix_);
-  }
-  void ctrlGPress()
-  {
-    prefix_ = "SKY";
-    trigger_change_ui_->update("step", prefix_);
-  }
-  void ctrlQPress()
-  {
-    toward_ = "_LF_";
-    trigger_change_ui_->update("step", prefix_ + toward_);
-  }
-  void ctrlWPress()
-  {
-    toward_ = "_MID_";
-    trigger_change_ui_->update("step", prefix_ + toward_);
-  }
-  void ctrlEPress()
-  {
-    toward_ = "_RT_";
-    trigger_change_ui_->update("step", prefix_ + toward_);
-  }
-  void ctrlRPress()
-  {
-    runStepQueue(prefix_ + toward_ + "PRE");
-    trigger_change_ui_->update("steps", prefix_ + toward_ + "PRE");
-  }
-  void ctrlTPress()
-  {
-    runStepQueue(prefix_ + toward_ + "PROC");
-    trigger_change_ui_->update("steps", prefix_ + toward_ + "PROC");
-  }
+  void ctrlCPress();
+  void ctrlBPress();
+  void ctrlNPress();
+  void ctrlJPress();
+  void ctrlKPress();
+  void ctrlLPress();
+  void ctrlUPress();
+  void ctrlIPress();
+  void ctrlOPress();
+  void ctrlPPress();
+  void ctrlMPress();
+  void ctrlFPress();
+  void ctrlGPress();
+  void ctrlQPress();
+  void ctrlWPress();
+  void ctrlEPress();
+  void ctrlRPress();
+  void ctrlTPress();
 
   void zPress();  // card long
   void xPress();  // card short

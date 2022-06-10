@@ -24,6 +24,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   nh.getParam("arm_calibration", rpc_value);
   arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
+  left_switch_up_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpRise, this));
   left_switch_down_event_.setFalling(boost::bind(&EngineerManual::leftSwitchDownFall, this));
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
   ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
@@ -172,6 +173,17 @@ void EngineerManual::rightSwitchUpRise()
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
+void EngineerManual::leftSwitchUpRise()
+{
+  runStepQueue("DYNAMICX");
+}
+
+void EngineerManual::leftSwitchUpFall()
+{
+  runStepQueue("BACK_HOME");
+  trigger_change_ui_->update("step", "BACK_HOME");
+}
+
 void EngineerManual::leftSwitchDownFall()
 {
   arm_calibration_->reset();
@@ -209,7 +221,97 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   ROS_INFO("Result: %i", result->finish);
   operating_mode_ = MANUAL;
 }
+void EngineerManual::ctrlCPress()
+{
+  action_client_.cancelAllGoals();
+  runStepQueue("DELETE_SCENE");
+}
+void EngineerManual::ctrlBPress()
+{
+  runStepQueue("BACK_HOME");
+  trigger_change_ui_->update("step", "BACK_HOME");
+}
 
+void EngineerManual::ctrlNPress()
+{
+  runStepQueue("BACK_HOME2");
+  trigger_change_ui_->update("step", "BACK_HOME2");
+}
+void EngineerManual::ctrlJPress()
+{
+  runStepQueue("EXCHANGE");
+  trigger_change_ui_->update("step", "EXCHANGE");
+}
+void EngineerManual::ctrlKPress()
+{
+  runStepQueue("GROUND_STONE");
+  trigger_change_ui_->update("step", "GROUND_STONE");
+}
+void EngineerManual::ctrlLPress()
+{
+  runStepQueue("SMALL_STONE");
+  trigger_change_ui_->update("step", "SMALL_STONE");
+}
+void EngineerManual::ctrlUPress()
+{
+  runStepQueue("STORE");
+  trigger_change_ui_->update("step", "STORE");
+}
+void EngineerManual::ctrlIPress()
+{
+  runStepQueue("GET_STONE");
+  trigger_change_ui_->update("step", "GET_STONE");
+}
+void EngineerManual::ctrlOPress()
+{
+  runStepQueue("GET_STONE_SKY");
+  trigger_change_ui_->update("step", "GET_STONE_SKY");
+}
+void EngineerManual::ctrlPPress()
+{
+  runStepQueue("GET_STONE_SKY");
+  trigger_change_ui_->update("step", "GET_STONE_SKY");
+}
+void EngineerManual::ctrlMPress()
+{
+  runStepQueue("RELEASE_BARRIER");
+  trigger_change_ui_->update("step", "RELEASE_BARRIER");
+}
+void EngineerManual::ctrlFPress()
+{
+  prefix_ = "GRASP_BIG";
+  trigger_change_ui_->update("step", prefix_);
+}
+void EngineerManual::ctrlGPress()
+{
+  prefix_ = "SKY";
+  trigger_change_ui_->update("step", prefix_);
+}
+void EngineerManual::ctrlQPress()
+{
+  toward_ = "_LF_";
+  trigger_change_ui_->update("step", prefix_ + toward_);
+}
+void EngineerManual::ctrlWPress()
+{
+  toward_ = "_MID_";
+  trigger_change_ui_->update("step", prefix_ + toward_);
+}
+void EngineerManual::ctrlEPress()
+{
+  toward_ = "_RT_";
+  trigger_change_ui_->update("step", prefix_ + toward_);
+}
+void EngineerManual::ctrlRPress()
+{
+  runStepQueue(prefix_ + toward_ + "PRE");
+  trigger_change_ui_->update("steps", prefix_ + toward_ + "PRE");
+}
+void EngineerManual::ctrlTPress()
+{
+  runStepQueue(prefix_ + toward_ + "PROC");
+  trigger_change_ui_->update("steps", prefix_ + toward_ + "PROC");
+}
 void EngineerManual::zPress()
 {
   if (card_command_sender_->getState())
