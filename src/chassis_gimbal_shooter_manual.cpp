@@ -40,7 +40,6 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh) : Ch
 void ChassisGimbalShooterManual::run()
 {
   ChassisGimbalManual::run();
-  switch_detection_srv_->setEnemyColor(data_.referee_.referee_data_);
   shooter_calibration_->update(ros::Time::now());
 }
 
@@ -86,6 +85,7 @@ void ChassisGimbalShooterManual::remoteControlTurnOn()
 {
   ChassisGimbalManual::remoteControlTurnOn();
   shooter_calibration_->stopController();
+  switch_detection_srv_->setEnemyColor(data_.referee_.referee_data_);
 }
 
 void ChassisGimbalShooterManual::robotDie()
