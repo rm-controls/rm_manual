@@ -7,6 +7,7 @@
 
 #include "rm_manual/referee/graph.h"
 #include "rm_manual/common/data.h"
+#include "rm_common/decision/heat_limit.h"
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <rm_common/ori_tool.h>

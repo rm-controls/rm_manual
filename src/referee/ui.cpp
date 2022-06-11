@@ -121,18 +121,20 @@ void TriggerChangeUi::updateConfig(const std::string& name, Graph* graph, uint8_
   else if (name == "shooter")
   {
     graph->setContent(getShooterState(main_mode));
-    if (main_flag)
-      graph->setColor(rm_common::GraphColor::ORANGE);
-    else if (sub_flag)
-      graph->setColor(rm_common::GraphColor::GREEN);
-    else if (sub_mode == 1)
-      graph->setColor(rm_common::GraphColor::PINK);
-    else
+    if (sub_mode == rm_common::HeatLimit::LOW)
       graph->setColor(rm_common::GraphColor::WHITE);
+    else if (sub_mode == rm_common::HeatLimit::HIGH)
+      graph->setColor(rm_common::GraphColor::YELLOW);
+    else if (sub_mode == rm_common::HeatLimit::BURST)
+      graph->setColor(rm_common::GraphColor::ORANGE);
   }
   else if (name == "gimbal")
   {
     graph->setContent(getGimbalState(main_mode));
+    if (main_flag)
+      graph->setColor(rm_common::GraphColor::ORANGE);
+    else
+      graph->setColor(rm_common::GraphColor::WHITE);
   }
   else if (name == "target")
   {
