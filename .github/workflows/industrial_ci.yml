@@ -11,7 +11,7 @@ jobs:
           - { ROS_DISTRO: noetic, ROS_REPO: main }
     env:
       CCACHE_DIR: /github/home/.ccache # Directory for ccache (and how we enable ccache in industrial_ci)
-      UPSTREAM_WORKSPACE: 'github:rm-controls/rm_control#master -rm_control/rm_common -rm_control/rm_msgs'
+      UPSTREAM_WORKSPACE: 'github:rm-controls/rm_control#master'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
