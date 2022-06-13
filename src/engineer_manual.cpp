@@ -26,34 +26,30 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_up_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpRise, this));
   left_switch_down_event_.setFalling(boost::bind(&EngineerManual::leftSwitchDownFall, this));
+  ctrl_q_event_.setRising(boost::bind(&EngineerManual::ctrlQPress, this));
+  ctrl_a_event_.setRising(boost::bind(&EngineerManual::ctrlAPress, this));
+  ctrl_z_event_.setRising(boost::bind(&EngineerManual::ctrlZPress, this));
+  ctrl_w_event_.setRising(boost::bind(&EngineerManual::ctrlWPress, this));
+  ctrl_s_event_.setRising(boost::bind(&EngineerManual::ctrlSPress, this));
+  ctrl_x_event_.setRising(boost::bind(&EngineerManual::ctrlXPress, this));
+  ctrl_e_event_.setRising(boost::bind(&EngineerManual::ctrlEPress, this));
+  ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
   ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
-  ctrl_n_event_.setRising(boost::bind(&EngineerManual::ctrlNPress, this));
-  ctrl_j_event_.setRising(boost::bind(&EngineerManual::ctrlJPress, this));
-  ctrl_k_event_.setRising(boost::bind(&EngineerManual::ctrlKPress, this));
-  ctrl_l_event_.setRising(boost::bind(&EngineerManual::ctrlLPress, this));
-  ctrl_u_event_.setRising(boost::bind(&EngineerManual::ctrlUPress, this));
-  ctrl_i_event_.setRising(boost::bind(&EngineerManual::ctrlIPress, this));
-  ctrl_o_event_.setRising(boost::bind(&EngineerManual::ctrlOPress, this));
-  ctrl_p_event_.setRising(boost::bind(&EngineerManual::ctrlPPress, this));
-  ctrl_m_event_.setRising(boost::bind(&EngineerManual::ctrlMPress, this));
-  ctrl_q_event_.setRising(boost::bind(&EngineerManual::ctrlQPress, this));
-  ctrl_w_event_.setRising(boost::bind(&EngineerManual::ctrlWPress, this));
-  ctrl_e_event_.setRising(boost::bind(&EngineerManual::ctrlEPress, this));
+  ctrl_v_event_.setRising(boost::bind(&EngineerManual::ctrlVPress, this));
+  z_event_.setRising(boost::bind(&EngineerManual::ZPress, this));
+  x_event_.setRising(boost::bind(&EngineerManual::XPress, this));
+  c_event_.setRising(boost::bind(&EngineerManual::CPress, this));
+  v_event_.setRising(boost::bind(&EngineerManual::VPress, this));
+  b_event_.setRising(boost::bind(&EngineerManual::BPress, this));
+  shift_z_event_.setRising(boost::bind(&EngineerManual::shiftZPress, this));
+  shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
+  shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
+  shift_v_event_.setRising(boost::bind(&EngineerManual::shiftVPress, this));
+  shift_b_event_.setRising(boost::bind(&EngineerManual::shiftBPress, this));
   ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
-  ctrl_t_event_.setRising(boost::bind(&EngineerManual::ctrlTPress, this));
-  ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
-  ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
-
   //  shift_w_event_.setRising(boost::bind(&EngineerManual::shiftWPress, this));
   //  shift_s_event_.setRising(boost::bind(&EngineerManual::shiftSPress, this));
-  //  shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
-  //  shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
-
-  z_event_.setRising(boost::bind(&EngineerManual::zPress, this));
-  x_event_.setRising(boost::bind(&EngineerManual::xPress, this));
-  c_event_.setRising(boost::bind(&EngineerManual::cPress, this));
-  sentry_mode_ = 1;
 }
 
 void EngineerManual::run()
@@ -66,33 +62,31 @@ void EngineerManual::run()
 void EngineerManual::checkKeyboard()
 {
   ChassisGimbalManual::checkKeyboard();
+  ctrl_q_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_q);
+  ctrl_a_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_a);
+  ctrl_z_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
+  ctrl_w_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_w);
+  ctrl_s_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_s);
+  ctrl_x_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_x);
+  ctrl_e_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_e);
+  ctrl_d_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_d);
   ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
   ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
-  ctrl_n_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_n);
-  ctrl_j_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_j);
-  ctrl_k_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_k);
-  ctrl_l_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_l);
-  ctrl_u_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_u);
-  ctrl_i_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_i);
-  ctrl_o_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_o);
-  ctrl_p_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_p);
-  ctrl_m_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_m);
-  ctrl_q_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_q);
-  ctrl_w_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_w);
-  ctrl_e_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_e);
-  ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
-  ctrl_t_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_t);
-  ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
-  ctrl_g_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_g);
-
-  //  shift_w_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_w);
-  //  shift_s_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_s);
-  //  shift_c_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_c);
-  //  shift_x_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_x);
-
+  ctrl_v_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v);
   z_event_.update(data_.dbus_data_.key_z & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
   x_event_.update(data_.dbus_data_.key_x & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
   c_event_.update(data_.dbus_data_.key_c & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
+  v_event_.update(data_.dbus_data_.key_v & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
+  b_event_.update(data_.dbus_data_.key_b & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
+  z_event_.update(data_.dbus_data_.key_z & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
+  shift_z_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_z);
+  shift_x_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_x);
+  shift_c_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_c);
+  shift_v_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_v);
+  shift_b_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_b);
+  ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
+  shift_w_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_w);
+  shift_s_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_s);
 }
 
 void EngineerManual::updateRc()
@@ -106,6 +100,7 @@ void EngineerManual::updateRc()
 void EngineerManual::updatePc()
 {
   ChassisGimbalManual::updatePc();
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   vel_cmd_sender_->setAngularZVel(-data_.dbus_data_.m_x);
 }
 
@@ -113,7 +108,6 @@ void EngineerManual::sendCommand(const ros::Time& time)
 {
   if (operating_mode_ == MANUAL)
   {
-    gimbal_cmd_sender_->sendCommand(time);
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
     drag_command_sender_->sendCommand(time);
@@ -127,13 +121,8 @@ void EngineerManual::drawUi(const ros::Time& time)
   time_change_ui_->update("effort", time);
   time_change_ui_->update("temperature", time);
   trigger_change_ui_->update("drag", 0, drag_command_sender_->getState());
-  if (data_.referee_.referee_data_.interactive_data.header_data_.data_cmd_id_ == 0x0201 &&
-      data_.referee_.referee_data_.interactive_data.data_ != sentry_mode_)
-    data_.referee_.sendInteractiveData(
-        0x0200,
-        data_.referee_.referee_data_.robot_color_ == "blue" ? rm_common::RobotId::BLUE_SENTRY : rm_common::RED_SENTRY,
-        sentry_mode_);
-  trigger_change_ui_->update("sentry", data_.referee_.referee_data_.interactive_data.data_, false);
+  trigger_change_ui_->update("long_card", 0, card_command_sender_->getState());
+  trigger_change_ui_->update("short_card", 0, card_command_sender_->getState());
   flash_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
   if (!data_.joint_state_.name.empty())
     flash_ui_->update("card_warning", time, data_.joint_state_.effort[0] < 1.5);
@@ -175,7 +164,8 @@ void EngineerManual::rightSwitchUpRise()
 
 void EngineerManual::leftSwitchUpRise()
 {
-  runStepQueue("DYNAMICX");
+  //  runStepQueue("DYNAMICX");
+  power_on_calibration_->reset();
 }
 
 void EngineerManual::leftSwitchUpFall()
@@ -221,106 +211,108 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   ROS_INFO("Result: %i", result->finish);
   operating_mode_ = MANUAL;
 }
-void EngineerManual::ctrlCPress()
+
+void EngineerManual::ctrlQPress()
 {
-  action_client_.cancelAllGoals();
-  runStepQueue("DELETE_SCENE");
+  prefix_ = "GRASP_BIG_";
+  trigger_change_ui_->update("step", prefix_ + toward_ + process_);
 }
+
+void EngineerManual::ctrlAPress()
+{
+  prefix_ = "SKY_";
+  trigger_change_ui_->update("step", prefix_ + toward_ + process_);
+}
+
+void EngineerManual::ctrlZPress()
+{
+  prefix_ = "SMALL_STONE_";
+  trigger_change_ui_->update("step", prefix_ + toward_ + process_);
+}
+
+void EngineerManual::ctrlWPress()
+{
+  toward_ = "LF_";
+  trigger_change_ui_->update("step", prefix_ + toward_ + process_);
+}
+
+void EngineerManual::ctrlSPress()
+{
+  toward_ = "MID_";
+  trigger_change_ui_->update("step", prefix_ + toward_ + process_);
+}
+
+void EngineerManual::ctrlXPress()
+{
+  toward_ = "RT_";
+  trigger_change_ui_->update("step", prefix_ + toward_ + process_);
+}
+
+void EngineerManual::ctrlEPress()
+{
+  process_ = "PRE";
+  runStepQueue(prefix_ + toward_ + process_);
+  trigger_change_ui_->update("step", prefix_ + toward_ + process_);
+}
+
+void EngineerManual::ctrlDPress()
+{
+  process_ = "PROC";
+  runStepQueue(prefix_ + toward_ + process_);
+  trigger_change_ui_->update("step", prefix_ + toward_ + process_);
+}
+
 void EngineerManual::ctrlBPress()
 {
   runStepQueue("BACK_HOME");
   trigger_change_ui_->update("step", "BACK_HOME");
 }
 
-void EngineerManual::ctrlNPress()
+void EngineerManual::ctrlVPress()
 {
   runStepQueue("BACK_HOME2");
   trigger_change_ui_->update("step", "BACK_HOME2");
 }
-void EngineerManual::ctrlJPress()
-{
-  runStepQueue("EXCHANGE");
-  trigger_change_ui_->update("step", "EXCHANGE");
-}
-void EngineerManual::ctrlKPress()
-{
-  runStepQueue("GROUND_STONE");
-  trigger_change_ui_->update("step", "GROUND_STONE");
-}
-void EngineerManual::ctrlLPress()
-{
-  runStepQueue("SMALL_STONE");
-  trigger_change_ui_->update("step", "SMALL_STONE");
-}
-void EngineerManual::ctrlUPress()
+
+void EngineerManual::ZPress()
 {
   runStepQueue("STORE");
   trigger_change_ui_->update("step", "STORE");
 }
-void EngineerManual::ctrlIPress()
+
+void EngineerManual::XPress()
 {
   runStepQueue("GET_STONE");
   trigger_change_ui_->update("step", "GET_STONE");
 }
-void EngineerManual::ctrlOPress()
+
+void EngineerManual::CPress()
 {
   runStepQueue("GET_STONE_SKY");
   trigger_change_ui_->update("step", "GET_STONE_SKY");
-}
-void EngineerManual::ctrlPPress()
-{
-  runStepQueue("GET_STONE_SKY");
-  trigger_change_ui_->update("step", "GET_STONE_SKY");
-}
-void EngineerManual::ctrlMPress()
-{
-  runStepQueue("RELEASE_BARRIER");
-  trigger_change_ui_->update("step", "RELEASE_BARRIER");
-}
-void EngineerManual::ctrlFPress()
-{
-  prefix_ = "GRASP_BIG";
-  trigger_change_ui_->update("step", prefix_);
-}
-void EngineerManual::ctrlGPress()
-{
-  prefix_ = "SKY";
-  trigger_change_ui_->update("step", prefix_);
-}
-void EngineerManual::ctrlQPress()
-{
-  toward_ = "_LF_";
-  trigger_change_ui_->update("step", prefix_ + toward_);
-}
-void EngineerManual::ctrlWPress()
-{
-  toward_ = "_MID_";
-  trigger_change_ui_->update("step", prefix_ + toward_);
-}
-void EngineerManual::ctrlEPress()
-{
-  toward_ = "_RT_";
-  trigger_change_ui_->update("step", prefix_ + toward_);
-}
-void EngineerManual::ctrlRPress()
-{
-  runStepQueue(prefix_ + toward_ + "PRE");
-  trigger_change_ui_->update("steps", prefix_ + toward_ + "PRE");
-}
-void EngineerManual::ctrlTPress()
-{
-  runStepQueue(prefix_ + toward_ + "PROC");
-  trigger_change_ui_->update("steps", prefix_ + toward_ + "PROC");
-}
-void EngineerManual::zPress()
-{
-  if (card_command_sender_->getState())
-    card_command_sender_->off();
-  else
-    card_command_sender_->long_on();
 }
 
-void EngineerManual::xPress()
+void EngineerManual::VPress()
+{
+  runStepQueue("EXCHANGE");
+  trigger_change_ui_->update("step", "EXCHANGE");
+}
+
+void EngineerManual::BPress()
+{
+  runStepQueue("GROUND_STONE");
+  trigger_change_ui_->update("step", "GROUND_STONE");
+}
+
+void EngineerManual::shiftZPress()
+{
+  if (drag_command_sender_->getState())
+    drag_command_sender_->off();
+  else
+    drag_command_sender_->on();
+}
+
+void EngineerManual::shiftXPress()
 {
   if (card_command_sender_->getState())
     card_command_sender_->off();
@@ -328,12 +320,36 @@ void EngineerManual::xPress()
     card_command_sender_->short_on();
 }
 
-void EngineerManual::cPress()
+void EngineerManual::shiftCPress()
 {
-  if (drag_command_sender_->getState())
-    drag_command_sender_->off();
+  if (card_command_sender_->getState())
+    card_command_sender_->off();
   else
-    drag_command_sender_->on();
+    card_command_sender_->long_on();
+}
+
+void EngineerManual::shiftVPress()
+{
+  runStepQueue("GET_BARRIER");
+  trigger_change_ui_->update("step", "GET_BARRIER");
+}
+
+void EngineerManual::shiftBPress()
+{
+  runStepQueue("RELEASE_BARRIER");
+  trigger_change_ui_->update("step", "RELEASE_BARRIER");
+}
+
+void EngineerManual::ctrlCPress()
+{
+  action_client_.cancelAllGoals();
+  runStepQueue("DELETE_SCENE");
+  trigger_change_ui_->update("step", "DELETE_SCENE and CANCEL");
+}
+
+void EngineerManual::ctrlRPress()
+{
+  arm_calibration_->reset();
 }
 
 }  // namespace rm_manual
