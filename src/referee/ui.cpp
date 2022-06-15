@@ -108,6 +108,12 @@ void TriggerChangeUi::updateConfig(const std::string& name, Graph* graph, uint8_
 {
   if (name == "chassis")
   {
+    if (main_mode == 254)
+    {
+      graph->setContent("Cap reset");
+      graph->setColor(rm_common::GraphColor::YELLOW);
+      return;
+    }
     graph->setContent(getChassisState(main_mode));
     if (main_flag)
       graph->setColor(rm_common::GraphColor::ORANGE);

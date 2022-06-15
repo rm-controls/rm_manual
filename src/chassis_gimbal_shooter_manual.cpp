@@ -31,6 +31,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh) : Ch
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
   shift_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::shiftPressing, this));
   shift_event_.setFalling(boost::bind(&ChassisGimbalShooterManual::shiftRelease, this));
+  ctrl_shift_b_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::ctrlShiftBPress, this),
+                              boost::bind(&ChassisGimbalShooterManual::ctrlShiftBPressRelease, this));
   mouse_left_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseLeftPress, this));
   mouse_left_event_.setFalling(boost::bind(&ChassisGimbalShooterManual::mouseLeftRelease, this));
   mouse_right_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseRightPress, this));
@@ -64,8 +66,9 @@ void ChassisGimbalShooterManual::checkKeyboard()
   ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
   ctrl_v_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v);
   ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
-  ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
-  shift_event_.update(data_.dbus_data_.key_shift);
+  ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b & !data_.dbus_data_.key_shift);
+  shift_event_.update(data_.dbus_data_.key_shift & !data_.dbus_data_.key_ctrl);
+  ctrl_shift_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_shift & data_.dbus_data_.key_b);
   mouse_left_event_.update(data_.dbus_data_.p_l);
   mouse_right_event_.update(data_.dbus_data_.p_r);
 }
@@ -359,6 +362,18 @@ void ChassisGimbalShooterManual::ctrlBPress()
 {
   switch_detection_srv_->switchEnemyColor();
   switch_detection_srv_->callService();
+}
+
+void ChassisGimbalShooterManual::ctrlShiftBPress()
+{
+  trigger_change_ui_->update("chassis", 254, 0);
+}
+
+void ChassisGimbalShooterManual::ctrlShiftBPressRelease()
+{
+  trigger_change_ui_->update("chassis", chassis_cmd_sender_->getMsg()->mode,
+                             chassis_cmd_sender_->power_limit_->getState() == rm_common::PowerLimit::BURST, 0,
+                             chassis_cmd_sender_->power_limit_->getState() == rm_common::PowerLimit::CHARGE);
 }
 
 }  // namespace rm_manual
