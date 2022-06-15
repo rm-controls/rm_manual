@@ -41,7 +41,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh) : Ch
 void ChassisGimbalShooterManual::run()
 {
   ChassisGimbalManual::run();
-  shooter_cmd_sender_->couputeTargetAcceleration();
+  shooter_cmd_sender_->computeTargetAcceleration();
   shooter_calibration_->update(ros::Time::now());
 }
 
