@@ -9,7 +9,8 @@ namespace rm_manual
 ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh) : ChassisGimbalManual(nh)
 {
   ros::NodeHandle shooter_nh(nh, "shooter");
-  shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, data_.referee_.referee_data_);
+  shooter_cmd_sender_ =
+      new rm_common::ShooterCommandSender(shooter_nh, data_.referee_.referee_data_, data_.track_data_);
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
   XmlRpc::XmlRpcValue rpc_value;
@@ -42,6 +43,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh) : Ch
 void ChassisGimbalShooterManual::run()
 {
   ChassisGimbalManual::run();
+  shooter_cmd_sender_->computeTargetAcceleration();
   shooter_calibration_->update(ros::Time::now());
 }
 
