@@ -48,8 +48,10 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   shift_v_event_.setRising(boost::bind(&EngineerManual::shiftVPress, this));
   shift_b_event_.setRising(boost::bind(&EngineerManual::shiftBPress, this));
   ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
-  //  shift_w_event_.setRising(boost::bind(&EngineerManual::shiftWPress, this));
-  //  shift_s_event_.setRising(boost::bind(&EngineerManual::shiftSPress, this));
+  shift_q_event_.setRising(boost::bind(&EngineerManual::shiftQPress, this));
+  shift_w_event_.setRising(boost::bind(&EngineerManual::shiftWPress, this));
+  shift_e_event_.setRising(boost::bind(&EngineerManual::shiftEPress, this));
+  ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
 }
 
 void EngineerManual::run()
@@ -85,8 +87,10 @@ void EngineerManual::checkKeyboard()
   shift_v_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_v);
   shift_b_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_b);
   ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
+  shift_q_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_q);
   shift_w_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_w);
-  shift_s_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_s);
+  shift_e_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_e);
+  ctrl_g_event_.update(data_.dbus_data_.key_g & data_.dbus_data_.key_ctrl);
 }
 
 void EngineerManual::updateRc()
@@ -145,26 +149,24 @@ void EngineerManual::chassisOutputOn()
 void EngineerManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   action_client_.cancelAllGoals();
 }
 
 void EngineerManual::rightSwitchMidRise()
 {
   ChassisGimbalManual::rightSwitchMidRise();
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
 }
 
 void EngineerManual::rightSwitchUpRise()
 {
   ChassisGimbalManual::rightSwitchUpRise();
-  runStepQueue("BACK_HOME");
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
 }
 
 void EngineerManual::leftSwitchUpRise()
 {
-  //  runStepQueue("DYNAMICX");
   power_on_calibration_->reset();
 }
 
@@ -212,6 +214,10 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   operating_mode_ = MANUAL;
 }
 
+void EngineerManual::ctrlGPress()
+{
+}
+
 void EngineerManual::ctrlQPress()
 {
   prefix_ = "GRASP_BIG_";
@@ -226,7 +232,7 @@ void EngineerManual::ctrlAPress()
 
 void EngineerManual::ctrlZPress()
 {
-  prefix_ = "SMALL_STONE_";
+  prefix_ = "EXCHANGE_";
   trigger_change_ui_->update("step", prefix_ + toward_ + process_);
 }
 
@@ -250,7 +256,10 @@ void EngineerManual::ctrlXPress()
 
 void EngineerManual::ctrlEPress()
 {
-  process_ = "PRE";
+  if (process_ == "PROC")
+    process_ = "AFTER";
+  else
+    process_ = "PRE";
   runStepQueue(prefix_ + toward_ + process_);
   trigger_change_ui_->update("step", prefix_ + toward_ + process_);
 }
@@ -270,8 +279,7 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::ctrlVPress()
 {
-  runStepQueue("BACK_HOME2");
-  trigger_change_ui_->update("step", "BACK_HOME2");
+  //
 }
 
 void EngineerManual::ZPress()
@@ -294,50 +302,84 @@ void EngineerManual::CPress()
 
 void EngineerManual::VPress()
 {
-  runStepQueue("EXCHANGE");
-  trigger_change_ui_->update("step", "EXCHANGE");
+  runStepQueue("SMALL_STONE");
+  trigger_change_ui_->update("step", "SMALL_STONE");
 }
 
 void EngineerManual::BPress()
 {
-  runStepQueue("GROUND_STONE");
-  trigger_change_ui_->update("step", "GROUND_STONE");
 }
 
 void EngineerManual::shiftZPress()
 {
   if (drag_command_sender_->getState())
+  {
     drag_command_sender_->off();
+    trigger_change_ui_->update("drag", "off");
+  }
   else
+  {
     drag_command_sender_->on();
+    trigger_change_ui_->update("drag", "on");
+  }
 }
 
 void EngineerManual::shiftXPress()
 {
   if (card_command_sender_->getState())
+  {
     card_command_sender_->off();
+    trigger_change_ui_->update("long_card", "off");
+  }
   else
+  {
     card_command_sender_->short_on();
+    trigger_change_ui_->update("long_card", "on");
+  }
 }
 
 void EngineerManual::shiftCPress()
 {
   if (card_command_sender_->getState())
+  {
     card_command_sender_->off();
+    trigger_change_ui_->update("short_card", "off");
+  }
   else
+  {
     card_command_sender_->long_on();
+    trigger_change_ui_->update("short_card", "on");
+  }
 }
 
 void EngineerManual::shiftVPress()
 {
-  runStepQueue("GET_BARRIER");
-  trigger_change_ui_->update("step", "GET_BARRIER");
+  runStepQueue("OPEN_GRIPPER");
+  trigger_change_ui_->update("step", "OPEN_GRIPPER");
 }
 
 void EngineerManual::shiftBPress()
 {
-  runStepQueue("RELEASE_BARRIER");
-  trigger_change_ui_->update("step", "RELEASE_BARRIER");
+  runStepQueue("CLOSE_GRIPPER");
+  trigger_change_ui_->update("step", "CLOSE_GRIPPER");
+}
+
+void EngineerManual::shiftQPress()
+{
+  runStepQueue("SKY_GIMBAL");
+  trigger_change_ui_->update("step", "toward_see");
+}
+
+void EngineerManual::shiftWPress()
+{
+  runStepQueue("WALKING_GIMBAL");
+  trigger_change_ui_->update("step", "toward_see");
+}
+
+void EngineerManual::shiftEPress()
+{
+  runStepQueue("BIG_GIMBAL");
+  trigger_change_ui_->update("step", "toward_see");
 }
 
 void EngineerManual::ctrlCPress()
@@ -350,6 +392,7 @@ void EngineerManual::ctrlCPress()
 void EngineerManual::ctrlRPress()
 {
   arm_calibration_->reset();
+  power_on_calibration_->reset();
 }
 
 }  // namespace rm_manual
