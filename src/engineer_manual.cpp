@@ -51,6 +51,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   shift_q_event_.setRising(boost::bind(&EngineerManual::shiftQPress, this));
   shift_w_event_.setRising(boost::bind(&EngineerManual::shiftWPress, this));
   shift_e_event_.setRising(boost::bind(&EngineerManual::shiftEPress, this));
+  shift_r_event_.setRising(boost::bind(&EngineerManual::shiftRPress, this));
   ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
 }
 
@@ -90,6 +91,7 @@ void EngineerManual::checkKeyboard()
   shift_q_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_q);
   shift_w_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_w);
   shift_e_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_e);
+  shift_r_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_r);
   ctrl_g_event_.update(data_.dbus_data_.key_g & data_.dbus_data_.key_ctrl);
 }
 
@@ -308,6 +310,8 @@ void EngineerManual::VPress()
 
 void EngineerManual::BPress()
 {
+  runStepQueue("GROUND_STONE");
+  trigger_change_ui_->update("step", "GROUND_STONE");
 }
 
 void EngineerManual::shiftZPress()
@@ -364,22 +368,28 @@ void EngineerManual::shiftBPress()
   trigger_change_ui_->update("step", "CLOSE_GRIPPER");
 }
 
-void EngineerManual::shiftQPress()
+void EngineerManual::shiftRPress()
 {
   runStepQueue("SKY_GIMBAL");
-  trigger_change_ui_->update("step", "toward_see");
+  trigger_change_ui_->update("step", "SKY_GIMBAL");
+}
+
+void EngineerManual::shiftQPress()
+{
+  runStepQueue("WALKING_GIMBAL");
+  trigger_change_ui_->update("step", "WALKING_GIMBAL");
 }
 
 void EngineerManual::shiftWPress()
 {
-  runStepQueue("WALKING_GIMBAL");
-  trigger_change_ui_->update("step", "toward_see");
+  runStepQueue("BIG_GIMBAL");
+  trigger_change_ui_->update("step", "BIG_GIMBAL");
 }
 
 void EngineerManual::shiftEPress()
 {
-  runStepQueue("BIG_GIMBAL");
-  trigger_change_ui_->update("step", "toward_see");
+  runStepQueue("BACK_POS");
+  trigger_change_ui_->update("step", "BACK_POS");
 }
 
 void EngineerManual::ctrlCPress()

@@ -69,6 +69,7 @@ private:
   void shiftQPress();
   void shiftWPress();
   void shiftEPress();
+  void shiftRPress();
 
   enum
   {
@@ -86,7 +87,7 @@ private:
   InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_q_event_, ctrl_a_event_, ctrl_z_event_, ctrl_w_event_,
       ctrl_s_event_, ctrl_x_event_, ctrl_e_event_, ctrl_d_event_, ctrl_c_event_, ctrl_b_event_, ctrl_v_event_, z_event_,
       x_event_, c_event_, v_event_, b_event_, shift_z_event_, shift_x_event_, shift_c_event_, shift_v_event_,
-      shift_b_event_, ctrl_r_event_, shift_q_event_, shift_w_event_, shift_e_event_, ctrl_g_event_;
+      shift_b_event_, ctrl_r_event_, shift_q_event_, shift_w_event_, shift_e_event_, ctrl_g_event_, shift_r_event_;
 };
 
 }  // namespace rm_manual
