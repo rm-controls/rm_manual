@@ -43,22 +43,22 @@ private:
   }
   void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback);
   void actionDoneCallback(const actionlib::SimpleClientGoalState& state, const rm_msgs::EngineerResultConstPtr& result);
-  void ctrlQPress();   // da zi yuan
-  void ctrlAPress();   // kong jie
-  void ctrlZPress();   // xiao zi yuan dao
-  void ctrlWPress();   // left
-  void ctrlSPress();   // mid
-  void ctrlXPress();   // right
-  void ctrlEPress();   // yubei
-  void ctrlDPress();   // guocheng
-  void ctrlCPress();   // cancel and delete scence
-  void ctrlBPress();   // home
-  void ctrlVPress();   // home sky
-  void ZPress();       // stone
-  void XPress();       // exchange
-  void CPress();       // get stone
-  void VPress();       // get sky stone
-  void BPress();       // ground stone
+  void ctrlQPress();  // da zi yuan
+  void ctrlAPress();  // kong jie
+  void ctrlZPress();  // xiao zi yuan dao
+  void ctrlWPress();  // left
+  void ctrlSPress();  // mid
+  void ctrlXPress();  // right
+  void ctrlEPress();  // yubei
+  void ctrlDPress();  // guocheng
+  void ctrlCPress();  // cancel and delete scence
+  void ctrlBPress();  // home
+  void ctrlVPress();  // home sky
+  void ZPress();      // stone
+  void XPress();      // exchange
+  void CPress();      // get stone
+  void VPress();      // get sky stone
+  void BPress();      // ground stone
   void ctrlGPress();
   void shiftZPress();  // drag
   void shiftXPress();  // short card
