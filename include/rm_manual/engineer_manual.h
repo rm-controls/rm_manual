@@ -43,44 +43,51 @@ private:
   }
   void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback);
   void actionDoneCallback(const actionlib::SimpleClientGoalState& state, const rm_msgs::EngineerResultConstPtr& result);
-  void ctrlCPress();
-  void ctrlBPress();
-  void ctrlNPress();
-  void ctrlJPress();
-  void ctrlKPress();
-  void ctrlLPress();
-  void ctrlUPress();
-  void ctrlIPress();
-  void ctrlOPress();
-  void ctrlPPress();
-  void ctrlMPress();
-  void ctrlFPress();
+  void ctrlQPress();   // da zi yuan
+  void ctrlAPress();   // kong jie
+  void ctrlZPress();   // xiao zi yuan dao
+  void ctrlWPress();   // left
+  void ctrlSPress();   // mid
+  void ctrlXPress();   // right
+  void ctrlEPress();   // yubei
+  void ctrlDPress();   // guocheng
+  void ctrlCPress();   // cancel and delete scence
+  void ctrlBPress();   // home
+  void ctrlVPress();   // home sky
+  void ZPress();       // stone
+  void XPress();       // exchange
+  void CPress();       // get stone
+  void VPress();       // get sky stone
+  void BPress();       // ground stone
   void ctrlGPress();
-  void ctrlQPress();
-  void ctrlWPress();
-  void ctrlEPress();
-  void ctrlRPress();
-  void ctrlTPress();
-
-  void zPress();  // card long
-  void xPress();  // card short
-  void cPress();  // drag
+  void shiftZPress();  // drag
+  void shiftXPress();  // short card
+  void shiftCPress();  // long card
+  void shiftVPress();  // gripper
+  void shiftBPress();  // losse gripper
+  void ctrlRPress();   // calibration
+  void shiftQPress();
+  void shiftWPress();
+  void shiftEPress();
+  void shiftRPress();
 
   enum
   {
     MANUAL,
     MIDDLEWARE
   };
-  std::string prefix_, toward_;
-  int operating_mode_, sentry_mode_;
+  std::string prefix_, toward_, process_;
+  int operating_mode_;
+  double x_scale_low_ = 0.1;
+  bool low_mode_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   rm_common::JointPositionBinaryCommandSender* drag_command_sender_;
   rm_common::CardCommandSender* card_command_sender_;
-  InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_c_event_, ctrl_b_event_, ctrl_n_event_, ctrl_j_event_,
-      ctrl_k_event_, ctrl_l_event_, ctrl_u_event_, ctrl_i_event_, ctrl_o_event_, ctrl_p_event_, ctrl_m_event_,
-      ctrl_q_event_, ctrl_w_event_, ctrl_e_event_, ctrl_r_event_, ctrl_t_event_, ctrl_f_event_, ctrl_g_event_, z_event_,
-      x_event_, c_event_;
+  InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_q_event_, ctrl_a_event_, ctrl_z_event_, ctrl_w_event_,
+      ctrl_s_event_, ctrl_x_event_, ctrl_e_event_, ctrl_d_event_, ctrl_c_event_, ctrl_b_event_, ctrl_v_event_, z_event_,
+      x_event_, c_event_, v_event_, b_event_, shift_z_event_, shift_x_event_, shift_c_event_, shift_v_event_,
+      shift_b_event_, ctrl_r_event_, shift_q_event_, shift_w_event_, shift_e_event_, ctrl_g_event_, shift_r_event_;
 };
 
 }  // namespace rm_manual
