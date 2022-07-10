@@ -138,7 +138,7 @@ void EngineerManual::remoteControlTurnOff()
   action_client_.cancelAllGoals();
 }
 
-void EngineerManual::chassisOutputOn() ik
+void EngineerManual::chassisOutputOn()
 {
   power_on_calibration_->reset();
   if (MIDDLEWARE)
