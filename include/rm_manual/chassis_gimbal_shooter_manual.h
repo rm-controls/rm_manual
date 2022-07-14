@@ -62,10 +62,10 @@ protected:
   void bPress();
   void qPress()
   {
-    if (shooter_cmd_sender_->getShootFrequency() != rm_common::HeatLimit::BURST)
-      shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::BURST);
-    else
-      shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::LOW);
+    //    if (shooter_cmd_sender_->getShootFrequency() != rm_common::HeatLimit::BURST)
+    //      shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::BURST);
+    //    else
+    //      shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::LOW);
   }
   void fPress()
   {
