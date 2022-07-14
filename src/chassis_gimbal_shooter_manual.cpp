@@ -120,7 +120,7 @@ void ChassisGimbalShooterManual::drawUi(const ros::Time& time)
   if (data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::BLUE_HERO &&
       data_.referee_.referee_data_.robot_id_ != rm_common::RobotId::RED_HERO)
     trigger_change_ui_->update("target", switch_detection_srv_->getTarget(),
-                               "shooter_cmd_sender_->getShootFrequency() == rm_common::HeatLimit::BURST",
+                               shooter_cmd_sender_->getShootFrequency() == rm_common::HeatLimit::BURST,
                                switch_detection_srv_->getArmorTarget(),
                                switch_detection_srv_->getColor() == rm_msgs::StatusChangeRequest::RED);
   else
