@@ -31,8 +31,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh) : Ch
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this));
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
-  shift_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::shiftPressing, this));
-  shift_event_.setFalling(boost::bind(&ChassisGimbalShooterManual::shiftRelease, this));
+  shift_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::shiftPress, this),
+                       boost::bind(&ChassisGimbalShooterManual::shiftRelease, this));
   ctrl_shift_b_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::ctrlShiftBPress, this),
                               boost::bind(&ChassisGimbalShooterManual::ctrlShiftBPressRelease, this));
   mouse_left_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseLeftPress, this));
@@ -117,13 +117,20 @@ void ChassisGimbalShooterManual::shooterOutputOn()
 void ChassisGimbalShooterManual::updateRc()
 {
   ChassisGimbalManual::updateRc();
-  if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP)
-    gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
 }
 
 void ChassisGimbalShooterManual::updatePc()
 {
   ChassisGimbalManual::updatePc();
+  if (chassis_cmd_sender_->power_limit_->getState() != rm_common::PowerLimit::CHARGE)
+  {
+    if (!data_.dbus_data_.key_shift && chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW &&
+        std::sqrt(std::pow(vel_cmd_sender_->getMsg()->linear.x, 2) + std::pow(vel_cmd_sender_->getMsg()->linear.y, 2)) >
+            0.0)
+      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    else if (data_.referee_.referee_data_.capacity_data.chassis_power_ < 1.0)
+      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
+  }
 }
 
 void ChassisGimbalShooterManual::rightSwitchDownRise()
@@ -227,11 +234,19 @@ void ChassisGimbalShooterManual::ePress()
 
 void ChassisGimbalShooterManual::cPress()
 {
-  if (chassis_cmd_sender_->power_limit_->getState() != rm_common::PowerLimit::BURST)
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
+  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
+  {
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    vel_cmd_sender_->setAngularZVel(0.0);
+  }
   else
   {
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
+    if (x_scale_ != 0.0 || y_scale_ != 0.0)
+      vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
+    else
+      vel_cmd_sender_->setAngularZVel(1.0);
   }
 }
 
@@ -292,19 +307,20 @@ void ChassisGimbalShooterManual::dPress()
   }
 }
 
-void ChassisGimbalShooterManual::shiftPressing()
+void ChassisGimbalShooterManual::shiftPress()
 {
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
-  if (x_scale_ != 0.0 || y_scale_ != 0.0)
-    vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
-  else
-    vel_cmd_sender_->setAngularZVel(1.0);
+  if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::FOLLOW)
+  {
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    vel_cmd_sender_->setAngularZVel(0.);
+  }
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
 }
 
 void ChassisGimbalShooterManual::shiftRelease()
 {
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-  vel_cmd_sender_->setAngularZVel(0.0);
+  if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::GYRO)
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
 }
 
 void ChassisGimbalShooterManual::ctrlCPress()

@@ -70,7 +70,7 @@ protected:
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   }
-  void shiftPressing();
+  void shiftPress();
   void shiftRelease();
   void ctrlCPress();
   void ctrlVPress();
