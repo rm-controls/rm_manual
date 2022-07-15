@@ -52,8 +52,8 @@ void DartManual::sendCommand(const ros::Time& time)
 void DartManual::updateRc()
 {
   ManualBase::updateRc();
-  Move(pitch_sender_->findJoint(), data_.dbus_data_.ch_r_y, pitch_sender_);
-  Move(yaw_sender_->findJoint(), data_.dbus_data_.ch_l_x, yaw_sender_);
+  Move(pitch_sender_->getIndex(), data_.dbus_data_.ch_r_y, pitch_sender_);
+  Move(yaw_sender_->getIndex(), data_.dbus_data_.ch_l_x, yaw_sender_);
 }
 
 void DartManual::updatePc()
