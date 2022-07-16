@@ -76,8 +76,8 @@ protected:
   void ctrlVPress();
   void ctrlRPress();
   void ctrlBPress();
-  void ctrlShiftBPress();
-  void ctrlShiftBPressRelease();
+  // void ctrlShiftBPress();
+  // void ctrlShiftBPressRelease();
 
   InputEvent shooter_power_on_event_, self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_,
       f_event_, b_event_, x_event_, ctrl_c_event_, ctrl_v_event_, ctrl_r_event_, ctrl_b_event_, shift_event_,

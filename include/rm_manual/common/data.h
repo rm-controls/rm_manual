@@ -18,13 +18,13 @@
 #include <serial/serial.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
-#include <rm_common/decision/target_cost_function.h>
 
 #include <rm_msgs/CapacityData.h>
 #include <rm_msgs/GameRobotHp.h>
 #include <rm_msgs/GameRobotStatus.h>
 #include <rm_msgs/GameStatus.h>
 #include <rm_msgs/PowerHeatData.h>
+#include <rm_msgs/ManualToReferee.h>
 
 namespace rm_manual
 {
@@ -49,6 +49,9 @@ public:
     capacity_sub_ = nh.subscribe<rm_msgs::CapacityData>("/capacity_data", 10, &Data::capacityDataCallback, this);
     power_heat_data_sub_ =
         nh.subscribe<rm_msgs::PowerHeatData>("/power_heat_data", 10, &Data::powerHeatDataCallback, this);
+    referee_sub_ = nh.subscribe<rm_msgs::Referee>("/referee", 10, &Data::refereeCallback, this);
+    // pub
+    manual_to_referee_pub_ = nh.advertise<rm_msgs::ManualToReferee>("/manual_to_referee", 1);
   }
 
   void jointStateCallback(const sensor_msgs::JointState::ConstPtr& joint_state)
@@ -96,6 +99,10 @@ public:
   {
     power_heat_data_data_ = *data;
   }
+  void refereeCallback(const rm_msgs::Referee::ConstPtr& data)
+  {
+    referee_sub_data_ = *data;
+  }
 
   void updateRefereeData()
   {
@@ -125,11 +132,11 @@ public:
     referee_data_.game_robot_status_.robot_id_ = game_robot_status_data_.robot_id;
 
     referee_data_.power_heat_data_.shooter_id_1_42_mm_cooling_heat_ =
-        power_heat_data_data_.shooter_id_1_42_mm_cooling_heat_;
+        power_heat_data_data_.shooter_id_1_42_mm_cooling_heat;
     referee_data_.power_heat_data_.shooter_id_1_17_mm_cooling_heat_ =
-        power_heat_data_data_.shooter_id_1_42_mm_cooling_heat_;
+        power_heat_data_data_.shooter_id_1_42_mm_cooling_heat;
     referee_data_.power_heat_data_.shooter_id_2_17_mm_cooling_heat_ =
-        power_heat_data_data_.shooter_id_1_42_mm_cooling_heat_;
+        power_heat_data_data_.shooter_id_1_42_mm_cooling_heat;
 
     referee_data_.capacity_data.chassis_power_ = capacity_data_.chassis_power_;
     referee_data_.capacity_data.is_online_ = capacity_data_.is_online_;
@@ -149,6 +156,8 @@ public:
     referee_data_.game_robot_hp_.blue_4_robot_hp_ = game_robot_hp_data_.blue_4_robot_hp_;
     referee_data_.game_robot_hp_.blue_5_robot_hp_ = game_robot_hp_data_.blue_5_robot_hp_;
     referee_data_.game_robot_hp_.blue_7_robot_hp_ = game_robot_hp_data_.blue_7_robot_hp_;
+
+    referee_data_.is_online_ = referee_sub_data_.is_online;
   };
 
   ros::Subscriber joint_state_sub_;
@@ -162,6 +171,9 @@ public:
   ros::Subscriber power_heat_data_sub_;
   ros::Subscriber game_status_sub_;
   ros::Subscriber capacity_sub_;
+  ros::Subscriber referee_sub_;
+
+  ros::Publisher manual_to_referee_pub_;
 
   sensor_msgs::JointState joint_state_;
   rm_msgs::ActuatorState actuator_state_;
@@ -174,6 +186,8 @@ public:
   rm_msgs::PowerHeatData power_heat_data_data_;
   rm_msgs::GameStatus game_status_data_;
   rm_msgs::CapacityData capacity_data_;
+  rm_msgs::Referee referee_sub_data_;
+  rm_msgs::ManualToReferee manual_to_referee_pub_data;
 
   rm_common::RefereeData referee_data_;
   serial::Serial serial_;

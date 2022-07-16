@@ -4,8 +4,10 @@
 
 #include "rm_manual/chassis_gimbal_shooter_cover_manual.h"
 
-namespace rm_manual {
-ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle &nh) : ChassisGimbalShooterManual(nh) {
+namespace rm_manual
+{
+ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle& nh) : ChassisGimbalShooterManual(nh)
+{
   ros::NodeHandle cover_nh(nh, "cover");
   nh.param("supply_frame", supply_frame_, std::string("supply_frame"));
   cover_command_sender_ = new rm_common::JointPositionBinaryCommandSender(cover_nh);
@@ -17,7 +19,8 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   ctrl_q_event_.setRising(boost::bind(&ChassisGimbalShooterCoverManual::ctrlQPress, this));
 }
 
-void ChassisGimbalShooterCoverManual::run() {
+void ChassisGimbalShooterCoverManual::run()
+{
   ChassisGimbalShooterManual::run();
   gimbal_calibration_->update(ros::Time::now());
 }
@@ -29,7 +32,13 @@ void ChassisGimbalShooterCoverManual::updatePc()
                               cover_command_sender_->getState() ? 0.0 : data_.dbus_data_.m_y * gimbal_scale_);
 }
 
-void ChassisGimbalShooterCoverManual::checkKeyboard() {
+void ChassisGimbalShooterCoverManual::checkReferee()
+{
+  data_.manual_to_referee_pub_data.cover_state = cover_command_sender_->getState();
+  ChassisGimbalShooterManual::checkReferee();
+}
+void ChassisGimbalShooterCoverManual::checkKeyboard()
+{
   ChassisGimbalShooterManual::checkKeyboard();
   ctrl_z_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
   ctrl_q_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_q);
@@ -88,32 +97,38 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
   cover_command_sender_->sendCommand(time);
 }
 
-void ChassisGimbalShooterCoverManual::gimbalOutputOn() {
+void ChassisGimbalShooterCoverManual::gimbalOutputOn()
+{
   ChassisGimbalShooterManual::gimbalOutputOn();
   gimbal_calibration_->reset();
 }
 
-void ChassisGimbalShooterCoverManual::remoteControlTurnOff() {
+void ChassisGimbalShooterCoverManual::remoteControlTurnOff()
+{
   ChassisGimbalShooterManual::remoteControlTurnOff();
   gimbal_calibration_->stop();
 }
 
-void ChassisGimbalShooterCoverManual::remoteControlTurnOn() {
+void ChassisGimbalShooterCoverManual::remoteControlTurnOn()
+{
   ChassisGimbalShooterManual::remoteControlTurnOn();
   gimbal_calibration_->stopController();
 }
 
-void ChassisGimbalShooterCoverManual::rightSwitchDownRise() {
+void ChassisGimbalShooterCoverManual::rightSwitchDownRise()
+{
   ChassisGimbalShooterManual::rightSwitchDownRise();
   supply_ = true;
 }
 
-void ChassisGimbalShooterCoverManual::rightSwitchMidRise() {
+void ChassisGimbalShooterCoverManual::rightSwitchMidRise()
+{
   ChassisGimbalShooterManual::rightSwitchMidRise();
   supply_ = false;
 }
 
-void ChassisGimbalShooterCoverManual::rightSwitchUpRise() {
+void ChassisGimbalShooterCoverManual::rightSwitchUpRise()
+{
   ChassisGimbalShooterManual::rightSwitchUpRise();
   supply_ = false;
 }
@@ -127,4 +142,4 @@ void ChassisGimbalShooterCoverManual::ctrlQPress()
 {
   gimbal_calibration_->reset();
 }
-}
+}  // namespace rm_manual

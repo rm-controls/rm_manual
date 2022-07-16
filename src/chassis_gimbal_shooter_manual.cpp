@@ -10,8 +10,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh) : Ch
 {
   ros::NodeHandle shooter_nh(nh, "shooter");
   shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, data_.referee_data_, data_.track_data_);
-  shooter_cmd_sender_ =
-      new rm_common::ShooterCommandSender(shooter_nh, data_.referee_data_, data_.track_data_);
+  shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, data_.referee_data_, data_.track_data_);
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
   XmlRpc::XmlRpcValue rpc_value;
@@ -33,8 +32,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh) : Ch
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
   shift_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::shiftPress, this),
                        boost::bind(&ChassisGimbalShooterManual::shiftRelease, this));
-  ctrl_shift_b_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::ctrlShiftBPress, this),
-                              boost::bind(&ChassisGimbalShooterManual::ctrlShiftBPressRelease, this));
+  // ctrl_shift_b_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::ctrlShiftBPress, this),
+  //                             boost::bind(&ChassisGimbalShooterManual::ctrlShiftBPressRelease, this));
   mouse_left_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseLeftPress, this));
   mouse_left_event_.setFalling(boost::bind(&ChassisGimbalShooterManual::mouseLeftRelease, this));
   mouse_right_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseRightPress, this));
@@ -54,6 +53,11 @@ void ChassisGimbalShooterManual::checkReferee()
   shooter_power_on_event_.update(data_.referee_data_.game_robot_status_.mains_power_shooter_output_);
   self_inspection_event_.update(data_.referee_data_.game_status_.game_progress_ == 2);
   game_start_event_.update(data_.referee_data_.game_status_.game_progress_ == 4);
+
+  data_.manual_to_referee_pub_data.power_limit_state = chassis_cmd_sender_->power_limit_->getState();
+  data_.manual_to_referee_pub_data.shoot_frequency = shooter_cmd_sender_->getShootFrequency();
+  data_.manual_to_referee_pub_data.stamp = ros::Time::now();
+  data_.manual_to_referee_pub_.publish(data_.manual_to_referee_pub_data);
 }
 
 void ChassisGimbalShooterManual::checkKeyboard()
@@ -128,7 +132,8 @@ void ChassisGimbalShooterManual::updatePc()
         std::sqrt(std::pow(vel_cmd_sender_->getMsg()->linear.x, 2) + std::pow(vel_cmd_sender_->getMsg()->linear.y, 2)) >
             0.0)
       chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-    else if (data_.referee_.referee_data_.capacity_data.chassis_power_ < 1.0)
+    else if (data_.referee_data_.capacity_data.chassis_power_ < 1.0 &&
+             chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW)
       chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
   }
 }
@@ -242,7 +247,7 @@ void ChassisGimbalShooterManual::cPress()
   else
   {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
     if (x_scale_ != 0.0 || y_scale_ != 0.0)
       vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
     else
@@ -263,6 +268,7 @@ void ChassisGimbalShooterManual::wPress()
       gimbal_cmd_sender_->getEject())
   {
     gimbal_cmd_sender_->setEject(false);
+    data_.manual_to_referee_pub_data.hero_eject_flag = gimbal_cmd_sender_->getEject();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
@@ -276,6 +282,7 @@ void ChassisGimbalShooterManual::aPress()
       gimbal_cmd_sender_->getEject())
   {
     gimbal_cmd_sender_->setEject(false);
+    data_.manual_to_referee_pub_data.hero_eject_flag = gimbal_cmd_sender_->getEject();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
@@ -289,6 +296,7 @@ void ChassisGimbalShooterManual::sPress()
       gimbal_cmd_sender_->getEject())
   {
     gimbal_cmd_sender_->setEject(false);
+    data_.manual_to_referee_pub_data.hero_eject_flag = gimbal_cmd_sender_->getEject();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
@@ -302,6 +310,7 @@ void ChassisGimbalShooterManual::dPress()
       gimbal_cmd_sender_->getEject())
   {
     gimbal_cmd_sender_->setEject(false);
+    data_.manual_to_referee_pub_data.hero_eject_flag = gimbal_cmd_sender_->getEject();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
@@ -309,18 +318,12 @@ void ChassisGimbalShooterManual::dPress()
 
 void ChassisGimbalShooterManual::shiftPress()
 {
-  if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::FOLLOW)
-  {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    vel_cmd_sender_->setAngularZVel(0.);
-  }
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
 }
 
 void ChassisGimbalShooterManual::shiftRelease()
 {
-  if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::GYRO)
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
 }
 
 void ChassisGimbalShooterManual::ctrlCPress()
@@ -345,6 +348,7 @@ void ChassisGimbalShooterManual::ctrlRPress()
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
     gimbal_cmd_sender_->setEject(true);
+    data_.manual_to_referee_pub_data.hero_eject_flag = gimbal_cmd_sender_->getEject();
   }
   else
   {

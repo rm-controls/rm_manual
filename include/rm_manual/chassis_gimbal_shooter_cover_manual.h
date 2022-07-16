@@ -17,6 +17,7 @@ public:
 protected:
   void updatePc() override;
   void checkKeyboard() override;
+  void checkReferee() override;
   void sendCommand(const ros::Time& time) override;
   void gimbalOutputOn() override;
   void remoteControlTurnOff() override;
