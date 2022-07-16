@@ -75,6 +75,8 @@ void DartManual::updatePc()
 void DartManual::checkReferee()
 {
   ManualBase::checkReferee();
+  chassis_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_chassis_output_);
+  gimbal_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_gimbal_output_);
 }
 
 void DartManual::remoteControlTurnOn()
@@ -94,7 +96,7 @@ void DartManual::leftSwitchDownRise()
 void DartManual::leftSwitchMidRise()
 {
   ManualBase::leftSwitchMidRise();
-  ROS_INFO("on");
+  ROS_INFO("Ready to shooter");
   friction_right_sender_->setPoint(qd_);
   friction_left_sender_->setPoint(qd_);
 }
@@ -128,18 +130,23 @@ void DartManual::Move(int index, double ch_l, rm_common::JointPointCommandSender
   }
 }
 
+void DartManual::scaleAdjust()
+{
+  // Wait for test plot.
+}
+
 void DartManual::recordPosition()
 {
   if (data_.dbus_data_.ch_r_y == 1)
   {
-    pitch_post_ = data_.joint_state_.position[1];
-    yaw_post_ = data_.joint_state_.position[5];
+    pitch_post_ = data_.joint_state_.position[pitch_sender_->getIndex()];
+    yaw_post_ = data_.joint_state_.position[yaw_sender_->getIndex()];
     ROS_INFO("recorded outpost position");
   }
   if (data_.dbus_data_.ch_r_y == -1)
   {
-    pitch_base_ = data_.joint_state_.position[1];
-    yaw_base_ = data_.joint_state_.position[5];
+    pitch_base_ = data_.joint_state_.position[pitch_sender_->getIndex()];
+    yaw_base_ = data_.joint_state_.position[yaw_sender_->getIndex()];
     ROS_INFO("recorded base position");
   }
 }

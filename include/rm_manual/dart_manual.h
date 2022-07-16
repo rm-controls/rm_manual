@@ -32,13 +32,14 @@ protected:
   void updateRc() override;
   void updatePc() override;
   void Move(int index, double ch_l, rm_common::JointPointCommandSender* joint);
+  void scaleAdjust();
   void recordPosition();
 
   rm_common::JointPointCommandSender *trigger_sender_, *friction_left_sender_, *friction_right_sender_;
   rm_common::JointPointCommandSender *pitch_sender_, *yaw_sender_;
   rm_common::CalibrationQueue *trigger_calibration_, *gimbal_calibration_;
   double pitch_post_{}, pitch_base_{}, yaw_post_{}, yaw_base_{};
-  double qd_, forward_vel_;
+  double qd_, forward_vel_, scale_;
   bool set_position_{ true };
 
   InputEvent chassis_power_on_event_, gimbal_power_on_event_;
