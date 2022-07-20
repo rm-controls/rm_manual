@@ -17,6 +17,9 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_drag);
   ros::NodeHandle nh_card(nh, "card");
   card_command_sender_ = new rm_common::CardCommandSender(nh_card);
+  // Servo
+  ros::NodeHandle nh_servo(nh, "servo");
+  servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("power_on_calibration", rpc_value);
@@ -36,6 +39,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
   ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
+  ctrl_b_event_.setFalling(boost::bind(&EngineerManual::ctrlBRelease, this));
   ctrl_v_event_.setRising(boost::bind(&EngineerManual::ctrlVPress, this));
   z_event_.setRising(boost::bind(&EngineerManual::ZPress, this));
   x_event_.setRising(boost::bind(&EngineerManual::XPress, this));
@@ -53,6 +57,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   shift_e_event_.setRising(boost::bind(&EngineerManual::shiftEPress, this));
   shift_r_event_.setRising(boost::bind(&EngineerManual::shiftRPress, this));
   ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
+  ctrl_g_event_.setFalling(boost::bind(&EngineerManual::ctrlGRelease, this));
   ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
   shift_event_.setActiveHigh(boost::bind(&EngineerManual::shiftPressing, this));
   shift_event_.setFalling(boost::bind(&EngineerManual::shiftRelease, this));
@@ -63,6 +68,7 @@ void EngineerManual::run()
   ChassisGimbalManual::run();
   power_on_calibration_->update(ros::Time::now(), state_ != PASSIVE);
   arm_calibration_->update(ros::Time::now());
+  updateServo();
 }
 
 void EngineerManual::checkKeyboard()
@@ -125,6 +131,8 @@ void EngineerManual::sendCommand(const ros::Time& time)
     drag_command_sender_->sendCommand(time);
     card_command_sender_->sendCommand(time);
   }
+  if (servo_mode_ == SERVO)
+    servo_command_sender_->sendCommand(time);
 }
 
 void EngineerManual::drawUi(const ros::Time& time)
@@ -139,6 +147,12 @@ void EngineerManual::drawUi(const ros::Time& time)
   if (!data_.joint_state_.name.empty())
     flash_ui_->update("card_warning", time, data_.joint_state_.effort[0] < 1.5);
   //    trigger_change_ui_->update("jog", jog_joint_name);
+}
+
+void EngineerManual::updateServo()
+{
+  servo_command_sender_->setLinearVel(data_.dbus_data_.ch_l_x, data_.dbus_data_.ch_l_y, data_.dbus_data_.wheel);
+  servo_command_sender_->setAngularVel(angular_z_scale_, data_.dbus_data_.ch_r_x, data_.dbus_data_.ch_r_y);
 }
 
 void EngineerManual::remoteControlTurnOff()
@@ -158,17 +172,20 @@ void EngineerManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  servo_mode_ = SERVO;
   action_client_.cancelAllGoals();
 }
 
 void EngineerManual::rightSwitchMidRise()
 {
   ChassisGimbalManual::rightSwitchMidRise();
+  servo_mode_ = JOINT;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
 void EngineerManual::rightSwitchUpRise()
 {
+  servo_mode_ = SERVO;
   ChassisGimbalManual::rightSwitchUpRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
@@ -229,8 +246,12 @@ void EngineerManual::ctrlFPress()
 
 void EngineerManual::ctrlGPress()
 {
-  situation_ += "0";
-  runStepQueue(toward_ + situation_);
+  angular_z_scale_ = 0.5;
+  //  trigger_change_ui_->update("finished" + situation_);
+}
+void EngineerManual::ctrlGRelease()
+{
+  angular_z_scale_ = 0;
   //  trigger_change_ui_->update("finished" + situation_);
 }
 
@@ -254,7 +275,6 @@ void EngineerManual::ctrlZPress()
 
 void EngineerManual::ctrlWPress()
 {
-  situation_ = "BIG_ISLAND";
   //  trigger_change_ui_->update("step", prefix_ + toward_ + process_);
 }
 
@@ -292,7 +312,15 @@ void EngineerManual::ctrlDPress()
 
 void EngineerManual::ctrlBPress()
 {
-  runStepQueue("BACK_HOME");
+  angular_z_scale_ = -0.5;
+  //  runStepQueue("BACK_HOME");
+  //  trigger_change_ui_->update("step", "BACK_HOME");
+  //  process_ = "0";
+}
+
+void EngineerManual::ctrlBRelease()
+{
+  angular_z_scale_ = 0.0;
   //  runStepQueue("BACK_HOME");
   //  trigger_change_ui_->update("step", "BACK_HOME");
   //  process_ = "0";

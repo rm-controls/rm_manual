@@ -41,6 +41,7 @@ private:
   {
     operating_mode_ = MIDDLEWARE;
   }
+  void updateServo();
   void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback);
   void actionDoneCallback(const actionlib::SimpleClientGoalState& state, const rm_msgs::EngineerResultConstPtr& result);
   void ctrlQPress();  // da zi yuan
@@ -53,6 +54,7 @@ private:
   void ctrlDPress();  // guocheng
   void ctrlCPress();  // cancel and delete scence
   void ctrlBPress();  // home
+  void ctrlBRelease();
   void ctrlVPress();  // home sky
   void ctrlFPress();
   void ZPress();  // stone
@@ -61,6 +63,7 @@ private:
   void VPress();  // get sky stone
   void BPress();  // ground stone
   void ctrlGPress();
+  void ctrlGRelease();
   void shiftZPress();  // drag
   void shiftXPress();  // short card
   void shiftCPress();  // long card
@@ -79,12 +82,20 @@ private:
     MANUAL,
     MIDDLEWARE
   };
+  enum
+  {
+    SERVO,
+    JOINT
+  };
+
+  double angular_z_scale_;
   std::string toward_, situation_;
-  int operating_mode_;
+  int operating_mode_, servo_mode_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   rm_common::JointPositionBinaryCommandSender* drag_command_sender_;
   rm_common::CardCommandSender* card_command_sender_;
+  rm_common::Vel3DCommandSender* servo_command_sender_;
   InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_q_event_, ctrl_a_event_, ctrl_z_event_, ctrl_w_event_,
       ctrl_s_event_, ctrl_x_event_, ctrl_e_event_, ctrl_d_event_, ctrl_c_event_, ctrl_b_event_, ctrl_v_event_, z_event_,
       x_event_, c_event_, v_event_, b_event_, shift_z_event_, shift_x_event_, shift_c_event_, shift_v_event_,
