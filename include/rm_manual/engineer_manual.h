@@ -85,7 +85,7 @@ private:
   };
 
   double angular_z_scale_;
-  std::string prefix_, root_;
+  std::string prefix_, root_, step_name_;
   int prefix_num_{}, root_num_{};
   int operating_mode_, servo_mode_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;

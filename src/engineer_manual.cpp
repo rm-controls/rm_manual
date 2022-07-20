@@ -237,19 +237,16 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
 
 void EngineerManual::ctrlGPress()
 {
-  //  runStepQueue(prefix_ + root_ + suffix_);
-  trigger_change_ui_->update("step", "Finished " + prefix_ + root_ + " repeat");
-  std::cout << "Finished " + prefix_ + root_ + " repeat" << std::endl;
-  prefix_num_ = 0;
-  root_num_ = 0;
+  runStepQueue(prefix_ + root_);
+  trigger_change_ui_->update("step", "Finished " + prefix_ + root_);
+  std::cout << "Finished " + prefix_ + root_ << std::endl;
 }
 void EngineerManual::ctrlFPress()
 {
-  //  runStepQueue(prefix_ + root_ + suffix_ + "0");
-  trigger_change_ui_->update("step", "Finished " + prefix_ + root_ + "0" + " next");
-  std::cout << "Finished " + prefix_ + root_ + " next" << std::endl;
-  prefix_num_ = 0;
-  root_num_ = 0;
+  root_ += "0";
+  runStepQueue(prefix_ + root_);
+  trigger_change_ui_->update("step", "Finished " + prefix_ + root_);
+  std::cout << "Finished " + prefix_ + root_ << std::endl;
 }
 
 void EngineerManual::ctrlQPress()
@@ -325,7 +322,7 @@ void EngineerManual::ctrlVPress()
   std::cout << prefix_ + root_ << std::endl;
 }
 
-void EngineerManual::ctrlBPress()
+void EngineerManual::BPress()
 {
   prefix_ = "";
   root_ = "GROUND_STONE";
@@ -395,9 +392,10 @@ void EngineerManual::ctrlRPress()
   trigger_change_ui_->update("step", "calibratied");
   std::cout << "calibratied" << std::endl;
 }
-void EngineerManual::BPress()
+void EngineerManual::ctrlBPress()
 {
-  root_ = "HOME";
+  root_num_ = 3;
+  root_ = "BACK_HOME";
   JudgePrefix();
   trigger_change_ui_->update("step", prefix_ + root_);
   std::cout << prefix_ + root_ << std::endl;
@@ -478,6 +476,16 @@ void EngineerManual::JudgePrefix()
         prefix_ = "SKY_";
       if (prefix_num_ == 2)
         prefix_ = "NORMAL_";
+      if (prefix_num_ == 3)
+        prefix_ = "NO!!";
+      break;
+    case (3):
+      if (prefix_num_ == 1)
+        prefix_ = "EMPTY_";
+      if (prefix_num_ == 2)
+        prefix_ = "STORED_";
+      if (prefix_num_ == 3)
+        prefix_ = "NO!!";
       break;
   }
 }
@@ -490,24 +498,32 @@ void EngineerManual::JudgeRoot()
         prefix_ = "WAIT_";
       if (root_num_ == 2)
         prefix_ = "WAIT_";
+      if (root_num_ == 3)
+        prefix_ = "WAIT_";
       break;
     case (1):
       if (root_num_ == 1)
         prefix_ = "LF_";
       if (root_num_ == 2)
         prefix_ = "SKY_";
+      if (root_num_ == 3)
+        prefix_ = "EMPTY_";
       break;
     case (2):
       if (root_num_ == 1)
         prefix_ = "MID_";
       if (root_num_ == 2)
         prefix_ = "NORMAL_";
+      if (root_num_ == 3)
+        prefix_ = "STORED_";
       break;
     case (3):
       if (root_num_ == 1)
         prefix_ = "RT_";
       if (root_num_ == 2)
-        prefix_ = "NO  ";
+        prefix_ = "NO!!";
+      if (root_num_ == 3)
+        prefix_ = "NO!!";
       break;
   }
 }
