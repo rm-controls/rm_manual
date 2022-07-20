@@ -44,39 +44,35 @@ private:
   void updateServo();
   void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback);
   void actionDoneCallback(const actionlib::SimpleClientGoalState& state, const rm_msgs::EngineerResultConstPtr& result);
-  void ctrlQPress();  // da zi yuan
-  void ctrlAPress();  // kong jie
-  void ctrlZPress();  // xiao zi yuan dao
-  void ctrlWPress();  // left
-  void ctrlSPress();  // mid
-  void ctrlXPress();  // right
-  void ctrlEPress();  // yubei
-  void ctrlDPress();  // guocheng
-  void ctrlCPress();  // cancel and delete scence
-  void ctrlBPress();  // home
-  void ctrlBRelease();
-  void ctrlVPress();  // home sky
-  void ctrlFPress();
-  void ZPress();  // stone
-  void XPress();  // exchange
-  void CPress();  // get stone
-  void VPress();  // get sky stone
-  void BPress();  // ground stone
-  void ctrlGPress();
-  void ctrlGRelease();
-  void shiftZPress();  // drag
-  void shiftXPress();  // short card
-  void shiftCPress();  // long card
-  void shiftVPress();  // gripper
-  void shiftBPress();  // losse gripper
-  void ctrlRPress();   // calibration
-  void shiftQPress();
-  //  void shiftWPress();
-  void shiftEPress();
-  void shiftRPress();
-  void shiftPressing();
-  void shiftRelease();
-
+  void ctrlQPress();     // choose "left_" situation // "has_stone_"
+  void ctrlWPress();     // choose "mid_" situation // "no_stone_"
+  void ctrlEPress();     // choose "right_" situation
+  void ctrlAPress();     // choose "sky" situation
+  void ctrlSPress();     // choose "grasp" situation
+  void ctrlDPress();     // choose "exchange" situation
+  void ctrlZPress();     // choose "store" situation
+  void ctrlXPress();     // choose "_gain" situation
+  void ctrlCPress();     // cancel and delete scence
+  void ctrlVPress();     // choose "small_island" situation
+  void ctrlBPress();     // choose "ground_stone" situation
+  void ctrlFPress();     // execute next
+  void ctrlGPress();     // execute repeat
+  void ctrlRPress();     // calibration
+  void shiftPressing();  // low speed
+  void shiftRelease();   // low speed
+  void shiftQPress();    // servo's angular z
+  void shiftQRelease();  // servo's angular z
+  void shiftEPress();    // servo's angular z
+  void shiftERelease();  // servo's angular z
+  void ZPress();         // card long
+  void XPress();         // card short
+  void CPress();         // drag
+  void BPress();         // back home
+  void VPress();         // change mode servo
+  void GPress();         // gripper
+  void GRelease();       // gripper
+  void JudgePrefix();
+  void JudgeRoot();
   enum
   {
     MANUAL,
@@ -89,7 +85,8 @@ private:
   };
 
   double angular_z_scale_;
-  std::string toward_, situation_;
+  std::string prefix_, root_;
+  int prefix_num_{}, root_num_{};
   int operating_mode_, servo_mode_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
@@ -100,7 +97,7 @@ private:
       ctrl_s_event_, ctrl_x_event_, ctrl_e_event_, ctrl_d_event_, ctrl_c_event_, ctrl_b_event_, ctrl_v_event_, z_event_,
       x_event_, c_event_, v_event_, b_event_, shift_z_event_, shift_x_event_, shift_c_event_, shift_v_event_,
       shift_b_event_, ctrl_r_event_, shift_q_event_, shift_e_event_, ctrl_g_event_, shift_r_event_, ctrl_f_event_,
-      shift_event_;
+      shift_event_, g_event_;
 };
 
 }  // namespace rm_manual
