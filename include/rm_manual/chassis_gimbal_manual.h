@@ -59,11 +59,12 @@ protected:
   FlashUi* flash_ui_{};
   TriggerChangeUi* trigger_change_ui_{};
   FixedUi* fixed_ui_{};
-  double x_scale_{}, y_scale_{};
+  double x_scale_{}, y_scale_{}, final_x_scale_{}, final_y_scale_{};
+  bool speed_change_mode_{ 0 };
+  double speed_change_scale_{ 1. };
   double gimbal_scale_{ 1. };
   double gyro_move_reduction_{ 1. };
   double gyro_rotate_reduction_{ 1. };
-
   InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_, mouse_mid_event_;
 };
 }  // namespace rm_manual

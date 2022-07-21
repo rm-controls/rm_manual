@@ -33,119 +33,71 @@ private:
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
-  void leftSwitchUpFall()
-  {
-    runStepQueue("ARM_TEST");
-    trigger_change_ui_->update("step", "ARM_TEST");
-  }
+  void leftSwitchUpRise() override;
+  void leftSwitchUpFall();
   void leftSwitchDownFall();
   void runStepQueue(const std::string& step_queue_name);
   void actionActiveCallback()
   {
     operating_mode_ = MIDDLEWARE;
   }
+  void updateServo();
   void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback);
   void actionDoneCallback(const actionlib::SimpleClientGoalState& state, const rm_msgs::EngineerResultConstPtr& result);
-  void ctrlCPress()
-  {
-    action_client_.cancelAllGoals();
-  }
-  void ctrlRPress()
-  {
-    runStepQueue("RECOVER");
-    trigger_change_ui_->update("step", "RECOVER");
-  }
-  void ctrlZPress()
-  {
-    runStepQueue("ARM_FOLD_LOWER");
-    trigger_change_ui_->update("step", "ARM_FOLD_LOWER");
-  }
-  void ctrlBPress()
-  {
-    target_ = "BIG_";
-    trigger_change_ui_->update("step", prefix_ + target_);
-  }
-  void ctrlFPress()
-  {
-    target_ = "FLOOR_";
-    trigger_change_ui_->update("step", prefix_ + target_);
-  }
-  void ctrlXPress()
-  {
-    target_ = "EXCHANGE_";
-    prefix_ = "";
-    trigger_change_ui_->update("step", prefix_ + target_);
-  }
-  void ctrlGPress()
-  {
-    prefix_ = "GRASP_";
-    trigger_change_ui_->update("step", prefix_ + target_);
-  }
-  void ctrlSPress()
-  {
-    prefix_ = "STORAGE_";
-    trigger_change_ui_->update("step", prefix_ + target_);
-  }
-  void ctrlDPress()
-  {
-    prefix_ = "DRAG_";
-    trigger_change_ui_->update("step", prefix_ + target_);
-  }
-  void ctrlQPress()
-  {
-    runStepQueue(prefix_ + target_ + "PRE");
-    trigger_change_ui_->update("step", prefix_ + target_ + "PRE");
-  }
-  void ctrlWPress()
-  {
-    runStepQueue(prefix_ + target_ + "PROC");
-    trigger_change_ui_->update("step", prefix_ + target_ + "PROC");
-  }
-  void ctrlEPress()
-  {
-    runStepQueue(prefix_ + target_ + "AFTER");
-    trigger_change_ui_->update("step", prefix_ + target_ + "AFTER");
-  }
-  void ctrlVPress()
-  {
-    target_ = "LIGHT_BAR_";
-    trigger_change_ui_->update("step", prefix_ + target_);
-  }
-
-  void shiftWPress()
-  {
-    runStepQueue("GIMBAL_FORWARD_UPPER");
-    trigger_change_ui_->update("step", "GIMBAL_FORWARD_UPPER");
-  }
-  void shiftSPress()
-  {
-    runStepQueue("GIMBAL_FORWARD_LOWER");
-    trigger_change_ui_->update("step", "GIMBAL_FORWARD_LOWER");
-  }
-  void shiftCPress()
-  {
-    power_on_calibration_->reset();
-  }
-  void shiftXPress()
-  {
-    sentry_mode_ = sentry_mode_ == 0 ? 1 : 0;
-  }
-
-  void cPress();
-
+  void ctrlQPress();     // choose "left_" situation // "has_stone_"
+  void ctrlWPress();     // choose "mid_" situation // "no_stone_"
+  void ctrlEPress();     // choose "right_" situation
+  void ctrlAPress();     // choose "sky" situation
+  void ctrlSPress();     // choose "grasp" situation
+  void ctrlDPress();     // choose "exchange" situation
+  void ctrlZPress();     // choose "store" situation
+  void ctrlXPress();     // choose "_gain" situation
+  void ctrlCPress();     // cancel and delete scence
+  void ctrlVPress();     // choose "small_island" situation
+  void ctrlBPress();     // choose "ground_stone" situation
+  void ctrlFPress();     // execute next
+  void ctrlGPress();     // execute repeat
+  void ctrlRPress();     // calibration
+  void shiftPressing();  // low speed
+  void shiftRelease();   // low speed
+  void shiftQPress();    // servo's angular z
+  void shiftQRelease();  // servo's angular z
+  void shiftEPress();    // servo's angular z
+  void shiftERelease();  // servo's angular z
+  void ZPress();         // card long
+  void XPress();         // card short
+  void CPress();         // drag
+  void BPress();         // back home
+  void VPress();         // change mode servo
+  void GPress();         // gripper
+  void GRelease();       // gripper
+  void JudgePrefix();
+  void JudgeRoot();
   enum
   {
     MANUAL,
     MIDDLEWARE
   };
-  std::string target_, prefix_;
-  int operating_mode_, sentry_mode_;
+  enum
+  {
+    SERVO,
+    JOINT
+  };
+
+  double angular_z_scale_;
+  std::string prefix_, root_, step_name_;
+  int prefix_num_{}, root_num_{};
+  int operating_mode_, servo_mode_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
-  rm_common::CalibrationQueue *power_on_calibration_{}, *mast_calibration_{}, *arm_calibration_{};
-  rm_common::JointPositionBinaryCommandSender *mast_command_sender_, *card_command_sender_;
-  InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_c_event_, ctrl_r_event_, ctrl_f_event_, ctrl_z_event_,
-      ctrl_b_event_, ctrl_x_event_, ctrl_v_event_, ctrl_g_event_, ctrl_s_event_, ctrl_d_event_, ctrl_q_event_,
-      ctrl_w_event_, ctrl_e_event_, shift_w_event_, shift_s_event_, shift_c_event_, shift_x_event_, c_event_;
+  rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
+  rm_common::JointPositionBinaryCommandSender* drag_command_sender_;
+  rm_common::CardCommandSender* card_command_sender_;
+  rm_common::Vel3DCommandSender* servo_command_sender_;
+  InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_q_event_, ctrl_a_event_, ctrl_z_event_, ctrl_w_event_,
+      ctrl_s_event_, ctrl_x_event_, ctrl_e_event_, ctrl_d_event_, ctrl_c_event_, ctrl_b_event_, ctrl_v_event_, z_event_,
+      x_event_, c_event_, v_event_, b_event_, shift_z_event_, shift_x_event_, shift_c_event_, shift_v_event_,
+      shift_b_event_, ctrl_r_event_, shift_q_event_, shift_e_event_, ctrl_g_event_, shift_r_event_, ctrl_f_event_,
+      shift_event_, g_event_;
 };
 
 }  // namespace rm_manual

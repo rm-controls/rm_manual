@@ -13,74 +13,93 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
   // Command sender
+  ros::NodeHandle nh_drag(nh, "drag");
+  drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_drag);
   ros::NodeHandle nh_card(nh, "card");
-  card_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_card);
-  ros::NodeHandle nh_mast(nh, "mast");
-  mast_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_mast);
+  card_command_sender_ = new rm_common::CardCommandSender(nh_card);
+  // Servo
+  ros::NodeHandle nh_servo(nh, "servo");
+  servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("power_on_calibration", rpc_value);
   power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  nh.getParam("mast_calibration", rpc_value);
-  mast_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   nh.getParam("arm_calibration", rpc_value);
   arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
+  left_switch_up_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpRise, this));
   left_switch_down_event_.setFalling(boost::bind(&EngineerManual::leftSwitchDownFall, this));
-  ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
-  ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
-  ctrl_z_event_.setRising(boost::bind(&EngineerManual::ctrlZPress, this));
-  ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
-  ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
-  ctrl_x_event_.setRising(boost::bind(&EngineerManual::ctrlXPress, this));
-  ctrl_v_event_.setRising(boost::bind(&EngineerManual::ctrlVPress, this));
-  ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
-  ctrl_s_event_.setRising(boost::bind(&EngineerManual::ctrlSPress, this));
-  ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
   ctrl_q_event_.setRising(boost::bind(&EngineerManual::ctrlQPress, this));
+  ctrl_a_event_.setRising(boost::bind(&EngineerManual::ctrlAPress, this));
+  ctrl_z_event_.setRising(boost::bind(&EngineerManual::ctrlZPress, this));
   ctrl_w_event_.setRising(boost::bind(&EngineerManual::ctrlWPress, this));
+  ctrl_s_event_.setRising(boost::bind(&EngineerManual::ctrlSPress, this));
+  ctrl_x_event_.setRising(boost::bind(&EngineerManual::ctrlXPress, this));
   ctrl_e_event_.setRising(boost::bind(&EngineerManual::ctrlEPress, this));
-
-  shift_w_event_.setRising(boost::bind(&EngineerManual::shiftWPress, this));
-  shift_s_event_.setRising(boost::bind(&EngineerManual::shiftSPress, this));
-  shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
-  shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
-
-  c_event_.setRising(boost::bind(&EngineerManual::cPress, this));
-  sentry_mode_ = 1;
+  ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
+  ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
+  ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
+  ctrl_v_event_.setRising(boost::bind(&EngineerManual::ctrlVPress, this));
+  ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
+  ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
+  z_event_.setRising(boost::bind(&EngineerManual::ZPress, this));
+  x_event_.setRising(boost::bind(&EngineerManual::XPress, this));
+  c_event_.setRising(boost::bind(&EngineerManual::CPress, this));
+  v_event_.setRising(boost::bind(&EngineerManual::VPress, this));
+  b_event_.setRising(boost::bind(&EngineerManual::BPress, this));
+  g_event_.setRising(boost::bind(&EngineerManual::GPress, this));
+  g_event_.setFalling(boost::bind(&EngineerManual::GRelease, this));
+  ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
+  shift_q_event_.setRising(boost::bind(&EngineerManual::shiftQPress, this));
+  shift_q_event_.setFalling(boost::bind(&EngineerManual::shiftQRelease, this));
+  shift_e_event_.setRising(boost::bind(&EngineerManual::shiftEPress, this));
+  shift_e_event_.setFalling(boost::bind(&EngineerManual::shiftERelease, this));
+  shift_event_.setActiveHigh(boost::bind(&EngineerManual::shiftPressing, this));
+  shift_event_.setFalling(boost::bind(&EngineerManual::shiftRelease, this));
 }
 
 void EngineerManual::run()
 {
   ChassisGimbalManual::run();
   power_on_calibration_->update(ros::Time::now(), state_ != PASSIVE);
-  mast_calibration_->update(ros::Time::now(), state_ != PASSIVE);
   arm_calibration_->update(ros::Time::now());
+  updateServo();
 }
 
 void EngineerManual::checkKeyboard()
 {
   ChassisGimbalManual::checkKeyboard();
-  ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
-  ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
-  ctrl_z_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
-  ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
-  ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
-  ctrl_x_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_x);
-  ctrl_v_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v);
-  ctrl_g_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_g);
-  ctrl_s_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_s);
-  ctrl_d_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_d);
   ctrl_q_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_q);
+  ctrl_a_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_a);
+  ctrl_z_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
   ctrl_w_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_w);
+  ctrl_s_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_s);
+  ctrl_x_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_x);
   ctrl_e_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_e);
+  ctrl_d_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_d);
+  ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
+  ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
+  ctrl_v_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v);
+  ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
+  ctrl_g_event_.update(data_.dbus_data_.key_g & data_.dbus_data_.key_ctrl);
+  ctrl_f_event_.update(data_.dbus_data_.key_f & data_.dbus_data_.key_ctrl);
 
-  shift_w_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_w);
-  shift_s_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_s);
-  shift_c_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_c);
-  shift_x_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_x);
-
+  z_event_.update(data_.dbus_data_.key_z & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
+  x_event_.update(data_.dbus_data_.key_x & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
   c_event_.update(data_.dbus_data_.key_c & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
+  v_event_.update(data_.dbus_data_.key_v & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
+  b_event_.update(data_.dbus_data_.key_b & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
+  g_event_.update(data_.dbus_data_.key_g & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
+
+  shift_z_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_z);
+  shift_x_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_x);
+  shift_c_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_c);
+  shift_v_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_v);
+  shift_b_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_b);
+  shift_q_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_q);
+  shift_e_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_e);
+  shift_r_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_r);
+  shift_event_.update(data_.dbus_data_.key_shift & !data_.dbus_data_.key_ctrl);
 }
 
 void EngineerManual::updateRc()
@@ -94,18 +113,22 @@ void EngineerManual::updateRc()
 void EngineerManual::updatePc()
 {
   ChassisGimbalManual::updatePc();
-  vel_cmd_sender_->setAngularZVel(-data_.dbus_data_.m_x);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  //  vel_cmd_sender_->setAngularZVel(-data_.dbus_data_.m_x);
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
 {
-  mast_command_sender_->sendCommand(time);
   if (operating_mode_ == MANUAL)
   {
     chassis_cmd_sender_->sendCommand(time);
+    gimbal_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
+    drag_command_sender_->sendCommand(time);
     card_command_sender_->sendCommand(time);
   }
+  if (servo_mode_ == SERVO)
+    servo_command_sender_->sendCommand(time);
 }
 
 void EngineerManual::drawUi(const ros::Time& time)
@@ -113,18 +136,19 @@ void EngineerManual::drawUi(const ros::Time& time)
   ChassisGimbalManual::drawUi(time);
   time_change_ui_->update("effort", time);
   time_change_ui_->update("temperature", time);
-  trigger_change_ui_->update("card", 0, card_command_sender_->getState());
-  if (data_.referee_.referee_data_.interactive_data.header_data_.data_cmd_id_ == 0x0201 &&
-      data_.referee_.referee_data_.interactive_data.data_ != sentry_mode_)
-    data_.referee_.sendInteractiveData(
-        0x0200,
-        data_.referee_.referee_data_.robot_color_ == "blue" ? rm_common::RobotId::BLUE_SENTRY : rm_common::RED_SENTRY,
-        sentry_mode_);
-  trigger_change_ui_->update("sentry", data_.referee_.referee_data_.interactive_data.data_, false);
+  trigger_change_ui_->update("drag", 0, drag_command_sender_->getState());
+  trigger_change_ui_->update("long_card", 0, card_command_sender_->getState());
+  trigger_change_ui_->update("short_card", 0, card_command_sender_->getState());
   flash_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
   if (!data_.joint_state_.name.empty())
     flash_ui_->update("card_warning", time, data_.joint_state_.effort[0] < 1.5);
   //    trigger_change_ui_->update("jog", jog_joint_name);
+}
+
+void EngineerManual::updateServo()
+{
+  servo_command_sender_->setLinearVel(data_.dbus_data_.ch_l_y, -data_.dbus_data_.ch_l_x, -data_.dbus_data_.wheel);
+  servo_command_sender_->setAngularVel(angular_z_scale_, data_.dbus_data_.ch_r_y, data_.dbus_data_.ch_r_x);
 }
 
 void EngineerManual::remoteControlTurnOff()
@@ -136,7 +160,6 @@ void EngineerManual::remoteControlTurnOff()
 void EngineerManual::chassisOutputOn()
 {
   power_on_calibration_->reset();
-  mast_calibration_->reset();
   if (MIDDLEWARE)
     action_client_.cancelAllGoals();
 }
@@ -145,12 +168,14 @@ void EngineerManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  servo_mode_ = SERVO;
   action_client_.cancelAllGoals();
 }
 
 void EngineerManual::rightSwitchMidRise()
 {
   ChassisGimbalManual::rightSwitchMidRise();
+  servo_mode_ = JOINT;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
@@ -160,10 +185,20 @@ void EngineerManual::rightSwitchUpRise()
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
+void EngineerManual::leftSwitchUpRise()
+{
+}
+
+void EngineerManual::leftSwitchUpFall()
+{
+  runStepQueue("BACK_HOME");
+  trigger_change_ui_->update("step", "BACK_HOME");
+}
+
 void EngineerManual::leftSwitchDownFall()
 {
-  mast_calibration_->reset();
   arm_calibration_->reset();
+  //  power_on_calibration_->reset();
 }
 
 void EngineerManual::runStepQueue(const std::string& step_queue_name)
@@ -199,12 +234,307 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   operating_mode_ = MANUAL;
 }
 
-void EngineerManual::cPress()
+void EngineerManual::ctrlGPress()
+{
+  runStepQueue(prefix_ + root_);
+  trigger_change_ui_->update("step", "Finished " + prefix_ + root_);
+  std::cout << "Finished " + prefix_ + root_ << std::endl;
+}
+void EngineerManual::ctrlFPress()
+{
+  root_ += "0";
+  runStepQueue(prefix_ + root_);
+  trigger_change_ui_->update("step", "Finished " + prefix_ + root_);
+  std::cout << "Finished " + prefix_ + root_ << std::endl;
+}
+
+void EngineerManual::ctrlQPress()
+{
+  prefix_num_ = 1;
+  JudgePrefix();
+  trigger_change_ui_->update("step", prefix_ + root_);
+  std::cout << prefix_ + root_ << std::endl;
+}
+
+void EngineerManual::ctrlWPress()
+{
+  prefix_num_ = 2;
+  JudgePrefix();
+  trigger_change_ui_->update("step", prefix_ + root_);
+  std::cout << prefix_ + root_ << std::endl;
+}
+
+void EngineerManual::ctrlEPress()
+{
+  prefix_num_ = 3;
+  JudgePrefix();
+  trigger_change_ui_->update("step", prefix_ + root_);
+  std::cout << prefix_ + root_ << std::endl;
+}
+
+void EngineerManual::ctrlAPress()
+{
+  root_num_ = 1;
+  root_ = "SKY_ISLAND";
+  JudgeRoot();
+  trigger_change_ui_->update("step", prefix_ + root_);
+  std::cout << prefix_ + root_ << std::endl;
+}
+
+void EngineerManual::ctrlSPress()
+{
+  root_num_ = 1;
+  root_ = "BIG_ISLAND";
+  JudgeRoot();
+  trigger_change_ui_->update("step", prefix_ + root_);
+  std::cout << prefix_ + root_ << std::endl;
+}
+void EngineerManual::ctrlXPress()
+{
+  root_num_ = 2;
+  root_ = "GAIN_STORE_STONE";
+  JudgeRoot();
+  trigger_change_ui_->update("step", prefix_ + root_);
+  std::cout << prefix_ + root_ << std::endl;
+}
+void EngineerManual::ctrlDPress()
+{
+  prefix_ = "";
+  root_ = "EXCHANGE";
+  trigger_change_ui_->update("step", prefix_ + root_);
+  std::cout << prefix_ + root_ << std::endl;
+}
+
+void EngineerManual::ctrlZPress()
+{
+  prefix_ = "";
+  root_ = "STORE_STONE";
+  trigger_change_ui_->update("step", prefix_ + root_);
+  std::cout << prefix_ + root_ << std::endl;
+}
+
+void EngineerManual::ctrlVPress()
+{
+  prefix_ = "";
+  root_ = "SMALL_ISLAND";
+  trigger_change_ui_->update("step", prefix_ + root_);
+  std::cout << prefix_ + root_ << std::endl;
+}
+
+void EngineerManual::BPress()
+{
+  prefix_ = "";
+  root_ = "GROUND_STONE";
+  trigger_change_ui_->update("step", prefix_ + root_);
+  std::cout << prefix_ + root_ << std::endl;
+}
+
+void EngineerManual::ZPress()
 {
   if (card_command_sender_->getState())
+  {
     card_command_sender_->off();
+    trigger_change_ui_->update("long_card", "off");
+    std::cout << "long_card off" << std::endl;
+  }
   else
-    card_command_sender_->on();
+  {
+    card_command_sender_->short_on();
+    trigger_change_ui_->update("long_card", "on");
+    std::cout << "long_card on" << std::endl;
+  }
+}
+
+void EngineerManual::XPress()
+{
+  if (card_command_sender_->getState())
+  {
+    card_command_sender_->off();
+    trigger_change_ui_->update("short_card", "off");
+    std::cout << "short_card off" << std::endl;
+  }
+  else
+  {
+    card_command_sender_->short_on();
+    trigger_change_ui_->update("short_card", "on");
+    std::cout << "short_card on" << std::endl;
+  }
+}
+
+void EngineerManual::CPress()
+{
+  if (drag_command_sender_->getState())
+  {
+    drag_command_sender_->off();
+    trigger_change_ui_->update("drag", "off");
+    std::cout << "drag off" << std::endl;
+  }
+  else
+  {
+    drag_command_sender_->on();
+    trigger_change_ui_->update("drag", "on");
+    std::cout << "drag on" << std::endl;
+  }
+}
+
+void EngineerManual::ctrlCPress()
+{
+  action_client_.cancelAllGoals();
+  runStepQueue("DELETE_SCENE");
+  trigger_change_ui_->update("step", "DELETE_SCENE and CANCEL");
+  std::cout << "DELETE_SCENE and CANCEL" << std::endl;
+}
+void EngineerManual::ctrlRPress()
+{
+  arm_calibration_->reset();
+  power_on_calibration_->reset();
+  trigger_change_ui_->update("step", "calibratied");
+  std::cout << "calibratied" << std::endl;
+}
+void EngineerManual::ctrlBPress()
+{
+  root_num_ = 3;
+  root_ = "BACK_HOME";
+  JudgePrefix();
+  trigger_change_ui_->update("step", prefix_ + root_);
+  std::cout << prefix_ + root_ << std::endl;
+}
+
+void EngineerManual::VPress()
+{
+  if (servo_mode_ == SERVO)
+  {
+    servo_mode_ = JOINT;
+    trigger_change_ui_->update("step", "EXIT SERVO");
+    std::cout << "EXIT SERVO" << std::endl;
+  }
+  else if (servo_mode_ == JOINT)
+  {
+    servo_mode_ = SERVO;
+    trigger_change_ui_->update("step", "ENTER SERVO");
+    std::cout << "ENTER SERVO" << std::endl;
+  }
+  trigger_change_ui_->update("step", "servo mode controlling");
+}
+
+void EngineerManual::shiftPressing()
+{
+  speed_change_mode_ = 1;
+  trigger_change_ui_->update("step", "low speed mode");
+  std::cout << "low speed mode" << std::endl;
+}
+void EngineerManual::shiftRelease()
+{
+  speed_change_mode_ = 0;
+  trigger_change_ui_->update("step", "low speed cancle");
+  std::cout << "low speed cancle" << std::endl;
+}
+
+void EngineerManual::shiftQPress()
+{
+  angular_z_scale_ = 0.5;
+}
+void EngineerManual::shiftQRelease()
+{
+  angular_z_scale_ = 0.;
+}
+
+void EngineerManual::shiftEPress()
+{
+  angular_z_scale_ = -0.5;
+}
+void EngineerManual::shiftERelease()
+{
+  angular_z_scale_ = 0.;
+}
+
+void EngineerManual::GPress()
+{
+  runStepQueue("CLOSE_GRIPPER");
+  trigger_change_ui_->update("step", "close gripper");
+  std::cout << "close gripper" << std::endl;
+}
+void EngineerManual::GRelease()
+{
+  runStepQueue("OPEN_GRIPPER");
+  trigger_change_ui_->update("step", "open gripper");
+  std::cout << "open gripper" << std::endl;
+}
+void EngineerManual::JudgePrefix()
+{
+  switch (root_num_)
+  {
+    case (0):
+      if (prefix_num_ == 1)
+        prefix_ = "WAIT1_";
+      if (prefix_num_ == 2)
+        prefix_ = "WAIT2_";
+      if (prefix_num_ == 3)
+        prefix_ = "WAIT3_";
+      break;
+    case (1):
+      if (prefix_num_ == 1)
+        prefix_ = "LF_";
+      if (prefix_num_ == 2)
+        prefix_ = "MID_";
+      if (prefix_num_ == 3)
+        prefix_ = "RT_";
+      break;
+    case (2):
+      if (prefix_num_ == 1)
+        prefix_ = "SKY_";
+      if (prefix_num_ == 2)
+        prefix_ = "NORMAL_";
+      if (prefix_num_ == 3)
+        prefix_ = "NO!!";
+      break;
+    case (3):
+      if (prefix_num_ == 1)
+        prefix_ = "EMPTY_";
+      if (prefix_num_ == 2)
+        prefix_ = "STORED_";
+      if (prefix_num_ == 3)
+        prefix_ = "NO!!";
+      break;
+  }
+}
+void EngineerManual::JudgeRoot()
+{
+  switch (prefix_num_)
+  {
+    case (0):
+      if (root_num_ == 1)
+        prefix_ = "WAIT_";
+      if (root_num_ == 2)
+        prefix_ = "WAIT_";
+      if (root_num_ == 3)
+        prefix_ = "WAIT_";
+      break;
+    case (1):
+      if (root_num_ == 1)
+        prefix_ = "LF_";
+      if (root_num_ == 2)
+        prefix_ = "SKY_";
+      if (root_num_ == 3)
+        prefix_ = "EMPTY_";
+      break;
+    case (2):
+      if (root_num_ == 1)
+        prefix_ = "MID_";
+      if (root_num_ == 2)
+        prefix_ = "NORMAL_";
+      if (root_num_ == 3)
+        prefix_ = "STORED_";
+      break;
+    case (3):
+      if (root_num_ == 1)
+        prefix_ = "RT_";
+      if (root_num_ == 2)
+        prefix_ = "NO!!";
+      if (root_num_ == 3)
+        prefix_ = "NO!!";
+      break;
+  }
 }
 
 }  // namespace rm_manual
