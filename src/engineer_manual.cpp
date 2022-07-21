@@ -147,8 +147,8 @@ void EngineerManual::drawUi(const ros::Time& time)
 
 void EngineerManual::updateServo()
 {
-  servo_command_sender_->setLinearVel(data_.dbus_data_.ch_l_x, data_.dbus_data_.ch_l_y, data_.dbus_data_.wheel);
-  servo_command_sender_->setAngularVel(angular_z_scale_, data_.dbus_data_.ch_r_x, data_.dbus_data_.ch_r_y);
+  servo_command_sender_->setLinearVel(data_.dbus_data_.ch_l_y, -data_.dbus_data_.ch_l_x, -data_.dbus_data_.wheel);
+  servo_command_sender_->setAngularVel(angular_z_scale_, data_.dbus_data_.ch_r_y, data_.dbus_data_.ch_r_x);
 }
 
 void EngineerManual::remoteControlTurnOff()
@@ -181,7 +181,6 @@ void EngineerManual::rightSwitchMidRise()
 
 void EngineerManual::rightSwitchUpRise()
 {
-  servo_mode_ = SERVO;
   ChassisGimbalManual::rightSwitchUpRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
@@ -403,9 +402,19 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::VPress()
 {
-  servo_mode_ = SERVO;
+  if (servo_mode_ == SERVO)
+  {
+    servo_mode_ = JOINT;
+    trigger_change_ui_->update("step", "EXIT SERVO");
+    std::cout << "EXIT SERVO" << std::endl;
+  }
+  else if (servo_mode_ == JOINT)
+  {
+    servo_mode_ = SERVO;
+    trigger_change_ui_->update("step", "ENTER SERVO");
+    std::cout << "ENTER SERVO" << std::endl;
+  }
   trigger_change_ui_->update("step", "servo mode controlling");
-  std::cout << "servo mode controlling" << std::endl;
 }
 
 void EngineerManual::shiftPressing()
