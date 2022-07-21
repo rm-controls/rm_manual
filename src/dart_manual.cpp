@@ -52,6 +52,8 @@ void DartManual::sendCommand(const ros::Time& time)
 void DartManual::updateRc()
 {
   ManualBase::updateRc();
+  scaleAdjust();
+  ROS_INFO("The scale value is %f", scale_);
   Move(pitch_sender_->getIndex(), data_.dbus_data_.ch_r_y, pitch_sender_);
   Move(yaw_sender_->getIndex(), data_.dbus_data_.ch_l_x, yaw_sender_);
 }
@@ -119,7 +121,7 @@ void DartManual::Move(int index, double ch_l, rm_common::JointPointCommandSender
     double position = data_.joint_state_.position[index];
     if (ch_l != 0)
     {
-      joint->setPoint(position + ch_l * 0.04);
+      joint->setPoint(position + ch_l * scale_);
       set_position_ = true;
     }
     if (ch_l == 0 && set_position_)
@@ -133,6 +135,8 @@ void DartManual::Move(int index, double ch_l, rm_common::JointPointCommandSender
 void DartManual::scaleAdjust()
 {
   // Wait for test plot.
+  if (data_.dbus_data_.wheel != 0)
+    scale_ = 0.04 * data_.dbus_data_.wheel;
 }
 
 void DartManual::recordPosition()
