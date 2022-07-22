@@ -44,9 +44,9 @@ private:
   void updateServo();
   void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback);
   void actionDoneCallback(const actionlib::SimpleClientGoalState& state, const rm_msgs::EngineerResultConstPtr& result);
-  void ctrlQPress();     // choose "left_" situation // "has_stone_"
+  void ctrlQPress();     // choose "left_" situation // "has_stone_" // "sky"
   void ctrlWPress();     // choose "mid_" situation // "no_stone_"
-  void ctrlEPress();     // choose "right_" situation
+  void ctrlEPress();     // choose "right_" situation //  ""
   void ctrlAPress();     // choose "sky" situation
   void ctrlSPress();     // choose "grasp" situation
   void ctrlDPress();     // choose "exchange" situation
@@ -57,7 +57,8 @@ private:
   void ctrlBPress();     // choose "ground_stone" situation
   void ctrlFPress();     // execute next
   void ctrlGPress();     // execute repeat
-  void ctrlRPress();     // calibration
+  void ctrlRPress();     // choose "ready_" situation
+  void RPress();         // calibration
   void shiftPressing();  // low speed
   void shiftRelease();   // low speed
   void shiftQPress();    // servo's angular z
@@ -97,7 +98,7 @@ private:
       ctrl_s_event_, ctrl_x_event_, ctrl_e_event_, ctrl_d_event_, ctrl_c_event_, ctrl_b_event_, ctrl_v_event_, z_event_,
       x_event_, c_event_, v_event_, b_event_, shift_z_event_, shift_x_event_, shift_c_event_, shift_v_event_,
       shift_b_event_, ctrl_r_event_, shift_q_event_, shift_e_event_, ctrl_g_event_, shift_r_event_, ctrl_f_event_,
-      shift_event_, g_event_;
+      shift_event_, g_event_, r_event_;
 };
 
 }  // namespace rm_manual

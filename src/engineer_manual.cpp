@@ -47,6 +47,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   c_event_.setRising(boost::bind(&EngineerManual::CPress, this));
   v_event_.setRising(boost::bind(&EngineerManual::VPress, this));
   b_event_.setRising(boost::bind(&EngineerManual::BPress, this));
+  r_event_.setRising(boost::bind(&EngineerManual::RPress, this));
   g_event_.setRising(boost::bind(&EngineerManual::GPress, this));
   g_event_.setFalling(boost::bind(&EngineerManual::GRelease, this));
   ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
@@ -272,6 +273,14 @@ void EngineerManual::ctrlEPress()
   std::cout << prefix_ + root_ << std::endl;
 }
 
+void EngineerManual::ctrlRPress()
+{
+  prefix_num_ = 4;
+  JudgePrefix();
+  trigger_change_ui_->update("step", prefix_ + root_);
+  std::cout << prefix_ + root_ << std::endl;
+}
+
 void EngineerManual::ctrlAPress()
 {
   root_num_ = 1;
@@ -384,13 +393,15 @@ void EngineerManual::ctrlCPress()
   trigger_change_ui_->update("step", "DELETE_SCENE and CANCEL");
   std::cout << "DELETE_SCENE and CANCEL" << std::endl;
 }
-void EngineerManual::ctrlRPress()
+
+void EngineerManual::RPress()
 {
   arm_calibration_->reset();
   power_on_calibration_->reset();
   trigger_change_ui_->update("step", "calibratied");
-  std::cout << "calibratied" << std::endl;
+  std::cout << "Calibrated" << std::endl;
 }
+
 void EngineerManual::ctrlBPress()
 {
   root_num_ = 3;
@@ -471,6 +482,8 @@ void EngineerManual::JudgePrefix()
         prefix_ = "WAIT2_";
       if (prefix_num_ == 3)
         prefix_ = "WAIT3_";
+      if (prefix_num_ == 4)
+        prefix_ = "WAIT4_";
       break;
     case (1):
       if (prefix_num_ == 1)
@@ -479,6 +492,8 @@ void EngineerManual::JudgePrefix()
         prefix_ = "MID_";
       if (prefix_num_ == 3)
         prefix_ = "RT_";
+      if (prefix_num_ == 4)
+        prefix_ = "READY_";
       break;
     case (2):
       if (prefix_num_ == 1)
@@ -487,6 +502,8 @@ void EngineerManual::JudgePrefix()
         prefix_ = "NORMAL_";
       if (prefix_num_ == 3)
         prefix_ = "NO!!";
+      if (prefix_num_ == 4)
+        prefix_ = "NO!!";
       break;
     case (3):
       if (prefix_num_ == 1)
@@ -494,6 +511,8 @@ void EngineerManual::JudgePrefix()
       if (prefix_num_ == 2)
         prefix_ = "STORED_";
       if (prefix_num_ == 3)
+        prefix_ = "NO!!";
+      if (prefix_num_ == 4)
         prefix_ = "NO!!";
       break;
   }
@@ -529,6 +548,13 @@ void EngineerManual::JudgeRoot()
     case (3):
       if (root_num_ == 1)
         prefix_ = "RT_";
+      if (root_num_ == 2)
+        prefix_ = "NO!!";
+      if (root_num_ == 3)
+        prefix_ = "NO!!";
+    case (4):
+      if (root_num_ == 1)
+        prefix_ = "READY_";
       if (root_num_ == 2)
         prefix_ = "NO!!";
       if (root_num_ == 3)
