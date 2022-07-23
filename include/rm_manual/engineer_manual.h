@@ -28,6 +28,16 @@ private:
   void updatePc() override;
   void sendCommand(const ros::Time& time) override;
   void drawUi(const ros::Time& time) override;
+  void updateServo();
+  void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback);
+  void actionDoneCallback(const actionlib::SimpleClientGoalState& state, const rm_msgs::EngineerResultConstPtr& result);
+  void runStepQueue(const std::string& step_queue_name);
+  void JudgePrefix();
+  void JudgeRoot();
+  void actionActiveCallback()
+  {
+    operating_mode_ = MIDDLEWARE;
+  }
   void remoteControlTurnOff() override;
   void chassisOutputOn() override;
   void rightSwitchDownRise() override;
@@ -36,14 +46,6 @@ private:
   void leftSwitchUpRise() override;
   void leftSwitchUpFall();
   void leftSwitchDownFall();
-  void runStepQueue(const std::string& step_queue_name);
-  void actionActiveCallback()
-  {
-    operating_mode_ = MIDDLEWARE;
-  }
-  void updateServo();
-  void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback);
-  void actionDoneCallback(const actionlib::SimpleClientGoalState& state, const rm_msgs::EngineerResultConstPtr& result);
   void ctrlQPress();     // choose "left_" situation // "has_stone_" // "sky"
   void ctrlWPress();     // choose "mid_" situation // "no_stone_"
   void ctrlEPress();     // choose "right_" situation //  ""
@@ -58,7 +60,6 @@ private:
   void ctrlFPress();     // execute next
   void ctrlGPress();     // execute repeat
   void ctrlRPress();     // choose "ready_" situation
-  void RPress();         // calibration
   void shiftPressing();  // low speed
   void shiftRelease();   // low speed
   void shiftQPress();    // servo's angular z
@@ -69,6 +70,7 @@ private:
   void shiftXPress();    // gimbal toward 2
   void shiftCPress();    // gimbal toward 3
   void shiftVPress();    // gimbal toward 4
+  void RPress();         // calibration
   void ZPress();         // card long
   void XPress();         // card short
   void CPress();         // drag
@@ -78,8 +80,7 @@ private:
   void FRelease();       // exit gimbal rate
   void GPress();         // gripper
   void GRelease();       // gripper
-  void JudgePrefix();
-  void JudgeRoot();
+
   enum
   {
     MANUAL,

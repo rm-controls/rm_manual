@@ -122,7 +122,7 @@ void EngineerManual::updatePc()
 {
   ChassisGimbalManual::updatePc();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  //  vel_cmd_sender_->setAngularZVel(-data_.dbus_data_.m_x);
+  vel_cmd_sender_->setAngularZVel(-data_.dbus_data_.m_x);
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -130,13 +130,14 @@ void EngineerManual::sendCommand(const ros::Time& time)
   if (operating_mode_ == MANUAL)
   {
     chassis_cmd_sender_->sendCommand(time);
-    gimbal_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
     drag_command_sender_->sendCommand(time);
     card_command_sender_->sendCommand(time);
   }
   if (servo_mode_ == SERVO)
     servo_command_sender_->sendCommand(time);
+  if (gimbal_mode_ == RATE)
+    gimbal_cmd_sender_->sendCommand(time);
 }
 
 void EngineerManual::drawUi(const ros::Time& time)
@@ -155,8 +156,8 @@ void EngineerManual::drawUi(const ros::Time& time)
 
 void EngineerManual::updateServo()
 {
-  servo_command_sender_->setLinearVel(data_.dbus_data_.ch_l_y, -data_.dbus_data_.ch_l_x, -data_.dbus_data_.wheel);
-  servo_command_sender_->setAngularVel(angular_z_scale_, data_.dbus_data_.ch_r_y, data_.dbus_data_.ch_r_x);
+  servo_command_sender_->setLinearVel(angular_z_scale_, data_.dbus_data_.ch_r_y, data_.dbus_data_.ch_r_x);
+  servo_command_sender_->setAngularVel(data_.dbus_data_.ch_l_y, -data_.dbus_data_.ch_l_x, -data_.dbus_data_.wheel);
 }
 
 void EngineerManual::remoteControlTurnOff()
@@ -184,12 +185,14 @@ void EngineerManual::rightSwitchMidRise()
 {
   ChassisGimbalManual::rightSwitchMidRise();
   servo_mode_ = JOINT;
+  gimbal_mode_ = RATE;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
 void EngineerManual::rightSwitchUpRise()
 {
   ChassisGimbalManual::rightSwitchUpRise();
+  gimbal_mode_ = DIRECT;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
@@ -242,6 +245,98 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   trigger_change_ui_->update("step", "Done " + prefix_ + root_ + " press next");
   std::cout << "Done! " + prefix_ + root_ << std::endl;
   operating_mode_ = MANUAL;
+}
+
+void EngineerManual::JudgePrefix()
+{
+  switch (root_num_)
+  {
+    case (0):
+      if (prefix_num_ == 1)
+        prefix_ = "WAIT1_";
+      if (prefix_num_ == 2)
+        prefix_ = "WAIT2_";
+      if (prefix_num_ == 3)
+        prefix_ = "WAIT3_";
+      if (prefix_num_ == 4)
+        prefix_ = "WAIT4_";
+      break;
+    case (1):
+      if (prefix_num_ == 1)
+        prefix_ = "LF_";
+      if (prefix_num_ == 2)
+        prefix_ = "MID_";
+      if (prefix_num_ == 3)
+        prefix_ = "RT_";
+      if (prefix_num_ == 4)
+        prefix_ = "READY_";
+      break;
+    case (2):
+      if (prefix_num_ == 1)
+        prefix_ = "SKY_";
+      if (prefix_num_ == 2)
+        prefix_ = "NORMAL_";
+      if (prefix_num_ == 3)
+        prefix_ = "NO!!";
+      if (prefix_num_ == 4)
+        prefix_ = "NO!!";
+      break;
+    case (3):
+      if (prefix_num_ == 1)
+        prefix_ = "EMPTY_";
+      if (prefix_num_ == 2)
+        prefix_ = "STORED_";
+      if (prefix_num_ == 3)
+        prefix_ = "NO!!";
+      if (prefix_num_ == 4)
+        prefix_ = "NO!!";
+      break;
+  }
+}
+void EngineerManual::JudgeRoot()
+{
+  switch (prefix_num_)
+  {
+    case (0):
+      if (root_num_ == 1)
+        prefix_ = "WAIT_";
+      if (root_num_ == 2)
+        prefix_ = "WAIT_";
+      if (root_num_ == 3)
+        prefix_ = "WAIT_";
+      break;
+    case (1):
+      if (root_num_ == 1)
+        prefix_ = "LF_";
+      if (root_num_ == 2)
+        prefix_ = "SKY_";
+      if (root_num_ == 3)
+        prefix_ = "EMPTY_";
+      break;
+    case (2):
+      if (root_num_ == 1)
+        prefix_ = "MID_";
+      if (root_num_ == 2)
+        prefix_ = "NORMAL_";
+      if (root_num_ == 3)
+        prefix_ = "STORED_";
+      break;
+    case (3):
+      if (root_num_ == 1)
+        prefix_ = "RT_";
+      if (root_num_ == 2)
+        prefix_ = "NO!!";
+      if (root_num_ == 3)
+        prefix_ = "NO!!";
+    case (4):
+      if (root_num_ == 1)
+        prefix_ = "READY_";
+      if (root_num_ == 2)
+        prefix_ = "NO!!";
+      if (root_num_ == 3)
+        prefix_ = "NO!!";
+      break;
+  }
 }
 
 void EngineerManual::ctrlGPress()
@@ -483,10 +578,14 @@ void EngineerManual::GRelease()
 void EngineerManual::FPress()
 {
   // enter gimbal rate
+  gimbal_mode_ = RATE;
+  trigger_change_ui_->update("step", "gimbal rate");
 }
 void EngineerManual::FRelease()
 {
   // exit gimbal rate
+  gimbal_mode_ = DIRECT;
+  trigger_change_ui_->update("step", "gimbal direct");
 }
 void EngineerManual::shiftZPress()
 {
@@ -512,96 +611,4 @@ void EngineerManual::shiftVPress()
   trigger_change_ui_->update("step", "GIMBAL4");
   std::cout << "GIMBAL4" << std::endl;
 }
-void EngineerManual::JudgePrefix()
-{
-  switch (root_num_)
-  {
-    case (0):
-      if (prefix_num_ == 1)
-        prefix_ = "WAIT1_";
-      if (prefix_num_ == 2)
-        prefix_ = "WAIT2_";
-      if (prefix_num_ == 3)
-        prefix_ = "WAIT3_";
-      if (prefix_num_ == 4)
-        prefix_ = "WAIT4_";
-      break;
-    case (1):
-      if (prefix_num_ == 1)
-        prefix_ = "LF_";
-      if (prefix_num_ == 2)
-        prefix_ = "MID_";
-      if (prefix_num_ == 3)
-        prefix_ = "RT_";
-      if (prefix_num_ == 4)
-        prefix_ = "READY_";
-      break;
-    case (2):
-      if (prefix_num_ == 1)
-        prefix_ = "SKY_";
-      if (prefix_num_ == 2)
-        prefix_ = "NORMAL_";
-      if (prefix_num_ == 3)
-        prefix_ = "NO!!";
-      if (prefix_num_ == 4)
-        prefix_ = "NO!!";
-      break;
-    case (3):
-      if (prefix_num_ == 1)
-        prefix_ = "EMPTY_";
-      if (prefix_num_ == 2)
-        prefix_ = "STORED_";
-      if (prefix_num_ == 3)
-        prefix_ = "NO!!";
-      if (prefix_num_ == 4)
-        prefix_ = "NO!!";
-      break;
-  }
-}
-void EngineerManual::JudgeRoot()
-{
-  switch (prefix_num_)
-  {
-    case (0):
-      if (root_num_ == 1)
-        prefix_ = "WAIT_";
-      if (root_num_ == 2)
-        prefix_ = "WAIT_";
-      if (root_num_ == 3)
-        prefix_ = "WAIT_";
-      break;
-    case (1):
-      if (root_num_ == 1)
-        prefix_ = "LF_";
-      if (root_num_ == 2)
-        prefix_ = "SKY_";
-      if (root_num_ == 3)
-        prefix_ = "EMPTY_";
-      break;
-    case (2):
-      if (root_num_ == 1)
-        prefix_ = "MID_";
-      if (root_num_ == 2)
-        prefix_ = "NORMAL_";
-      if (root_num_ == 3)
-        prefix_ = "STORED_";
-      break;
-    case (3):
-      if (root_num_ == 1)
-        prefix_ = "RT_";
-      if (root_num_ == 2)
-        prefix_ = "NO!!";
-      if (root_num_ == 3)
-        prefix_ = "NO!!";
-    case (4):
-      if (root_num_ == 1)
-        prefix_ = "READY_";
-      if (root_num_ == 2)
-        prefix_ = "NO!!";
-      if (root_num_ == 3)
-        prefix_ = "NO!!";
-      break;
-  }
-}
-
 }  // namespace rm_manual
