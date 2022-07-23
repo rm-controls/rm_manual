@@ -50,11 +50,17 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   r_event_.setRising(boost::bind(&EngineerManual::RPress, this));
   g_event_.setRising(boost::bind(&EngineerManual::GPress, this));
   g_event_.setFalling(boost::bind(&EngineerManual::GRelease, this));
+  f_event_.setRising(boost::bind(&EngineerManual::FPress, this));
+  f_event_.setFalling(boost::bind(&EngineerManual::FRelease, this));
   ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
   shift_q_event_.setRising(boost::bind(&EngineerManual::shiftQPress, this));
   shift_q_event_.setFalling(boost::bind(&EngineerManual::shiftQRelease, this));
   shift_e_event_.setRising(boost::bind(&EngineerManual::shiftEPress, this));
   shift_e_event_.setFalling(boost::bind(&EngineerManual::shiftERelease, this));
+  shift_z_event_.setRising(boost::bind(&EngineerManual::shiftZPress, this));
+  shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
+  shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
+  shift_v_event_.setRising(boost::bind(&EngineerManual::shiftVPress, this));
   shift_event_.setActiveHigh(boost::bind(&EngineerManual::shiftPressing, this));
   shift_event_.setFalling(boost::bind(&EngineerManual::shiftRelease, this));
 }
@@ -91,6 +97,7 @@ void EngineerManual::checkKeyboard()
   v_event_.update(data_.dbus_data_.key_v & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
   b_event_.update(data_.dbus_data_.key_b & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
   g_event_.update(data_.dbus_data_.key_g & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
+  f_event_.update(data_.dbus_data_.key_f & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
 
   shift_z_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_z);
   shift_x_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_x);
@@ -232,6 +239,8 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
 {
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
+  trigger_change_ui_->update("step", "Done " + prefix_ + root_ + " press next");
+  std::cout << "Done! " + prefix_ + root_ << std::endl;
   operating_mode_ = MANUAL;
 }
 
@@ -239,14 +248,14 @@ void EngineerManual::ctrlGPress()
 {
   runStepQueue(prefix_ + root_);
   trigger_change_ui_->update("step", "Finished " + prefix_ + root_);
-  std::cout << "Finished " + prefix_ + root_ << std::endl;
+  std::cout << "do " + prefix_ + root_ << std::endl;
 }
 void EngineerManual::ctrlFPress()
 {
   root_ += "0";
   runStepQueue(prefix_ + root_);
   trigger_change_ui_->update("step", "Finished " + prefix_ + root_);
-  std::cout << "Finished " + prefix_ + root_ << std::endl;
+  std::cout << "do " + prefix_ + root_ << std::endl;
 }
 
 void EngineerManual::ctrlQPress()
@@ -470,6 +479,38 @@ void EngineerManual::GRelease()
   runStepQueue("OPEN_GRIPPER");
   trigger_change_ui_->update("step", "open gripper");
   std::cout << "open gripper" << std::endl;
+}
+void EngineerManual::FPress()
+{
+  // enter gimbal rate
+}
+void EngineerManual::FRelease()
+{
+  // exit gimbal rate
+}
+void EngineerManual::shiftZPress()
+{
+  runStepQueue("GIMBAL1");
+  trigger_change_ui_->update("step", "GIMBAL1");
+  std::cout << "GIMBAL1" << std::endl;
+}
+void EngineerManual::shiftXPress()
+{
+  runStepQueue("GIMBAL2");
+  trigger_change_ui_->update("step", "GIMBAL2");
+  std::cout << "GIMBAL2" << std::endl;
+}
+void EngineerManual::shiftCPress()
+{
+  runStepQueue("GIMBAL3");
+  trigger_change_ui_->update("step", "GIMBAL3");
+  std::cout << "GIMBAL3" << std::endl;
+}
+void EngineerManual::shiftVPress()
+{
+  runStepQueue("GIMBAL4");
+  trigger_change_ui_->update("step", "GIMBAL4");
+  std::cout << "GIMBAL4" << std::endl;
 }
 void EngineerManual::JudgePrefix()
 {

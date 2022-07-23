@@ -65,11 +65,17 @@ private:
   void shiftQRelease();  // servo's angular z
   void shiftEPress();    // servo's angular z
   void shiftERelease();  // servo's angular z
+  void shiftZPress();    // gimbal toward 1
+  void shiftXPress();    // gimbal toward 2
+  void shiftCPress();    // gimbal toward 3
+  void shiftVPress();    // gimbal toward 4
   void ZPress();         // card long
   void XPress();         // card short
   void CPress();         // drag
   void BPress();         // back home
   void VPress();         // change mode servo
+  void FPress();         // enter gimbal rate
+  void FRelease();       // exit gimbal rate
   void GPress();         // gripper
   void GRelease();       // gripper
   void JudgePrefix();
@@ -84,11 +90,15 @@ private:
     SERVO,
     JOINT
   };
+  enum
+  {
+    RATE,
+    DIRECT
+  };
 
   double angular_z_scale_;
-  std::string prefix_, root_, step_name_;
-  int prefix_num_{}, root_num_{};
-  int operating_mode_, servo_mode_;
+  std::string prefix_, root_;
+  int prefix_num_{}, root_num_{}, operating_mode_{}, servo_mode_{}, gimbal_mode_{};
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   rm_common::JointPositionBinaryCommandSender* drag_command_sender_;
@@ -96,7 +106,7 @@ private:
   rm_common::Vel3DCommandSender* servo_command_sender_;
   InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_q_event_, ctrl_a_event_, ctrl_z_event_, ctrl_w_event_,
       ctrl_s_event_, ctrl_x_event_, ctrl_e_event_, ctrl_d_event_, ctrl_c_event_, ctrl_b_event_, ctrl_v_event_, z_event_,
-      x_event_, c_event_, v_event_, b_event_, shift_z_event_, shift_x_event_, shift_c_event_, shift_v_event_,
+      x_event_, c_event_, v_event_, b_event_, f_event_, shift_z_event_, shift_x_event_, shift_c_event_, shift_v_event_,
       shift_b_event_, ctrl_r_event_, shift_q_event_, shift_e_event_, ctrl_g_event_, shift_r_event_, ctrl_f_event_,
       shift_event_, g_event_, r_event_;
 };
