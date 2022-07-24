@@ -58,7 +58,9 @@ void ChassisGimbalManual::updateRc()
       (std::abs(data_.dbus_data_.ch_r_y) > 0.01 || std::abs(data_.dbus_data_.ch_r_x) > 0.01) ?
           data_.dbus_data_.wheel * gyro_rotate_reduction_ :
           data_.dbus_data_.wheel);
-  vel_cmd_sender_->setLinearXVel(555;
+  vel_cmd_sender_->setLinearXVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
+                                     data_.dbus_data_.ch_r_y * gyro_move_reduction_ :
+                                     data_.dbus_data_.ch_r_y);
   vel_cmd_sender_->setLinearYVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
                                      -data_.dbus_data_.ch_r_x * gyro_move_reduction_ :
                                      -data_.dbus_data_.ch_r_x);
