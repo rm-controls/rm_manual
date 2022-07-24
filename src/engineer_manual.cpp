@@ -156,8 +156,8 @@ void EngineerManual::drawUi(const ros::Time& time)
 
 void EngineerManual::updateServo()
 {
-  servo_command_sender_->setLinearVel(angular_z_scale_, data_.dbus_data_.ch_r_y, data_.dbus_data_.ch_r_x);
-  servo_command_sender_->setAngularVel(data_.dbus_data_.ch_l_y, -data_.dbus_data_.ch_l_x, -data_.dbus_data_.wheel);
+  servo_command_sender_->setAngularVel(data_.dbus_data_.ch_r_x, data_.dbus_data_.ch_r_y, angular_z_scale_);
+  servo_command_sender_->setLinearVel(data_.dbus_data_.ch_l_y, -data_.dbus_data_.ch_l_x, -data_.dbus_data_.wheel);
 }
 
 void EngineerManual::remoteControlTurnOff()
