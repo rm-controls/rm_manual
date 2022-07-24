@@ -17,7 +17,7 @@ DartManual::DartManual(ros::NodeHandle& nh) : ManualBase(nh)
   ros::NodeHandle nh_friction_left = ros::NodeHandle(nh, "friction_left");
   ros::NodeHandle nh_friction_right = ros::NodeHandle(nh, "friction_right");
   qd_ = getParam(nh_friction_left, "qd_", 0.);
-  forward_vel_ = getParam(nh_trigger, "forward_vel", 0.);
+  upward_vel_ = getParam(nh_trigger, "upward_vel", 0.);
   trigger_sender_ = new rm_common::JointPointCommandSender(nh_trigger, data_.joint_state_);
   friction_left_sender_ = new rm_common::JointPointCommandSender(nh_friction_left, data_.joint_state_);
   friction_right_sender_ = new rm_common::JointPointCommandSender(nh_friction_right, data_.joint_state_);
@@ -54,20 +54,20 @@ void DartManual::updateRc()
   ManualBase::updateRc();
   scaleAdjust();
   ROS_INFO("The scale value is %f", scale_);
-  Move(pitch_sender_->getIndex(), data_.dbus_data_.ch_r_y, pitch_sender_);
-  Move(yaw_sender_->getIndex(), data_.dbus_data_.ch_l_x, yaw_sender_);
+  move(pitch_sender_, data_.dbus_data_.ch_r_y);
+  move(yaw_sender_, data_.dbus_data_.ch_l_x);
 }
 
 void DartManual::updatePc()
 {
   ManualBase::updatePc();
   recordPosition();
-  if (data_.dbus_data_.ch_l_y == 1)
+  if (data_.dbus_data_.ch_l_y == 1.)
   {
-    pitch_sender_->setPoint(pitch_post_);
-    yaw_sender_->setPoint(yaw_post_);
+    pitch_sender_->setPoint(pitch_outpost_);
+    yaw_sender_->setPoint(yaw_outpost_);
   }
-  if (data_.dbus_data_.ch_l_y == -1)
+  if (data_.dbus_data_.ch_l_y == -1.)
   {
     pitch_sender_->setPoint(pitch_base_);
     yaw_sender_->setPoint(yaw_base_);
@@ -106,7 +106,7 @@ void DartManual::leftSwitchMidRise()
 void DartManual::leftSwitchUpRise()
 {
   ManualBase::leftSwitchUpRise();
-  trigger_sender_->setPoint(forward_vel_);
+  trigger_sender_->setPoint(upward_vel_);
 }
 
 void DartManual::leftSwitchUpFall()
@@ -114,40 +114,36 @@ void DartManual::leftSwitchUpFall()
   trigger_sender_->setPoint(0.);
 }
 
-void DartManual::Move(int index, double ch_l, rm_common::JointPointCommandSender* joint)
+void DartManual::move(rm_common::JointPointCommandSender* joint, double ch)
 {
-  if (!data_.joint_state_.position.empty())
+  double position = data_.joint_state_.position[joint->getIndex()];
+  if (ch != 0.)
   {
-    double position = data_.joint_state_.position[index];
-    if (ch_l != 0)
-    {
-      joint->setPoint(position + ch_l * scale_);
-      set_position_ = true;
-    }
-    if (ch_l == 0 && set_position_)
-    {
-      joint->setPoint(data_.joint_state_.position[index]);
-      set_position_ = false;
-    }
+    joint->setPoint(position + ch * scale_);
+    if_stop_ = true;
+  }
+  if (ch == 0. && if_stop_)
+  {
+    joint->setPoint(data_.joint_state_.position[joint->getIndex()]);
+    if_stop_ = false;
   }
 }
 
 void DartManual::scaleAdjust()
 {
-  // Wait for test plot.
   if (data_.dbus_data_.wheel != 0)
-    scale_ = 0.04 * data_.dbus_data_.wheel;
+    scale_ = 0.4 * std::abs(data_.dbus_data_.wheel);
 }
 
 void DartManual::recordPosition()
 {
-  if (data_.dbus_data_.ch_r_y == 1)
+  if (data_.dbus_data_.ch_r_y == 1.)
   {
-    pitch_post_ = data_.joint_state_.position[pitch_sender_->getIndex()];
-    yaw_post_ = data_.joint_state_.position[yaw_sender_->getIndex()];
+    pitch_outpost_ = data_.joint_state_.position[pitch_sender_->getIndex()];
+    yaw_outpost_ = data_.joint_state_.position[yaw_sender_->getIndex()];
     ROS_INFO("recorded outpost position");
   }
-  if (data_.dbus_data_.ch_r_y == -1)
+  if (data_.dbus_data_.ch_r_y == -1.)
   {
     pitch_base_ = data_.joint_state_.position[pitch_sender_->getIndex()];
     yaw_base_ = data_.joint_state_.position[yaw_sender_->getIndex()];
