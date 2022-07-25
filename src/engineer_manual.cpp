@@ -138,7 +138,11 @@ void EngineerManual::sendCommand(const ros::Time& time)
   if (servo_mode_ == SERVO)
     servo_command_sender_->sendCommand(time);
   if (gimbal_mode_ == RATE)
+  {
     gimbal_cmd_sender_->sendCommand(time);
+    vel_cmd_sender_->setZero();
+    vel_cmd_sender_->sendCommand(time);
+  }
 }
 
 void EngineerManual::drawUi(const ros::Time& time)
@@ -187,7 +191,7 @@ void EngineerManual::rightSwitchMidRise()
 {
   ChassisGimbalManual::rightSwitchMidRise();
   servo_mode_ = JOINT;
-  gimbal_mode_ = RATE;
+  gimbal_mode_ = DIRECT;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
@@ -204,8 +208,8 @@ void EngineerManual::leftSwitchUpRise()
 
 void EngineerManual::leftSwitchUpFall()
 {
-  runStepQueue("BACK_HOME");
-  trigger_change_ui_->update("step", "BACK_HOME");
+  runStepQueue("EMPTY_HOME");
+  trigger_change_ui_->update("step", "NORMAL_HOME");
 }
 
 void EngineerManual::leftSwitchDownFall()
@@ -521,13 +525,6 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::VPress()
 {
-  if (servo_mode_ == SERVO)
-  {
-    servo_mode_ = JOINT;
-    trigger_change_ui_->update("step", "EXIT SERVO");
-    std::cout << "EXIT SERVO" << std::endl;
-  }
-  else if (servo_mode_ == JOINT)
   {
     servo_mode_ = SERVO;
     servo_reset_caller_->callService();
@@ -585,12 +582,14 @@ void EngineerManual::FPress()
   // enter gimbal rate
   gimbal_mode_ = RATE;
   trigger_change_ui_->update("step", "gimbal rate");
+  std::cout << "enter rate" << std::endl;
 }
 void EngineerManual::FRelease()
 {
   // exit gimbal rate
   gimbal_mode_ = DIRECT;
   trigger_change_ui_->update("step", "gimbal direct");
+  std::cout << "exie rate" << std::endl;
 }
 void EngineerManual::shiftZPress()
 {
