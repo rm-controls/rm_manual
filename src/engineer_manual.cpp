@@ -593,26 +593,26 @@ void EngineerManual::FRelease()
 }
 void EngineerManual::shiftZPress()
 {
-  runStepQueue("GIMBAL1");
-  trigger_change_ui_->update("step", "GIMBAL1");
-  std::cout << "GIMBAL1" << std::endl;
+  runStepQueue("WALKING_POS");
+  trigger_change_ui_->update("step", "WALKING_POS");
+  std::cout << "WALKING_POS" << std::endl;
 }
 void EngineerManual::shiftXPress()
 {
-  runStepQueue("GIMBAL2");
-  trigger_change_ui_->update("step", "GIMBAL2");
-  std::cout << "GIMBAL2" << std::endl;
+  runStepQueue("BIG_STONE_POS");
+  trigger_change_ui_->update("step", "BIG_STONE_POS");
+  std::cout << "BIG_STONE_POS" << std::endl;
 }
 void EngineerManual::shiftCPress()
 {
-  runStepQueue("GIMBAL3");
-  trigger_change_ui_->update("step", "GIMBAL3");
-  std::cout << "GIMBAL3" << std::endl;
+  runStepQueue("BACK_POS");
+  trigger_change_ui_->update("step", "BACK_POS");
+  std::cout << "BACK_POS" << std::endl;
 }
 void EngineerManual::shiftVPress()
 {
-  runStepQueue("GIMBAL4");
-  trigger_change_ui_->update("step", "GIMBAL4");
-  std::cout << "GIMBAL4" << std::endl;
+  runStepQueue("SKY_POS");
+  trigger_change_ui_->update("step", "SKY_POS");
+  std::cout << "SKY_POS" << std::endl;
 }
 }  // namespace rm_manual
