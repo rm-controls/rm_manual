@@ -12,6 +12,7 @@
 #include <std_msgs/Float64.h>
 #include <rm_msgs/EngineerAction.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <moveit_servo/status_codes.h>
 #include <utility>
 
 namespace rm_manual
@@ -105,6 +106,7 @@ private:
   rm_common::JointPositionBinaryCommandSender* drag_command_sender_;
   rm_common::CardCommandSender* card_command_sender_;
   rm_common::Vel3DCommandSender* servo_command_sender_;
+  rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
   InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_q_event_, ctrl_a_event_, ctrl_z_event_, ctrl_w_event_,
       ctrl_s_event_, ctrl_x_event_, ctrl_e_event_, ctrl_d_event_, ctrl_c_event_, ctrl_b_event_, ctrl_v_event_, z_event_,
       x_event_, c_event_, v_event_, b_event_, f_event_, shift_z_event_, shift_x_event_, shift_c_event_, shift_v_event_,

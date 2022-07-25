@@ -20,6 +20,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   // Servo
   ros::NodeHandle nh_servo(nh, "servo");
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
+  servo_reset_caller_ = new rm_common::ServiceCallerBase<std_srvs::Empty>(nh_servo, "/servo_server/reset_servo_status");
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("power_on_calibration", rpc_value);
@@ -156,8 +157,8 @@ void EngineerManual::drawUi(const ros::Time& time)
 
 void EngineerManual::updateServo()
 {
-  servo_command_sender_->setAngularVel(data_.dbus_data_.ch_r_x, data_.dbus_data_.ch_r_y, angular_z_scale_);
   servo_command_sender_->setLinearVel(data_.dbus_data_.ch_l_y, -data_.dbus_data_.ch_l_x, -data_.dbus_data_.wheel);
+  servo_command_sender_->setAngularVel(-data_.dbus_data_.ch_r_x, -data_.dbus_data_.ch_r_y, angular_z_scale_);
 }
 
 void EngineerManual::remoteControlTurnOff()
@@ -178,6 +179,7 @@ void EngineerManual::rightSwitchDownRise()
   ChassisGimbalManual::rightSwitchDownRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   servo_mode_ = SERVO;
+  servo_reset_caller_->callService();
   action_client_.cancelAllGoals();
 }
 
@@ -402,6 +404,16 @@ void EngineerManual::ctrlSPress()
   trigger_change_ui_->update("step", prefix_ + root_);
   std::cout << prefix_ + root_ << std::endl;
 }
+
+void EngineerManual::BPress()
+{
+  root_num_ = 1;
+  root_ = "GROUND_STONE";
+  JudgeRoot();
+  trigger_change_ui_->update("step", prefix_ + root_);
+  std::cout << prefix_ + root_ << std::endl;
+}
+
 void EngineerManual::ctrlXPress()
 {
   root_num_ = 2;
@@ -430,14 +442,6 @@ void EngineerManual::ctrlVPress()
 {
   prefix_ = "";
   root_ = "SMALL_ISLAND";
-  trigger_change_ui_->update("step", prefix_ + root_);
-  std::cout << prefix_ + root_ << std::endl;
-}
-
-void EngineerManual::BPress()
-{
-  prefix_ = "";
-  root_ = "GROUND_STONE";
   trigger_change_ui_->update("step", prefix_ + root_);
   std::cout << prefix_ + root_ << std::endl;
 }
@@ -526,6 +530,7 @@ void EngineerManual::VPress()
   else if (servo_mode_ == JOINT)
   {
     servo_mode_ = SERVO;
+    servo_reset_caller_->callService();
     trigger_change_ui_->update("step", "ENTER SERVO");
     std::cout << "ENTER SERVO" << std::endl;
   }
