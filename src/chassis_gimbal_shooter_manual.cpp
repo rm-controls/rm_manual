@@ -56,14 +56,14 @@ void ChassisGimbalShooterManual::checkReferee()
   self_inspection_event_.update(data_.game_status_data_.game_progress == 2);
   game_start_event_.update(data_.game_status_data_.game_progress == 4);
 
-  data_.manual_to_referee_pub_data.power_limit_state = chassis_cmd_sender_->power_limit_->getState();
-  data_.manual_to_referee_pub_data.shoot_frequency = shooter_cmd_sender_->getShootFrequency();
-  data_.manual_to_referee_pub_data.gimbal_eject = gimbal_cmd_sender_->getEject();
-  data_.manual_to_referee_pub_data.det_armor_target = switch_detection_srv_->getArmorTarget();
-  data_.manual_to_referee_pub_data.det_color = switch_detection_srv_->getColor();
-  data_.manual_to_referee_pub_data.det_exposure = switch_detection_srv_->getExposureLevel();
-  data_.manual_to_referee_pub_data.det_target = switch_detection_srv_->getTarget();
-  data_.manual_to_referee_pub_data.stamp = ros::Time::now();
+  data_.manual_to_referee_pub_data_.power_limit_state = chassis_cmd_sender_->power_limit_->getState();
+  data_.manual_to_referee_pub_data_.shoot_frequency = shooter_cmd_sender_->getShootFrequency();
+  data_.manual_to_referee_pub_data_.gimbal_eject = gimbal_cmd_sender_->getEject();
+  data_.manual_to_referee_pub_data_.det_armor_target = switch_detection_srv_->getArmorTarget();
+  data_.manual_to_referee_pub_data_.det_color = switch_detection_srv_->getColor();
+  data_.manual_to_referee_pub_data_.det_exposure = switch_detection_srv_->getExposureLevel();
+  data_.manual_to_referee_pub_data_.det_target = switch_detection_srv_->getTarget();
+  data_.manual_to_referee_pub_data_.stamp = ros::Time::now();
 }
 
 void ChassisGimbalShooterManual::checkKeyboard()
@@ -294,7 +294,7 @@ void ChassisGimbalShooterManual::wPress()
       gimbal_cmd_sender_->getEject())
   {
     gimbal_cmd_sender_->setEject(false);
-    data_.manual_to_referee_pub_data.hero_eject_flag = gimbal_cmd_sender_->getEject();
+    data_.manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
@@ -308,7 +308,7 @@ void ChassisGimbalShooterManual::aPress()
       gimbal_cmd_sender_->getEject())
   {
     gimbal_cmd_sender_->setEject(false);
-    data_.manual_to_referee_pub_data.hero_eject_flag = gimbal_cmd_sender_->getEject();
+    data_.manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
@@ -322,7 +322,7 @@ void ChassisGimbalShooterManual::sPress()
       gimbal_cmd_sender_->getEject())
   {
     gimbal_cmd_sender_->setEject(false);
-    data_.manual_to_referee_pub_data.hero_eject_flag = gimbal_cmd_sender_->getEject();
+    data_.manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
@@ -336,7 +336,7 @@ void ChassisGimbalShooterManual::dPress()
       gimbal_cmd_sender_->getEject())
   {
     gimbal_cmd_sender_->setEject(false);
-    data_.manual_to_referee_pub_data.hero_eject_flag = gimbal_cmd_sender_->getEject();
+    data_.manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }

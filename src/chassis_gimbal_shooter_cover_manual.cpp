@@ -34,7 +34,7 @@ void ChassisGimbalShooterCoverManual::updatePc()
 
 void ChassisGimbalShooterCoverManual::checkReferee()
 {
-  data_.manual_to_referee_pub_data.cover_state = cover_command_sender_->getState();
+  data_.manual_to_referee_pub_data_.cover_state = cover_command_sender_->getState();
   ChassisGimbalShooterManual::checkReferee();
 }
 void ChassisGimbalShooterCoverManual::checkKeyboard()

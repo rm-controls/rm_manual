@@ -6,7 +6,6 @@
 #define RM_MANUAL_COMMON_DATA_H_
 
 #include <ros/ros.h>
-#include <serial/serial.h>
 #include <rm_referee/referee/referee.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/JointState.h>
@@ -62,9 +61,7 @@ public:
   rm_msgs::GameStatus game_status_data_;
   rm_msgs::CapacityData capacity_data_;
   rm_msgs::Referee referee_sub_data_;
-  rm_msgs::ManualToReferee manual_to_referee_pub_data;
-
-  serial::Serial serial_;
+  rm_msgs::ManualToReferee manual_to_referee_pub_data_;
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;

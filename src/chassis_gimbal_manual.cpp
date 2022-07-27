@@ -80,7 +80,7 @@ void ChassisGimbalManual::checkReferee()
   chassis_cmd_sender_->power_limit_->updateRobotId(data_.game_robot_status_data_.robot_id);
   chassis_power_on_event_.update(data_.game_robot_status_data_.mains_power_chassis_output);
   gimbal_power_on_event_.update(data_.game_robot_status_data_.mains_power_gimbal_output);
-  data_.manual_to_referee_pub_.publish(data_.manual_to_referee_pub_data);
+  data_.manual_to_referee_pub_.publish(data_.manual_to_referee_pub_data_);
 }
 
 void ChassisGimbalManual::checkKeyboard()
