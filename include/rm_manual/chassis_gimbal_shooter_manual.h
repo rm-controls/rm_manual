@@ -33,6 +33,9 @@ protected:
   };
   void remoteControlTurnOff() override;
   void remoteControlTurnOn() override;
+  void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
+  void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data) override;
+  void refereeCallback(const rm_msgs::Referee::ConstPtr& data) override;
   void robotDie() override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
@@ -76,8 +79,6 @@ protected:
   void ctrlVPress();
   void ctrlRPress();
   void ctrlBPress();
-  // void ctrlShiftBPress();
-  // void ctrlShiftBPressRelease();
 
   InputEvent shooter_power_on_event_, self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_,
       f_event_, b_event_, x_event_, ctrl_c_event_, ctrl_v_event_, ctrl_r_event_, ctrl_b_event_, shift_event_,

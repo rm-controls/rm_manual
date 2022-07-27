@@ -38,7 +38,57 @@ protected:
   virtual void checkKeyboard(){};
   virtual void updateRc();
   virtual void updatePc();
-  virtual void sendCommand(const ros::Time &time) = 0;
+  virtual void sendCommand(const ros::Time& time) = 0;
+
+  virtual void jointStateCallback(const sensor_msgs::JointState::ConstPtr& joint_state)
+  {
+    data_.joint_state_ = *joint_state;
+  }
+  virtual void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
+  {
+    data_.actuator_state_ = *data;
+  }
+  virtual void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
+  {
+    data_.dbus_data_ = *data;
+  }
+  virtual void trackCallback(const rm_msgs::TrackData::ConstPtr& data)
+  {
+    data_.track_data_ = *data;
+  }
+  virtual void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
+  {
+    data_.gimbal_des_error_ = *data;
+  }
+  virtual void odomCallback(const nav_msgs::Odometry::ConstPtr& data)
+  {
+    data_.odom_ = *data;
+  }
+
+  virtual void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
+  {
+    data_.game_robot_status_data_ = *data;
+  }
+  virtual void gameRobotHpCallback(const rm_msgs::GameRobotHp::ConstPtr& data)
+  {
+    data_.game_robot_hp_data_ = *data;
+  }
+  virtual void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data)
+  {
+    data_.game_status_data_ = *data;
+  }
+  virtual void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data)
+  {
+    data_.capacity_data_ = *data;
+  }
+  virtual void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
+  {
+    data_.power_heat_data_data_ = *data;
+  }
+  virtual void refereeCallback(const rm_msgs::Referee::ConstPtr& data)
+  {
+    data_.referee_sub_data_ = *data;
+  }
 
   // Referee
   virtual void chassisOutputOn()

@@ -4,9 +4,11 @@
 
 #include "rm_manual/engineer_manual.h"
 
-namespace rm_manual {
-EngineerManual::EngineerManual(ros::NodeHandle &nh)
-    : ChassisGimbalManual(nh), operating_mode_(MANUAL), action_client_("/engineer_middleware/move_steps", true) {
+namespace rm_manual
+{
+EngineerManual::EngineerManual(ros::NodeHandle& nh)
+  : ChassisGimbalManual(nh), operating_mode_(MANUAL), action_client_("/engineer_middleware/move_steps", true)
+{
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
@@ -36,14 +38,16 @@ EngineerManual::EngineerManual(ros::NodeHandle &nh)
   engineer_cmd_pub_ = nh.advertise<rm_msgs::EngineerCmd>("/engineer_cmd", 1);
 }
 
-void EngineerManual::run() {
+void EngineerManual::run()
+{
   ChassisGimbalManual::run();
   power_on_calibration_->update(ros::Time::now(), state_ != PASSIVE);
   mast_calibration_->update(ros::Time::now(), state_ != PASSIVE);
   arm_calibration_->update(ros::Time::now());
 }
 
-void EngineerManual::checkKeyboard() {
+void EngineerManual::checkKeyboard()
+{
   ChassisGimbalManual::checkKeyboard();
   ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
   ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
@@ -67,92 +71,109 @@ void EngineerManual::checkKeyboard() {
   c_event_.update(data_.dbus_data_.key_c & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
 }
 
-void EngineerManual::updateRc() {
+void EngineerManual::updateRc()
+{
   ChassisGimbalManual::updateRc();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   left_switch_up_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN);
 }
 
-void EngineerManual::updatePc() {
+void EngineerManual::updatePc()
+{
   ChassisGimbalManual::updatePc();
   vel_cmd_sender_->setAngularZVel(-data_.dbus_data_.m_x);
 }
 
-void EngineerManual::sendCommand(const ros::Time &time) {
+void EngineerManual::sendCommand(const ros::Time& time)
+{
   mast_command_sender_->sendCommand(time);
-  if (operating_mode_ == MANUAL) {
+  if (operating_mode_ == MANUAL)
+  {
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
     card_command_sender_->sendCommand(time);
   }
 }
 
-void EngineerManual::remoteControlTurnOff() {
+void EngineerManual::remoteControlTurnOff()
+{
   ManualBase::remoteControlTurnOff();
   action_client_.cancelAllGoals();
 }
 
-void EngineerManual::chassisOutputOn() {
+void EngineerManual::chassisOutputOn()
+{
   power_on_calibration_->reset();
   mast_calibration_->reset();
   if (MIDDLEWARE)
     action_client_.cancelAllGoals();
 }
 
-void EngineerManual::rightSwitchDownRise() {
+void EngineerManual::rightSwitchDownRise()
+{
   ChassisGimbalManual::rightSwitchDownRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   action_client_.cancelAllGoals();
 }
 
-void EngineerManual::rightSwitchMidRise() {
+void EngineerManual::rightSwitchMidRise()
+{
   ChassisGimbalManual::rightSwitchMidRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
-void EngineerManual::rightSwitchUpRise() {
+void EngineerManual::rightSwitchUpRise()
+{
   ChassisGimbalManual::rightSwitchUpRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
-void EngineerManual::leftSwitchDownFall() {
+void EngineerManual::leftSwitchDownFall()
+{
   mast_calibration_->reset();
   arm_calibration_->reset();
 }
 
-void EngineerManual::runStepQueue(const std::string &step_queue_name) {
+void EngineerManual::runStepQueue(const std::string& step_queue_name)
+{
   rm_msgs::EngineerGoal goal;
   goal.step_queue_name = step_queue_name;
   engineer_cmd_data_.symbol = !engineer_cmd_data_.symbol;
-  if (action_client_.isServerConnected()) {
+  if (action_client_.isServerConnected())
+  {
     if (operating_mode_ == MANUAL)
-      action_client_.sendGoal(goal,
-                              boost::bind(&EngineerManual::actionDoneCallback, this, _1, _2),
+      action_client_.sendGoal(goal, boost::bind(&EngineerManual::actionDoneCallback, this, _1, _2),
                               boost::bind(&EngineerManual::actionActiveCallback, this),
                               boost::bind(&EngineerManual::actionFeedbackCallback, this, _1));
     operating_mode_ = MIDDLEWARE;
-  } else
+  }
+  else
     ROS_ERROR("Can not connect to middleware");
 }
 
-void EngineerManual::actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr &feedback) {
+void EngineerManual::actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback)
+{
   engineer_cmd_data_.current_step_name = feedback->current_step;
   engineer_cmd_data_.finished_step = feedback->finished_step;
   engineer_cmd_data_.total_steps = feedback->total_steps;
   engineer_cmd_pub_.publish(engineer_cmd_data_);
 }
 
-void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState &state,
-                                        const rm_msgs::EngineerResultConstPtr &result) {
+void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& state,
+                                        const rm_msgs::EngineerResultConstPtr& result)
+{
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
   operating_mode_ = MANUAL;
 }
 
-void EngineerManual::cPress() {
-  if (card_command_sender_->getState()) card_command_sender_->off();
-  else card_command_sender_->on();
+void EngineerManual::cPress()
+{
+  if (card_command_sender_->getState())
+    card_command_sender_->off();
+  else
+    card_command_sender_->on();
 }
 
-}
+}  // namespace rm_manual

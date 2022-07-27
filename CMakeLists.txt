@@ -24,6 +24,7 @@ find_package(catkin REQUIRED
         std_msgs
         actionlib
         nav_msgs
+        rm_referee
         )
 
 ## Find system libraries

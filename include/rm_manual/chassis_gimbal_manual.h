@@ -25,13 +25,29 @@ protected:
   void rightSwitchUpRise() override;
   void leftSwitchMidFall() override;
   void leftSwitchDownRise() override;
-  virtual void wPress() { x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0; }
+  void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
+  void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override;
+  void refereeCallback(const rm_msgs::Referee::ConstPtr& data) override;
+  void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data) override;
+  virtual void wPress()
+  {
+    x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
+  }
   virtual void wRelease();
-  virtual void sPress() { x_scale_ = x_scale_ <= -1.0 ? -1.0 : x_scale_ - 1.0; }
+  virtual void sPress()
+  {
+    x_scale_ = x_scale_ <= -1.0 ? -1.0 : x_scale_ - 1.0;
+  }
   virtual void sRelease();
-  virtual void aPress() { y_scale_ = y_scale_ >= 1.0 ? 1.0 : y_scale_ + 1.0; }
+  virtual void aPress()
+  {
+    y_scale_ = y_scale_ >= 1.0 ? 1.0 : y_scale_ + 1.0;
+  }
   virtual void aRelease();
-  virtual void dPress() { y_scale_ = y_scale_ <= -1.0 ? -1.0 : y_scale_ - 1.0; }
+  virtual void dPress()
+  {
+    y_scale_ = y_scale_ <= -1.0 ? -1.0 : y_scale_ - 1.0;
+  }
   virtual void dRelease();
   void wPressing();
   void aPressing();
@@ -39,9 +55,9 @@ protected:
   void dPressing();
   void mouseMidRise();
 
-  rm_common::ChassisCommandSender *chassis_cmd_sender_{};
-  rm_common::Vel2DCommandSender *vel_cmd_sender_{};
-  rm_common::GimbalCommandSender *gimbal_cmd_sender_{};
+  rm_common::ChassisCommandSender* chassis_cmd_sender_{};
+  rm_common::Vel2DCommandSender* vel_cmd_sender_{};
+  rm_common::GimbalCommandSender* gimbal_cmd_sender_{};
   double x_scale_{}, y_scale_{};
   double gimbal_scale_{ 1. };
   double gyro_move_reduction_{ 1. };

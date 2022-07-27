@@ -9,7 +9,7 @@ namespace rm_manual
 ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh) : ManualBase(nh)
 {
   ros::NodeHandle chassis_nh(nh, "chassis");
-  chassis_cmd_sender_ = new rm_common::ChassisCommandSender(chassis_nh, data_.referee_data_);
+  chassis_cmd_sender_ = new rm_common::ChassisCommandSender(chassis_nh);
   ros::NodeHandle vel_nh(nh, "vel");
   vel_cmd_sender_ = new rm_common::Vel2DCommandSender(vel_nh);
   if (!vel_nh.getParam("gyro_move_reduction", gyro_move_reduction_))
@@ -17,8 +17,14 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh) : ManualBase(nh)
   if (!vel_nh.getParam("gyro_rotate_reduction", gyro_rotate_reduction_))
     ROS_ERROR("Gyro rotate reduction no defined (namespace: %s)", nh.getNamespace().c_str());
   ros::NodeHandle gimbal_nh(nh, "gimbal");
-  gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh, data_.referee_data_);
-  ros::NodeHandle ui_nh(nh, "ui");
+  gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh);
+  data_.game_robot_status_sub_ = nh.subscribe<rm_msgs::GameRobotStatus>(
+      "/game_robot_status", 10, &ChassisGimbalManual::gameRobotStatusCallback, this);
+  data_.game_status_sub_ =
+      nh.subscribe<rm_msgs::GameStatus>("/game_status", 10, &ChassisGimbalManual::gameStatusCallback, this);
+  data_.capacity_sub_ =
+      nh.subscribe<rm_msgs::CapacityData>("/capacity_data", 10, &ChassisGimbalManual::capacityDataCallback, this);
+  data_.referee_sub_ = nh.subscribe<rm_msgs::Referee>("/referee", 10, &ChassisGimbalManual::refereeCallback, this);
 
   chassis_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::chassisOutputOn, this));
   gimbal_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::gimbalOutputOn, this));
@@ -71,15 +77,17 @@ void ChassisGimbalManual::updatePc()
 void ChassisGimbalManual::checkReferee()
 {
   ManualBase::checkReferee();
-  chassis_power_on_event_.update(data_.referee_data_.game_robot_status_.mains_power_chassis_output_);
-  gimbal_power_on_event_.update(data_.referee_data_.game_robot_status_.mains_power_gimbal_output_);
+  chassis_cmd_sender_->power_limit_->updateRobotId(data_.game_robot_status_data_.robot_id);
+  chassis_power_on_event_.update(data_.game_robot_status_data_.mains_power_chassis_output);
+  gimbal_power_on_event_.update(data_.game_robot_status_data_.mains_power_gimbal_output);
+  data_.manual_to_referee_pub_.publish(data_.manual_to_referee_pub_data);
 }
 
 void ChassisGimbalManual::checkKeyboard()
 {
   ManualBase::checkKeyboard();
-  if (data_.referee_data_.robot_id_ == rm_common::RobotId::RED_ENGINEER ||
-      data_.referee_data_.robot_id_ == rm_common::RobotId::BLUE_ENGINEER)
+  if (data_.game_robot_status_data_.robot_id == rm_referee::RobotId::RED_ENGINEER ||
+      data_.game_robot_status_data_.robot_id == rm_referee::RobotId::BLUE_ENGINEER)
   {
     w_event_.update((!data_.dbus_data_.key_ctrl) & (!data_.dbus_data_.key_shift) & data_.dbus_data_.key_w);
     s_event_.update((!data_.dbus_data_.key_ctrl) & (!data_.dbus_data_.key_shift) & data_.dbus_data_.key_s);
@@ -94,6 +102,30 @@ void ChassisGimbalManual::checkKeyboard()
     d_event_.update(data_.dbus_data_.key_d);
   }
   mouse_mid_event_.update(data_.dbus_data_.m_z != 0.);
+}
+
+void ChassisGimbalManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
+{
+  ManualBase::gameRobotStatusCallback(data);
+  chassis_cmd_sender_->power_limit_->updateGameRobotStatus(data_.game_robot_status_data_);
+}
+
+void ChassisGimbalManual::gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data)
+{
+  ManualBase::gameStatusCallback(data);
+  chassis_cmd_sender_->power_limit_->updateGameStatus(data_.game_status_data_);
+}
+
+void ChassisGimbalManual::capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data)
+{
+  ManualBase::capacityDataCallback(data);
+  chassis_cmd_sender_->power_limit_->updateCapacityData(data_.capacity_data_);
+}
+
+void ChassisGimbalManual::refereeCallback(const rm_msgs::Referee::ConstPtr& data)
+{
+  ManualBase::refereeCallback(data);
+  chassis_cmd_sender_->power_limit_->updateReferee(data_.referee_sub_data_);
 }
 
 void ChassisGimbalManual::remoteControlTurnOff()
