@@ -12,7 +12,7 @@
 #include <std_msgs/Float64.h>
 #include <rm_msgs/EngineerAction.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <moveit_servo/status_codes.h>
+#include <std_srvs/Empty.h>
 #include <utility>
 
 namespace rm_manual
