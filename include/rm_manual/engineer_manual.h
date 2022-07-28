@@ -33,8 +33,8 @@ private:
   void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback);
   void actionDoneCallback(const actionlib::SimpleClientGoalState& state, const rm_msgs::EngineerResultConstPtr& result);
   void runStepQueue(const std::string& step_queue_name);
-  void JudgePrefix();
-  void JudgeRoot();
+  void judgePrefix();
+  void judgeRoot();
   void actionActiveCallback()
   {
     operating_mode_ = MIDDLEWARE;
@@ -71,16 +71,16 @@ private:
   void shiftXPress();    // gimbal toward 2
   void shiftCPress();    // gimbal toward 3
   void shiftVPress();    // gimbal toward 4
-  void RPress();         // calibration
-  void ZPress();         // card long
-  void XPress();         // card short
-  void CPress();         // drag
-  void BPress();         // back home
-  void VPress();         // change mode servo
-  void FPress();         // enter gimbal rate
-  void FRelease();       // exit gimbal rate
-  void GPress();         // gripper
-  void GRelease();       // gripper
+  void rPress();         // calibration
+  void zPress();         // card long
+  void xPress();         // card short
+  void cPress();         // drag
+  void bPress();         // back home
+  void vPress();         // change mode servo
+  void fPress();         // enter gimbal rate
+  void fRelease();       // exit gimbal rate
+  void gPress();         // gripper
+  void gRelease();       // gripper
 
   enum
   {

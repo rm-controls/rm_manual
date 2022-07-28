@@ -43,16 +43,16 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   ctrl_v_event_.setRising(boost::bind(&EngineerManual::ctrlVPress, this));
   ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
   ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
-  z_event_.setRising(boost::bind(&EngineerManual::ZPress, this));
-  x_event_.setRising(boost::bind(&EngineerManual::XPress, this));
-  c_event_.setRising(boost::bind(&EngineerManual::CPress, this));
-  v_event_.setRising(boost::bind(&EngineerManual::VPress, this));
-  b_event_.setRising(boost::bind(&EngineerManual::BPress, this));
-  r_event_.setRising(boost::bind(&EngineerManual::RPress, this));
-  g_event_.setRising(boost::bind(&EngineerManual::GPress, this));
-  g_event_.setFalling(boost::bind(&EngineerManual::GRelease, this));
-  f_event_.setRising(boost::bind(&EngineerManual::FPress, this));
-  f_event_.setFalling(boost::bind(&EngineerManual::FRelease, this));
+  z_event_.setRising(boost::bind(&EngineerManual::zPress, this));
+  x_event_.setRising(boost::bind(&EngineerManual::xPress, this));
+  c_event_.setRising(boost::bind(&EngineerManual::cPress, this));
+  v_event_.setRising(boost::bind(&EngineerManual::vPress, this));
+  b_event_.setRising(boost::bind(&EngineerManual::bPress, this));
+  r_event_.setRising(boost::bind(&EngineerManual::rPress, this));
+  g_event_.setRising(boost::bind(&EngineerManual::gPress, this));
+  g_event_.setFalling(boost::bind(&EngineerManual::gRelease, this));
+  f_event_.setRising(boost::bind(&EngineerManual::fPress, this));
+  f_event_.setFalling(boost::bind(&EngineerManual::fRelease, this));
   ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
   shift_q_event_.setRising(boost::bind(&EngineerManual::shiftQPress, this));
   shift_q_event_.setFalling(boost::bind(&EngineerManual::shiftQRelease, this));
@@ -253,7 +253,7 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   operating_mode_ = MANUAL;
 }
 
-void EngineerManual::JudgePrefix()
+void EngineerManual::judgePrefix()
 {
   switch (root_num_)
   {
@@ -299,7 +299,7 @@ void EngineerManual::JudgePrefix()
       break;
   }
 }
-void EngineerManual::JudgeRoot()
+void EngineerManual::judgeRoot()
 {
   switch (prefix_num_)
   {
@@ -362,7 +362,7 @@ void EngineerManual::ctrlFPress()
 void EngineerManual::ctrlQPress()
 {
   prefix_num_ = 1;
-  JudgePrefix();
+  judgePrefix();
   trigger_change_ui_->update("step", prefix_ + root_);
   std::cout << prefix_ + root_ << std::endl;
 }
@@ -370,7 +370,7 @@ void EngineerManual::ctrlQPress()
 void EngineerManual::ctrlWPress()
 {
   prefix_num_ = 2;
-  JudgePrefix();
+  judgePrefix();
   trigger_change_ui_->update("step", prefix_ + root_);
   std::cout << prefix_ + root_ << std::endl;
 }
@@ -378,7 +378,7 @@ void EngineerManual::ctrlWPress()
 void EngineerManual::ctrlEPress()
 {
   prefix_num_ = 3;
-  JudgePrefix();
+  judgePrefix();
   trigger_change_ui_->update("step", prefix_ + root_);
   std::cout << prefix_ + root_ << std::endl;
 }
@@ -386,7 +386,7 @@ void EngineerManual::ctrlEPress()
 void EngineerManual::ctrlRPress()
 {
   prefix_num_ = 4;
-  JudgePrefix();
+  judgePrefix();
   trigger_change_ui_->update("step", prefix_ + root_);
   std::cout << prefix_ + root_ << std::endl;
 }
@@ -395,7 +395,7 @@ void EngineerManual::ctrlAPress()
 {
   root_num_ = 1;
   root_ = "SKY_ISLAND";
-  JudgeRoot();
+  judgeRoot();
   trigger_change_ui_->update("step", prefix_ + root_);
   std::cout << prefix_ + root_ << std::endl;
 }
@@ -404,16 +404,16 @@ void EngineerManual::ctrlSPress()
 {
   root_num_ = 1;
   root_ = "BIG_ISLAND";
-  JudgeRoot();
+  judgeRoot();
   trigger_change_ui_->update("step", prefix_ + root_);
   std::cout << prefix_ + root_ << std::endl;
 }
 
-void EngineerManual::BPress()
+void EngineerManual::bPress()
 {
   root_num_ = 1;
   root_ = "GROUND_STONE";
-  JudgeRoot();
+  judgeRoot();
   trigger_change_ui_->update("step", prefix_ + root_);
   std::cout << prefix_ + root_ << std::endl;
 }
@@ -422,7 +422,7 @@ void EngineerManual::ctrlXPress()
 {
   root_num_ = 2;
   root_ = "GAIN_STORE_STONE";
-  JudgeRoot();
+  judgeRoot();
   trigger_change_ui_->update("step", prefix_ + root_);
   std::cout << prefix_ + root_ << std::endl;
 }
@@ -450,7 +450,7 @@ void EngineerManual::ctrlVPress()
   std::cout << prefix_ + root_ << std::endl;
 }
 
-void EngineerManual::ZPress()
+void EngineerManual::zPress()
 {
   if (card_command_sender_->getState())
   {
@@ -466,7 +466,7 @@ void EngineerManual::ZPress()
   }
 }
 
-void EngineerManual::XPress()
+void EngineerManual::xPress()
 {
   if (card_command_sender_->getState())
   {
@@ -482,7 +482,7 @@ void EngineerManual::XPress()
   }
 }
 
-void EngineerManual::CPress()
+void EngineerManual::cPress()
 {
   if (drag_command_sender_->getState())
   {
@@ -506,7 +506,7 @@ void EngineerManual::ctrlCPress()
   std::cout << "DELETE_SCENE and CANCEL" << std::endl;
 }
 
-void EngineerManual::RPress()
+void EngineerManual::rPress()
 {
   arm_calibration_->reset();
   power_on_calibration_->reset();
@@ -518,12 +518,12 @@ void EngineerManual::ctrlBPress()
 {
   root_num_ = 3;
   root_ = "BACK_HOME";
-  JudgePrefix();
+  judgePrefix();
   trigger_change_ui_->update("step", prefix_ + root_);
   std::cout << prefix_ + root_ << std::endl;
 }
 
-void EngineerManual::VPress()
+void EngineerManual::vPress()
 {
   {
     servo_mode_ = SERVO;
@@ -565,26 +565,26 @@ void EngineerManual::shiftERelease()
   angular_z_scale_ = 0.;
 }
 
-void EngineerManual::GPress()
+void EngineerManual::gPress()
 {
   runStepQueue("CLOSE_GRIPPER");
   trigger_change_ui_->update("step", "close gripper");
   std::cout << "close gripper" << std::endl;
 }
-void EngineerManual::GRelease()
+void EngineerManual::gRelease()
 {
   runStepQueue("OPEN_GRIPPER");
   trigger_change_ui_->update("step", "open gripper");
   std::cout << "open gripper" << std::endl;
 }
-void EngineerManual::FPress()
+void EngineerManual::fPress()
 {
   // enter gimbal rate
   gimbal_mode_ = RATE;
   trigger_change_ui_->update("step", "gimbal rate");
   std::cout << "enter rate" << std::endl;
 }
-void EngineerManual::FRelease()
+void EngineerManual::fRelease()
 {
   // exit gimbal rate
   gimbal_mode_ = DIRECT;
