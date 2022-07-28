@@ -49,40 +49,40 @@ void EngineerManual::run()
 void EngineerManual::checkKeyboard()
 {
   ChassisGimbalManual::checkKeyboard();
-  ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
-  ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
-  ctrl_z_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
-  ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
-  ctrl_f_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_f);
-  ctrl_x_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_x);
-  ctrl_v_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v);
-  ctrl_g_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_g);
-  ctrl_s_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_s);
-  ctrl_d_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_d);
-  ctrl_q_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_q);
-  ctrl_w_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_w);
-  ctrl_e_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_e);
+  ctrl_c_event_.update(dbus_data_.key_ctrl & dbus_data_.key_c);
+  ctrl_r_event_.update(dbus_data_.key_ctrl & dbus_data_.key_r);
+  ctrl_z_event_.update(dbus_data_.key_ctrl & dbus_data_.key_z);
+  ctrl_b_event_.update(dbus_data_.key_ctrl & dbus_data_.key_b);
+  ctrl_f_event_.update(dbus_data_.key_ctrl & dbus_data_.key_f);
+  ctrl_x_event_.update(dbus_data_.key_ctrl & dbus_data_.key_x);
+  ctrl_v_event_.update(dbus_data_.key_ctrl & dbus_data_.key_v);
+  ctrl_g_event_.update(dbus_data_.key_ctrl & dbus_data_.key_g);
+  ctrl_s_event_.update(dbus_data_.key_ctrl & dbus_data_.key_s);
+  ctrl_d_event_.update(dbus_data_.key_ctrl & dbus_data_.key_d);
+  ctrl_q_event_.update(dbus_data_.key_ctrl & dbus_data_.key_q);
+  ctrl_w_event_.update(dbus_data_.key_ctrl & dbus_data_.key_w);
+  ctrl_e_event_.update(dbus_data_.key_ctrl & dbus_data_.key_e);
 
-  shift_w_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_w);
-  shift_s_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_s);
-  shift_c_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_c);
-  shift_x_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_x);
+  shift_w_event_.update(dbus_data_.key_shift & dbus_data_.key_w);
+  shift_s_event_.update(dbus_data_.key_shift & dbus_data_.key_s);
+  shift_c_event_.update(dbus_data_.key_shift & dbus_data_.key_c);
+  shift_x_event_.update(dbus_data_.key_shift & dbus_data_.key_x);
 
-  c_event_.update(data_.dbus_data_.key_c & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
+  c_event_.update(dbus_data_.key_c & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
 }
 
 void EngineerManual::updateRc()
 {
   ChassisGimbalManual::updateRc();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  left_switch_up_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::UP);
-  left_switch_down_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN);
+  left_switch_up_event_.update(dbus_data_.s_l == rm_msgs::DbusData::UP);
+  left_switch_down_event_.update(dbus_data_.s_l == rm_msgs::DbusData::DOWN);
 }
 
 void EngineerManual::updatePc()
 {
   ChassisGimbalManual::updatePc();
-  vel_cmd_sender_->setAngularZVel(-data_.dbus_data_.m_x);
+  vel_cmd_sender_->setAngularZVel(-dbus_data_.m_x);
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)

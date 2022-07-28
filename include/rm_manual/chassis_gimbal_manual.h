@@ -2,10 +2,10 @@
 // Created by qiayuan on 5/22/21.
 //
 
-#ifndef RM_MANUAL_CHASSIS_GIMBAL_MANUAL_H_
-#define RM_MANUAL_CHASSIS_GIMBAL_MANUAL_H_
+#pragma once
 
 #include "rm_manual/common/manual_base.h"
+
 namespace rm_manual
 {
 class ChassisGimbalManual : public ManualBase
@@ -25,10 +25,6 @@ protected:
   void rightSwitchUpRise() override;
   void leftSwitchMidFall() override;
   void leftSwitchDownRise() override;
-  void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
-  void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override;
-  void refereeCallback(const rm_msgs::Referee::ConstPtr& data) override;
-  void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data) override;
   virtual void wPress()
   {
     x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
@@ -55,9 +51,9 @@ protected:
   void dPressing();
   void mouseMidRise();
 
-  rm_common::ChassisCommandSender* chassis_cmd_sender_{};
   rm_common::Vel2DCommandSender* vel_cmd_sender_{};
   rm_common::GimbalCommandSender* gimbal_cmd_sender_{};
+  rm_common::ChassisCommandSender* chassis_cmd_sender_{};
   double x_scale_{}, y_scale_{};
   double gimbal_scale_{ 1. };
   double gyro_move_reduction_{ 1. };
@@ -66,5 +62,3 @@ protected:
   InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_, mouse_mid_event_;
 };
 }  // namespace rm_manual
-
-#endif  // RM_MANUAL_CHASSIS_GIMBAL_MANUAL_H_

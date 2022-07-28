@@ -2,8 +2,8 @@
 // Created by qiayuan on 5/22/21.
 //
 
-#ifndef RM_MANUAL_CHASSIS_GIMBAL_SHOOTER_MANUAL_H_
-#define RM_MANUAL_CHASSIS_GIMBAL_SHOOTER_MANUAL_H_
+#pragma once
+
 #include "rm_manual/chassis_gimbal_manual.h"
 #include <rm_common/decision/calibration_queue.h>
 
@@ -33,9 +33,6 @@ protected:
   };
   void remoteControlTurnOff() override;
   void remoteControlTurnOn() override;
-  void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
-  void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data) override;
-  void refereeCallback(const rm_msgs::Referee::ConstPtr& data) override;
   void robotDie() override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
@@ -88,5 +85,3 @@ protected:
   rm_common::CalibrationQueue* shooter_calibration_;
 };
 }  // namespace rm_manual
-
-#endif  // RM_MANUAL_CHASSIS_GIMBAL_SHOOTER_MANUAL_H_

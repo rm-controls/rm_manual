@@ -28,20 +28,20 @@ void ChassisGimbalShooterCoverManual::run()
 void ChassisGimbalShooterCoverManual::updatePc()
 {
   ChassisGimbalShooterManual::updatePc();
-  gimbal_cmd_sender_->setRate(-data_.dbus_data_.m_x * gimbal_scale_,
-                              cover_command_sender_->getState() ? 0.0 : data_.dbus_data_.m_y * gimbal_scale_);
+  gimbal_cmd_sender_->setRate(-dbus_data_.m_x * gimbal_scale_,
+                              cover_command_sender_->getState() ? 0.0 : dbus_data_.m_y * gimbal_scale_);
 }
 
 void ChassisGimbalShooterCoverManual::checkReferee()
 {
-  data_.manual_to_referee_pub_data_.cover_state = cover_command_sender_->getState();
+  manual_to_referee_pub_data_.cover_state = cover_command_sender_->getState();
   ChassisGimbalShooterManual::checkReferee();
 }
 void ChassisGimbalShooterCoverManual::checkKeyboard()
 {
   ChassisGimbalShooterManual::checkKeyboard();
-  ctrl_z_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
-  ctrl_q_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_q);
+  ctrl_z_event_.update(dbus_data_.key_ctrl & dbus_data_.key_z);
+  ctrl_q_event_.update(dbus_data_.key_ctrl & dbus_data_.key_q);
 }
 
 void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
@@ -51,12 +51,12 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
     chassis_cmd_sender_->getMsg()->follow_source_frame = supply_frame_;
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-    cover_colse_ = false;
+    cover_close_ = false;
     try
     {
       double roll, pitch, yaw;
-      quatToRPY(data_.tf_buffer_.lookupTransform("base_link", supply_frame_, ros::Time(0)).transform.rotation, roll,
-                pitch, yaw);
+      quatToRPY(tf_buffer_.lookupTransform("base_link", supply_frame_, ros::Time(0)).transform.rotation, roll, pitch,
+                yaw);
       if (std::abs(yaw) < 0.05)
         cover_command_sender_->on();
     }
@@ -68,13 +68,12 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
   else
   {
     cover_command_sender_->off();
-    if (!cover_colse_)
+    if (!cover_close_)
     {
       try
       {
         double roll, pitch, yaw;
-        quatToRPY(data_.tf_buffer_.lookupTransform("base_link", "cover", ros::Time(0)).transform.rotation, roll, pitch,
-                  yaw);
+        quatToRPY(tf_buffer_.lookupTransform("base_link", "cover", ros::Time(0)).transform.rotation, roll, pitch, yaw);
         if (pitch - cover_command_sender_->getMsg()->data > 0.05)
         {
           chassis_cmd_sender_->getMsg()->follow_source_frame = supply_frame_;
@@ -83,7 +82,7 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
         }
         else
         {
-          cover_colse_ = true;
+          cover_close_ = true;
           chassis_cmd_sender_->getMsg()->follow_source_frame = "yaw";
         }
       }
