@@ -249,7 +249,7 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
   trigger_change_ui_->update("step", "Done " + prefix_ + root_ + " press next");
-  std::cout << "Done! " + prefix_ + root_ << std::endl;
+  ROS_INFO("Done %s", (prefix_ + root_).c_str());
   operating_mode_ = MANUAL;
 }
 
@@ -349,14 +349,14 @@ void EngineerManual::ctrlGPress()
 {
   runStepQueue(prefix_ + root_);
   trigger_change_ui_->update("step", "Finished " + prefix_ + root_);
-  std::cout << "do " + prefix_ + root_ << std::endl;
+  ROS_INFO("do %s", (prefix_ + root_).c_str());
 }
 void EngineerManual::ctrlFPress()
 {
   root_ += "0";
   runStepQueue(prefix_ + root_);
   trigger_change_ui_->update("step", "Finished " + prefix_ + root_);
-  std::cout << "do " + prefix_ + root_ << std::endl;
+  ROS_INFO("do %s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlQPress()
@@ -364,7 +364,7 @@ void EngineerManual::ctrlQPress()
   prefix_num_ = 1;
   judgePrefix();
   trigger_change_ui_->update("step", prefix_ + root_);
-  std::cout << prefix_ + root_ << std::endl;
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlWPress()
@@ -372,7 +372,7 @@ void EngineerManual::ctrlWPress()
   prefix_num_ = 2;
   judgePrefix();
   trigger_change_ui_->update("step", prefix_ + root_);
-  std::cout << prefix_ + root_ << std::endl;
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlEPress()
@@ -380,7 +380,7 @@ void EngineerManual::ctrlEPress()
   prefix_num_ = 3;
   judgePrefix();
   trigger_change_ui_->update("step", prefix_ + root_);
-  std::cout << prefix_ + root_ << std::endl;
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlRPress()
@@ -388,7 +388,7 @@ void EngineerManual::ctrlRPress()
   prefix_num_ = 4;
   judgePrefix();
   trigger_change_ui_->update("step", prefix_ + root_);
-  std::cout << prefix_ + root_ << std::endl;
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlAPress()
@@ -397,7 +397,7 @@ void EngineerManual::ctrlAPress()
   root_ = "SKY_ISLAND";
   judgeRoot();
   trigger_change_ui_->update("step", prefix_ + root_);
-  std::cout << prefix_ + root_ << std::endl;
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlSPress()
@@ -406,7 +406,7 @@ void EngineerManual::ctrlSPress()
   root_ = "BIG_ISLAND";
   judgeRoot();
   trigger_change_ui_->update("step", prefix_ + root_);
-  std::cout << prefix_ + root_ << std::endl;
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::bPress()
@@ -415,7 +415,7 @@ void EngineerManual::bPress()
   root_ = "GROUND_STONE";
   judgeRoot();
   trigger_change_ui_->update("step", prefix_ + root_);
-  std::cout << prefix_ + root_ << std::endl;
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlXPress()
@@ -424,14 +424,14 @@ void EngineerManual::ctrlXPress()
   root_ = "GAIN_STORE_STONE";
   judgeRoot();
   trigger_change_ui_->update("step", prefix_ + root_);
-  std::cout << prefix_ + root_ << std::endl;
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 void EngineerManual::ctrlDPress()
 {
   prefix_ = "";
   root_ = "EXCHANGE";
   trigger_change_ui_->update("step", prefix_ + root_);
-  std::cout << prefix_ + root_ << std::endl;
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlZPress()
@@ -439,7 +439,7 @@ void EngineerManual::ctrlZPress()
   prefix_ = "";
   root_ = "STORE_STONE";
   trigger_change_ui_->update("step", prefix_ + root_);
-  std::cout << prefix_ + root_ << std::endl;
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlVPress()
@@ -447,7 +447,7 @@ void EngineerManual::ctrlVPress()
   prefix_ = "";
   root_ = "SMALL_ISLAND";
   trigger_change_ui_->update("step", prefix_ + root_);
-  std::cout << prefix_ + root_ << std::endl;
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::zPress()
@@ -456,13 +456,13 @@ void EngineerManual::zPress()
   {
     card_command_sender_->off();
     trigger_change_ui_->update("long_card", "off");
-    std::cout << "long_card off" << std::endl;
+    ROS_INFO("long_card off");
   }
   else
   {
     card_command_sender_->short_on();
     trigger_change_ui_->update("long_card", "on");
-    std::cout << "long_card on" << std::endl;
+    ROS_INFO("long_card on");
   }
 }
 
@@ -472,13 +472,13 @@ void EngineerManual::xPress()
   {
     card_command_sender_->off();
     trigger_change_ui_->update("short_card", "off");
-    std::cout << "short_card off" << std::endl;
+    ROS_INFO("short_card off");
   }
   else
   {
     card_command_sender_->short_on();
     trigger_change_ui_->update("short_card", "on");
-    std::cout << "short_card on" << std::endl;
+    ROS_INFO("short_card on");
   }
 }
 
@@ -488,13 +488,13 @@ void EngineerManual::cPress()
   {
     drag_command_sender_->off();
     trigger_change_ui_->update("drag", "off");
-    std::cout << "drag off" << std::endl;
+    ROS_INFO("drag off");
   }
   else
   {
     drag_command_sender_->on();
     trigger_change_ui_->update("drag", "on");
-    std::cout << "drag on" << std::endl;
+    ROS_INFO("drag on");
   }
 }
 
@@ -503,7 +503,7 @@ void EngineerManual::ctrlCPress()
   action_client_.cancelAllGoals();
   runStepQueue("DELETE_SCENE");
   trigger_change_ui_->update("step", "DELETE_SCENE and CANCEL");
-  std::cout << "DELETE_SCENE and CANCEL" << std::endl;
+  ROS_INFO("DELETE_SCENE and CANCEL");
 }
 
 void EngineerManual::rPress()
@@ -511,7 +511,7 @@ void EngineerManual::rPress()
   arm_calibration_->reset();
   power_on_calibration_->reset();
   trigger_change_ui_->update("step", "calibratied");
-  std::cout << "Calibrated" << std::endl;
+  ROS_INFO("Calibrated");
 }
 
 void EngineerManual::ctrlBPress()
@@ -520,7 +520,7 @@ void EngineerManual::ctrlBPress()
   root_ = "BACK_HOME";
   judgePrefix();
   trigger_change_ui_->update("step", prefix_ + root_);
-  std::cout << prefix_ + root_ << std::endl;
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::vPress()
@@ -529,7 +529,7 @@ void EngineerManual::vPress()
     servo_mode_ = SERVO;
     servo_reset_caller_->callService();
     trigger_change_ui_->update("step", "ENTER SERVO");
-    std::cout << "ENTER SERVO" << std::endl;
+    ROS_INFO("ENTER SERVO");
   }
   trigger_change_ui_->update("step", "servo mode controlling");
 }
@@ -537,14 +537,10 @@ void EngineerManual::vPress()
 void EngineerManual::shiftPressing()
 {
   speed_change_mode_ = 1;
-  trigger_change_ui_->update("step", "low speed mode");
-  std::cout << "low speed mode" << std::endl;
 }
 void EngineerManual::shiftRelease()
 {
   speed_change_mode_ = 0;
-  trigger_change_ui_->update("step", "low speed cancle");
-  std::cout << "low speed cancle" << std::endl;
 }
 
 void EngineerManual::shiftQPress()
@@ -569,50 +565,50 @@ void EngineerManual::gPress()
 {
   runStepQueue("CLOSE_GRIPPER");
   trigger_change_ui_->update("step", "close gripper");
-  std::cout << "close gripper" << std::endl;
+  ROS_INFO("close gripper");
 }
 void EngineerManual::gRelease()
 {
   runStepQueue("OPEN_GRIPPER");
   trigger_change_ui_->update("step", "open gripper");
-  std::cout << "open gripper" << std::endl;
+  ROS_INFO("open gripper");
 }
 void EngineerManual::fPress()
 {
   // enter gimbal rate
   gimbal_mode_ = RATE;
   trigger_change_ui_->update("step", "gimbal rate");
-  std::cout << "enter rate" << std::endl;
+  ROS_INFO("enter gimbal rate");
 }
 void EngineerManual::fRelease()
 {
   // exit gimbal rate
   gimbal_mode_ = DIRECT;
   trigger_change_ui_->update("step", "gimbal direct");
-  std::cout << "exie rate" << std::endl;
+  ROS_INFO("exit gimbal rate");
 }
 void EngineerManual::shiftZPress()
 {
   runStepQueue("WALKING_POS");
   trigger_change_ui_->update("step", "WALKING_POS");
-  std::cout << "WALKING_POS" << std::endl;
+  ROS_INFO("enter gimbal walking pose");
 }
 void EngineerManual::shiftXPress()
 {
   runStepQueue("BIG_STONE_POS");
   trigger_change_ui_->update("step", "BIG_STONE_POS");
-  std::cout << "BIG_STONE_POS" << std::endl;
+  ROS_INFO("enter gimbal big_stone pose");
 }
 void EngineerManual::shiftCPress()
 {
   runStepQueue("BACK_POS");
   trigger_change_ui_->update("step", "BACK_POS");
-  std::cout << "BACK_POS" << std::endl;
+  ROS_INFO("enter gimbal back pose");
 }
 void EngineerManual::shiftVPress()
 {
   runStepQueue("SKY_POS");
   trigger_change_ui_->update("step", "SKY_POS");
-  std::cout << "SKY_POS" << std::endl;
+  ROS_INFO("enter gimbal sky pose");
 }
 }  // namespace rm_manual
