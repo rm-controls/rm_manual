@@ -4,13 +4,8 @@
 
 #pragma once
 
-#include "rm_manual/chassis_gimbal_manual.h"
-#include <actionlib/client/simple_action_client.h>
+#include "rm_manual/common/manual_base.h"
 #include <rm_common/decision/calibration_queue.h>
-#include <std_msgs/Float64.h>
-#include <std_srvs/Empty.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <utility>
 
 namespace rm_manual
 {
