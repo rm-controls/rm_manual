@@ -39,6 +39,7 @@ protected:
   rm_common::CalibrationQueue *trigger_calibration_, *gimbal_calibration_;
   double pitch_outpost_{}, pitch_base_{}, yaw_outpost_{}, yaw_base_{};
   double qd_, upward_vel_;
+  double scale_{ 0.04 };
   bool if_stop_{ true };
 
   InputEvent chassis_power_on_event_, gimbal_power_on_event_;
