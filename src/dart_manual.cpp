@@ -52,8 +52,6 @@ void DartManual::sendCommand(const ros::Time& time)
 void DartManual::updateRc()
 {
   ManualBase::updateRc();
-  scaleAdjust();
-  ROS_INFO("The scale value is %f", scale_);
   move(pitch_sender_, data_.dbus_data_.ch_r_y);
   move(yaw_sender_, data_.dbus_data_.ch_l_x);
 }
@@ -116,23 +114,20 @@ void DartManual::leftSwitchUpFall()
 
 void DartManual::move(rm_common::JointPointCommandSender* joint, double ch)
 {
-  double position = data_.joint_state_.position[joint->getIndex()];
-  if (ch != 0.)
+  if (!data_.joint_state_.position.empty())
   {
-    joint->setPoint(position + ch * scale_);
-    if_stop_ = true;
+    double position = data_.joint_state_.position[joint->getIndex()];
+    if (ch != 0.)
+    {
+      joint->setPoint(position + ch * scale_);
+      if_stop_ = true;
+    }
+    if (ch == 0. && if_stop_)
+    {
+      joint->setPoint(data_.joint_state_.position[joint->getIndex()]);
+      if_stop_ = false;
+    }
   }
-  if (ch == 0. && if_stop_)
-  {
-    joint->setPoint(data_.joint_state_.position[joint->getIndex()]);
-    if_stop_ = false;
-  }
-}
-
-void DartManual::scaleAdjust()
-{
-  if (data_.dbus_data_.wheel != 0)
-    scale_ = 0.4 * std::abs(data_.dbus_data_.wheel);
 }
 
 void DartManual::recordPosition()
