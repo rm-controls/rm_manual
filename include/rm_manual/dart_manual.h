@@ -2,8 +2,7 @@
 // Created by luotinkai on 2022/7/15.
 //
 
-#ifndef SRC_DART_MANUAL_H
-#define SRC_DART_MANUAL_H
+#pragma once
 
 #include "rm_manual/chassis_gimbal_manual.h"
 #include <actionlib/client/simple_action_client.h>
@@ -45,5 +44,3 @@ protected:
   InputEvent chassis_power_on_event_, gimbal_power_on_event_;
 };
 }  // namespace rm_manual
-
-#endif  // SRC_DART_MANUAL_H
