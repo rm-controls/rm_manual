@@ -9,8 +9,8 @@ namespace rm_manual
 ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh) : ChassisGimbalManual(nh)
 {
   ros::NodeHandle shooter_nh(nh, "shooter");
-  shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, track_data_, &game_robot_status_data_,
-                                                            &power_heat_data_data_, &referee_sub_data_);
+  shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, track_data_, game_robot_status_data_,
+                                                            power_heat_data_data_, referee_sub_data_);
 
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);

@@ -12,7 +12,6 @@
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_listener.h>
 #include <sensor_msgs/JointState.h>
-#include <sensor_msgs/JointState.h>
 #include <tf2_ros/transform_listener.h>
 #include <controller_manager_msgs/SwitchController.h>
 
@@ -31,7 +30,7 @@
 #include <rm_msgs/GimbalDesError.h>
 #include <rm_msgs/GameRobotStatus.h>
 #include <rm_msgs/ManualToReferee.h>
-#include <rm_referee/referee/referee.h>
+#include <rm_referee/referee/protocol.h>
 #include "rm_manual/common/input_event.h"
 
 namespace rm_manual
