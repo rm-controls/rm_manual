@@ -30,7 +30,6 @@
 #include <rm_msgs/GimbalDesError.h>
 #include <rm_msgs/GameRobotStatus.h>
 #include <rm_msgs/ManualToReferee.h>
-#include <rm_referee/referee/protocol.h>
 #include "rm_manual/common/input_event.h"
 
 namespace rm_manual

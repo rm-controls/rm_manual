@@ -16,7 +16,6 @@
     <depend>roslint</depend>
     <depend>rm_msgs</depend>
     <depend>rm_common</depend>
-    <depend>rm_referee</depend>
     <depend>std_msgs</depend>
     <depend>nav_msgs</depend>
     <depend>actionlib</depend>

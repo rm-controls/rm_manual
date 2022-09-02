@@ -151,7 +151,7 @@ void ChassisGimbalShooterManual::rightSwitchDownRise()
 void ChassisGimbalShooterManual::rightSwitchMidRise()
 {
   ChassisGimbalManual::rightSwitchMidRise();
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
 }
 
@@ -267,8 +267,8 @@ void ChassisGimbalShooterManual::bPress()
 void ChassisGimbalShooterManual::wPress()
 {
   ChassisGimbalManual::wPress();
-  if ((game_robot_status_data_.robot_id == rm_referee::RobotId::BLUE_HERO ||
-       game_robot_status_data_.robot_id == rm_referee::RobotId::RED_HERO) &&
+  if ((game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::BLUE_HERO ||
+       game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::RED_HERO) &&
       gimbal_cmd_sender_->getEject())
   {
     gimbal_cmd_sender_->setEject(false);
@@ -281,8 +281,8 @@ void ChassisGimbalShooterManual::wPress()
 void ChassisGimbalShooterManual::aPress()
 {
   ChassisGimbalManual::aPress();
-  if ((game_robot_status_data_.robot_id == rm_referee::RobotId::BLUE_HERO ||
-       game_robot_status_data_.robot_id == rm_referee::RobotId::RED_HERO) &&
+  if ((game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::BLUE_HERO ||
+       game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::RED_HERO) &&
       gimbal_cmd_sender_->getEject())
   {
     gimbal_cmd_sender_->setEject(false);
@@ -295,8 +295,8 @@ void ChassisGimbalShooterManual::aPress()
 void ChassisGimbalShooterManual::sPress()
 {
   ChassisGimbalManual::sPress();
-  if ((game_robot_status_data_.robot_id == rm_referee::RobotId::BLUE_HERO ||
-       game_robot_status_data_.robot_id == rm_referee::RobotId::RED_HERO) &&
+  if ((game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::BLUE_HERO ||
+       game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::RED_HERO) &&
       gimbal_cmd_sender_->getEject())
   {
     gimbal_cmd_sender_->setEject(false);
@@ -309,8 +309,8 @@ void ChassisGimbalShooterManual::sPress()
 void ChassisGimbalShooterManual::dPress()
 {
   ChassisGimbalManual::dPress();
-  if ((game_robot_status_data_.robot_id == rm_referee::RobotId::BLUE_HERO ||
-       game_robot_status_data_.robot_id == rm_referee::RobotId::RED_HERO) &&
+  if ((game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::BLUE_HERO ||
+       game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::RED_HERO) &&
       gimbal_cmd_sender_->getEject())
   {
     gimbal_cmd_sender_->setEject(false);
@@ -346,8 +346,8 @@ void ChassisGimbalShooterManual::ctrlVPress()
 
 void ChassisGimbalShooterManual::ctrlRPress()
 {
-  if (game_robot_status_data_.robot_id == rm_referee::RobotId::BLUE_HERO ||
-      game_robot_status_data_.robot_id == rm_referee::RobotId::RED_HERO)
+  if (game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::BLUE_HERO ||
+      game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::RED_HERO)
   {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
@@ -366,7 +366,7 @@ void ChassisGimbalShooterManual::ctrlRPress()
 
 void ChassisGimbalShooterManual::ctrlBPress()
 {
-  switch_detection_srv_->switchExposureLevel();
+  switch_detection_srv_->switchEnemyColor();
   switch_detection_srv_->callService();
 }
 

@@ -78,8 +78,8 @@ void ChassisGimbalManual::checkReferee()
 void ChassisGimbalManual::checkKeyboard()
 {
   ManualBase::checkKeyboard();
-  if (game_robot_status_data_.robot_id == rm_referee::RobotId::RED_ENGINEER ||
-      game_robot_status_data_.robot_id == rm_referee::RobotId::BLUE_ENGINEER)
+  if (game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::RED_ENGINEER ||
+      game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::BLUE_ENGINEER)
   {
     w_event_.update((!dbus_data_.key_ctrl) & (!dbus_data_.key_shift) & dbus_data_.key_w);
     s_event_.update((!dbus_data_.key_ctrl) & (!dbus_data_.key_shift) & dbus_data_.key_s);

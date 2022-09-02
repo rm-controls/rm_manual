@@ -19,7 +19,6 @@ find_package(catkin REQUIRED
         roslint
         rm_msgs
         rm_common
-        rm_referee
         tf2_geometry_msgs
         serial
         std_msgs
