@@ -40,14 +40,12 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
   ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
-  ctrl_v_event_.setRising(boost::bind(&EngineerManual::ctrlVPress, this));
   ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
   ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
   z_event_.setRising(boost::bind(&EngineerManual::zPress, this));
   x_event_.setRising(boost::bind(&EngineerManual::xPress, this));
   c_event_.setRising(boost::bind(&EngineerManual::cPress, this));
   v_event_.setRising(boost::bind(&EngineerManual::vPress, this));
-  b_event_.setRising(boost::bind(&EngineerManual::bPress, this));
   r_event_.setRising(boost::bind(&EngineerManual::rPress, this));
   g_event_.setRising(boost::bind(&EngineerManual::gPress, this));
   g_event_.setFalling(boost::bind(&EngineerManual::gRelease, this));
@@ -64,6 +62,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   shift_v_event_.setRising(boost::bind(&EngineerManual::shiftVPress, this));
   shift_event_.setActiveHigh(boost::bind(&EngineerManual::shiftPressing, this));
   shift_event_.setFalling(boost::bind(&EngineerManual::shiftRelease, this));
+  mouse_left_event_.setFalling(boost::bind(&EngineerManual::mouseLeftRelease, this));
+  mouse_right_event_.setFalling(boost::bind(&EngineerManual::mouseRightRelease, this));
 }
 
 void EngineerManual::run()
@@ -87,7 +87,6 @@ void EngineerManual::checkKeyboard()
   ctrl_d_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_d);
   ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
   ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
-  ctrl_v_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_v);
   ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
   ctrl_g_event_.update(data_.dbus_data_.key_g & data_.dbus_data_.key_ctrl);
   ctrl_f_event_.update(data_.dbus_data_.key_f & data_.dbus_data_.key_ctrl);
@@ -99,6 +98,7 @@ void EngineerManual::checkKeyboard()
   b_event_.update(data_.dbus_data_.key_b & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
   g_event_.update(data_.dbus_data_.key_g & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
   f_event_.update(data_.dbus_data_.key_f & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
+  r_event_.update(data_.dbus_data_.key_r & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
 
   shift_z_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_z);
   shift_x_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_x);
@@ -109,6 +109,9 @@ void EngineerManual::checkKeyboard()
   shift_e_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_e);
   shift_r_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_r);
   shift_event_.update(data_.dbus_data_.key_shift & !data_.dbus_data_.key_ctrl);
+
+  mouse_left_event_.update(data_.dbus_data_.p_l);
+  mouse_right_event_.update(data_.dbus_data_.p_r);
 }
 
 void EngineerManual::updateRc()
@@ -192,6 +195,7 @@ void EngineerManual::rightSwitchMidRise()
   ChassisGimbalManual::rightSwitchMidRise();
   servo_mode_ = JOINT;
   gimbal_mode_ = DIRECT;
+  toward_change_mode_ = 0;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
@@ -199,6 +203,7 @@ void EngineerManual::rightSwitchUpRise()
 {
   ChassisGimbalManual::rightSwitchUpRise();
   gimbal_mode_ = DIRECT;
+  toward_change_mode_ = 0;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
@@ -208,14 +213,14 @@ void EngineerManual::leftSwitchUpRise()
 
 void EngineerManual::leftSwitchUpFall()
 {
-  runStepQueue("EMPTY_HOME");
+  runStepQueue("STORED_HOME0");
   trigger_change_ui_->update("step", "NORMAL_HOME");
 }
 
 void EngineerManual::leftSwitchDownFall()
 {
   arm_calibration_->reset();
-  //  power_on_calibration_->reset();
+  power_on_calibration_->reset();
 }
 
 void EngineerManual::runStepQueue(const std::string& step_queue_name)
@@ -279,9 +284,9 @@ void EngineerManual::judgePrefix()
       break;
     case (2):
       if (prefix_num_ == 1)
-        prefix_ = "SKY_";
-      if (prefix_num_ == 2)
         prefix_ = "NORMAL_";
+      if (prefix_num_ == 2)
+        prefix_ = "SKY_";
       if (prefix_num_ == 3)
         prefix_ = "NO!!";
       if (prefix_num_ == 4)
@@ -289,9 +294,19 @@ void EngineerManual::judgePrefix()
       break;
     case (3):
       if (prefix_num_ == 1)
-        prefix_ = "EMPTY_";
+        prefix_ = "NORMAL_";
       if (prefix_num_ == 2)
         prefix_ = "STORED_";
+      if (prefix_num_ == 3)
+        prefix_ = "EXCHANGE_";
+      if (prefix_num_ == 4)
+        prefix_ = "NO!!";
+      break;
+    case (4):
+      if (prefix_num_ == 1)
+        prefix_ = "LONG_";
+      if (prefix_num_ == 2)
+        prefix_ = "SHORT_";
       if (prefix_num_ == 3)
         prefix_ = "NO!!";
       if (prefix_num_ == 4)
@@ -310,22 +325,28 @@ void EngineerManual::judgeRoot()
         prefix_ = "WAIT_";
       if (root_num_ == 3)
         prefix_ = "WAIT_";
+      if (root_num_ == 4)
+        prefix_ = "WAIT_";
       break;
     case (1):
       if (root_num_ == 1)
         prefix_ = "LF_";
       if (root_num_ == 2)
-        prefix_ = "SKY_";
+        prefix_ = "NORMAL_";
       if (root_num_ == 3)
-        prefix_ = "EMPTY_";
+        prefix_ = "NORMAL_";
+      if (root_num_ == 4)
+        prefix_ = "LONG_";
       break;
     case (2):
       if (root_num_ == 1)
         prefix_ = "MID_";
       if (root_num_ == 2)
-        prefix_ = "NORMAL_";
+        prefix_ = "SKY_";
       if (root_num_ == 3)
         prefix_ = "STORED_";
+      if (root_num_ == 4)
+        prefix_ = "SHORT_";
       break;
     case (3):
       if (root_num_ == 1)
@@ -333,7 +354,10 @@ void EngineerManual::judgeRoot()
       if (root_num_ == 2)
         prefix_ = "NO!!";
       if (root_num_ == 3)
+        prefix_ = "EXCHANGE_";
+      if (root_num_ == 4)
         prefix_ = "NO!!";
+      break;
     case (4):
       if (root_num_ == 1)
         prefix_ = "READY_";
@@ -341,24 +365,25 @@ void EngineerManual::judgeRoot()
         prefix_ = "NO!!";
       if (root_num_ == 3)
         prefix_ = "NO!!";
+      if (root_num_ == 4)
+        prefix_ = "NO!!";
       break;
   }
 }
-
-void EngineerManual::ctrlGPress()
-{
-  runStepQueue(prefix_ + root_);
-  trigger_change_ui_->update("step", "Finished " + prefix_ + root_);
-  ROS_INFO("do %s", (prefix_ + root_).c_str());
-}
-void EngineerManual::ctrlFPress()
+void EngineerManual::mouseLeftRelease()
 {
   root_ += "0";
   runStepQueue(prefix_ + root_);
   trigger_change_ui_->update("step", "Finished " + prefix_ + root_);
-  ROS_INFO("do %s", (prefix_ + root_).c_str());
+  ROS_INFO("Finished %s", (prefix_ + root_).c_str());
 }
 
+void EngineerManual::mouseRightRelease()
+{
+  runStepQueue(prefix_ + root_);
+  trigger_change_ui_->update("step", "Finished " + prefix_ + root_);
+  ROS_INFO("Finished %s", (prefix_ + root_).c_str());
+}
 void EngineerManual::ctrlQPress()
 {
   prefix_num_ = 1;
@@ -409,7 +434,15 @@ void EngineerManual::ctrlSPress()
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
-void EngineerManual::bPress()
+void EngineerManual::ctrlDPress()
+{
+  prefix_ = "";
+  root_ = "EXCHANGE";
+  trigger_change_ui_->update("step", prefix_ + root_);
+  ROS_INFO("%s", (prefix_ + root_).c_str());
+}
+
+void EngineerManual::ctrlFPress()
 {
   root_num_ = 1;
   root_ = "GROUND_STONE";
@@ -418,18 +451,11 @@ void EngineerManual::bPress()
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
-void EngineerManual::ctrlXPress()
+void EngineerManual::ctrlGPress()
 {
-  root_num_ = 2;
-  root_ = "GAIN_STORE_STONE";
+  root_num_ = 4;
+  root_ = "GAIN_BARRIER";
   judgeRoot();
-  trigger_change_ui_->update("step", prefix_ + root_);
-  ROS_INFO("%s", (prefix_ + root_).c_str());
-}
-void EngineerManual::ctrlDPress()
-{
-  prefix_ = "";
-  root_ = "EXCHANGE";
   trigger_change_ui_->update("step", prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
@@ -442,10 +468,28 @@ void EngineerManual::ctrlZPress()
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
-void EngineerManual::ctrlVPress()
+void EngineerManual::ctrlXPress()
 {
-  prefix_ = "";
-  root_ = "SMALL_ISLAND";
+  root_num_ = 2;
+  root_ = "GAIN_STORE_STONE";
+  judgeRoot();
+  trigger_change_ui_->update("step", prefix_ + root_);
+  ROS_INFO("%s", (prefix_ + root_).c_str());
+}
+
+void EngineerManual::ctrlCPress()
+{
+  action_client_.cancelAllGoals();
+  runStepQueue("DELETE_SCENE");
+  trigger_change_ui_->update("step", "DELETE_SCENE and CANCEL");
+  ROS_INFO("DELETE_SCENE and CANCEL");
+}
+
+void EngineerManual::ctrlBPress()
+{
+  root_num_ = 3;
+  root_ = "HOME";
+  judgeRoot();
   trigger_change_ui_->update("step", prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
@@ -460,7 +504,7 @@ void EngineerManual::zPress()
   }
   else
   {
-    card_command_sender_->short_on();
+    card_command_sender_->long_on();
     trigger_change_ui_->update("long_card", "on");
     ROS_INFO("long_card on");
   }
@@ -498,29 +542,12 @@ void EngineerManual::cPress()
   }
 }
 
-void EngineerManual::ctrlCPress()
-{
-  action_client_.cancelAllGoals();
-  runStepQueue("DELETE_SCENE");
-  trigger_change_ui_->update("step", "DELETE_SCENE and CANCEL");
-  ROS_INFO("DELETE_SCENE and CANCEL");
-}
-
 void EngineerManual::rPress()
 {
   arm_calibration_->reset();
   power_on_calibration_->reset();
-  trigger_change_ui_->update("step", "calibratied");
+  trigger_change_ui_->update("step", "Calibrated");
   ROS_INFO("Calibrated");
-}
-
-void EngineerManual::ctrlBPress()
-{
-  root_num_ = 3;
-  root_ = "BACK_HOME";
-  judgePrefix();
-  trigger_change_ui_->update("step", prefix_ + root_);
-  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::vPress()
@@ -532,33 +559,6 @@ void EngineerManual::vPress()
     ROS_INFO("ENTER SERVO");
   }
   trigger_change_ui_->update("step", "servo mode controlling");
-}
-
-void EngineerManual::shiftPressing()
-{
-  speed_change_mode_ = 1;
-}
-void EngineerManual::shiftRelease()
-{
-  speed_change_mode_ = 0;
-}
-
-void EngineerManual::shiftQPress()
-{
-  angular_z_scale_ = 0.5;
-}
-void EngineerManual::shiftQRelease()
-{
-  angular_z_scale_ = 0.;
-}
-
-void EngineerManual::shiftEPress()
-{
-  angular_z_scale_ = -0.5;
-}
-void EngineerManual::shiftERelease()
-{
-  angular_z_scale_ = 0.;
 }
 
 void EngineerManual::gPress()
@@ -587,28 +587,59 @@ void EngineerManual::fRelease()
   trigger_change_ui_->update("step", "gimbal direct");
   ROS_INFO("exit gimbal rate");
 }
+void EngineerManual::shiftPressing()
+{
+  speed_change_mode_ = 1;
+}
+void EngineerManual::shiftRelease()
+{
+  speed_change_mode_ = 0;
+}
+
+void EngineerManual::shiftQPress()
+{
+  angular_z_scale_ = 0.5;
+}
+void EngineerManual::shiftQRelease()
+{
+  angular_z_scale_ = 0.;
+}
+
+void EngineerManual::shiftEPress()
+{
+  angular_z_scale_ = -0.5;
+}
+void EngineerManual::shiftERelease()
+{
+  angular_z_scale_ = 0.;
+}
 void EngineerManual::shiftZPress()
 {
-  runStepQueue("WALKING_POS");
-  trigger_change_ui_->update("step", "WALKING_POS");
-  ROS_INFO("enter gimbal walking pose");
+  toward_change_mode_ = 0;
+  runStepQueue("WALK_GIMBAL");
+  trigger_change_ui_->update("step", "WALK_GIMBAL");
+  ROS_INFO("enter gimbal WALK_GIMBAL");
 }
 void EngineerManual::shiftXPress()
 {
-  runStepQueue("BIG_STONE_POS");
-  trigger_change_ui_->update("step", "BIG_STONE_POS");
-  ROS_INFO("enter gimbal big_stone pose");
+  toward_change_mode_ = 0;
+  runStepQueue("BIG_STONE_GIMBAL");
+  trigger_change_ui_->update("step", "BIG_STONE_GIMBAL");
+  ROS_INFO("enter gimbal BIG_STONE_GIMBAL");
 }
 void EngineerManual::shiftCPress()
 {
-  runStepQueue("BACK_POS");
-  trigger_change_ui_->update("step", "BACK_POS");
-  ROS_INFO("enter gimbal back pose");
+  toward_change_mode_ = 1;
+  runStepQueue("BACK_GIMBAL");
+  trigger_change_ui_->update("step", "BACK_GIMBAL");
+  ROS_INFO("enter gimbal BACK_GIMBAL");
 }
 void EngineerManual::shiftVPress()
 {
-  runStepQueue("SKY_POS");
-  trigger_change_ui_->update("step", "SKY_POS");
-  ROS_INFO("enter gimbal sky pose");
+  toward_change_mode_ = 1;
+  runStepQueue("SKY_GIMBAL");
+  trigger_change_ui_->update("step", "SKY_GIMBAL");
+  ROS_INFO("enter gimbal SKY_GIMBAL");
 }
+
 }  // namespace rm_manual

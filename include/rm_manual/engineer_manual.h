@@ -47,40 +47,40 @@ private:
   void leftSwitchUpRise() override;
   void leftSwitchUpFall();
   void leftSwitchDownFall();
-  void ctrlQPress();     // choose "left_" situation // "has_stone_" // "sky"
-  void ctrlWPress();     // choose "mid_" situation // "no_stone_"
-  void ctrlEPress();     // choose "right_" situation //  ""
-  void ctrlAPress();     // choose "sky" situation
-  void ctrlSPress();     // choose "grasp" situation
-  void ctrlDPress();     // choose "exchange" situation
-  void ctrlZPress();     // choose "store" situation
-  void ctrlXPress();     // choose "_gain" situation
-  void ctrlCPress();     // cancel and delete scence
-  void ctrlVPress();     // choose "small_island" situation
-  void ctrlBPress();     // choose "ground_stone" situation
-  void ctrlFPress();     // execute next
-  void ctrlGPress();     // execute repeat
-  void ctrlRPress();     // choose "ready_" situation
-  void shiftPressing();  // low speed
-  void shiftRelease();   // low speed
-  void shiftQPress();    // servo's angular z
-  void shiftQRelease();  // servo's angular z
-  void shiftEPress();    // servo's angular z
-  void shiftERelease();  // servo's angular z
-  void shiftZPress();    // gimbal toward 1
-  void shiftXPress();    // gimbal toward 2
-  void shiftCPress();    // gimbal toward 3
-  void shiftVPress();    // gimbal toward 4
-  void rPress();         // calibration
-  void zPress();         // card long
-  void xPress();         // card short
-  void cPress();         // drag
-  void bPress();         // back home
-  void vPress();         // change mode servo
-  void fPress();         // enter gimbal rate
-  void fRelease();       // exit gimbal rate
-  void gPress();         // gripper
-  void gRelease();       // gripper
+  void ctrlQPress();         // choose "left_" situation // "has_stone_" // "sky"
+  void ctrlWPress();         // choose "mid_" situation // "no_stone_"
+  void ctrlEPress();         // choose "right_" situation //  ""
+  void ctrlAPress();         // choose "sky" situation
+  void ctrlSPress();         // choose "grasp" situation
+  void ctrlDPress();         // choose "exchange" situation
+  void ctrlZPress();         // choose "store" situation
+  void ctrlXPress();         // choose "_gain" situation
+  void ctrlCPress();         // cancel and delete scence
+  void ctrlBPress();         // choose "ground_stone" situation
+  void ctrlFPress();         // execute next
+  void ctrlGPress();         // execute repeat
+  void ctrlRPress();         // choose "ready_" situation
+  void shiftPressing();      // low speed
+  void shiftRelease();       // low speed
+  void shiftQPress();        // servo's angular z
+  void shiftQRelease();      // servo's angular z
+  void shiftEPress();        // servo's angular z
+  void shiftERelease();      // servo's angular z
+  void shiftZPress();        // gimbal toward 1
+  void shiftXPress();        // gimbal toward 2
+  void shiftCPress();        // gimbal toward 3
+  void shiftVPress();        // gimbal toward 4
+  void rPress();             // calibration
+  void zPress();             // card long
+  void xPress();             // card short
+  void cPress();             // drag
+  void vPress();             // change mode servo
+  void fPress();             // enter gimbal rate
+  void fRelease();           // exit gimbal rate
+  void gPress();             // gripper
+  void gRelease();           // gripper
+  void mouseLeftRelease();   // execute next
+  void mouseRightRelease();  // execute repeat
 
   enum
   {
@@ -111,7 +111,7 @@ private:
       ctrl_s_event_, ctrl_x_event_, ctrl_e_event_, ctrl_d_event_, ctrl_c_event_, ctrl_b_event_, ctrl_v_event_, z_event_,
       x_event_, c_event_, v_event_, b_event_, f_event_, shift_z_event_, shift_x_event_, shift_c_event_, shift_v_event_,
       shift_b_event_, ctrl_r_event_, shift_q_event_, shift_e_event_, ctrl_g_event_, shift_r_event_, ctrl_f_event_,
-      shift_event_, g_event_, r_event_;
+      shift_event_, g_event_, r_event_, mouse_left_event_, mouse_right_event_;
 };
 
 }  // namespace rm_manual
