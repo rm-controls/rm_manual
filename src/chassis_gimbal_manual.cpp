@@ -177,6 +177,8 @@ void ChassisGimbalManual::wPressing()
     final_x_scale_ = x_scale_;
   else if (speed_change_mode_)
     final_x_scale_ = x_scale_ * speed_change_scale_;
+  if (toward_change_mode_)
+    final_x_scale_ *= -1;
   vel_cmd_sender_->setLinearXVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
                                      final_x_scale_ * gyro_move_reduction_ :
                                      final_x_scale_);
@@ -197,6 +199,8 @@ void ChassisGimbalManual::sPressing()
     final_x_scale_ = x_scale_;
   else if (speed_change_mode_)
     final_x_scale_ = x_scale_ * speed_change_scale_;
+  if (toward_change_mode_)
+    final_x_scale_ *= -1;
   vel_cmd_sender_->setLinearXVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
                                      final_x_scale_ * gyro_move_reduction_ :
                                      final_x_scale_);
@@ -217,6 +221,8 @@ void ChassisGimbalManual::aPressing()
     final_y_scale_ = y_scale_;
   else if (speed_change_mode_)
     final_y_scale_ = y_scale_ * speed_change_scale_;
+  if (toward_change_mode_)
+    final_y_scale_ *= -1;
   vel_cmd_sender_->setLinearYVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
                                      final_y_scale_ * gyro_move_reduction_ :
                                      final_y_scale_);
@@ -237,6 +243,8 @@ void ChassisGimbalManual::dPressing()
     final_y_scale_ = y_scale_;
   else if (speed_change_mode_)
     final_y_scale_ = y_scale_ * speed_change_scale_;
+  if (toward_change_mode_)
+    final_y_scale_ *= -1;
   vel_cmd_sender_->setLinearYVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
                                      final_y_scale_ * gyro_move_reduction_ :
                                      final_y_scale_);
