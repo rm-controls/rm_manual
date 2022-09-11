@@ -23,6 +23,16 @@ public:
   {
     falling_handler_ = std::move(handler);
   }
+  void setRisingDelay(boost::function<void()> handler, ros::Duration delay)
+  {
+    rising_handler_ = std::move(handler);
+    delay_time_ = delay;
+  }
+  void setFallingDelay(boost::function<void()> handler, ros::Duration delay)
+  {
+    rising_handler_ = std::move(handler);
+    delay_time_ = delay;
+  }
   void setActiveHigh(boost::function<void(ros::Duration)> handler)
   {
     active_high_handler_ = std::move(handler);
@@ -41,16 +51,32 @@ public:
     active_high_handler_ = std::move(high_handler);
     active_low_handler_ = std::move(low_handler);
   }
+  void startDelay()
+  {
+    start_time_ = ros::Time::now();
+    delay_switch_ = true;
+  }
   void update(bool state)
   {
     if (state != last_state_)
     {
-      if (state && rising_handler_)
+      if (!delay_time_.toSec() && state && rising_handler_)
         rising_handler_();
-      else if (!state && falling_handler_)
+      else if (!delay_time_.toSec() && !state && falling_handler_)
         falling_handler_();
+      else if (delay_time_.toSec() && ((!state && falling_handler_) || (state && rising_handler_)))
+        startDelay();
+
       last_state_ = state;
       last_change_ = ros::Time::now();
+    }
+    if (delay_switch_ && (ros::Time::now() - start_time_ > delay_time_))
+    {
+      if (rising_handler_)
+        rising_handler_();
+      else if (falling_handler_)
+        falling_handler_();
+      delay_switch_ = false;
     }
     if (state && active_high_handler_)
       active_high_handler_(ros::Time::now() - last_change_);
@@ -59,8 +85,9 @@ public:
   }
 
 private:
-  bool last_state_;
-  ros::Time last_change_;
+  bool last_state_, delay_switch_;
+  ros::Time last_change_, start_time_;
+  ros::Duration delay_time_ = ros::Duration(0.);
   boost::function<void(ros::Duration)> active_high_handler_, active_low_handler_;
   boost::function<void()> rising_handler_, falling_handler_;
 };
