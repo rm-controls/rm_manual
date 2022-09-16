@@ -180,6 +180,7 @@ protected:
 
   bool remote_is_open_{};
   int state_ = PASSIVE;
+  std::string robot_color_;
   InputEvent robot_hp_event_, right_switch_down_event_, right_switch_mid_event_, right_switch_up_event_,
       left_switch_down_event_, left_switch_mid_event_, left_switch_up_event_;
 };
