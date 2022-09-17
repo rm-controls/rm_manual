@@ -39,30 +39,30 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh) : ManualBase(nh)
 
 void ChassisGimbalManual::sendCommand(const ros::Time& time)
 {
-  chassis_cmd_sender_->sendCommand(time);
-  vel_cmd_sender_->sendCommand(time);
+//  chassis_cmd_sender_->sendCommand(time);
+//  vel_cmd_sender_->sendCommand(time);
   gimbal_cmd_sender_->sendCommand(time);
 }
 
 void ChassisGimbalManual::updateRc()
 {
   ManualBase::updateRc();
-  if (std::abs(data_.dbus_data_.wheel) > 0.01)
-  {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
-  }
-  else
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-  vel_cmd_sender_->setAngularZVel(
-      (std::abs(data_.dbus_data_.ch_r_y) > 0.01 || std::abs(data_.dbus_data_.ch_r_x) > 0.01) ?
-          data_.dbus_data_.wheel * gyro_rotate_reduction_ :
-          data_.dbus_data_.wheel);
-  vel_cmd_sender_->setLinearXVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
-                                     data_.dbus_data_.ch_r_y * gyro_move_reduction_ :
-                                     data_.dbus_data_.ch_r_y);
-  vel_cmd_sender_->setLinearYVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
-                                     -data_.dbus_data_.ch_r_x * gyro_move_reduction_ :
-                                     -data_.dbus_data_.ch_r_x);
+//  if (std::abs(data_.dbus_data_.wheel) > 0.01)
+//  {
+//    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+//  }
+//  else
+//    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+//  vel_cmd_sender_->setAngularZVel(
+//      (std::abs(data_.dbus_data_.ch_r_y) > 0.01 || std::abs(data_.dbus_data_.ch_r_x) > 0.01) ?
+//          data_.dbus_data_.wheel * gyro_rotate_reduction_ :
+//          data_.dbus_data_.wheel);
+//  vel_cmd_sender_->setLinearXVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
+//                                     data_.dbus_data_.ch_r_y * gyro_move_reduction_ :
+//                                     data_.dbus_data_.ch_r_y);
+//  vel_cmd_sender_->setLinearYVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
+//                                     -data_.dbus_data_.ch_r_x * gyro_move_reduction_ :
+//                                     -data_.dbus_data_.ch_r_x);
   gimbal_cmd_sender_->setRate(-data_.dbus_data_.ch_l_x, -data_.dbus_data_.ch_l_y);
 }
 
@@ -75,7 +75,7 @@ void ChassisGimbalManual::updatePc()
 void ChassisGimbalManual::checkReferee()
 {
   ManualBase::checkReferee();
-  chassis_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_chassis_output_);
+//  chassis_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_chassis_output_);
   gimbal_power_on_event_.update(data_.referee_.referee_data_.game_robot_status_.mains_power_gimbal_output_);
 }
 
@@ -127,16 +127,16 @@ void ChassisGimbalManual::drawUi(const ros::Time& time)
 void ChassisGimbalManual::remoteControlTurnOff()
 {
   ManualBase::remoteControlTurnOff();
-  vel_cmd_sender_->setZero();
-  chassis_cmd_sender_->setZero();
+//  vel_cmd_sender_->setZero();
+//  chassis_cmd_sender_->setZero();
   gimbal_cmd_sender_->setZero();
 }
 
 void ChassisGimbalManual::rightSwitchDownRise()
 {
   ManualBase::rightSwitchDownRise();
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-  vel_cmd_sender_->setZero();
+//  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+//  vel_cmd_sender_->setZero();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   gimbal_cmd_sender_->setZero();
 }
@@ -144,15 +144,15 @@ void ChassisGimbalManual::rightSwitchDownRise()
 void ChassisGimbalManual::rightSwitchMidRise()
 {
   ManualBase::rightSwitchMidRise();
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+//  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
 }
 
 void ChassisGimbalManual::rightSwitchUpRise()
 {
   ManualBase::rightSwitchUpRise();
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-  vel_cmd_sender_->setZero();
+//  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+//  vel_cmd_sender_->setZero();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   trigger_change_ui_->add();
   time_change_ui_->add();
@@ -161,7 +161,7 @@ void ChassisGimbalManual::rightSwitchUpRise()
 
 void ChassisGimbalManual::leftSwitchMidFall()
 {
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
+//  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
 }
 
 void ChassisGimbalManual::leftSwitchDownRise()
