@@ -2,7 +2,8 @@
 
 ## Overview
 
-This is a package about operator manipulation, including data reception, processing and transmission when the computer or remote controller controls the robot.
+This is a package about operator manipulation, including data reception, processing and transmission when the computer
+or remote controller controls the robot.
 
 **Keywords:** auxiliary, ROS
 
@@ -20,28 +21,6 @@ expect that it changes often and any fitness for a particular purpose is disclai
 [![Build Status](http://rsl-ci.ethz.ch/buildStatus/icon?job=ros_best_practices)](http://rsl-ci.ethz.ch/job/ros_best_practices/)
 
 ![Example image](doc/example.jpg)
-
-[comment]: <> "### Publications"
-
-[comment]: <> "If you use this work in an academic context, please cite the following publication&#40;s&#41;:"
-
-[comment]: <> "* P. Fankhauser, M. Bloesch, C. Gehring, M. Hutter, and R. Siegwart: **PAPER TITLE**. IEEE/RSJ International Conference"
-
-[comment]: <> "  on Intelligent Robots and Systems &#40;IROS&#41;, 2015. &#40;[PDF]&#40;http://dx.doi.org/10.3929/ethz-a-010173654&#41;&#41;"
-
-[comment]: <> "        @inproceedings{Fankhauser2015,"
-
-[comment]: <> "            author = {Fankhauser, P\'{e}ter and Hutter, Marco},"
-
-[comment]: <> "            booktitle = {IEEE/RSJ International Conference on Intelligent Robots and Systems &#40;IROS&#41;},"
-
-[comment]: <> "            title = {{PAPER TITLE}},"
-
-[comment]: <> "            publisher = {IEEE},"
-
-[comment]: <> "            year = {2015}"
-
-[comment]: <> "        }"
 
 ## Installation
 
@@ -80,38 +59,6 @@ using
 	rosdep install --from-paths . --ignore-src
 	catkin_make
 
-[comment]: <> "### Running in Docker"
-
-[comment]: <> "Docker is a great way to run an application with all dependencies and libraries bundles together. Make sure"
-
-[comment]: <> "to [install Docker]&#40;https://docs.docker.com/get-docker/&#41; first."
-
-[comment]: <> "First, spin up a simple container:"
-
-[comment]: <> "	docker run -ti --rm --name ros-container ros:noetic bash"
-
-[comment]: <> "This downloads the `ros:noetic` image from the Docker Hub, indicates that it requires an interactive terminal &#40;`-t, -i`&#41;"
-
-[comment]: <> ", gives it a name &#40;`--name`&#41;, removes it after you exit the container &#40;`--rm`&#41; and runs a command &#40;`bash`&#41;."
-
-[comment]: <> "Now, create a catkin workspace, clone the package, build it, done!"
-
-[comment]: <> "	apt-get update && apt-get install -y git"
-
-[comment]: <> "	mkdir -p /ws/src && cd /ws/src"
-
-[comment]: <> "	git clone http://frp.acmetech.top:8080/dynamicx/rm_manual.git"
-
-[comment]: <> "	cd .."
-
-[comment]: <> "	rosdep install --from-path src"
-
-[comment]: <> "	catkin_make"
-
-[comment]: <> "	source devel/setup.bash"
-
-[comment]: <> "	roslaunch rm_manual load.launch"
-
 ### Unit Tests
 
 Run the unit tests with
@@ -137,8 +84,6 @@ Or better, use `rm_config`:
 ```
 roslaunch rm_config manual.launch
 ```
-
-
 
 ## Config files
 
