@@ -2,8 +2,8 @@
 // Created by chenzheng on 7/20/21.
 //
 
-#ifndef RM_MANUAL_CHASSIS_GIMBAL_SHOOTER_COVER_MANUAL_H_
-#define RM_MANUAL_CHASSIS_GIMBAL_SHOOTER_COVER_MANUAL_H_
+#pragma once
+
 #include "rm_manual/chassis_gimbal_shooter_manual.h"
 
 namespace rm_manual
@@ -17,11 +17,11 @@ public:
 protected:
   void updatePc() override;
   void checkKeyboard() override;
+  void checkReferee() override;
   void sendCommand(const ros::Time& time) override;
   void gimbalOutputOn() override;
   void remoteControlTurnOff() override;
   void remoteControlTurnOn() override;
-  void drawUi(const ros::Time& time) override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
@@ -36,8 +36,6 @@ protected:
   InputEvent ctrl_z_event_, ctrl_q_event_;
   std::string supply_frame_;
   bool supply_ = false;
-  bool cover_colse_ = true;
+  bool cover_close_ = true;
 };
 }  // namespace rm_manual
-
-#endif  // RM_MANUAL_CHASSIS_GIMBAL_SHOOTER_COVER_MANUAL_H_

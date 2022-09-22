@@ -2,17 +2,18 @@
 // Created by qiayuan on 5/23/21.
 //
 
-#ifndef RM_MANUAL_ENGINEER_MANUAL_H_
-#define RM_MANUAL_ENGINEER_MANUAL_H_
-#include "rm_manual/chassis_gimbal_manual.h"
+#pragma once
 
-#include <std_srvs/Empty.h>
-#include <actionlib/client/simple_action_client.h>
-#include <rm_common/decision/calibration_queue.h>
-#include <std_msgs/Float64.h>
+#include <rm_msgs/EngineerCmd.h>
 #include <rm_msgs/EngineerAction.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include "rm_manual/chassis_gimbal_manual.h"
+#include <rm_common/decision/calibration_queue.h>
+
 #include <utility>
+#include <std_srvs/Empty.h>
+#include <std_msgs/Float64.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <actionlib/client/simple_action_client.h>
 
 namespace rm_manual
 {
@@ -27,7 +28,6 @@ private:
   void updateRc() override;
   void updatePc() override;
   void sendCommand(const ros::Time& time) override;
-  void drawUi(const ros::Time& time) override;
   void remoteControlTurnOff() override;
   void chassisOutputOn() override;
   void rightSwitchDownRise() override;
@@ -36,7 +36,7 @@ private:
   void leftSwitchUpFall()
   {
     runStepQueue("ARM_TEST");
-    trigger_change_ui_->update("step", "ARM_TEST");
+    engineer_cmd_data_.step_queue_name = "ARM_TEST";
   }
   void leftSwitchDownFall();
   void runStepQueue(const std::string& step_queue_name);
@@ -53,74 +53,61 @@ private:
   void ctrlRPress()
   {
     runStepQueue("RECOVER");
-    trigger_change_ui_->update("step", "RECOVER");
   }
   void ctrlZPress()
   {
     runStepQueue("ARM_FOLD_LOWER");
-    trigger_change_ui_->update("step", "ARM_FOLD_LOWER");
   }
   void ctrlBPress()
   {
     target_ = "BIG_";
-    trigger_change_ui_->update("step", prefix_ + target_);
   }
   void ctrlFPress()
   {
     target_ = "FLOOR_";
-    trigger_change_ui_->update("step", prefix_ + target_);
   }
   void ctrlXPress()
   {
     target_ = "EXCHANGE_";
     prefix_ = "";
-    trigger_change_ui_->update("step", prefix_ + target_);
   }
   void ctrlGPress()
   {
     prefix_ = "GRASP_";
-    trigger_change_ui_->update("step", prefix_ + target_);
   }
   void ctrlSPress()
   {
     prefix_ = "STORAGE_";
-    trigger_change_ui_->update("step", prefix_ + target_);
   }
   void ctrlDPress()
   {
     prefix_ = "DRAG_";
-    trigger_change_ui_->update("step", prefix_ + target_);
   }
   void ctrlQPress()
   {
     runStepQueue(prefix_ + target_ + "PRE");
-    trigger_change_ui_->update("step", prefix_ + target_ + "PRE");
   }
   void ctrlWPress()
   {
     runStepQueue(prefix_ + target_ + "PROC");
-    trigger_change_ui_->update("step", prefix_ + target_ + "PROC");
   }
   void ctrlEPress()
   {
     runStepQueue(prefix_ + target_ + "AFTER");
-    trigger_change_ui_->update("step", prefix_ + target_ + "AFTER");
   }
   void ctrlVPress()
   {
     target_ = "LIGHT_BAR_";
-    trigger_change_ui_->update("step", prefix_ + target_);
   }
 
   void shiftWPress()
   {
     runStepQueue("GIMBAL_FORWARD_UPPER");
-    trigger_change_ui_->update("step", "GIMBAL_FORWARD_UPPER");
   }
   void shiftSPress()
   {
     runStepQueue("GIMBAL_FORWARD_LOWER");
-    trigger_change_ui_->update("step", "GIMBAL_FORWARD_LOWER");
+    engineer_cmd_data_.step_queue_name = "RECOVER";
   }
   void shiftCPress()
   {
@@ -130,9 +117,10 @@ private:
   {
     sentry_mode_ = sentry_mode_ == 0 ? 1 : 0;
   }
-
   void cPress();
 
+  ros::Publisher engineer_cmd_pub_;
+  rm_msgs::EngineerCmd engineer_cmd_data_;
   enum
   {
     MANUAL,
@@ -149,4 +137,3 @@ private:
 };
 
 }  // namespace rm_manual
-#endif  // RM_MANUAL_ENGINEER_MANUAL_H_
