@@ -5,6 +5,7 @@
 #include "rm_manual/common/manual_base.h"
 #include "rm_manual/chassis_gimbal_shooter_cover_manual.h"
 #include "rm_manual/engineer_manual.h"
+#include "rm_manual/dart_manual.h"
 
 int main(int argc, char** argv)
 {
@@ -19,6 +20,8 @@ int main(int argc, char** argv)
     manual_control = new rm_manual::ChassisGimbalShooterManual(nh);
   else if (robot == "engineer")
     manual_control = new rm_manual::EngineerManual(nh);
+  else if (robot == "dart")
+    manual_control = new rm_manual::DartManual(nh);
   else
   {
     ROS_ERROR("no robot type ");
