@@ -2,8 +2,8 @@
 
 ## Overview
 
-This is a package about the referee system, including the sending and receiving of various data and the drawing of the
-operation auxiliary interface
+This is a package about operator manipulation, including data reception, processing and transmission when the computer
+or remote controller controls the robot.
 
 **Keywords:** referee, auxiliary, ROS
 

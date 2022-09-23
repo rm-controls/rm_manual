@@ -78,7 +78,6 @@ void ChassisGimbalShooterManual::checkKeyboard()
   ctrl_r_event_.update(dbus_data_.key_ctrl & dbus_data_.key_r);
   ctrl_b_event_.update(dbus_data_.key_ctrl & dbus_data_.key_b & !dbus_data_.key_shift);
   shift_event_.update(dbus_data_.key_shift & !dbus_data_.key_ctrl);
-  ctrl_shift_b_event_.update(dbus_data_.key_ctrl & dbus_data_.key_shift & dbus_data_.key_b);
   mouse_left_event_.update(dbus_data_.p_l);
   mouse_right_event_.update(dbus_data_.p_r);
 }
@@ -100,6 +99,8 @@ void ChassisGimbalShooterManual::remoteControlTurnOn()
 {
   ChassisGimbalManual::remoteControlTurnOn();
   shooter_calibration_->stopController();
+  robot_color_ = game_robot_status_data_.robot_id >= 100 ? "blue" : "red";
+  switch_detection_srv_->setEnemyColor(game_robot_status_data_.robot_id, robot_color_);
 }
 
 void ChassisGimbalShooterManual::robotDie()
@@ -124,6 +125,8 @@ void ChassisGimbalShooterManual::shooterOutputOn()
 void ChassisGimbalShooterManual::updateRc()
 {
   ChassisGimbalManual::updateRc();
+  if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP)
+    gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
 }
 
 void ChassisGimbalShooterManual::updatePc()
