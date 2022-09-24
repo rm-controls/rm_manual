@@ -100,6 +100,8 @@ void ChassisGimbalShooterManual::remoteControlTurnOn()
 {
   ChassisGimbalManual::remoteControlTurnOn();
   shooter_calibration_->stopController();
+  std::string robot_color = game_robot_status_data_.robot_id >= 100 ? "blue" : "red";
+  switch_detection_srv_->setEnemyColor(game_robot_status_data_.robot_id, robot_color);
 }
 
 void ChassisGimbalShooterManual::robotDie()
@@ -124,6 +126,8 @@ void ChassisGimbalShooterManual::shooterOutputOn()
 void ChassisGimbalShooterManual::updateRc()
 {
   ChassisGimbalManual::updateRc();
+  if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP)
+    gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
 }
 
 void ChassisGimbalShooterManual::updatePc()
