@@ -66,6 +66,7 @@ protected:
   virtual void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
   {
     dbus_data_ = *data;
+    referee_is_online_ = (dbus_data_.stamp - referee_last_get_ < ros::Duration(0.5));
   }
   virtual void trackCallback(const rm_msgs::TrackData::ConstPtr& data)
   {
@@ -99,10 +100,7 @@ protected:
   virtual void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
   {
     power_heat_data_data_ = *data;
-  }
-  virtual void refereeCallback(const rm_msgs::Referee::ConstPtr& data)
-  {
-    referee_sub_data_ = *data;
+    referee_last_get_ = power_heat_data_data_.stamp;
   }
 
   // Referee
@@ -161,7 +159,6 @@ protected:
 
   rm_msgs::DbusData dbus_data_;
   rm_msgs::TrackData track_data_;
-  rm_msgs::Referee referee_sub_data_;
   rm_msgs::CapacityData capacity_data_;
   rm_msgs::GameStatus game_status_data_;
   rm_msgs::ActuatorState actuator_state_;
@@ -178,7 +175,8 @@ protected:
 
   ros::NodeHandle nh_;
 
-  bool remote_is_open_{};
+  ros::Time referee_last_get_;
+  bool remote_is_open_{}, referee_is_online_ = false;
   int state_ = PASSIVE;
   InputEvent robot_hp_event_, right_switch_down_event_, right_switch_mid_event_, right_switch_up_event_,
       left_switch_down_event_, left_switch_mid_event_, left_switch_up_event_;

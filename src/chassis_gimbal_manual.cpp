@@ -10,7 +10,7 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh) : ManualBase(nh)
 {
   ros::NodeHandle chassis_nh(nh, "chassis");
   chassis_cmd_sender_ = new rm_common::ChassisCommandSender(chassis_nh, game_status_data_, game_robot_status_data_,
-                                                            power_heat_data_data_, referee_sub_data_, capacity_data_);
+                                                            power_heat_data_data_, capacity_data_, referee_is_online_);
   ros::NodeHandle vel_nh(nh, "vel");
   vel_cmd_sender_ = new rm_common::Vel2DCommandSender(vel_nh);
   if (!vel_nh.getParam("gyro_move_reduction", gyro_move_reduction_))

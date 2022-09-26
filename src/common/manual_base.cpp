@@ -23,7 +23,6 @@ ManualBase::ManualBase(ros::NodeHandle& nh) : controller_manager_(nh), tf_listen
   capacity_sub_ = nh.subscribe<rm_msgs::CapacityData>("/capacity_data", 10, &ManualBase::capacityDataCallback, this);
   power_heat_data_sub_ =
       nh.subscribe<rm_msgs::PowerHeatData>("/power_heat_data", 10, &ManualBase::powerHeatDataCallback, this);
-  referee_sub_ = nh.subscribe<rm_msgs::Referee>("/referee", 10, &ManualBase::refereeCallback, this);
   // pub
   manual_to_referee_pub_ = nh.advertise<rm_msgs::ManualToReferee>("/manual_to_referee", 1);
 
