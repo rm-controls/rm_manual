@@ -25,6 +25,7 @@ ManualBase::ManualBase(ros::NodeHandle& nh) : controller_manager_(nh), tf_listen
       nh.subscribe<rm_msgs::PowerHeatData>("/power_heat_data", 10, &ManualBase::powerHeatDataCallback, this);
   // pub
   manual_to_referee_pub_ = nh.advertise<rm_msgs::ManualToReferee>("/manual_to_referee", 1);
+  dbus_timer_ = nh.createTimer(ros::Duration(0.5), &ManualBase::dbusCloseCallback, this, false, true);
 
   controller_manager_.startStateControllers();
   right_switch_down_event_.setRising(boost::bind(&ManualBase::rightSwitchDownRise, this));
@@ -48,42 +49,23 @@ void ManualBase::run()
 
 void ManualBase::checkReferee()
 {
-  robot_hp_event_.update(game_robot_status_data_.remain_hp != 0);
+  manual_to_referee_pub_.publish(manual_to_referee_pub_data_);
 }
 
 void ManualBase::checkSwitch(const ros::Time& time)
 {
-  if (remote_is_open_ && (time - dbus_data_.stamp).toSec() > 0.3)
-  {
-    ROS_INFO("Remote controller OFF");
-    remoteControlTurnOff();
-    remote_is_open_ = false;
-  }
-  if (!remote_is_open_ && (time - dbus_data_.stamp).toSec() < 0.3)
-  {
-    ROS_INFO("Remote controller ON");
-    remoteControlTurnOn();
-    remote_is_open_ = true;
-  }
-  right_switch_down_event_.update(dbus_data_.s_r == rm_msgs::DbusData::DOWN);
-  right_switch_mid_event_.update(dbus_data_.s_r == rm_msgs::DbusData::MID);
-  right_switch_up_event_.update(dbus_data_.s_r == rm_msgs::DbusData::UP);
-  if (state_ == RC)
-    updateRc();
-  else if (state_ == PC)
-    updatePc();
 }
 
-void ManualBase::updateRc()
+void ManualBase::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  left_switch_down_event_.update(dbus_data_.s_l == rm_msgs::DbusData::DOWN);
-  left_switch_mid_event_.update(dbus_data_.s_l == rm_msgs::DbusData::MID);
-  left_switch_up_event_.update(dbus_data_.s_l == rm_msgs::DbusData::UP);
+  left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
+  left_switch_mid_event_.update(dbus_data->s_l == rm_msgs::DbusData::MID);
+  left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
 }
 
-void ManualBase::updatePc()
+void ManualBase::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  checkKeyboard();
+  checkKeyboard(dbus_data);
 }
 
 void ManualBase::remoteControlTurnOff()

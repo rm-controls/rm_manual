@@ -23,10 +23,26 @@ protected:
   void leftSwitchDownRise() override;
   void leftSwitchMidRise() override;
   void leftSwitchUpRise() override;
-  void updateRc() override;
-  void updatePc() override;
+  void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
+  void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void move(rm_common::JointPointCommandSender* joint, double ch);
-  void recordPosition();
+  void recordPosition(const rm_msgs::DbusData::ConstPtr& dbus_data);
+
+  void jointStateCallback(const sensor_msgs::JointState::ConstPtr& joint_state_data) override
+  {
+    ManualBase::jointStateCallback(joint_state_data);
+    trigger_sender_->setJointState(*joint_state_data);
+    friction_left_sender_->setJointState(*joint_state_data);
+    friction_right_sender_->setJointState(*joint_state_data);
+    pitch_sender_->setJointState(*joint_state_data);
+    yaw_sender_->setJointState(*joint_state_data);
+  }
+  void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override
+  {
+    ManualBase::gameRobotStatusCallback(data);
+    chassis_power_on_event_.update(data->mains_power_chassis_output);
+    gimbal_power_on_event_.update(data->mains_power_gimbal_output);
+  }
 
   rm_common::JointPointCommandSender *trigger_sender_, *friction_left_sender_, *friction_right_sender_;
   rm_common::JointPointCommandSender *pitch_sender_, *yaw_sender_;

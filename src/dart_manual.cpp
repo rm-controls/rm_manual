@@ -10,17 +10,17 @@ DartManual::DartManual(ros::NodeHandle& nh) : ManualBase(nh)
 {
   ros::NodeHandle nh_yaw = ros::NodeHandle(nh, "yaw");
   ros::NodeHandle nh_left_pitch = ros::NodeHandle(nh, "left_pitch");
-  yaw_sender_ = new rm_common::JointPointCommandSender(nh_yaw, joint_state_);
-  pitch_sender_ = new rm_common::JointPointCommandSender(nh_left_pitch, joint_state_);
+  yaw_sender_ = new rm_common::JointPointCommandSender(nh_yaw);
+  pitch_sender_ = new rm_common::JointPointCommandSender(nh_left_pitch);
 
   ros::NodeHandle nh_trigger = ros::NodeHandle(nh, "trigger");
   ros::NodeHandle nh_friction_left = ros::NodeHandle(nh, "friction_left");
   ros::NodeHandle nh_friction_right = ros::NodeHandle(nh, "friction_right");
   qd_ = getParam(nh_friction_left, "qd_", 0.);
   upward_vel_ = getParam(nh_trigger, "upward_vel", 0.);
-  trigger_sender_ = new rm_common::JointPointCommandSender(nh_trigger, joint_state_);
-  friction_left_sender_ = new rm_common::JointPointCommandSender(nh_friction_left, joint_state_);
-  friction_right_sender_ = new rm_common::JointPointCommandSender(nh_friction_right, joint_state_);
+  trigger_sender_ = new rm_common::JointPointCommandSender(nh_trigger);
+  friction_left_sender_ = new rm_common::JointPointCommandSender(nh_friction_left);
+  friction_right_sender_ = new rm_common::JointPointCommandSender(nh_friction_right);
   XmlRpc::XmlRpcValue trigger_rpc_value, gimbal_rpc_value;
   nh.getParam("trigger_calibration", trigger_rpc_value);
   trigger_calibration_ = new rm_common::CalibrationQueue(trigger_rpc_value, nh, controller_manager_);
@@ -49,23 +49,23 @@ void DartManual::sendCommand(const ros::Time& time)
   yaw_sender_->sendCommand(time);
 }
 
-void DartManual::updateRc()
+void DartManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  ManualBase::updateRc();
-  move(pitch_sender_, dbus_data_.ch_r_y);
-  move(yaw_sender_, dbus_data_.ch_l_x);
+  ManualBase::updateRc(dbus_data);
+  move(pitch_sender_, dbus_data->ch_r_y);
+  move(yaw_sender_, dbus_data->ch_l_x);
 }
 
-void DartManual::updatePc()
+void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  ManualBase::updatePc();
-  recordPosition();
-  if (dbus_data_.ch_l_y == 1.)
+  ManualBase::updatePc(dbus_data);
+  recordPosition(dbus_data);
+  if (dbus_data->ch_l_y == 1.)
   {
     pitch_sender_->setPoint(pitch_outpost_);
     yaw_sender_->setPoint(yaw_outpost_);
   }
-  if (dbus_data_.ch_l_y == -1.)
+  if (dbus_data->ch_l_y == -1.)
   {
     pitch_sender_->setPoint(pitch_base_);
     yaw_sender_->setPoint(yaw_base_);
@@ -75,8 +75,6 @@ void DartManual::updatePc()
 void DartManual::checkReferee()
 {
   ManualBase::checkReferee();
-  chassis_power_on_event_.update(game_robot_status_data_.mains_power_chassis_output);
-  gimbal_power_on_event_.update(game_robot_status_data_.mains_power_gimbal_output);
 }
 
 void DartManual::remoteControlTurnOn()
@@ -114,9 +112,9 @@ void DartManual::leftSwitchUpFall()
 
 void DartManual::move(rm_common::JointPointCommandSender* joint, double ch)
 {
-  if (!joint_state_.position.empty())
+  if (!joint->getJointState().position.empty())
   {
-    double position = joint_state_.position[joint->getIndex()];
+    double position = joint->getJointState().position[joint->getIndex()];
     if (ch != 0.)
     {
       joint->setPoint(position + ch * scale_);
@@ -124,24 +122,24 @@ void DartManual::move(rm_common::JointPointCommandSender* joint, double ch)
     }
     if (ch == 0. && if_stop_)
     {
-      joint->setPoint(joint_state_.position[joint->getIndex()]);
+      joint->setPoint(joint->getJointState().position[joint->getIndex()]);
       if_stop_ = false;
     }
   }
 }
 
-void DartManual::recordPosition()
+void DartManual::recordPosition(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  if (dbus_data_.ch_r_y == 1.)
+  if (dbus_data->ch_r_y == 1.)
   {
-    pitch_outpost_ = joint_state_.position[pitch_sender_->getIndex()];
-    yaw_outpost_ = joint_state_.position[yaw_sender_->getIndex()];
+    pitch_outpost_ = pitch_sender_->getJointState().position[pitch_sender_->getIndex()];
+    yaw_outpost_ = yaw_sender_->getJointState().position[yaw_sender_->getIndex()];
     ROS_INFO("recorded outpost position");
   }
-  if (dbus_data_.ch_r_y == -1.)
+  if (dbus_data->ch_r_y == -1.)
   {
-    pitch_base_ = joint_state_.position[pitch_sender_->getIndex()];
-    yaw_base_ = joint_state_.position[yaw_sender_->getIndex()];
+    pitch_base_ = pitch_sender_->getJointState().position[pitch_sender_->getIndex()];
+    yaw_base_ = yaw_sender_->getJointState().position[yaw_sender_->getIndex()];
     ROS_INFO("recorded base position");
   }
 }

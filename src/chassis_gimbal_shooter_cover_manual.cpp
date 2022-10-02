@@ -25,11 +25,11 @@ void ChassisGimbalShooterCoverManual::run()
   gimbal_calibration_->update(ros::Time::now());
 }
 
-void ChassisGimbalShooterCoverManual::updatePc()
+void ChassisGimbalShooterCoverManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  ChassisGimbalShooterManual::updatePc();
-  gimbal_cmd_sender_->setRate(-dbus_data_.m_x * gimbal_scale_,
-                              cover_command_sender_->getState() ? 0.0 : dbus_data_.m_y * gimbal_scale_);
+  ChassisGimbalShooterManual::updatePc(dbus_data);
+  gimbal_cmd_sender_->setRate(-dbus_data->m_x * gimbal_scale_,
+                              cover_command_sender_->getState() ? 0.0 : dbus_data->m_y * gimbal_scale_);
 }
 
 void ChassisGimbalShooterCoverManual::checkReferee()
@@ -37,11 +37,11 @@ void ChassisGimbalShooterCoverManual::checkReferee()
   manual_to_referee_pub_data_.cover_state = cover_command_sender_->getState();
   ChassisGimbalShooterManual::checkReferee();
 }
-void ChassisGimbalShooterCoverManual::checkKeyboard()
+void ChassisGimbalShooterCoverManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  ChassisGimbalShooterManual::checkKeyboard();
-  ctrl_z_event_.update(dbus_data_.key_ctrl & dbus_data_.key_z);
-  ctrl_q_event_.update(dbus_data_.key_ctrl & dbus_data_.key_q);
+  ChassisGimbalShooterManual::checkKeyboard(dbus_data);
+  ctrl_z_event_.update(dbus_data->key_ctrl & dbus_data->key_z);
+  ctrl_q_event_.update(dbus_data->key_ctrl & dbus_data->key_q);
 }
 
 void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)

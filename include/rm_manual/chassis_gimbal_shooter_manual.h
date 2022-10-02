@@ -17,9 +17,9 @@ public:
 
 protected:
   void checkReferee() override;
-  void checkKeyboard() override;
-  void updateRc() override;
-  void updatePc() override;
+  void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
+  void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
+  void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void sendCommand(const ros::Time& time) override;
   void chassisOutputOn() override;
   void shooterOutputOn() override;
@@ -41,6 +41,38 @@ protected:
   void leftSwitchMidRise() override;
   void leftSwitchMidOn(ros::Duration duration);
   void leftSwitchUpRise() override;
+  void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override
+  {
+    shooter_cmd_sender_->setTrackData(*data);
+  }
+  void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override
+  {
+    ChassisGimbalManual::gameRobotStatusCallback(data);
+    shooter_cmd_sender_->setGameRobotStatusData(*data);
+    shooter_power_on_event_.update(data->mains_power_shooter_output);
+  }
+  void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data) override
+  {
+    ChassisGimbalManual::powerHeatDataCallback(data);
+    shooter_cmd_sender_->setPowerHeatData(*data);
+  }
+  void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override
+  {
+    ChassisGimbalManual::dbusDataCallback(data);
+    chassis_cmd_sender_->setRefereeStatus(referee_is_online_);
+    shooter_cmd_sender_->setRefereeStatus(referee_is_online_);
+  }
+  void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override
+  {
+    ChassisGimbalManual::gameStatusCallback(data);
+    self_inspection_event_.update(data->game_progress == 2);
+    game_start_event_.update(data->game_progress == 4);
+  }
+  void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data) override
+  {
+    ChassisGimbalManual::gimbalDesErrorCallback(data);
+    shooter_cmd_sender_->setGimbalDesError(*data);
+  }
   void leftSwitchUpOn(ros::Duration duration);
   void mouseLeftPress();
   void mouseLeftRelease()

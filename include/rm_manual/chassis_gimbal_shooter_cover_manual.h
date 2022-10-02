@@ -15,8 +15,8 @@ public:
   void run() override;
 
 protected:
-  void updatePc() override;
-  void checkKeyboard() override;
+  void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
+  void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void checkReferee() override;
   void sendCommand(const ros::Time& time) override;
   void gimbalOutputOn() override;
