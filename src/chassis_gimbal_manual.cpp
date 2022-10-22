@@ -85,8 +85,7 @@ void ChassisGimbalManual::checkReferee()
 void ChassisGimbalManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ManualBase::checkKeyboard(dbus_data);
-  if (chassis_cmd_sender_->getGameRobotStatusData().robot_id == rm_msgs::GameRobotStatus::RED_ENGINEER ||
-      chassis_cmd_sender_->getGameRobotStatusData().robot_id == rm_msgs::GameRobotStatus::BLUE_ENGINEER)
+  if (robot_id_ == rm_msgs::GameRobotStatus::RED_ENGINEER || robot_id_ == rm_msgs::GameRobotStatus::BLUE_ENGINEER)
   {
     w_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_w);
     s_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_s);
@@ -210,9 +209,9 @@ void ChassisGimbalManual::mouseMidRise()
 {
   if (gimbal_scale_ >= 0. && gimbal_scale_ <= 3.)
   {
-    if (gimbal_scale_ + 0.2 <= 3. && chassis_cmd_sender_->getDbusData().m_z > 0.)
+    if (gimbal_scale_ + 0.2 <= 3. && dbus_data_.m_z > 0.)
       gimbal_scale_ += 0.2;
-    else if (gimbal_scale_ - 0.2 >= 0. && chassis_cmd_sender_->getDbusData().m_z < 0.)
+    else if (gimbal_scale_ - 0.2 >= 0. && dbus_data_.m_z < 0.)
       gimbal_scale_ -= 0.2;
   }
 }

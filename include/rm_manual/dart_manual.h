@@ -28,15 +28,6 @@ protected:
   void move(rm_common::JointPointCommandSender* joint, double ch);
   void recordPosition(const rm_msgs::DbusData::ConstPtr& dbus_data);
 
-  void jointStateCallback(const sensor_msgs::JointState::ConstPtr& joint_state_data) override
-  {
-    ManualBase::jointStateCallback(joint_state_data);
-    trigger_sender_->setJointState(*joint_state_data);
-    friction_left_sender_->setJointState(*joint_state_data);
-    friction_right_sender_->setJointState(*joint_state_data);
-    pitch_sender_->setJointState(*joint_state_data);
-    yaw_sender_->setJointState(*joint_state_data);
-  }
   void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override
   {
     ManualBase::gameRobotStatusCallback(data);

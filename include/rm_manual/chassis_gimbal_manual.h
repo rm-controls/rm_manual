@@ -28,35 +28,33 @@ protected:
   void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override
   {
     ManualBase::gameStatusCallback(data);
-    chassis_cmd_sender_->setGameStatusData(*data);
+    chassis_cmd_sender_->updateGameStatus(*data);
   }
   void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override
   {
     ManualBase::gameRobotStatusCallback(data);
-    chassis_cmd_sender_->setGameRobotStatusData(*data);
+    chassis_cmd_sender_->updateGameRobotStatus(*data);
     chassis_power_on_event_.update(data->mains_power_chassis_output);
     gimbal_power_on_event_.update(data->mains_power_gimbal_output);
   }
   void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data) override
   {
     ManualBase::powerHeatDataCallback(data);
-    chassis_cmd_sender_->setPowerHeatData(*data);
+    chassis_cmd_sender_->updatePowerHeatData(*data);
   }
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override
   {
     ManualBase::dbusDataCallback(data);
-    chassis_cmd_sender_->setRefereeStatus(referee_is_online_);
-    chassis_cmd_sender_->setDbusData(*data);
+    chassis_cmd_sender_->updateRefereeStatus(referee_is_online_);
   }
   void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data) override
   {
     ManualBase::capacityDataCallback(data);
-    chassis_cmd_sender_->setCapacityData(*data);
+    chassis_cmd_sender_->updateCapacityData(*data);
   }
   void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override
   {
     ManualBase::trackCallback(data);
-    gimbal_cmd_sender_->setTrackData(*data);
   }
   virtual void wPress()
   {

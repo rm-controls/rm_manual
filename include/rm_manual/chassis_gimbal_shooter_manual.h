@@ -41,26 +41,22 @@ protected:
   void leftSwitchMidRise() override;
   void leftSwitchMidOn(ros::Duration duration);
   void leftSwitchUpRise() override;
-  void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override
-  {
-    shooter_cmd_sender_->setTrackData(*data);
-  }
   void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override
   {
     ChassisGimbalManual::gameRobotStatusCallback(data);
-    shooter_cmd_sender_->setGameRobotStatusData(*data);
+    shooter_cmd_sender_->updateGameRobotStatus(*data);
     shooter_power_on_event_.update(data->mains_power_shooter_output);
   }
   void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data) override
   {
     ChassisGimbalManual::powerHeatDataCallback(data);
-    shooter_cmd_sender_->setPowerHeatData(*data);
+    shooter_cmd_sender_->updatePowerHeatData(*data);
   }
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override
   {
     ChassisGimbalManual::dbusDataCallback(data);
-    chassis_cmd_sender_->setRefereeStatus(referee_is_online_);
-    shooter_cmd_sender_->setRefereeStatus(referee_is_online_);
+    chassis_cmd_sender_->updateRefereeStatus(referee_is_online_);
+    shooter_cmd_sender_->updateRefereeStatus(referee_is_online_);
   }
   void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override
   {
@@ -71,7 +67,6 @@ protected:
   void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data) override
   {
     ChassisGimbalManual::gimbalDesErrorCallback(data);
-    shooter_cmd_sender_->setGimbalDesError(*data);
   }
   void leftSwitchUpOn(ros::Duration duration);
   void mouseLeftPress();
