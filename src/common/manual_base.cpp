@@ -42,18 +42,14 @@ void ManualBase::run()
 {
   ros::Time time = ros::Time::now();
   checkReferee();
-  checkSwitch(time);
   sendCommand(time);
   controller_manager_.update();
 }
 
 void ManualBase::checkReferee()
 {
+  referee_is_online_ = (ros::Time::now() - referee_last_get_ < ros::Duration(0.5));
   manual_to_referee_pub_.publish(manual_to_referee_pub_data_);
-}
-
-void ManualBase::checkSwitch(const ros::Time& time)
-{
 }
 
 void ManualBase::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)

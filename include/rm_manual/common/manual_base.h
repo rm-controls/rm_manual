@@ -49,7 +49,6 @@ public:
   virtual void run();
 
 protected:
-  void checkSwitch(const ros::Time& time);
   virtual void checkReferee();
   virtual void checkKeyboard(const rm_msgs::DbusData::ConstPtr& data){};
   virtual void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data);
@@ -64,21 +63,23 @@ protected:
   {
     dbus_data_ = *data;
     dbus_timer_.setPeriod(ros::Duration(0.3), true);
-    if (!remote_is_open_)
+    if (ros::Time::now() - data->stamp < ros::Duration(0.3))
     {
-      ROS_INFO("Remote controller ON");
-      remoteControlTurnOn();
-      remote_is_open_ = true;
-    }
-    referee_is_online_ = (data->stamp - referee_last_get_ < ros::Duration(0.5));
-    right_switch_down_event_.update(data->s_r == rm_msgs::DbusData::DOWN);
-    right_switch_mid_event_.update(data->s_r == rm_msgs::DbusData::MID);
-    right_switch_up_event_.update(data->s_r == rm_msgs::DbusData::UP);
+      if (!remote_is_open_)
+      {
+        ROS_INFO("Remote controller ON");
+        remoteControlTurnOn();
+        remote_is_open_ = true;
+      }
+      right_switch_down_event_.update(data->s_r == rm_msgs::DbusData::DOWN);
+      right_switch_mid_event_.update(data->s_r == rm_msgs::DbusData::MID);
+      right_switch_up_event_.update(data->s_r == rm_msgs::DbusData::UP);
 
-    if (state_ == RC)
-      updateRc(data);
-    else if (state_ == PC)
-      updatePc(data);
+      if (state_ == RC)
+        updateRc(data);
+      else if (state_ == PC)
+        updatePc(data);
+    }
   }
   virtual void trackCallback(const rm_msgs::TrackData::ConstPtr& data)
   {
