@@ -2,15 +2,16 @@
 // Created by qiayuan on 5/23/21.
 //
 
-#ifndef RM_MANUAL_ENGINEER_MANUAL_H_
-#define RM_MANUAL_ENGINEER_MANUAL_H_
-#include "rm_manual/chassis_gimbal_manual.h"
+#pragma once
 
-#include <std_srvs/Empty.h>
-#include <actionlib/client/simple_action_client.h>
-#include <rm_common/decision/calibration_queue.h>
-#include <std_msgs/Float64.h>
+#include <rm_msgs/EngineerCmd.h>
 #include <rm_msgs/EngineerAction.h>
+#include "rm_manual/chassis_gimbal_manual.h"
+#include <rm_common/decision/calibration_queue.h>
+
+#include <utility>
+#include <std_srvs/Empty.h>
+#include <std_msgs/Float64.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <std_srvs/Empty.h>
 #include <utility>
@@ -28,6 +29,7 @@ private:
   void updateRc() override;
   void updatePc() override;
   void sendCommand(const ros::Time& time) override;
+
   void drawUi(const ros::Time& time) override;
   void updateServo();
   void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback);
@@ -82,6 +84,8 @@ private:
   void mouseLeftRelease();   // execute next
   void mouseRightRelease();  // execute repeat
 
+  ros::Publisher engineer_cmd_pub_;
+  rm_msgs::EngineerCmd engineer_cmd_data_;
   enum
   {
     MANUAL,
@@ -115,4 +119,3 @@ private:
 };
 
 }  // namespace rm_manual
-#endif  // RM_MANUAL_ENGINEER_MANUAL_H_

@@ -118,8 +118,8 @@ void EngineerManual::updateRc()
 {
   ChassisGimbalManual::updateRc();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  left_switch_up_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::UP);
-  left_switch_down_event_.update(data_.dbus_data_.s_l == rm_msgs::DbusData::DOWN);
+  left_switch_up_event_.update(dbus_data_.s_l == rm_msgs::DbusData::UP);
+  left_switch_down_event_.update(dbus_data_.s_l == rm_msgs::DbusData::DOWN);
 }
 
 void EngineerManual::updatePc()
@@ -227,6 +227,7 @@ void EngineerManual::runStepQueue(const std::string& step_queue_name)
 {
   rm_msgs::EngineerGoal goal;
   goal.step_queue_name = step_queue_name;
+  engineer_cmd_data_.symbol = !engineer_cmd_data_.symbol;
   if (action_client_.isServerConnected())
   {
     if (operating_mode_ == MANUAL)
@@ -241,11 +242,10 @@ void EngineerManual::runStepQueue(const std::string& step_queue_name)
 
 void EngineerManual::actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback)
 {
-  trigger_change_ui_->update("queue", feedback->current_step);
-  if (feedback->total_steps != 0)
-    time_change_ui_->update("progress", ros::Time::now(), ((double)feedback->finished_step) / feedback->total_steps);
-  else
-    time_change_ui_->update("progress", ros::Time::now(), 0.);
+  engineer_cmd_data_.current_step_name = feedback->current_step;
+  engineer_cmd_data_.finished_step = feedback->finished_step;
+  engineer_cmd_data_.total_steps = feedback->total_steps;
+  engineer_cmd_pub_.publish(engineer_cmd_data_);
 }
 
 void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& state,
