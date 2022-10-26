@@ -2,8 +2,8 @@
 // Created by qiayuan on 7/17/21.
 //
 
-#ifndef RM_MANUAL_INCLUDE_INPUT_EVENT_H_
-#define RM_MANUAL_INCLUDE_INPUT_EVENT_H_
+#pragma once
+
 #include <ros/ros.h>
 #include <utility>
 
@@ -66,4 +66,3 @@ private:
 };
 
 }  // namespace rm_manual
-#endif  // RM_MANUAL_INCLUDE_INPUT_EVENT_H_

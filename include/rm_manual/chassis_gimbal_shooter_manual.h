@@ -2,8 +2,8 @@
 // Created by qiayuan on 5/22/21.
 //
 
-#ifndef RM_MANUAL_CHASSIS_GIMBAL_SHOOTER_MANUAL_H_
-#define RM_MANUAL_CHASSIS_GIMBAL_SHOOTER_MANUAL_H_
+#pragma once
+
 #include "rm_manual/chassis_gimbal_manual.h"
 #include <rm_common/decision/calibration_queue.h>
 
@@ -34,7 +34,6 @@ protected:
   void remoteControlTurnOff() override;
   void remoteControlTurnOn() override;
   void robotDie() override;
-  void drawUi(const ros::Time& time) override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
@@ -62,23 +61,21 @@ protected:
   void bPress();
   void qPress()
   {
-    if (shooter_cmd_sender_->getShootFrequency() != rm_common::HeatLimit::BURST)
-      shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::BURST);
-    else
+    if (shooter_cmd_sender_->getShootFrequency() != rm_common::HeatLimit::LOW)
       shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::LOW);
+    else
+      shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::BURST);
   }
   void fPress()
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   }
-  void shiftPressing();
+  void shiftPress();
   void shiftRelease();
   void ctrlCPress();
   void ctrlVPress();
   void ctrlRPress();
   void ctrlBPress();
-  void ctrlShiftBPress();
-  void ctrlShiftBPressRelease();
 
   InputEvent shooter_power_on_event_, self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_,
       f_event_, b_event_, x_event_, ctrl_c_event_, ctrl_v_event_, ctrl_r_event_, ctrl_b_event_, shift_event_,
@@ -88,5 +85,3 @@ protected:
   rm_common::CalibrationQueue* shooter_calibration_;
 };
 }  // namespace rm_manual
-
-#endif  // RM_MANUAL_CHASSIS_GIMBAL_SHOOTER_MANUAL_H_
