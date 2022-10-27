@@ -578,7 +578,7 @@ void EngineerManual::fPress()
   // enter gimbal rate
   gimbal_mode_ = RATE;
   trigger_change_ui_->update("step", "gimbal rate");
-  ROS_INFO("enter gimbal rate");
+  ROS_INFO("Enter gimbal rate");
 }
 void EngineerManual::fRelease()
 {
