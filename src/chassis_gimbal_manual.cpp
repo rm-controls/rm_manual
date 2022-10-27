@@ -9,8 +9,8 @@ namespace rm_manual
 ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh) : ManualBase(nh)
 {
   ros::NodeHandle chassis_nh(nh, "chassis");
-  chassis_cmd_sender_ = new rm_common::ChassisCommandSender(chassis_nh, data_.referee_.referee_data_);
-  speed_change_scale_ = getParam(chassis_nh, "speed_change_scale_", 1.);
+  chassis_cmd_sender_ = new rm_common::ChassisCommandSender(chassis_nh, game_status_data_, game_robot_status_data_,
+                                                            power_heat_data_data_, referee_sub_data_, capacity_data_);
   ros::NodeHandle vel_nh(nh, "vel");
   vel_cmd_sender_ = new rm_common::Vel2DCommandSender(vel_nh);
   if (!vel_nh.getParam("gyro_move_reduction", gyro_move_reduction_))
@@ -78,29 +78,8 @@ void ChassisGimbalManual::checkReferee()
 void ChassisGimbalManual::checkKeyboard()
 {
   ManualBase::checkKeyboard();
-  if (data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::RED_ENGINEER ||
-      data_.referee_.referee_data_.robot_id_ == rm_common::RobotId::BLUE_ENGINEER)
-  {
-    w_event_.update((!data_.dbus_data_.key_ctrl) & data_.dbus_data_.key_w);
-    s_event_.update((!data_.dbus_data_.key_ctrl) & data_.dbus_data_.key_s);
-    a_event_.update((!data_.dbus_data_.key_ctrl) & data_.dbus_data_.key_a);
-    d_event_.update((!data_.dbus_data_.key_ctrl) & data_.dbus_data_.key_d);
-  }
-  else
-  {
-    w_event_.update(data_.dbus_data_.key_w);
-    s_event_.update(data_.dbus_data_.key_s);
-    a_event_.update(data_.dbus_data_.key_a);
-    d_event_.update(data_.dbus_data_.key_d);
-  }
-  mouse_mid_event_.update(data_.dbus_data_.m_z != 0.);
-}
-
-void ChassisGimbalManual::drawUi(const ros::Time& time)
-{
-  ManualBase::drawUi(time);
-  time_change_ui_->update("capacitor", time);
-  if (data_.dbus_data_.s_l == rm_msgs::DbusData::MID && data_.dbus_data_.s_r == rm_msgs::DbusData::UP)
+  if (game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::RED_ENGINEER ||
+      game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::BLUE_ENGINEER)
   {
     w_event_.update((!dbus_data_.key_ctrl) & (!dbus_data_.key_shift) & dbus_data_.key_w);
     s_event_.update((!dbus_data_.key_ctrl) & (!dbus_data_.key_shift) & dbus_data_.key_s);
@@ -162,15 +141,8 @@ void ChassisGimbalManual::leftSwitchDownRise()
 
 void ChassisGimbalManual::wPressing()
 {
-  if (!speed_change_mode_)
-    final_x_scale_ = x_scale_;
-  else if (speed_change_mode_)
-    final_x_scale_ = x_scale_ * speed_change_scale_;
-  if (toward_change_mode_)
-    final_x_scale_ *= -1;
-  vel_cmd_sender_->setLinearXVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
-                                     final_x_scale_ * gyro_move_reduction_ :
-                                     final_x_scale_);
+  vel_cmd_sender_->setLinearXVel(
+      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? x_scale_ * gyro_move_reduction_ : x_scale_);
   vel_cmd_sender_->setAngularZVel(
       chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? gyro_rotate_reduction_ : 0);
 }
@@ -184,15 +156,8 @@ void ChassisGimbalManual::wRelease()
 
 void ChassisGimbalManual::sPressing()
 {
-  if (!speed_change_mode_)
-    final_x_scale_ = x_scale_;
-  else if (speed_change_mode_)
-    final_x_scale_ = x_scale_ * speed_change_scale_;
-  if (toward_change_mode_)
-    final_x_scale_ *= -1;
-  vel_cmd_sender_->setLinearXVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
-                                     final_x_scale_ * gyro_move_reduction_ :
-                                     final_x_scale_);
+  vel_cmd_sender_->setLinearXVel(
+      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? x_scale_ * gyro_move_reduction_ : x_scale_);
   vel_cmd_sender_->setAngularZVel(
       chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? gyro_rotate_reduction_ : 0);
 }
@@ -206,15 +171,8 @@ void ChassisGimbalManual::sRelease()
 
 void ChassisGimbalManual::aPressing()
 {
-  if (!speed_change_mode_)
-    final_y_scale_ = y_scale_;
-  else if (speed_change_mode_)
-    final_y_scale_ = y_scale_ * speed_change_scale_;
-  if (toward_change_mode_)
-    final_y_scale_ *= -1;
-  vel_cmd_sender_->setLinearYVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
-                                     final_y_scale_ * gyro_move_reduction_ :
-                                     final_y_scale_);
+  vel_cmd_sender_->setLinearYVel(
+      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? y_scale_ * gyro_move_reduction_ : y_scale_);
   vel_cmd_sender_->setAngularZVel(
       chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? gyro_rotate_reduction_ : 0);
 }
@@ -228,15 +186,8 @@ void ChassisGimbalManual::aRelease()
 
 void ChassisGimbalManual::dPressing()
 {
-  if (!speed_change_mode_)
-    final_y_scale_ = y_scale_;
-  else if (speed_change_mode_)
-    final_y_scale_ = y_scale_ * speed_change_scale_;
-  if (toward_change_mode_)
-    final_y_scale_ *= -1;
-  vel_cmd_sender_->setLinearYVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
-                                     final_y_scale_ * gyro_move_reduction_ :
-                                     final_y_scale_);
+  vel_cmd_sender_->setLinearYVel(
+      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? y_scale_ * gyro_move_reduction_ : y_scale_);
   vel_cmd_sender_->setAngularZVel(
       chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? gyro_rotate_reduction_ : 0);
 }

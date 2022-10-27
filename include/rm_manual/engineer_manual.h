@@ -15,6 +15,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <std_srvs/Empty.h>
 #include <utility>
+#include <actionlib/client/simple_action_client.h>
 
 namespace rm_manual
 {
@@ -29,8 +30,6 @@ private:
   void updateRc() override;
   void updatePc() override;
   void sendCommand(const ros::Time& time) override;
-
-  void drawUi(const ros::Time& time) override;
   void updateServo();
   void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback);
   void actionDoneCallback(const actionlib::SimpleClientGoalState& state, const rm_msgs::EngineerResultConstPtr& result);
@@ -46,7 +45,6 @@ private:
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
-  void leftSwitchUpRise() override;
   void leftSwitchUpFall();
   void leftSwitchDownFall();
   void ctrlQPress();         // choose "left_" situation // "has_stone_" // "sky"

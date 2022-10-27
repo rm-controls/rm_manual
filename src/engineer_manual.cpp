@@ -27,7 +27,6 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   nh.getParam("arm_calibration", rpc_value);
   arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_up_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpRise, this));
   left_switch_down_event_.setFalling(boost::bind(&EngineerManual::leftSwitchDownFall, this));
   ctrl_q_event_.setRising(boost::bind(&EngineerManual::ctrlQPress, this));
@@ -77,41 +76,41 @@ void EngineerManual::run()
 void EngineerManual::checkKeyboard()
 {
   ChassisGimbalManual::checkKeyboard();
-  ctrl_q_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_q);
-  ctrl_a_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_a);
-  ctrl_z_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_z);
-  ctrl_w_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_w);
-  ctrl_s_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_s);
-  ctrl_x_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_x);
-  ctrl_e_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_e);
-  ctrl_d_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_d);
-  ctrl_c_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_c);
-  ctrl_b_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_b);
-  ctrl_r_event_.update(data_.dbus_data_.key_ctrl & data_.dbus_data_.key_r);
-  ctrl_g_event_.update(data_.dbus_data_.key_g & data_.dbus_data_.key_ctrl);
-  ctrl_f_event_.update(data_.dbus_data_.key_f & data_.dbus_data_.key_ctrl);
+  ctrl_q_event_.update(dbus_data_.key_ctrl & dbus_data_.key_q);
+  ctrl_a_event_.update(dbus_data_.key_ctrl & dbus_data_.key_a);
+  ctrl_z_event_.update(dbus_data_.key_ctrl & dbus_data_.key_z);
+  ctrl_w_event_.update(dbus_data_.key_ctrl & dbus_data_.key_w);
+  ctrl_s_event_.update(dbus_data_.key_ctrl & dbus_data_.key_s);
+  ctrl_x_event_.update(dbus_data_.key_ctrl & dbus_data_.key_x);
+  ctrl_e_event_.update(dbus_data_.key_ctrl & dbus_data_.key_e);
+  ctrl_d_event_.update(dbus_data_.key_ctrl & dbus_data_.key_d);
+  ctrl_c_event_.update(dbus_data_.key_ctrl & dbus_data_.key_c);
+  ctrl_b_event_.update(dbus_data_.key_ctrl & dbus_data_.key_b);
+  ctrl_r_event_.update(dbus_data_.key_ctrl & dbus_data_.key_r);
+  ctrl_g_event_.update(dbus_data_.key_g & dbus_data_.key_ctrl);
+  ctrl_f_event_.update(dbus_data_.key_f & dbus_data_.key_ctrl);
 
-  z_event_.update(data_.dbus_data_.key_z & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
-  x_event_.update(data_.dbus_data_.key_x & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
-  c_event_.update(data_.dbus_data_.key_c & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
-  v_event_.update(data_.dbus_data_.key_v & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
-  b_event_.update(data_.dbus_data_.key_b & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
-  g_event_.update(data_.dbus_data_.key_g & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
-  f_event_.update(data_.dbus_data_.key_f & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
-  r_event_.update(data_.dbus_data_.key_r & !data_.dbus_data_.key_ctrl & !data_.dbus_data_.key_shift);
+  z_event_.update(dbus_data_.key_z & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+  x_event_.update(dbus_data_.key_x & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+  c_event_.update(dbus_data_.key_c & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+  v_event_.update(dbus_data_.key_v & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+  b_event_.update(dbus_data_.key_b & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+  g_event_.update(dbus_data_.key_g & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+  f_event_.update(dbus_data_.key_f & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+  r_event_.update(dbus_data_.key_r & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
 
-  shift_z_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_z);
-  shift_x_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_x);
-  shift_c_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_c);
-  shift_v_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_v);
-  shift_b_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_b);
-  shift_q_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_q);
-  shift_e_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_e);
-  shift_r_event_.update(data_.dbus_data_.key_shift & data_.dbus_data_.key_r);
-  shift_event_.update(data_.dbus_data_.key_shift & !data_.dbus_data_.key_ctrl);
+  shift_z_event_.update(dbus_data_.key_shift & dbus_data_.key_z);
+  shift_x_event_.update(dbus_data_.key_shift & dbus_data_.key_x);
+  shift_c_event_.update(dbus_data_.key_shift & dbus_data_.key_c);
+  shift_v_event_.update(dbus_data_.key_shift & dbus_data_.key_v);
+  shift_b_event_.update(dbus_data_.key_shift & dbus_data_.key_b);
+  shift_q_event_.update(dbus_data_.key_shift & dbus_data_.key_q);
+  shift_e_event_.update(dbus_data_.key_shift & dbus_data_.key_e);
+  shift_r_event_.update(dbus_data_.key_shift & dbus_data_.key_r);
+  shift_event_.update(dbus_data_.key_shift & !dbus_data_.key_ctrl);
 
-  mouse_left_event_.update(data_.dbus_data_.p_l);
-  mouse_right_event_.update(data_.dbus_data_.p_r);
+  mouse_left_event_.update(dbus_data_.p_l);
+  mouse_right_event_.update(dbus_data_.p_r);
 }
 
 void EngineerManual::updateRc()
@@ -126,7 +125,7 @@ void EngineerManual::updatePc()
 {
   ChassisGimbalManual::updatePc();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  vel_cmd_sender_->setAngularZVel(-data_.dbus_data_.m_x);
+  vel_cmd_sender_->setAngularZVel(-dbus_data_.m_x);
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -148,24 +147,10 @@ void EngineerManual::sendCommand(const ros::Time& time)
   }
 }
 
-void EngineerManual::drawUi(const ros::Time& time)
-{
-  ChassisGimbalManual::drawUi(time);
-  time_change_ui_->update("effort", time);
-  time_change_ui_->update("temperature", time);
-  trigger_change_ui_->update("drag", 0, drag_command_sender_->getState());
-  trigger_change_ui_->update("long_card", 0, card_command_sender_->getState());
-  trigger_change_ui_->update("short_card", 0, card_command_sender_->getState());
-  flash_ui_->update("calibration", time, power_on_calibration_->isCalibrated());
-  if (!data_.joint_state_.name.empty())
-    flash_ui_->update("card_warning", time, data_.joint_state_.effort[0] < 1.5);
-  //    trigger_change_ui_->update("jog", jog_joint_name);
-}
-
 void EngineerManual::updateServo()
 {
-  servo_command_sender_->setLinearVel(data_.dbus_data_.ch_l_y, -data_.dbus_data_.ch_l_x, -data_.dbus_data_.wheel);
-  servo_command_sender_->setAngularVel(-data_.dbus_data_.ch_r_x, -data_.dbus_data_.ch_r_y, angular_z_scale_);
+  servo_command_sender_->setLinearVel(dbus_data_.ch_l_y, -dbus_data_.ch_l_x, -dbus_data_.wheel);
+  servo_command_sender_->setAngularVel(-dbus_data_.ch_r_x, -dbus_data_.ch_r_y, angular_z_scale_);
 }
 
 void EngineerManual::remoteControlTurnOff()
@@ -193,28 +178,13 @@ void EngineerManual::rightSwitchDownRise()
 void EngineerManual::rightSwitchMidRise()
 {
   ChassisGimbalManual::rightSwitchMidRise();
-  servo_mode_ = JOINT;
-  gimbal_mode_ = DIRECT;
-  toward_change_mode_ = 0;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
 void EngineerManual::rightSwitchUpRise()
 {
   ChassisGimbalManual::rightSwitchUpRise();
-  gimbal_mode_ = DIRECT;
-  toward_change_mode_ = 0;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-}
-
-void EngineerManual::leftSwitchUpRise()
-{
-}
-
-void EngineerManual::leftSwitchUpFall()
-{
-  runStepQueue("STORED_HOME0");
-  trigger_change_ui_->update("step", "NORMAL_HOME");
 }
 
 void EngineerManual::leftSwitchDownFall()
@@ -253,8 +223,6 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
 {
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
-  trigger_change_ui_->update("step", "Done " + prefix_ + root_ + " press next");
-  ROS_INFO("Done %s", (prefix_ + root_).c_str());
   operating_mode_ = MANUAL;
 }
 
@@ -374,21 +342,18 @@ void EngineerManual::mouseLeftRelease()
 {
   root_ += "0";
   runStepQueue(prefix_ + root_);
-  trigger_change_ui_->update("step", "Finished " + prefix_ + root_);
   ROS_INFO("Finished %s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::mouseRightRelease()
 {
   runStepQueue(prefix_ + root_);
-  trigger_change_ui_->update("step", "Finished " + prefix_ + root_);
   ROS_INFO("Finished %s", (prefix_ + root_).c_str());
 }
 void EngineerManual::ctrlQPress()
 {
   prefix_num_ = 1;
   judgePrefix();
-  trigger_change_ui_->update("step", prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -396,7 +361,6 @@ void EngineerManual::ctrlWPress()
 {
   prefix_num_ = 2;
   judgePrefix();
-  trigger_change_ui_->update("step", prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -404,7 +368,6 @@ void EngineerManual::ctrlEPress()
 {
   prefix_num_ = 3;
   judgePrefix();
-  trigger_change_ui_->update("step", prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -412,7 +375,6 @@ void EngineerManual::ctrlRPress()
 {
   prefix_num_ = 4;
   judgePrefix();
-  trigger_change_ui_->update("step", prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -421,7 +383,6 @@ void EngineerManual::ctrlAPress()
   root_num_ = 1;
   root_ = "SKY_ISLAND";
   judgeRoot();
-  trigger_change_ui_->update("step", prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -430,7 +391,6 @@ void EngineerManual::ctrlSPress()
   root_num_ = 1;
   root_ = "BIG_ISLAND";
   judgeRoot();
-  trigger_change_ui_->update("step", prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -438,7 +398,6 @@ void EngineerManual::ctrlDPress()
 {
   prefix_ = "";
   root_ = "EXCHANGE";
-  trigger_change_ui_->update("step", prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -447,7 +406,6 @@ void EngineerManual::ctrlFPress()
   root_num_ = 1;
   root_ = "GROUND_STONE";
   judgeRoot();
-  trigger_change_ui_->update("step", prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -456,7 +414,6 @@ void EngineerManual::ctrlGPress()
   root_num_ = 4;
   root_ = "GAIN_BARRIER";
   judgeRoot();
-  trigger_change_ui_->update("step", prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -464,7 +421,6 @@ void EngineerManual::ctrlZPress()
 {
   prefix_ = "";
   root_ = "STORE_STONE";
-  trigger_change_ui_->update("step", prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -473,7 +429,6 @@ void EngineerManual::ctrlXPress()
   root_num_ = 2;
   root_ = "GAIN_STORE_STONE";
   judgeRoot();
-  trigger_change_ui_->update("step", prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -481,7 +436,6 @@ void EngineerManual::ctrlCPress()
 {
   action_client_.cancelAllGoals();
   runStepQueue("DELETE_SCENE");
-  trigger_change_ui_->update("step", "DELETE_SCENE and CANCEL");
   ROS_INFO("DELETE_SCENE and CANCEL");
 }
 
@@ -490,7 +444,6 @@ void EngineerManual::ctrlBPress()
   root_num_ = 3;
   root_ = "HOME";
   judgeRoot();
-  trigger_change_ui_->update("step", prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -499,13 +452,11 @@ void EngineerManual::zPress()
   if (card_command_sender_->getState())
   {
     card_command_sender_->off();
-    trigger_change_ui_->update("long_card", "off");
     ROS_INFO("long_card off");
   }
   else
   {
     card_command_sender_->long_on();
-    trigger_change_ui_->update("long_card", "on");
     ROS_INFO("long_card on");
   }
 }
@@ -515,13 +466,11 @@ void EngineerManual::xPress()
   if (card_command_sender_->getState())
   {
     card_command_sender_->off();
-    trigger_change_ui_->update("short_card", "off");
     ROS_INFO("short_card off");
   }
   else
   {
     card_command_sender_->short_on();
-    trigger_change_ui_->update("short_card", "on");
     ROS_INFO("short_card on");
   }
 }
@@ -531,13 +480,11 @@ void EngineerManual::cPress()
   if (drag_command_sender_->getState())
   {
     drag_command_sender_->off();
-    trigger_change_ui_->update("drag", "off");
     ROS_INFO("drag off");
   }
   else
   {
     drag_command_sender_->on();
-    trigger_change_ui_->update("drag", "on");
     ROS_INFO("drag on");
   }
 }
@@ -546,7 +493,6 @@ void EngineerManual::rPress()
 {
   arm_calibration_->reset();
   power_on_calibration_->reset();
-  trigger_change_ui_->update("step", "Calibrated");
   ROS_INFO("Calibrated");
 }
 
@@ -555,36 +501,30 @@ void EngineerManual::vPress()
   {
     servo_mode_ = SERVO;
     servo_reset_caller_->callService();
-    trigger_change_ui_->update("step", "ENTER SERVO");
     ROS_INFO("ENTER SERVO");
   }
-  trigger_change_ui_->update("step", "servo mode controlling");
 }
 
 void EngineerManual::gPress()
 {
   runStepQueue("CLOSE_GRIPPER");
-  trigger_change_ui_->update("step", "close gripper");
   ROS_INFO("close gripper");
 }
 void EngineerManual::gRelease()
 {
   runStepQueue("OPEN_GRIPPER");
-  trigger_change_ui_->update("step", "open gripper");
   ROS_INFO("open gripper");
 }
 void EngineerManual::fPress()
 {
   // enter gimbal rate
   gimbal_mode_ = RATE;
-  trigger_change_ui_->update("step", "gimbal rate");
   ROS_INFO("Enter gimbal rate");
 }
 void EngineerManual::fRelease()
 {
   // exit gimbal rate
   gimbal_mode_ = DIRECT;
-  trigger_change_ui_->update("step", "gimbal direct");
   ROS_INFO("exit gimbal rate");
 }
 void EngineerManual::shiftPressing()
@@ -617,28 +557,24 @@ void EngineerManual::shiftZPress()
 {
   toward_change_mode_ = 0;
   runStepQueue("WALK_GIMBAL");
-  trigger_change_ui_->update("step", "WALK_GIMBAL");
   ROS_INFO("enter gimbal WALK_GIMBAL");
 }
 void EngineerManual::shiftXPress()
 {
   toward_change_mode_ = 0;
   runStepQueue("BIG_STONE_GIMBAL");
-  trigger_change_ui_->update("step", "BIG_STONE_GIMBAL");
   ROS_INFO("enter gimbal BIG_STONE_GIMBAL");
 }
 void EngineerManual::shiftCPress()
 {
   toward_change_mode_ = 1;
   runStepQueue("BACK_GIMBAL");
-  trigger_change_ui_->update("step", "BACK_GIMBAL");
   ROS_INFO("enter gimbal BACK_GIMBAL");
 }
 void EngineerManual::shiftVPress()
 {
   toward_change_mode_ = 1;
   runStepQueue("SKY_GIMBAL");
-  trigger_change_ui_->update("step", "SKY_GIMBAL");
   ROS_INFO("enter gimbal SKY_GIMBAL");
 }
 
