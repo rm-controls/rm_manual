@@ -2,8 +2,8 @@
 // Created by qiayuan on 5/23/21.
 //
 
-#ifndef RM_MANUAL_ENGINEER_MANUAL_H_
-#define RM_MANUAL_ENGINEER_MANUAL_H_
+#pragma once
+
 #include "rm_manual/chassis_gimbal_manual.h"
 
 #include <std_srvs/Empty.h>
@@ -99,6 +99,7 @@ private:
   double angular_z_scale_;
   std::string prefix_, root_;
   int prefix_num_{}, root_num_{}, operating_mode_{}, servo_mode_{}, gimbal_mode_{};
+  std::map<std::string, int> prefix_list_, root_list_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   rm_common::JointPositionBinaryCommandSender* drag_command_sender_;
@@ -113,4 +114,3 @@ private:
 };
 
 }  // namespace rm_manual
-#endif  // RM_MANUAL_ENGINEER_MANUAL_H_

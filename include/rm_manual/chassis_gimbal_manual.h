@@ -2,8 +2,7 @@
 // Created by qiayuan on 5/22/21.
 //
 
-#ifndef RM_MANUAL_CHASSIS_GIMBAL_MANUAL_H_
-#define RM_MANUAL_CHASSIS_GIMBAL_MANUAL_H_
+#pragma once
 
 #include "rm_manual/common/manual_base.h"
 
@@ -64,5 +63,3 @@ protected:
   InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_, mouse_mid_event_;
 };
 }  // namespace rm_manual
-
-#endif  // RM_MANUAL_CHASSIS_GIMBAL_MANUAL_H_
