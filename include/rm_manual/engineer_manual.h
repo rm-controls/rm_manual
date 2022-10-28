@@ -13,8 +13,6 @@
 #include <std_srvs/Empty.h>
 #include <std_msgs/Float64.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <std_srvs/Empty.h>
-#include <utility>
 #include <actionlib/client/simple_action_client.h>
 
 namespace rm_manual
