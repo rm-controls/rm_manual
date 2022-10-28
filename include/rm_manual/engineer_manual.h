@@ -2,18 +2,17 @@
 // Created by qiayuan on 5/23/21.
 //
 
-#pragma once
-
-#include <rm_msgs/EngineerCmd.h>
-#include <rm_msgs/EngineerAction.h>
+#ifndef RM_MANUAL_ENGINEER_MANUAL_H_
+#define RM_MANUAL_ENGINEER_MANUAL_H_
 #include "rm_manual/chassis_gimbal_manual.h"
-#include <rm_common/decision/calibration_queue.h>
 
-#include <utility>
 #include <std_srvs/Empty.h>
-#include <std_msgs/Float64.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <actionlib/client/simple_action_client.h>
+#include <rm_common/decision/calibration_queue.h>
+#include <std_msgs/Float64.h>
+#include <rm_msgs/EngineerAction.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <utility>
 
 namespace rm_manual
 {
@@ -43,6 +42,7 @@ private:
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
+  void leftSwitchUpRise() override;
   void leftSwitchUpFall();
   void leftSwitchDownFall();
   void ctrlQPress();         // choose "left_" situation // "has_stone_" // "sky"
@@ -80,8 +80,6 @@ private:
   void mouseLeftRelease();   // execute next
   void mouseRightRelease();  // execute repeat
 
-  ros::Publisher engineer_cmd_pub_;
-  rm_msgs::EngineerCmd engineer_cmd_data_;
   enum
   {
     MANUAL,
@@ -103,8 +101,6 @@ private:
   int prefix_num_{}, root_num_{}, operating_mode_{}, servo_mode_{}, gimbal_mode_{};
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
-  rm_common::JointPositionBinaryCommandSender* drag_command_sender_;
-  rm_common::CardCommandSender* card_command_sender_;
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
   InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_q_event_, ctrl_a_event_, ctrl_z_event_, ctrl_w_event_,
@@ -115,3 +111,4 @@ private:
 };
 
 }  // namespace rm_manual
+#endif  // RM_MANUAL_ENGINEER_MANUAL_H_

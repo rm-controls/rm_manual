@@ -12,11 +12,6 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
-  // Command sender
-  ros::NodeHandle nh_drag(nh, "drag");
-  drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_drag);
-  ros::NodeHandle nh_card(nh, "card");
-  card_command_sender_ = new rm_common::CardCommandSender(nh_card);
   // Servo
   ros::NodeHandle nh_servo(nh, "servo");
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
@@ -27,6 +22,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   nh.getParam("arm_calibration", rpc_value);
   arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_up_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpRise, this));
   left_switch_down_event_.setFalling(boost::bind(&EngineerManual::leftSwitchDownFall, this));
   ctrl_q_event_.setRising(boost::bind(&EngineerManual::ctrlQPress, this));
@@ -134,8 +130,6 @@ void EngineerManual::sendCommand(const ros::Time& time)
   {
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
-    drag_command_sender_->sendCommand(time);
-    card_command_sender_->sendCommand(time);
   }
   if (servo_mode_ == SERVO)
     servo_command_sender_->sendCommand(time);
@@ -178,13 +172,27 @@ void EngineerManual::rightSwitchDownRise()
 void EngineerManual::rightSwitchMidRise()
 {
   ChassisGimbalManual::rightSwitchMidRise();
+  servo_mode_ = JOINT;
+  gimbal_mode_ = DIRECT;
+  toward_change_mode_ = 0;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
 void EngineerManual::rightSwitchUpRise()
 {
   ChassisGimbalManual::rightSwitchUpRise();
+  gimbal_mode_ = DIRECT;
+  toward_change_mode_ = 0;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+}
+
+void EngineerManual::leftSwitchUpRise()
+{
+}
+
+void EngineerManual::leftSwitchUpFall()
+{
+  runStepQueue("STORED_HOME0");
 }
 
 void EngineerManual::leftSwitchDownFall()
@@ -197,7 +205,6 @@ void EngineerManual::runStepQueue(const std::string& step_queue_name)
 {
   rm_msgs::EngineerGoal goal;
   goal.step_queue_name = step_queue_name;
-  engineer_cmd_data_.symbol = !engineer_cmd_data_.symbol;
   if (action_client_.isServerConnected())
   {
     if (operating_mode_ == MANUAL)
@@ -212,10 +219,6 @@ void EngineerManual::runStepQueue(const std::string& step_queue_name)
 
 void EngineerManual::actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback)
 {
-  engineer_cmd_data_.current_step_name = feedback->current_step;
-  engineer_cmd_data_.finished_step = feedback->finished_step;
-  engineer_cmd_data_.total_steps = feedback->total_steps;
-  engineer_cmd_pub_.publish(engineer_cmd_data_);
 }
 
 void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& state,
@@ -223,6 +226,7 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
 {
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
+  ROS_INFO("Done %s", (prefix_ + root_).c_str());
   operating_mode_ = MANUAL;
 }
 
@@ -449,44 +453,14 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::zPress()
 {
-  if (card_command_sender_->getState())
-  {
-    card_command_sender_->off();
-    ROS_INFO("long_card off");
-  }
-  else
-  {
-    card_command_sender_->long_on();
-    ROS_INFO("long_card on");
-  }
 }
 
 void EngineerManual::xPress()
 {
-  if (card_command_sender_->getState())
-  {
-    card_command_sender_->off();
-    ROS_INFO("short_card off");
-  }
-  else
-  {
-    card_command_sender_->short_on();
-    ROS_INFO("short_card on");
-  }
 }
 
 void EngineerManual::cPress()
 {
-  if (drag_command_sender_->getState())
-  {
-    drag_command_sender_->off();
-    ROS_INFO("drag off");
-  }
-  else
-  {
-    drag_command_sender_->on();
-    ROS_INFO("drag on");
-  }
 }
 
 void EngineerManual::rPress()

@@ -2,7 +2,8 @@
 // Created by qiayuan on 5/22/21.
 //
 
-#pragma once
+#ifndef RM_MANUAL_CHASSIS_GIMBAL_MANUAL_H_
+#define RM_MANUAL_CHASSIS_GIMBAL_MANUAL_H_
 
 #include "rm_manual/common/manual_base.h"
 
@@ -51,9 +52,9 @@ protected:
   void dPressing();
   void mouseMidRise();
 
+  rm_common::ChassisCommandSender* chassis_cmd_sender_{};
   rm_common::Vel2DCommandSender* vel_cmd_sender_{};
   rm_common::GimbalCommandSender* gimbal_cmd_sender_{};
-  rm_common::ChassisCommandSender* chassis_cmd_sender_{};
   double x_scale_{}, y_scale_{}, final_x_scale_{}, final_y_scale_{};
   bool speed_change_mode_{ 0 }, toward_change_mode_{ 0 };
   double speed_change_scale_{ 1. };
@@ -63,3 +64,5 @@ protected:
   InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_, mouse_mid_event_;
 };
 }  // namespace rm_manual
+
+#endif  // RM_MANUAL_CHASSIS_GIMBAL_MANUAL_H_
