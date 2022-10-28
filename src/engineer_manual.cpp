@@ -12,6 +12,11 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh)
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
+  // Command sender
+  ros::NodeHandle nh_drag(nh, "drag");
+  drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_drag);
+  ros::NodeHandle nh_card(nh, "card");
+  card_command_sender_ = new rm_common::CardCommandSender(nh_card);
   // Servo
   ros::NodeHandle nh_servo(nh, "servo");
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
@@ -453,14 +458,44 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::zPress()
 {
+  if (card_command_sender_->getState())
+  {
+    card_command_sender_->off();
+    ROS_INFO("long_card off");
+  }
+  else
+  {
+    card_command_sender_->long_on();
+    ROS_INFO("long_card on");
+  }
 }
 
 void EngineerManual::xPress()
 {
+  if (card_command_sender_->getState())
+  {
+    card_command_sender_->off();
+    ROS_INFO("short_card off");
+  }
+  else
+  {
+    card_command_sender_->short_on();
+    ROS_INFO("short_card on");
+  }
 }
 
 void EngineerManual::cPress()
 {
+  if (drag_command_sender_->getState())
+  {
+    drag_command_sender_->off();
+    ROS_INFO("drag off");
+  }
+  else
+  {
+    drag_command_sender_->on();
+    ROS_INFO("drag on");
+  }
 }
 
 void EngineerManual::rPress()

@@ -101,6 +101,8 @@ private:
   int prefix_num_{}, root_num_{}, operating_mode_{}, servo_mode_{}, gimbal_mode_{};
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
+  rm_common::JointPositionBinaryCommandSender* drag_command_sender_;
+  rm_common::CardCommandSender* card_command_sender_;
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
   InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_q_event_, ctrl_a_event_, ctrl_z_event_, ctrl_w_event_,
