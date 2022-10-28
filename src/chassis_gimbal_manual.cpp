@@ -51,10 +51,9 @@ void ChassisGimbalManual::updateRc()
   }
   else
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-  vel_cmd_sender_->setAngularZVel(
-      (std::abs(dbus_data_.ch_r_y) > 0.01 || std::abs(dbus_data_.ch_r_x) > 0.01) ?
-          dbus_data_.wheel * gyro_rotate_reduction_ :
-          dbus_data_.wheel);
+  vel_cmd_sender_->setAngularZVel((std::abs(dbus_data_.ch_r_y) > 0.01 || std::abs(dbus_data_.ch_r_x) > 0.01) ?
+                                      dbus_data_.wheel * gyro_rotate_reduction_ :
+                                      dbus_data_.wheel);
   vel_cmd_sender_->setLinearXVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
                                      dbus_data_.ch_r_y * gyro_move_reduction_ :
                                      dbus_data_.ch_r_y);
