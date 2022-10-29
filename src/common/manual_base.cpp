@@ -48,7 +48,7 @@ void ManualBase::run()
 
 void ManualBase::checkReferee()
 {
-  referee_is_online_ = (ros::Time::now() - referee_last_get_ < ros::Duration(0.5));
+  referee_is_online_ = (ros::Time::now() - referee_last_get_ < ros::Duration(0.3));
   manual_to_referee_pub_.publish(manual_to_referee_pub_data_);
 }
 

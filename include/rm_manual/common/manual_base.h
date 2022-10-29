@@ -62,9 +62,9 @@ protected:
   virtual void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
   {
     dbus_data_ = *data;
-    dbus_timer_.setPeriod(ros::Duration(0.3), true);
-    if (ros::Time::now() - data->stamp < ros::Duration(0.3))
+    if (ros::Time::now() - data->stamp < ros::Duration(0.1))
     {
+      dbus_timer_.setPeriod(ros::Duration(0.1), true);
       if (!remote_is_open_)
       {
         ROS_INFO("Remote controller ON");
