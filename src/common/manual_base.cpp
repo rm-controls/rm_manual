@@ -25,7 +25,6 @@ ManualBase::ManualBase(ros::NodeHandle& nh) : controller_manager_(nh), tf_listen
       nh.subscribe<rm_msgs::PowerHeatData>("/power_heat_data", 10, &ManualBase::powerHeatDataCallback, this);
   // pub
   manual_to_referee_pub_ = nh.advertise<rm_msgs::ManualToReferee>("/manual_to_referee", 1);
-  dbus_timer_ = nh.createTimer(ros::Duration(0.5), &ManualBase::dbusCloseCallback, this, false, true);
 
   controller_manager_.startStateControllers();
   right_switch_down_event_.setRising(boost::bind(&ManualBase::rightSwitchDownRise, this));
@@ -48,7 +47,7 @@ void ManualBase::run()
 
 void ManualBase::checkReferee()
 {
-  referee_is_online_ = (ros::Time::now() - referee_last_get_ < ros::Duration(0.3));
+  referee_is_online_ = (ros::Time::now() - referee_last_get_stamp_ < ros::Duration(0.3));
   manual_to_referee_pub_.publish(manual_to_referee_pub_data_);
 }
 

@@ -7,7 +7,6 @@
 #include <queue>
 #include <iostream>
 #include <ros/ros.h>
-#include <ros/timer.h>
 #include <serial/serial.h>
 #include <tf2_ros/buffer.h>
 #include <nav_msgs/Odometry.h>
@@ -62,9 +61,8 @@ protected:
   virtual void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
   {
     dbus_data_ = *data;
-    if (ros::Time::now() - data->stamp < ros::Duration(0.1))
+    if (ros::Time::now() - data->stamp < ros::Duration(0.2))
     {
-      dbus_timer_.setPeriod(ros::Duration(0.1), true);
       if (!remote_is_open_)
       {
         ROS_INFO("Remote controller ON");
@@ -80,6 +78,12 @@ protected:
       else if (state_ == PC)
         updatePc(data);
     }
+    else
+    {
+      ROS_INFO("Remote controller OFF");
+      remoteControlTurnOff();
+      remote_is_open_ = false;
+    }
   }
   virtual void trackCallback(const rm_msgs::TrackData::ConstPtr& data)
   {
@@ -92,7 +96,7 @@ protected:
   }
   virtual void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
   {
-    referee_last_get_ = data->stamp;
+    referee_last_get_stamp_ = data->stamp;
   }
   virtual void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
   {
@@ -113,15 +117,6 @@ protected:
   }
   virtual void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data)
   {
-  }
-  virtual void dbusCloseCallback(const ros::TimerEvent& e)
-  {
-    if (remote_is_open_)
-    {
-      ROS_INFO("Remote controller OFF");
-      remoteControlTurnOff();
-      remote_is_open_ = false;
-    }
   }
 
   // Referee
@@ -189,8 +184,7 @@ protected:
 
   ros::NodeHandle nh_;
 
-  ros::Time referee_last_get_;
-  ros::Timer dbus_timer_;
+  ros::Time referee_last_get_stamp_;
   bool remote_is_open_{}, referee_is_online_ = false;
   int state_ = PASSIVE;
   int robot_id_, chassis_power_;
