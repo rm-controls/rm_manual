@@ -16,16 +16,18 @@ ManualBase::ManualBase(ros::NodeHandle& nh) : controller_manager_(nh), tf_listen
   gimbal_des_error_sub_ = nh.subscribe<rm_msgs::GimbalDesError>("/controllers/gimbal_controller/error", 10,
                                                                 &ManualBase::gimbalDesErrorCallback, this);
   odom_sub_ = nh.subscribe<nav_msgs::Odometry>("/odom", 10, &ManualBase::odomCallback, this);
-  game_robot_status_sub_ = nh.subscribe<rm_msgs::GameRobotStatus>("/referee/game_robot_status", 10,
-                                                                  &ManualBase::gameRobotStatusCallback, this);
+
+  ros::NodeHandle nh_referee("rm_referee");
+  game_robot_status_sub_ = nh_referee.subscribe<rm_msgs::GameRobotStatus>("game_robot_status", 10,
+                                                                          &ManualBase::gameRobotStatusCallback, this);
   game_robot_hp_sub_ =
-      nh.subscribe<rm_msgs::GameRobotHp>("/referee/game_robot_hp", 10, &ManualBase::gameRobotHpCallback, this);
+      nh_referee.subscribe<rm_msgs::GameRobotHp>("game_robot_hp", 10, &ManualBase::gameRobotHpCallback, this);
   game_status_sub_ =
-      nh.subscribe<rm_msgs::GameStatus>("/referee/game_status", 10, &ManualBase::gameStatusCallback, this);
+      nh_referee.subscribe<rm_msgs::GameStatus>("game_status", 10, &ManualBase::gameStatusCallback, this);
   capacity_sub_ =
-      nh.subscribe<rm_msgs::CapacityData>("/referee/capacity_data", 10, &ManualBase::capacityDataCallback, this);
+      nh_referee.subscribe<rm_msgs::CapacityData>("capacity_data", 10, &ManualBase::capacityDataCallback, this);
   power_heat_data_sub_ =
-      nh.subscribe<rm_msgs::PowerHeatData>("/referee/power_heat_data", 10, &ManualBase::powerHeatDataCallback, this);
+      nh_referee.subscribe<rm_msgs::PowerHeatData>("power_heat_data", 10, &ManualBase::powerHeatDataCallback, this);
   // pub
   manual_to_referee_pub_ = nh.advertise<rm_msgs::ManualToReferee>("/manual_to_referee", 1);
 
