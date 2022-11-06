@@ -37,7 +37,7 @@ namespace rm_manual
 class ManualBase
 {
 public:
-  explicit ManualBase(ros::NodeHandle& nh);
+  explicit ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   enum
   {
     PASSIVE,

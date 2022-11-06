@@ -6,7 +6,7 @@
 
 namespace rm_manual
 {
-DartManual::DartManual(ros::NodeHandle& nh) : ManualBase(nh)
+DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : ManualBase(nh, nh_referee)
 {
   ros::NodeHandle nh_yaw = ros::NodeHandle(nh, "yaw");
   ros::NodeHandle nh_left_pitch = ros::NodeHandle(nh, "left_pitch");

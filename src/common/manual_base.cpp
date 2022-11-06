@@ -5,7 +5,8 @@
 #include "rm_manual/common/manual_base.h"
 namespace rm_manual
 {
-ManualBase::ManualBase(ros::NodeHandle& nh) : controller_manager_(nh), tf_listener_(tf_buffer_), nh_(nh)
+ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
+  : controller_manager_(nh), tf_listener_(tf_buffer_), nh_(nh)
 {
   // sub
   joint_state_sub_ = nh.subscribe<sensor_msgs::JointState>("/joint_states", 10, &ManualBase::jointStateCallback, this);
@@ -17,7 +18,6 @@ ManualBase::ManualBase(ros::NodeHandle& nh) : controller_manager_(nh), tf_listen
                                                                 &ManualBase::gimbalDesErrorCallback, this);
   odom_sub_ = nh.subscribe<nav_msgs::Odometry>("/odom", 10, &ManualBase::odomCallback, this);
 
-  ros::NodeHandle nh_referee("rm_referee");
   game_robot_status_sub_ = nh_referee.subscribe<rm_msgs::GameRobotStatus>("game_robot_status", 10,
                                                                           &ManualBase::gameRobotStatusCallback, this);
   game_robot_hp_sub_ =

@@ -20,7 +20,7 @@ namespace rm_manual
 class EngineerManual : public ChassisGimbalManual
 {
 public:
-  explicit EngineerManual(ros::NodeHandle& nh);
+  explicit EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
 private:

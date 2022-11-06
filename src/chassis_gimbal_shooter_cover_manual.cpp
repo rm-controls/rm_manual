@@ -6,7 +6,8 @@
 
 namespace rm_manual
 {
-ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle& nh) : ChassisGimbalShooterManual(nh)
+ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
+  : ChassisGimbalShooterManual(nh, nh_referee)
 {
   ros::NodeHandle cover_nh(nh, "cover");
   nh.param("supply_frame", supply_frame_, std::string("supply_frame"));

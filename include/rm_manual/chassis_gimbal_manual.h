@@ -11,7 +11,7 @@ namespace rm_manual
 class ChassisGimbalManual : public ManualBase
 {
 public:
-  explicit ChassisGimbalManual(ros::NodeHandle& nh);
+  explicit ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
 
 protected:
   void sendCommand(const ros::Time& time) override;

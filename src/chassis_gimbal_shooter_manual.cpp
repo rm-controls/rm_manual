@@ -6,7 +6,8 @@
 
 namespace rm_manual
 {
-ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh) : ChassisGimbalManual(nh)
+ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
+  : ChassisGimbalManual(nh, nh_referee)
 {
   ros::NodeHandle shooter_nh(nh, "shooter");
   shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, track_data_);
@@ -18,14 +19,14 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh) : Ch
   shooter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
 
   dbus_sub_ = nh.subscribe<rm_msgs::DbusData>("/dbus_data", 10, &ChassisGimbalShooterManual::dbusDataCallback, this);
-  game_robot_status_sub_ = nh.subscribe<rm_msgs::GameRobotStatus>(
-      "/game_robot_status", 10, &ChassisGimbalShooterManual::gameRobotStatusCallback, this);
-  game_status_sub_ =
-      nh.subscribe<rm_msgs::GameStatus>("/game_status", 10, &ChassisGimbalShooterManual::gameStatusCallback, this);
+  game_robot_status_sub_ = nh_referee.subscribe<rm_msgs::GameRobotStatus>(
+      "game_robot_status", 10, &ChassisGimbalShooterManual::gameRobotStatusCallback, this);
+  game_status_sub_ = nh_referee.subscribe<rm_msgs::GameStatus>("game_status", 10,
+                                                               &ChassisGimbalShooterManual::gameStatusCallback, this);
+  power_heat_data_sub_ = nh_referee.subscribe<rm_msgs::PowerHeatData>(
+      "power_heat_data", 10, &ChassisGimbalShooterManual::powerHeatDataCallback, this);
   gimbal_des_error_sub_ = nh.subscribe<rm_msgs::GimbalDesError>(
       "/controllers/gimbal_controller/error", 10, &ChassisGimbalShooterManual::gimbalDesErrorCallback, this);
-  power_heat_data_sub_ = nh.subscribe<rm_msgs::PowerHeatData>("/power_heat_data", 10,
-                                                              &ChassisGimbalShooterManual::powerHeatDataCallback, this);
 
   shooter_power_on_event_.setRising(boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
   self_inspection_event_.setRising(boost::bind(&ChassisGimbalShooterManual::selfInspectionStart, this));

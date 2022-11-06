@@ -12,7 +12,7 @@ namespace rm_manual
 class DartManual : public ManualBase
 {
 public:
-  explicit DartManual(ros::NodeHandle& nh);
+  explicit DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
 
 protected:
   void sendCommand(const ros::Time& time) override;
