@@ -80,9 +80,12 @@ protected:
     }
     else
     {
-      ROS_INFO("Remote controller OFF");
-      remoteControlTurnOff();
-      remote_is_open_ = false;
+      if (remote_is_open_)
+      {
+        ROS_INFO("Remote controller OFF");
+        remoteControlTurnOff();
+        remote_is_open_ = false;
+      }
     }
   }
   virtual void trackCallback(const rm_msgs::TrackData::ConstPtr& data)
