@@ -193,12 +193,11 @@ void EngineerManual::rightSwitchUpRise()
 
 void EngineerManual::leftSwitchUpRise()
 {
-    drag_command_sender_->off();
 }
 
 void EngineerManual::leftSwitchUpFall()
 {
-    drag_command_sender_->on();
+  runStepQueue("NORMAL_HOME0");
 }
 
 void EngineerManual::leftSwitchDownFall()
@@ -459,12 +458,30 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::zPress()
 {
-
+  if (card_command_sender_->getState())
+  {
+    card_command_sender_->off();
+    ROS_INFO("long_card off");
+  }
+  else
+  {
+    card_command_sender_->long_on();
+    ROS_INFO("long_card on");
+  }
 }
 
 void EngineerManual::xPress()
 {
-
+  if (card_command_sender_->getState())
+  {
+    card_command_sender_->off();
+    ROS_INFO("short_card off");
+  }
+  else
+  {
+    card_command_sender_->short_on();
+    ROS_INFO("short_card on");
+  }
 }
 
 void EngineerManual::cPress()
