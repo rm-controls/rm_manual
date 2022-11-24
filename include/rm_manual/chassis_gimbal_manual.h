@@ -64,6 +64,8 @@ protected:
   double gyro_move_reduction_{ 1. };
   double gyro_rotate_reduction_{ 1. };
 
+  bool check_drone;
+
   InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_, mouse_mid_event_;
 };
 }  // namespace rm_manual
