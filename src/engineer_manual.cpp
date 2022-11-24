@@ -136,10 +136,7 @@ void EngineerManual::sendCommand(const ros::Time& time)
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
     if (servo_mode_ == SERVO)
-    //      servo_command_sender_->sendCommand(time);
-    {
-      ;
-    }
+      servo_command_sender_->sendCommand(time);
   }
   if (gimbal_mode_ == RATE)
   {
