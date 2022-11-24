@@ -18,9 +18,6 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ros::NodeHandle nh_drag(nh, "drag");
   drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_drag);
   // Servo
-  ros::NodeHandle nh_servo(nh, "servo");
-  servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
-  servo_reset_caller_ = new rm_common::ServiceCallerBase<std_srvs::Empty>(nh_servo, "/servo_server/reset_servo_status");
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("power_on_calibration", rpc_value);
@@ -135,8 +132,6 @@ void EngineerManual::sendCommand(const ros::Time& time)
   {
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
-    if (servo_mode_ == SERVO)
-      servo_command_sender_->sendCommand(time);
   }
   if (gimbal_mode_ == RATE)
   {
@@ -148,8 +143,6 @@ void EngineerManual::sendCommand(const ros::Time& time)
 
 void EngineerManual::updateServo()
 {
-  servo_command_sender_->setLinearVel(dbus_data_.ch_l_y, -dbus_data_.ch_l_x, -dbus_data_.wheel);
-  servo_command_sender_->setAngularVel(-dbus_data_.ch_r_x, -dbus_data_.ch_r_y, angular_z_scale_);
 }
 
 void EngineerManual::remoteControlTurnOff()
@@ -169,15 +162,12 @@ void EngineerManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  servo_mode_ = SERVO;
-  servo_reset_caller_->callService();
   action_client_.cancelAllGoals();
 }
 
 void EngineerManual::rightSwitchMidRise()
 {
   ChassisGimbalManual::rightSwitchMidRise();
-  servo_mode_ = JOINT;
   gimbal_mode_ = DIRECT;
   toward_change_mode_ = 0;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
