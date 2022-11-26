@@ -120,6 +120,15 @@ void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
+  if(dbus_data_.ch_l_y==1)
+  {
+      arm_calibration_->reset();
+      power_on_calibration_->reset();
+  } else if (dbus_data_.ch_l_y==-1)
+  {
+      runStepQueue("NORMAL_HOME0");
+  }
+
 }
 
 void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -197,13 +206,13 @@ void EngineerManual::leftSwitchUpRise()
 
 void EngineerManual::leftSwitchUpFall()
 {
-  runStepQueue("NORMAL_HOME0");
+  //runStepQueue("NORMAL_HOME0");
 }
 
 void EngineerManual::leftSwitchDownFall()
 {
-  arm_calibration_->reset();
-  power_on_calibration_->reset();
+  //arm_calibration_->reset();
+  //power_on_calibration_->reset();
 }
 
 void EngineerManual::runStepQueue(const std::string& step_queue_name)
