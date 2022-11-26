@@ -6,6 +6,7 @@
 
 #include "rm_manual/chassis_gimbal_manual.h"
 #include <rm_common/decision/calibration_queue.h>
+#include <angles/angles.h>
 
 namespace rm_manual
 {
@@ -59,6 +60,8 @@ protected:
   void ePress();
   void cPress();
   void bPress();
+  void xPress();
+  void xRelease();
   void qPress()
   {
     if (shooter_cmd_sender_->getShootFrequency() != rm_common::HeatLimit::LOW)
@@ -83,5 +86,7 @@ protected:
   rm_common::ShooterCommandSender* shooter_cmd_sender_{};
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
+
+  double yaw_{};
 };
 }  // namespace rm_manual

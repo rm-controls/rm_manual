@@ -27,6 +27,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh) : Ch
   q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::qPress, this));
   f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::fPress, this));
   b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::bPress, this));
+  x_event_.setRising(boost::bind(&ChassisGimbalShooterManual::xPress, this));
+  x_event_.setActiveLow(boost::bind(&ChassisGimbalShooterManual::xRelease, this));
   ctrl_c_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlCPress, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this));
@@ -321,6 +323,35 @@ void ChassisGimbalShooterManual::dPress()
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+  }
+}
+
+void ChassisGimbalShooterManual::xPress()
+{
+  turn_flag_ = true;
+  try
+  {
+    double roll{}, pitch{};
+    quatToRPY(tf_buffer_.lookupTransform("map", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw_);
+  }
+  catch (tf2::TransformException& ex)
+  {
+    ROS_WARN("%s", ex.what());
+  }
+}
+
+void ChassisGimbalShooterManual::xRelease()
+{
+  try
+  {
+    double roll{}, pitch{}, yaw{};
+    quatToRPY(tf_buffer_.lookupTransform("map", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
+    if (std::abs(angles::shortest_angular_distance(yaw, yaw_)) > 3)
+      turn_flag_ = false;
+  }
+  catch (tf2::TransformException& ex)
+  {
+    ROS_WARN("%s", ex.what());
   }
 }
 

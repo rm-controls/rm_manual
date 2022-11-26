@@ -64,7 +64,10 @@ void ChassisGimbalManual::updateRc()
 void ChassisGimbalManual::updatePc()
 {
   ManualBase::updatePc();
-  gimbal_cmd_sender_->setRate(-dbus_data_.m_x * gimbal_scale_, dbus_data_.m_y * gimbal_scale_);
+  if (!turn_flag_)
+    gimbal_cmd_sender_->setRate(-dbus_data_.m_x * gimbal_scale_, dbus_data_.m_y * gimbal_scale_);
+  else
+    gimbal_cmd_sender_->setRate(gimbal_scale_, gimbal_scale_);
 }
 
 void ChassisGimbalManual::checkReferee()
