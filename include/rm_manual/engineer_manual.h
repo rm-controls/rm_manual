@@ -98,7 +98,7 @@ private:
 
   double angular_z_scale_;
   std::string prefix_, root_;
-  int prefix_num_{}, root_num_{}, operating_mode_{}, servo_mode_{}, gimbal_mode_{};
+  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{} ;
   std::map<std::string, int> prefix_list_, root_list_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
