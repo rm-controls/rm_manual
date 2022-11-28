@@ -281,14 +281,21 @@ void EngineerManual::ctrlRPress()
 
 void EngineerManual::ctrlAPress()
 {
+  if (prefix_ != "LF_" && prefix_ != "RT_")
+  {
+      prefix_ = "";
+  }
   root_ = "SMALL_ISLAND";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlSPress()
 {
+  if (prefix_ != "SKY_")
+  {
+      prefix_ = "";
+  }
   root_ = "BIG_ISLAND";
-  judgeRoot();
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -301,6 +308,10 @@ void EngineerManual::ctrlDPress()
 
 void EngineerManual::ctrlFPress()
 {
+  if (prefix_ != "LF_" && prefix_ != "RT_")
+  {
+      prefix_ = "";
+  }
   root_ = "GROUND_STONE";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
