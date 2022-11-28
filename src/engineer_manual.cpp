@@ -244,9 +244,9 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
 
 void EngineerManual::mouseLeftRelease()
 {
-  root_ += "0";
   runStepQueue(prefix_ + root_);
   ROS_INFO("Finished %s", (prefix_ + root_).c_str());
+  root_ += "0";
 }
 
 void EngineerManual::mouseRightRelease()
@@ -285,7 +285,7 @@ void EngineerManual::ctrlAPress()
   {
       prefix_ = "";
   }
-  root_ = "SMALL_ISLAND";
+  root_ = "SMALL_ISLAND0";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -295,7 +295,7 @@ void EngineerManual::ctrlSPress()
   {
       prefix_ = "";
   }
-  root_ = "BIG_ISLAND";
+  root_ = "BIG_ISLAND0";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -312,7 +312,7 @@ void EngineerManual::ctrlFPress()
   {
       prefix_ = "";
   }
-  root_ = "GROUND_STONE";
+  root_ = "GROUND_STONE0";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
