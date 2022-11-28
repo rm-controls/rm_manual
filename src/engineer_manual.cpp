@@ -197,13 +197,18 @@ void EngineerManual::leftSwitchUpRise()
 
 void EngineerManual::leftSwitchUpFall()
 {
-  //runStepQueue("NORMAL_HOME0");
+  switch (stone_num_) {
+      case 0: root_ = "HOME0";
+      case 1: root_ = "HOME1";
+      case 2: root_ = "HOME2";
+  }
+  ROS_INFO("RUN_HOME");
 }
 
 void EngineerManual::leftSwitchDownFall()
 {
-  //arm_calibration_->reset();
-  //power_on_calibration_->reset();
+  arm_calibration_->reset();
+  power_on_calibration_->reset();
 }
 
 void EngineerManual::runStepQueue(const std::string& step_queue_name)
