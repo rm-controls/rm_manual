@@ -17,6 +17,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   // Command sender
   ros::NodeHandle nh_drag(nh, "drag");
   drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_drag);
+  ros::NodeHandle nh_reversal(nh,"reversal");
   // Servo
   ros::NodeHandle nh_servo(nh, "servo");
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
@@ -50,12 +51,9 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   g_event_.setRising(boost::bind(&EngineerManual::gPress, this));
   g_event_.setFalling(boost::bind(&EngineerManual::gRelease, this));
   f_event_.setRising(boost::bind(&EngineerManual::fPress, this));
-  f_event_.setFalling(boost::bind(&EngineerManual::fRelease, this));
   ctrl_r_event_.setRising(boost::bind(&EngineerManual::ctrlRPress, this));
   shift_q_event_.setRising(boost::bind(&EngineerManual::shiftQPress, this));
-  shift_q_event_.setFalling(boost::bind(&EngineerManual::shiftQRelease, this));
   shift_e_event_.setRising(boost::bind(&EngineerManual::shiftEPress, this));
-  shift_e_event_.setFalling(boost::bind(&EngineerManual::shiftERelease, this));
   shift_z_event_.setRising(boost::bind(&EngineerManual::shiftZPress, this));
   shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
   shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
@@ -195,17 +193,18 @@ void EngineerManual::leftSwitchUpRise()
 {
 }
 
-void EngineerManual::leftSwitchUpFall()
+void EngineerManual::leftSwitchDownFall()
 {
   switch (stone_num_) {
       case 0: root_ = "HOME0";
       case 1: root_ = "HOME1";
       case 2: root_ = "HOME2";
   }
+  runStepQueue(root_);
   ROS_INFO("RUN_HOME");
 }
 
-void EngineerManual::leftSwitchDownFall()
+void EngineerManual::leftSwitchUpFall()
 {
   arm_calibration_->reset();
   power_on_calibration_->reset();
@@ -236,17 +235,15 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
 {
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
-  prefix_ = "WAIT";
-  root_ = "WAIT";
   ROS_INFO("Done %s", (prefix_ + root_).c_str());
   operating_mode_ = MANUAL;
 }
 
 void EngineerManual::mouseLeftRelease()
 {
+  root_ += "0";
   runStepQueue(prefix_ + root_);
   ROS_INFO("Finished %s", (prefix_ + root_).c_str());
-  root_ += "0";
 }
 
 void EngineerManual::mouseRightRelease()
@@ -257,21 +254,21 @@ void EngineerManual::mouseRightRelease()
 void EngineerManual::ctrlQPress()
 {
   prefix_ = "LF_";
-  root_ = "SMALL_ISLAND0";
+  root_ = "SMALL_ISLAND";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlWPress()
 {
   prefix_ = "SKY_";
-  root_ = "BIG_ISLAND0";
+  root_ = "BIG_ISLAND";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlEPress()
 {
   prefix_ = "RT_";
-  root_ = "SMALL_ISLAND0";
+  root_ = "SMALL_ISLAND";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -285,14 +282,14 @@ void EngineerManual::ctrlRPress()
 void EngineerManual::ctrlAPress()
 {
   prefix_ = "";
-  root_ = "SMALL_ISLAND0";
+  root_ = "SMALL_ISLAND";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlSPress()
 {
   prefix_ = "";
-  root_ = "BIG_ISLAND0";
+  root_ = "BIG_ISLAND";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -306,7 +303,7 @@ void EngineerManual::ctrlDPress()
 void EngineerManual::ctrlFPress()
 {
   prefix_ = "";
-  root_ = "GROUND_STONE0";
+  root_ = "GROUND_STONE";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -317,6 +314,7 @@ void EngineerManual::ctrlGPress()
       case 1: root_ = "STORE_STONE1";
       case 2: root_ = "STORE_STONE2";
   }
+  prefix_ = "";
   stone_num_ += 1;
   ROS_INFO("STORE_STONE");
 }
@@ -333,7 +331,7 @@ void EngineerManual::ctrlZPress()
 void EngineerManual::ctrlXPress()
 {
   //gimbal
-  gimbal_mode_ == RATE;
+  gimbal_mode_ = RATE;
   ROS_INFO("MANUAL_VIEW");
 }
 
@@ -373,7 +371,8 @@ void EngineerManual::xPress()
 
 void EngineerManual::cPress()
 {
-
+  action_client_.cancelAllGoals();
+  ROS_INFO("CANCEL ALL GOAL");
 }
 
 void EngineerManual::rPress()
@@ -384,19 +383,27 @@ void EngineerManual::rPress()
 void EngineerManual::vPress()
 {
    //reversal roll
+   reversal_command_sender_->setGroupVel(1.0,0.,0.);
+   ROS_INFO("REVERSAL ROLL");
 }
 
 void EngineerManual::gPress()
 {
   //reversal pitch
+  reversal_command_sender_->setGroupVel(0.,1.0,0.);
+  ROS_INFO("REVERSAL ROLL");
 }
 void EngineerManual::gRelease()
 {
   //reversal down
+  reversal_command_sender_->setGroupVel(0.,0.,-1.0);
+  ROS_INFO("REVERSAL IN");
 }
 void EngineerManual::fPress()
 {
   //reversal up
+  reversal_command_sender_->setGroupVel(0.,0.,1.0);
+  ROS_INFO("REVERSAL IN");
 }
 void EngineerManual::shiftPressing()
 {
@@ -404,20 +411,19 @@ void EngineerManual::shiftPressing()
 }
 void EngineerManual::shiftRelease()
 {
-  speed_change_mode_ = 0;
-}
 
+}
 void EngineerManual::shiftQPress()
 {
     toward_change_mode_ = 0;
-    runStepQueue("SMALL_ISLAND_GIMBAL");
-    ROS_INFO("enter gimbal SMALL_ISLAND_GIMBAL");
+    runStepQueue("ISLAND_GIMBAL");
+    ROS_INFO("enter gimbal ISLAND_GIMBAL");
 }
 void EngineerManual::shiftEPress()
 {
     toward_change_mode_ = 0;
-    runStepQueue("BIG_ISLAND_GIMBAL");
-    ROS_INFO("enter gimbal BIG_ISLAND_GIMBAL");
+    runStepQueue(" SKY_GIMBAL");
+    ROS_INFO("enter gimbal SKY_GIMBAL");
 }
 
 void EngineerManual::shiftCPress()
@@ -432,7 +438,6 @@ void EngineerManual::shiftZPress()
     runStepQueue("GROUND_GIMBAL");
     ROS_INFO("enter gimbal GROUND_GIMBAL");
 }
-
 void EngineerManual::shiftXPress()
 {
     //gripper
@@ -446,7 +451,7 @@ void EngineerManual::shiftXPress()
     {
         runStepQueue("CLOSE_GRIPPER");
         ROS_INFO("GRIPPER CLOSE");
-        gripper_state_ = 1;
+        gripper_state_ = 0;
     }
 }
 
@@ -454,8 +459,16 @@ void EngineerManual::shiftVPress()
 {
   //drag
   if (drag_state_ == 0)
+  {
+      drag_command_sender_->on();
       ROS_INFO("DRAG UP");
+      drag_state_ = 1;
+  }
   else
+  {
+      drag_command_sender_->off();
       ROS_INFO("DRAG DOWN");
+      drag_state_ = 0;
+  }
 }
 }  // namespace rm_manual
