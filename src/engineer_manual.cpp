@@ -257,18 +257,21 @@ void EngineerManual::mouseRightRelease()
 void EngineerManual::ctrlQPress()
 {
   prefix_ = "LF_";
+  root_ = "SMALL_ISLAND0";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlWPress()
 {
   prefix_ = "SKY_";
+  root_ = "BIG_ISLAND0";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlEPress()
 {
   prefix_ = "RT_";
+  root_ = "SMALL_ISLAND0";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -281,20 +284,14 @@ void EngineerManual::ctrlRPress()
 
 void EngineerManual::ctrlAPress()
 {
-  if (prefix_ != "LF_" && prefix_ != "RT_")
-  {
-      prefix_ = "";
-  }
+  prefix_ = "";
   root_ = "SMALL_ISLAND0";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlSPress()
 {
-  if (prefix_ != "SKY_")
-  {
-      prefix_ = "";
-  }
+  prefix_ = "";
   root_ = "BIG_ISLAND0";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
@@ -308,10 +305,7 @@ void EngineerManual::ctrlDPress()
 
 void EngineerManual::ctrlFPress()
 {
-  if (prefix_ != "LF_" && prefix_ != "RT_")
-  {
-      prefix_ = "";
-  }
+  prefix_ = "";
   root_ = "GROUND_STONE0";
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
@@ -339,6 +333,7 @@ void EngineerManual::ctrlZPress()
 void EngineerManual::ctrlXPress()
 {
   //gimbal
+  gimbal_mode_ == RATE;
   ROS_INFO("MANUAL_VIEW");
 }
 
@@ -442,9 +437,17 @@ void EngineerManual::shiftXPress()
 {
     //gripper
     if (gripper_state_ == 0)
-      ROS_INFO("GRIPPER OPEN");
+    {
+        runStepQueue("OPEN_GRIPPER");
+        ROS_INFO("GRIPPER OPEN");
+        gripper_state_ = 1;
+    }
     else
-      ROS_INFO("GRIPPER CLOSE");
+    {
+        runStepQueue("CLOSE_GRIPPER");
+        ROS_INFO("GRIPPER CLOSE");
+        gripper_state_ = 1;
+    }
 }
 
 void EngineerManual::shiftVPress()
