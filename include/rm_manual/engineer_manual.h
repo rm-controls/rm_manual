@@ -54,6 +54,7 @@ private:
   void ctrlZPress();         // choose "store" situation
   void ctrlXPress();         // choose "_gain" situation
   void ctrlCPress();         // cancel and delete scence
+  void ctrlVPress();
   void ctrlBPress();         // choose "ground_stone" situation
   void ctrlFPress();         // execute next
   void ctrlGPress();         // execute repeat

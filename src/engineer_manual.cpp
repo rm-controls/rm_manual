@@ -40,6 +40,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ctrl_e_event_.setRising(boost::bind(&EngineerManual::ctrlEPress, this));
   ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
+  ctrl_v_event_.setRising(boost::bind(&EngineerManual::ctrlVPress,this));
   ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
   ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
   ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
@@ -84,6 +85,7 @@ void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ctrl_e_event_.update(dbus_data_.key_ctrl & dbus_data_.key_e);
   ctrl_d_event_.update(dbus_data_.key_ctrl & dbus_data_.key_d);
   ctrl_c_event_.update(dbus_data_.key_ctrl & dbus_data_.key_c);
+  ctrl_e_event_.update(dbus_data_.key_ctrl & dbus_data_.key_e);
   ctrl_b_event_.update(dbus_data_.key_ctrl & dbus_data_.key_b);
   ctrl_r_event_.update(dbus_data_.key_ctrl & dbus_data_.key_r);
   ctrl_g_event_.update(dbus_data_.key_g & dbus_data_.key_ctrl);
@@ -139,7 +141,6 @@ void EngineerManual::sendCommand(const ros::Time& time)
   if (gimbal_mode_ == RATE)
   {
     gimbal_cmd_sender_->sendCommand(time);
-    vel_cmd_sender_->setZero();
     vel_cmd_sender_->sendCommand(time);
   }
 }
@@ -168,6 +169,7 @@ void EngineerManual::rightSwitchDownRise()
   ChassisGimbalManual::rightSwitchDownRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   servo_mode_ = SERVO;
+  gimbal_mode_ = DIRECT;
   servo_reset_caller_->callService();
   action_client_.cancelAllGoals();
 }
@@ -176,7 +178,7 @@ void EngineerManual::rightSwitchMidRise()
 {
   ChassisGimbalManual::rightSwitchMidRise();
   servo_mode_ = JOINT;
-  gimbal_mode_ = DIRECT;
+  gimbal_mode_ = RATE;
   toward_change_mode_ = 0;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
@@ -262,6 +264,7 @@ void EngineerManual::ctrlWPress()
 {
   prefix_ = "SKY_";
   root_ = "BIG_ISLAND";
+  vel_cmd_sender_->setZero();
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -283,6 +286,7 @@ void EngineerManual::ctrlAPress()
 {
   prefix_ = "";
   root_ = "SMALL_ISLAND";
+  vel_cmd_sender_->setZero();
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -290,20 +294,22 @@ void EngineerManual::ctrlSPress()
 {
   prefix_ = "";
   root_ = "BIG_ISLAND";
+  vel_cmd_sender_->setZero();
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlDPress()
 {
-  root_ = "EXCHANGE";
-  stone_num_ -= 1;
+  prefix_ = "";
+  root_ = "GROUND_STONE";
+  vel_cmd_sender_->setZero();
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlFPress()
 {
-  prefix_ = "";
-  root_ = "GROUND_STONE";
+  root_ = "EXCHANGE";
+  stone_num_ -= 1;
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -330,9 +336,18 @@ void EngineerManual::ctrlZPress()
 
 void EngineerManual::ctrlXPress()
 {
-  //gimbal
-  gimbal_mode_ = RATE;
-  ROS_INFO("MANUAL_VIEW");
+  //drag
+  if (drag_state_ == 0)
+  {
+    drag_command_sender_->on();
+    ROS_INFO("DRAG UP");
+    drag_state_ = 1;
+  }
+  else {
+      drag_command_sender_->off();
+      ROS_INFO("DRAG DOWN");
+      drag_state_ = 0;
+  }
 }
 
 void EngineerManual::ctrlCPress()
@@ -349,6 +364,22 @@ void EngineerManual::ctrlCPress()
   }
 }
 
+void EngineerManual::ctrlVPress()
+{
+    //gripper
+    if (gripper_state_ == 0)
+    {
+        runStepQueue("OPEN_GRIPPER");
+        ROS_INFO("GRIPPER OPEN");
+        gripper_state_ = 1;
+    }
+    else
+    {
+        runStepQueue("CLOSE_GRIPPER");
+        ROS_INFO("GRIPPER CLOSE");
+        gripper_state_ = 0;
+    }
+}
 void EngineerManual::ctrlBPress()
 {
   switch (stone_num_) {
@@ -357,6 +388,8 @@ void EngineerManual::ctrlBPress()
       case 2: root_ = "HOME2";
   }
   ROS_INFO("RUN_HOME");
+  runStepQueue("BACK_GIMBAL");
+  runStepQueue(root_);
 }
 
 void EngineerManual::zPress()
@@ -377,7 +410,6 @@ void EngineerManual::cPress()
 
 void EngineerManual::rPress()
 {
-
 }
 
 void EngineerManual::vPress()
@@ -429,46 +461,22 @@ void EngineerManual::shiftEPress()
 void EngineerManual::shiftCPress()
 {
     toward_change_mode_ = 0;
-    runStepQueue("EXCHANGE_GIMBAL");
-    ROS_INFO("enter gimbal EXCHANGE_GIMBAL");
+    runStepQueue("GROUND_GIMBAL");
+    ROS_INFO("enter gimbal GROUND_GIMBAL");
 }
 void EngineerManual::shiftZPress()
 {
     toward_change_mode_ = 0;
-    runStepQueue("GROUND_GIMBAL");
-    ROS_INFO("enter gimbal GROUND_GIMBAL");
+    runStepQueue("REVERSAL_GIMBAL");
+    ROS_INFO("enter gimbal REVERSAL_GIMBAL");
 }
 void EngineerManual::shiftXPress()
 {
-    //gripper
-    if (gripper_state_ == 0)
-    {
-        runStepQueue("OPEN_GRIPPER");
-        ROS_INFO("GRIPPER OPEN");
-        gripper_state_ = 1;
-    }
-    else
-    {
-        runStepQueue("CLOSE_GRIPPER");
-        ROS_INFO("GRIPPER CLOSE");
-        gripper_state_ = 0;
-    }
+    //gimbal
+    gimbal_mode_ = RATE;
+    ROS_INFO("MANUAL_VIEW");
 }
 
 void EngineerManual::shiftVPress()
 {
-  //drag
-  if (drag_state_ == 0)
-  {
-      drag_command_sender_->on();
-      ROS_INFO("DRAG UP");
-      drag_state_ = 1;
-  }
-  else
-  {
-      drag_command_sender_->off();
-      ROS_INFO("DRAG DOWN");
-      drag_state_ = 0;
-  }
-}
 }  // namespace rm_manual
