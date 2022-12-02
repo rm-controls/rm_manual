@@ -264,7 +264,6 @@ void EngineerManual::ctrlWPress()
 {
   prefix_ = "SKY_";
   root_ = "BIG_ISLAND";
-  vel_cmd_sender_->setZero();
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -286,7 +285,6 @@ void EngineerManual::ctrlAPress()
 {
   prefix_ = "";
   root_ = "SMALL_ISLAND";
-  vel_cmd_sender_->setZero();
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -294,7 +292,6 @@ void EngineerManual::ctrlSPress()
 {
   prefix_ = "";
   root_ = "BIG_ISLAND";
-  vel_cmd_sender_->setZero();
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -302,7 +299,6 @@ void EngineerManual::ctrlDPress()
 {
   prefix_ = "";
   root_ = "GROUND_STONE";
-  vel_cmd_sender_->setZero();
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
