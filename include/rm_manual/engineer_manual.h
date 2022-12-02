@@ -68,6 +68,8 @@ private:
   void shiftZPress();        // gimbal toward 1
   void shiftXPress();        // gimbal toward 2
   void shiftCPress();        // gimbal toward 3
+  void shiftBPress();
+  void shiftBRelease();
   void shiftVPress();        // gimbal toward 4
   void rPress();             // calibration
   void zPress();             // card long

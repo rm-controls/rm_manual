@@ -59,6 +59,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
   shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
   shift_v_event_.setRising(boost::bind(&EngineerManual::shiftVPress, this));
+  shift_b_event_.setRising(boost::bind(&EngineerManual::shiftBPress, this));
+  shift_b_event_.setFalling(boost::bind(&EngineerManual::shiftBRelease, this));
   shift_event_.setActiveHigh(boost::bind(&EngineerManual::shiftPressing, this));
   shift_event_.setFalling(boost::bind(&EngineerManual::shiftRelease, this));
   mouse_left_event_.setFalling(boost::bind(&EngineerManual::mouseLeftRelease, this));
@@ -384,7 +386,6 @@ void EngineerManual::ctrlBPress()
       case 2: root_ = "HOME2";
   }
   ROS_INFO("RUN_HOME");
-  runStepQueue("BACK_GIMBAL");
   runStepQueue(root_);
 }
 
@@ -401,6 +402,7 @@ void EngineerManual::xPress()
 void EngineerManual::cPress()
 {
   action_client_.cancelAllGoals();
+  gimbal_mode_ = DIRECT;
   ROS_INFO("CANCEL ALL GOAL");
 }
 
@@ -466,15 +468,24 @@ void EngineerManual::shiftZPress()
     runStepQueue("REVERSAL_GIMBAL");
     ROS_INFO("enter gimbal REVERSAL_GIMBAL");
 }
-void EngineerManual::shiftXPress()
+void EngineerManual::shiftBPress()
 {
     //gimbal
     gimbal_mode_ = RATE;
     ROS_INFO("MANUAL_VIEW");
 }
 
+void EngineerManual::shiftBRelease()
+{
+    //gimbal
+    gimbal_mode_ = DIRECT;
+    ROS_INFO("DIRECT");
+}
+
 void EngineerManual::shiftVPress()
 {
-
+    toward_change_mode_ = 1;
+    runStepQueue("BACK_GIMBAL");
+    ROS_INFO("enter gimbal BACK_GIMBAL");
 }  // namespace rm_manual
 }
