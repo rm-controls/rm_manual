@@ -99,7 +99,7 @@ private:
 
   double angular_z_scale_;
   std::string prefix_, root_;
-  double speed_change_scale_{ 0.2 };
+  double speed_change_scale_ = 0.1;
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{} ;
   std::map<std::string, int> prefix_list_, root_list_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
