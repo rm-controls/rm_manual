@@ -475,4 +475,5 @@ void EngineerManual::shiftXPress()
 
 void EngineerManual::shiftVPress()
 {
+
 }  // namespace rm_manual
