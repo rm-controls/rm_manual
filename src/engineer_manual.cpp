@@ -56,11 +56,10 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   shift_q_event_.setRising(boost::bind(&EngineerManual::shiftQPress, this));
   shift_e_event_.setRising(boost::bind(&EngineerManual::shiftEPress, this));
   shift_z_event_.setRising(boost::bind(&EngineerManual::shiftZPress, this));
-  shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
   shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
   shift_v_event_.setRising(boost::bind(&EngineerManual::shiftVPress, this));
+  shift_v_event_.setFalling(boost::bind(&EngineerManual::shiftVRelease, this));
   shift_b_event_.setRising(boost::bind(&EngineerManual::shiftBPress, this));
-  shift_b_event_.setFalling(boost::bind(&EngineerManual::shiftBRelease, this));
   shift_event_.setActiveHigh(boost::bind(&EngineerManual::shiftPressing, this));
   shift_event_.setFalling(boost::bind(&EngineerManual::shiftRelease, this));
   mouse_left_event_.setFalling(boost::bind(&EngineerManual::mouseLeftRelease, this));
@@ -438,10 +437,11 @@ void EngineerManual::fPress()
 void EngineerManual::shiftPressing()
 {
   speed_change_mode_ = 1;
+  speed_change_scale_ = 0.1;
 }
 void EngineerManual::shiftRelease()
 {
-
+    speed_change_mode_ = 0;
 }
 void EngineerManual::shiftQPress()
 {
@@ -468,24 +468,58 @@ void EngineerManual::shiftZPress()
     runStepQueue("REVERSAL_GIMBAL");
     ROS_INFO("enter gimbal REVERSAL_GIMBAL");
 }
-void EngineerManual::shiftBPress()
+void EngineerManual::shiftVPress()
 {
     //gimbal
     gimbal_mode_ = RATE;
     ROS_INFO("MANUAL_VIEW");
 }
 
-void EngineerManual::shiftBRelease()
+void EngineerManual::shiftVRelease()
 {
     //gimbal
     gimbal_mode_ = DIRECT;
     ROS_INFO("DIRECT");
 }
 
-void EngineerManual::shiftVPress()
+void EngineerManual::shiftBPress()
 {
     toward_change_mode_ = 1;
     runStepQueue("BACK_GIMBAL");
     ROS_INFO("enter gimbal BACK_GIMBAL");
-}  // namespace rm_manual
 }
+
+void EngineerManual::judgeReversal(double translate_err,int reversal_dot,bool is_ready,ros::Duration period) {
+    double translate_dif{}, threshold{};
+    //reversal roll
+    switch (reversal_dot_) {
+        case 2: {
+            reversal_state_ = "F_R";
+            if (translate_err > threshold && is_ready == 0) {
+                reversal_command_sender_->visionReversal(0, 0, translate_err, period);
+            } else(translate_err < threshold && is_ready == 0)
+            {
+                reversal_command_sender_->setGroupVel(0.5, 0, 0.);
+            }
+        }
+        case 3: {
+            reversal_state_ = "B_L";
+            reversal_command_sender_->visionReversal(0, 0, translate_err, period);
+        }
+    }
+    //reversal pitch to ready
+    switch (reversal_dot_) {
+        case 0:
+            break;
+        case 1: {
+            reversal_state_ = "F_L";
+            break;
+        }
+        case 4: {
+            reversal_state_ = "B_R";
+            break;
+        }
+
+    }
+}
+} // namespace rm_manual

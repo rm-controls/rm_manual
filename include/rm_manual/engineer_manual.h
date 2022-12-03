@@ -69,8 +69,8 @@ private:
   void shiftXPress();        // gimbal toward 2
   void shiftCPress();        // gimbal toward 3
   void shiftBPress();
-  void shiftBRelease();
   void shiftVPress();        // gimbal toward 4
+  void shiftVRelease();
   void rPress();             // calibration
   void zPress();             // card long
   void xPress();             // card short
@@ -82,6 +82,7 @@ private:
   void gRelease();           // gripper
   void mouseLeftRelease();   // execute next
   void mouseRightRelease();  // execute repeat
+  void judgeReversal(double translate_err,int reversal_dot,bool is_ready,ros::Duration period);
 
   enum
   {
@@ -99,8 +100,11 @@ private:
     DIRECT
   };
 
+  double translate_err_{};
+  int reversal_dot_{};
+  bool is_ready_{};
   double angular_z_scale_;
-  std::string prefix_, root_;
+  std::string prefix_, root_, reversal_state_;
   double speed_change_scale_ = 0.1;
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{} ;
   std::map<std::string, int> prefix_list_, root_list_;
