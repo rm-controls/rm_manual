@@ -82,8 +82,8 @@ private:
   void gRelease();           // gripper
   void mouseLeftRelease();   // execute next
   void mouseRightRelease();  // execute repeat
-  void judgeReversal(double translate_err,int reversal_state,ros::Duration period);
-
+  void judgeReversal(double translate_err,int reversal_look,ros::Duration period);
+  void visionCB(const rm_msgs::TrackDataConstPtr& msg);
   enum
   {
     MANUAL,
@@ -101,13 +101,15 @@ private:
   };
 
   double translate_err_{};
-  int reversal_dot_{};
+  int reversal_look_{};
   bool is_ready_{};
   double angular_z_scale_;
   std::string prefix_, root_, reversal_state_;
   double speed_change_scale_ = 0.1;
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{} ;
   std::map<std::string, int> prefix_list_, root_list_;
+  ros::Time last_time_;
+  ros::Subscriber reversal_vision_sub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   rm_common::JointPositionBinaryCommandSender* drag_command_sender_;

@@ -14,6 +14,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
+  //Vision
+  reversal_vision_sub_ = nh.subscribe<rm_msgs::TrackData>("/track", 1, &EngineerManual::visionCB, this);
   // Command sender
   ros::NodeHandle nh_drag(nh, "drag");
   drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_drag);
@@ -136,6 +138,8 @@ void EngineerManual::sendCommand(const ros::Time& time)
   {
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
+    judgeReversal(translate_err_,reversal_look_,ros::Time::now()-last_time_);
+    last_time_ = ros::Time::now();
   }
   if (servo_mode_ == SERVO)
     servo_command_sender_->sendCommand(time);
@@ -489,11 +493,11 @@ void EngineerManual::shiftBPress()
     ROS_INFO("enter gimbal BACK_GIMBAL");
 }
 
-void EngineerManual::judgeReversal(double translate_err,int reversal_state,ros::Duration period) {
+void EngineerManual::judgeReversal(double translate_err,int reversal_look,ros::Duration period) {
     double translate_dif{}, threshold{};
     bool is_roll{},is_pitch{};
     //reversal roll to pitch
-    switch (reversal_dot_) {
+    switch (reversal_look) {
         case 2: {
             reversal_state_ = "F_R";
             is_roll = 1;
@@ -506,7 +510,7 @@ void EngineerManual::judgeReversal(double translate_err,int reversal_state,ros::
         }
     }
     //reversal pitch to ready
-    switch (reversal_dot_) {
+    switch (reversal_look_) {
         case 0:
             reversal_state_ = "White";
             is_roll = 0;
@@ -530,6 +534,12 @@ void EngineerManual::judgeReversal(double translate_err,int reversal_state,ros::
     if (is_roll)
         reversal_command_sender_->visionReversal(0.7,0.,translate_err,period);
     if (is_pitch)
-        reversal_command_sender_->visionReversal(0.7,0.,translate_err+translate_dif,period);
+        reversal_command_sender_->visionReversal(0.,0.7,translate_err+translate_dif,period);
+}
+void EngineerManual::visionCB(const rm_msgs::TrackDataConstPtr& msg)
+{
+    if (msg->id == 0)
+        return;
+    reversal_rt_buffer_.writeFromNonRT(*msg);
 }
 } // namespace rm_manual
