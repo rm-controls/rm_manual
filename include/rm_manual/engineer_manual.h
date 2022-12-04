@@ -82,7 +82,7 @@ private:
   void gRelease();           // gripper
   void mouseLeftRelease();   // execute next
   void mouseRightRelease();  // execute repeat
-  void judgeReversal(double translate_err,int reversal_dot,bool is_ready,ros::Duration period);
+  void judgeReversal(double translate_err,int reversal_state,ros::Duration period);
 
   enum
   {

@@ -489,37 +489,47 @@ void EngineerManual::shiftBPress()
     ROS_INFO("enter gimbal BACK_GIMBAL");
 }
 
-void EngineerManual::judgeReversal(double translate_err,int reversal_dot,bool is_ready,ros::Duration period) {
+void EngineerManual::judgeReversal(double translate_err,int reversal_state,ros::Duration period) {
     double translate_dif{}, threshold{};
-    //reversal roll
+    bool is_roll{},is_pitch{};
+    //reversal roll to pitch
     switch (reversal_dot_) {
         case 2: {
             reversal_state_ = "F_R";
-            if (translate_err > threshold && is_ready == 0) {
-                reversal_command_sender_->visionReversal(0, 0, translate_err, period);
-            } else(translate_err < threshold && is_ready == 0)
-            {
-                reversal_command_sender_->setGroupVel(0.5, 0, 0.);
-            }
+            is_roll = 1;
+            is_pitch = 0;
         }
         case 3: {
             reversal_state_ = "B_L";
-            reversal_command_sender_->visionReversal(0, 0, translate_err, period);
+            is_roll = 1;
+            is_pitch = 0;
         }
     }
     //reversal pitch to ready
     switch (reversal_dot_) {
         case 0:
-            break;
+            reversal_state_ = "White";
+            is_roll = 0;
+            is_pitch = 0;
         case 1: {
             reversal_state_ = "F_L";
-            break;
+            is_roll = 0;
+            is_pitch = 1;
         }
         case 4: {
             reversal_state_ = "B_R";
-            break;
+            is_roll = 0;
+            is_pitch = 1;
+        case 5:{
+            reversal_state_ = "QR code";
+            is_roll = 0;
+            is_pitch = 1;
         }
-
+        }
     }
+    if (is_roll)
+        reversal_command_sender_->visionReversal(0.7,0.,translate_err,period);
+    if (is_pitch)
+        reversal_command_sender_->visionReversal(0.7,0.,translate_err+translate_dif,period);
 }
 } // namespace rm_manual
