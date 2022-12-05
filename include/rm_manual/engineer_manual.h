@@ -13,6 +13,7 @@
 #include <rm_msgs/EngineerAction.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <utility>
+#include <rm_msgs/ReversalCmd.h>
 
 namespace rm_manual
 {
@@ -83,7 +84,7 @@ private:
   void mouseLeftRelease();   // execute next
   void mouseRightRelease();  // execute repeat
   void judgeReversal(double translate_err,int reversal_look,ros::Duration period);
-  void visionCB(const rm_msgs::TrackDataConstPtr& msg);
+  void visionCB(const rm_msgs::ReversalCmdConstPtr & msg);
   enum
   {
     MANUAL,
@@ -100,6 +101,7 @@ private:
     DIRECT
   };
 
+  realtime_tools::RealtimeBuffer<rm_msgs::ReversalCmd> reversal_rt_buffer_;
   double translate_err_{};
   int reversal_look_{};
   bool is_ready_{};
@@ -121,6 +123,8 @@ private:
       x_event_, c_event_, v_event_, b_event_, f_event_, shift_z_event_, shift_x_event_, shift_c_event_, shift_v_event_,
       shift_b_event_, ctrl_r_event_, shift_q_event_, shift_e_event_, ctrl_g_event_, shift_r_event_, ctrl_f_event_,
       shift_event_, g_event_, r_event_, mouse_left_event_, mouse_right_event_;
+
+    void visionCB(const rm_msgs::ReversalCmdConstPtr &msg);
 };
 
 }  // namespace rm_manual

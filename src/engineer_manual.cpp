@@ -15,7 +15,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
   //Vision
-  reversal_vision_sub_ = nh.subscribe<rm_msgs::TrackData>("/track", 1, &EngineerManual::visionCB, this);
+  reversal_vision_sub_ = nh.subscribe<rm_msgs::ReversalCmd>("/reversal", 1, &EngineerManual::visionCB, this);
   // Command sender
   ros::NodeHandle nh_drag(nh, "drag");
   drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_drag);
@@ -536,10 +536,8 @@ void EngineerManual::judgeReversal(double translate_err,int reversal_look,ros::D
     if (is_pitch)
         reversal_command_sender_->visionReversal(0.,0.7,translate_err+translate_dif,period);
 }
-void EngineerManual::visionCB(const rm_msgs::TrackDataConstPtr& msg)
+void EngineerManual::visionCB(const rm_msgs::ReversalCmdConstPtr & msg)
 {
-    if (msg->id == 0)
-        return;
     reversal_rt_buffer_.writeFromNonRT(*msg);
 }
 } // namespace rm_manual
