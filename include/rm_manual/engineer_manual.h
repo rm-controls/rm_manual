@@ -102,6 +102,7 @@ private:
   };
 
   realtime_tools::RealtimeBuffer<rm_msgs::ReversalCmd> reversal_rt_buffer_;
+  rm_msgs::ReversalCmd data_reversal_;
   double translate_err_{};
   int reversal_look_{};
   bool is_ready_{};

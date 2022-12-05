@@ -330,9 +330,9 @@ void EngineerManual::ctrlZPress()
 {
   //reversal
   toward_change_mode_ = 0;
-  runStepQueue("REVERSAL_GIMBAL");
-  ROS_INFO("enter gimbal WALK_GIMBAL");
-  ROS_INFO("AUTO_REVERSAL");
+  data_reversal_ = *reversal_rt_buffer_.readFromNonRT();
+  judgeReversal(data_reversal_.error,data_reversal_.mode,ros::Time::now()-last_time_);
+  last_time_ = ros::Time::now();
 }
 
 void EngineerManual::ctrlXPress()
