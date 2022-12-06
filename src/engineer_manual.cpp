@@ -138,8 +138,6 @@ void EngineerManual::sendCommand(const ros::Time& time)
   {
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
-    //judgeReversal(translate_err_,reversal_look_,ros::Time::now()-last_time_);
-    last_time_ = ros::Time::now();
   }
   if (servo_mode_ == SERVO)
     servo_command_sender_->sendCommand(time);
@@ -331,7 +329,8 @@ void EngineerManual::ctrlZPress()
   //reversal
   toward_change_mode_ = 0;
   data_reversal_ = *reversal_rt_buffer_.readFromNonRT();
-  judgeReversal(data_reversal_.error,data_reversal_.mode,ros::Time::now()-last_time_);
+  double translate_err = data_reversal_.error;
+  judgeReversal(translate_err,data_reversal_.mode,ros::Time::now()-last_time_);
   last_time_ = ros::Time::now();
 }
 
