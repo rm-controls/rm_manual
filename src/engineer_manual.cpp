@@ -138,7 +138,7 @@ void EngineerManual::sendCommand(const ros::Time& time)
   {
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
-    judgeReversal(translate_err_,reversal_look_,ros::Time::now()-last_time_);
+    //judgeReversal(translate_err_,reversal_look_,ros::Time::now()-last_time_);
     last_time_ = ros::Time::now();
   }
   if (servo_mode_ == SERVO)
@@ -494,7 +494,7 @@ void EngineerManual::shiftBPress()
 }
 
 void EngineerManual::judgeReversal(double translate_err,int reversal_look,ros::Duration period) {
-    double translate_dif{}, threshold{};
+    double translate_dif{};
     bool is_roll{},is_pitch{};
     //reversal roll to pitch
     switch (reversal_look) {

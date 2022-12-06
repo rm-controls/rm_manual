@@ -21,6 +21,7 @@ find_package(catkin REQUIRED
         rm_common
         tf2_geometry_msgs
         serial
+        control_toolbox
         std_msgs
         actionlib
         nav_msgs
@@ -46,6 +47,7 @@ catkin_package(
         roscpp
         sensor_msgs
         roslint
+        control_toolbox
         rm_msgs
         rm_common
         tf2_geometry_msgs

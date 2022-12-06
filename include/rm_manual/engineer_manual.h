@@ -105,10 +105,8 @@ private:
   rm_msgs::ReversalCmd data_reversal_;
   double translate_err_{};
   int reversal_look_{};
-  bool is_ready_{};
   double angular_z_scale_;
   std::string prefix_, root_, reversal_state_;
-  double speed_change_scale_ = 0.1;
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{} ;
   std::map<std::string, int> prefix_list_, root_list_;
   ros::Time last_time_;
@@ -124,8 +122,6 @@ private:
       x_event_, c_event_, v_event_, b_event_, f_event_, shift_z_event_, shift_x_event_, shift_c_event_, shift_v_event_,
       shift_b_event_, ctrl_r_event_, shift_q_event_, shift_e_event_, ctrl_g_event_, shift_r_event_, ctrl_f_event_,
       shift_event_, g_event_, r_event_, mouse_left_event_, mouse_right_event_;
-
-    void visionCB(const rm_msgs::ReversalCmdConstPtr &msg);
 };
 
 }  // namespace rm_manual
