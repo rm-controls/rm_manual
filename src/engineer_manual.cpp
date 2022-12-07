@@ -123,6 +123,20 @@ void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
+    if (dbus_data->ch_l_y == 1)
+    {
+        arm_calibration_->reset();
+        power_on_calibration_->reset();
+    } else if (dbus_data->ch_l_y == -1)
+    {
+        runStepQueue("HOME0");
+    } else if (dbus_data->ch_l_x == -1)
+    {
+        runStepQueue("SKY_BIG_ISLAND0");
+    }else if (dbus_data->ch_l_x == 1)
+    {
+        runStepQueue("SKY_BIG_ISLAND00");
+    }
 }
 
 void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -140,11 +154,15 @@ void EngineerManual::sendCommand(const ros::Time& time)
     vel_cmd_sender_->sendCommand(time);
   }
   if (servo_mode_ == SERVO)
-    servo_command_sender_->sendCommand(time);
+  {
+      servo_command_sender_->sendCommand(time);
+      z_event_.update(dbus_data_.key_z & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+      x_event_.update(dbus_data_.key_x & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+      c_event_.update(dbus_data_.key_c & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+  }
   if (gimbal_mode_ == RATE)
   {
     gimbal_cmd_sender_->sendCommand(time);
-    vel_cmd_sender_->sendCommand(time);
   }
 }
 
@@ -152,6 +170,7 @@ void EngineerManual::updateServo()
 {
   servo_command_sender_->setLinearVel(dbus_data_.ch_l_y, -dbus_data_.ch_l_x, -dbus_data_.wheel);
   servo_command_sender_->setAngularVel(-dbus_data_.ch_r_x, -dbus_data_.ch_r_y, angular_z_scale_);
+  ROS_INFO("Z = %f",angular_z_scale_);
 }
 
 void EngineerManual::remoteControlTurnOff()
@@ -205,14 +224,12 @@ void EngineerManual::leftSwitchDownFall()
       case 1: root_ = "HOME1";
       case 2: root_ = "HOME2";
   }
-  runStepQueue(root_);
   ROS_INFO("RUN_HOME");
 }
 
 void EngineerManual::leftSwitchUpFall()
 {
-  arm_calibration_->reset();
-  power_on_calibration_->reset();
+
 }
 
 void EngineerManual::runStepQueue(const std::string& step_queue_name)
@@ -393,19 +410,17 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::zPress()
 {
-  angular_z_scale_ = 0.5;
+  angular_z_scale_ = 0.1;
 }
 
 void EngineerManual::xPress()
 {
-  angular_z_scale_ = -0.5;
+  angular_z_scale_ = 0.;
 }
 
 void EngineerManual::cPress()
 {
-  action_client_.cancelAllGoals();
-  gimbal_mode_ = DIRECT;
-  ROS_INFO("CANCEL ALL GOAL");
+  angular_z_scale_ = -0.1;
 }
 
 void EngineerManual::rPress()
@@ -455,7 +470,7 @@ void EngineerManual::shiftQPress()
 void EngineerManual::shiftEPress()
 {
     toward_change_mode_ = 0;
-    runStepQueue(" SKY_GIMBAL");
+    runStepQueue("SKY_GIMBAL");
     ROS_INFO("enter gimbal SKY_GIMBAL");
 }
 
