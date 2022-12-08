@@ -6,11 +6,10 @@
 
 namespace rm_manual
 {
-ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh) : ManualBase(nh)
+ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : ManualBase(nh, nh_referee)
 {
   ros::NodeHandle chassis_nh(nh, "chassis");
-  chassis_cmd_sender_ = new rm_common::ChassisCommandSender(chassis_nh, game_status_data_, game_robot_status_data_,
-                                                            power_heat_data_data_, referee_sub_data_, capacity_data_);
+  chassis_cmd_sender_ = new rm_common::ChassisCommandSender(chassis_nh);
   ros::NodeHandle vel_nh(nh, "vel");
   vel_cmd_sender_ = new rm_common::Vel2DCommandSender(vel_nh);
   if (!vel_nh.getParam("gyro_move_reduction", gyro_move_reduction_))
@@ -19,6 +18,17 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh) : ManualBase(nh)
     ROS_ERROR("Gyro rotate reduction no defined (namespace: %s)", nh.getNamespace().c_str());
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh);
+
+  dbus_sub_ = nh.subscribe<rm_msgs::DbusData>("/dbus_data", 10, &ChassisGimbalManual::dbusDataCallback, this);
+  track_sub_ = nh.subscribe<rm_msgs::TrackData>("/track", 10, &ChassisGimbalManual::trackCallback, this);
+  game_robot_status_sub_ = nh_referee.subscribe<rm_msgs::GameRobotStatus>(
+      "game_robot_status", 10, &ChassisGimbalManual::gameRobotStatusCallback, this);
+  game_status_sub_ =
+      nh_referee.subscribe<rm_msgs::GameStatus>("game_status", 10, &ChassisGimbalManual::gameStatusCallback, this);
+  capacity_sub_ = nh_referee.subscribe<rm_msgs::CapacityData>("capacity_data", 10,
+                                                              &ChassisGimbalManual::capacityDataCallback, this);
+  power_heat_data_sub_ = nh_referee.subscribe<rm_msgs::PowerHeatData>(
+      "power_heat_data", 10, &ChassisGimbalManual::powerHeatDataCallback, this);
 
   chassis_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::chassisOutputOn, this));
   gimbal_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::gimbalOutputOn, this));
@@ -40,60 +50,56 @@ void ChassisGimbalManual::sendCommand(const ros::Time& time)
   gimbal_cmd_sender_->sendCommand(time);
 }
 
-void ChassisGimbalManual::updateRc()
+void ChassisGimbalManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  ManualBase::updateRc();
-  if (std::abs(dbus_data_.wheel) > 0.01)
+  ManualBase::updateRc(dbus_data);
+  if (std::abs(dbus_data->wheel) > 0.01)
   {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
   }
   else
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-  vel_cmd_sender_->setAngularZVel((std::abs(dbus_data_.ch_r_y) > 0.01 || std::abs(dbus_data_.ch_r_x) > 0.01) ?
-                                      dbus_data_.wheel * gyro_rotate_reduction_ :
-                                      dbus_data_.wheel);
+  vel_cmd_sender_->setAngularZVel((std::abs(dbus_data->ch_r_y) > 0.01 || std::abs(dbus_data->ch_r_x) > 0.01) ?
+                                      dbus_data->wheel * gyro_rotate_reduction_ :
+                                      dbus_data->wheel);
   vel_cmd_sender_->setLinearXVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
-                                     dbus_data_.ch_r_y * gyro_move_reduction_ :
-                                     dbus_data_.ch_r_y);
+                                     dbus_data->ch_r_y * gyro_move_reduction_ :
+                                     dbus_data->ch_r_y);
   vel_cmd_sender_->setLinearYVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
-                                     -dbus_data_.ch_r_x * gyro_move_reduction_ :
-                                     -dbus_data_.ch_r_x);
-  gimbal_cmd_sender_->setRate(-dbus_data_.ch_l_x, -dbus_data_.ch_l_y);
+                                     -dbus_data->ch_r_x * gyro_move_reduction_ :
+                                     -dbus_data->ch_r_x);
+  gimbal_cmd_sender_->setRate(-dbus_data->ch_l_x, -dbus_data->ch_l_y);
 }
 
-void ChassisGimbalManual::updatePc()
+void ChassisGimbalManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  ManualBase::updatePc();
-  gimbal_cmd_sender_->setRate(-dbus_data_.m_x * gimbal_scale_, dbus_data_.m_y * gimbal_scale_);
+  ManualBase::updatePc(dbus_data);
+  gimbal_cmd_sender_->setRate(-dbus_data->m_x * gimbal_scale_, dbus_data->m_y * gimbal_scale_);
 }
 
 void ChassisGimbalManual::checkReferee()
 {
   ManualBase::checkReferee();
-  chassis_power_on_event_.update(game_robot_status_data_.mains_power_chassis_output);
-  gimbal_power_on_event_.update(game_robot_status_data_.mains_power_gimbal_output);
-  manual_to_referee_pub_.publish(manual_to_referee_pub_data_);
 }
 
-void ChassisGimbalManual::checkKeyboard()
+void ChassisGimbalManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  ManualBase::checkKeyboard();
-  if (game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::RED_ENGINEER ||
-      game_robot_status_data_.robot_id == rm_msgs::GameRobotStatus::BLUE_ENGINEER)
+  ManualBase::checkKeyboard(dbus_data);
+  if (robot_id_ == rm_msgs::GameRobotStatus::RED_ENGINEER || robot_id_ == rm_msgs::GameRobotStatus::BLUE_ENGINEER)
   {
-    w_event_.update((!dbus_data_.key_ctrl) & (!dbus_data_.key_shift) & dbus_data_.key_w);
-    s_event_.update((!dbus_data_.key_ctrl) & (!dbus_data_.key_shift) & dbus_data_.key_s);
-    a_event_.update((!dbus_data_.key_ctrl) & (!dbus_data_.key_shift) & dbus_data_.key_a);
-    d_event_.update((!dbus_data_.key_ctrl) & (!dbus_data_.key_shift) & dbus_data_.key_d);
+    w_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_w);
+    s_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_s);
+    a_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_a);
+    d_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_d);
   }
   else
   {
-    w_event_.update(dbus_data_.key_w);
-    s_event_.update(dbus_data_.key_s);
-    a_event_.update(dbus_data_.key_a);
-    d_event_.update(dbus_data_.key_d);
+    w_event_.update(dbus_data->key_w);
+    s_event_.update(dbus_data->key_s);
+    a_event_.update(dbus_data->key_a);
+    d_event_.update(dbus_data->key_d);
   }
-  mouse_mid_event_.update(dbus_data_.m_z != 0.);
+  mouse_mid_event_.update(dbus_data->m_z != 0.);
 }
 
 void ChassisGimbalManual::remoteControlTurnOff()
