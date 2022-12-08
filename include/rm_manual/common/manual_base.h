@@ -37,7 +37,7 @@ namespace rm_manual
 class ManualBase
 {
 public:
-  explicit ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
+  explicit ManualBase(ros::NodeHandle& nh);
   enum
   {
     PASSIVE,
@@ -48,78 +48,61 @@ public:
   virtual void run();
 
 protected:
+  void checkSwitch(const ros::Time& time);
   virtual void checkReferee();
-  virtual void checkKeyboard(const rm_msgs::DbusData::ConstPtr& data){};
-  virtual void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data);
-  virtual void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data);
+  virtual void checkKeyboard(){};
+  virtual void updateRc();
+  virtual void updatePc();
   virtual void sendCommand(const ros::Time& time) = 0;
 
-  virtual void jointStateCallback(const sensor_msgs::JointState::ConstPtr& data)
+  virtual void jointStateCallback(const sensor_msgs::JointState::ConstPtr& joint_state)
   {
-    joint_state_ = *data;
+    joint_state_ = *joint_state;
+  }
+  virtual void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
+  {
+    actuator_state_ = *data;
   }
   virtual void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
   {
     dbus_data_ = *data;
-    if (ros::Time::now() - data->stamp < ros::Duration(0.2))
-    {
-      if (!remote_is_open_)
-      {
-        ROS_INFO("Remote controller ON");
-        remoteControlTurnOn();
-        remote_is_open_ = true;
-      }
-      right_switch_down_event_.update(data->s_r == rm_msgs::DbusData::DOWN);
-      right_switch_mid_event_.update(data->s_r == rm_msgs::DbusData::MID);
-      right_switch_up_event_.update(data->s_r == rm_msgs::DbusData::UP);
-
-      if (state_ == RC)
-        updateRc(data);
-      else if (state_ == PC)
-        updatePc(data);
-    }
-    else
-    {
-      if (remote_is_open_)
-      {
-        ROS_INFO("Remote controller OFF");
-        remoteControlTurnOff();
-        remote_is_open_ = false;
-      }
-    }
   }
   virtual void trackCallback(const rm_msgs::TrackData::ConstPtr& data)
   {
     track_data_ = *data;
   }
-  virtual void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
-  {
-    robot_id_ = data->robot_id;
-    robot_hp_event_.update(data->remain_hp != 0);
-  }
-  virtual void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
-  {
-    referee_last_get_stamp_ = data->stamp;
-  }
   virtual void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
   {
     gimbal_des_error_ = *data;
   }
-  virtual void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data)
-  {
-    chassis_power_ = data->chassis_power;
-  }
   virtual void odomCallback(const nav_msgs::Odometry::ConstPtr& data)
   {
+    odom_ = *data;
   }
-  virtual void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
+
+  virtual void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
   {
+    game_robot_status_data_ = *data;
   }
   virtual void gameRobotHpCallback(const rm_msgs::GameRobotHp::ConstPtr& data)
   {
+    game_robot_hp_data_ = *data;
   }
   virtual void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data)
   {
+    game_status_data_ = *data;
+  }
+  virtual void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data)
+  {
+    capacity_data_ = *data;
+  }
+  virtual void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
+  {
+    power_heat_data_data_ = *data;
+  }
+  virtual void refereeCallback(const rm_msgs::Referee::ConstPtr& data)
+  {
+    referee_sub_data_ = *data;
   }
 
   // Referee
@@ -175,9 +158,17 @@ protected:
 
   nav_msgs::Odometry odom_;
   sensor_msgs::JointState joint_state_;
+
   rm_msgs::DbusData dbus_data_;
   rm_msgs::TrackData track_data_;
+  rm_msgs::Referee referee_sub_data_;
+  rm_msgs::CapacityData capacity_data_;
+  rm_msgs::GameStatus game_status_data_;
+  rm_msgs::ActuatorState actuator_state_;
+  rm_msgs::GameRobotHp game_robot_hp_data_;
   rm_msgs::GimbalDesError gimbal_des_error_;
+  rm_msgs::PowerHeatData power_heat_data_data_;
+  rm_msgs::GameRobotStatus game_robot_status_data_;
   rm_msgs::ManualToReferee manual_to_referee_pub_data_;
 
   rm_common::ControllerManager controller_manager_;
@@ -187,10 +178,8 @@ protected:
 
   ros::NodeHandle nh_;
 
-  ros::Time referee_last_get_stamp_;
-  bool remote_is_open_{}, referee_is_online_ = false;
+  bool remote_is_open_{};
   int state_ = PASSIVE;
-  int robot_id_, chassis_power_;
   InputEvent robot_hp_event_, right_switch_down_event_, right_switch_mid_event_, right_switch_up_event_,
       left_switch_down_event_, left_switch_mid_event_, left_switch_up_event_;
 };

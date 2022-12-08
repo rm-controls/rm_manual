@@ -11,12 +11,12 @@ namespace rm_manual
 class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual
 {
 public:
-  explicit ChassisGimbalShooterCoverManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
+  explicit ChassisGimbalShooterCoverManual(ros::NodeHandle& nh);
   void run() override;
 
 protected:
-  void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
-  void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
+  void updatePc() override;
+  void checkKeyboard() override;
   void checkReferee() override;
   void sendCommand(const ros::Time& time) override;
   void gimbalOutputOn() override;

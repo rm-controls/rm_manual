@@ -13,16 +13,15 @@ int main(int argc, char** argv)
   rm_manual::ManualBase* manual_control;
   ros::init(argc, argv, "rm_manual");
   ros::NodeHandle nh("~");
-  ros::NodeHandle nh_referee("rm_referee");
   robot = getParam(nh, "robot_type", (std::string) "error");
   if (robot == "standard")
-    manual_control = new rm_manual::ChassisGimbalShooterCoverManual(nh, nh_referee);
+    manual_control = new rm_manual::ChassisGimbalShooterCoverManual(nh);
   else if (robot == "hero")
-    manual_control = new rm_manual::ChassisGimbalShooterManual(nh, nh_referee);
+    manual_control = new rm_manual::ChassisGimbalShooterManual(nh);
   else if (robot == "engineer")
-    manual_control = new rm_manual::EngineerManual(nh, nh_referee);
+    manual_control = new rm_manual::EngineerManual(nh);
   else if (robot == "dart")
-    manual_control = new rm_manual::DartManual(nh, nh_referee);
+    manual_control = new rm_manual::DartManual(nh);
   else
   {
     ROS_ERROR("no robot type ");

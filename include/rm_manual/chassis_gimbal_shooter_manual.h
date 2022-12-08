@@ -12,14 +12,14 @@ namespace rm_manual
 class ChassisGimbalShooterManual : public ChassisGimbalManual
 {
 public:
-  explicit ChassisGimbalShooterManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
+  explicit ChassisGimbalShooterManual(ros::NodeHandle& nh);
   void run() override;
 
 protected:
   void checkReferee() override;
-  void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
-  void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
-  void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
+  void checkKeyboard() override;
+  void updateRc() override;
+  void updatePc() override;
   void sendCommand(const ros::Time& time) override;
   void chassisOutputOn() override;
   void shooterOutputOn() override;
@@ -41,33 +41,6 @@ protected:
   void leftSwitchMidRise() override;
   void leftSwitchMidOn(ros::Duration duration);
   void leftSwitchUpRise() override;
-  void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override
-  {
-    ChassisGimbalManual::gameRobotStatusCallback(data);
-    shooter_cmd_sender_->updateGameRobotStatus(*data);
-    shooter_power_on_event_.update(data->mains_power_shooter_output);
-  }
-  void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data) override
-  {
-    ChassisGimbalManual::powerHeatDataCallback(data);
-    shooter_cmd_sender_->updatePowerHeatData(*data);
-  }
-  void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override
-  {
-    ChassisGimbalManual::dbusDataCallback(data);
-    chassis_cmd_sender_->updateRefereeStatus(referee_is_online_);
-    shooter_cmd_sender_->updateRefereeStatus(referee_is_online_);
-  }
-  void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override
-  {
-    ChassisGimbalManual::gameStatusCallback(data);
-    self_inspection_event_.update(data->game_progress == 2);
-    game_start_event_.update(data->game_progress == 4);
-  }
-  void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data) override
-  {
-    ChassisGimbalManual::gimbalDesErrorCallback(data);
-  }
   void leftSwitchUpOn(ros::Duration duration);
   void mouseLeftPress();
   void mouseLeftRelease()

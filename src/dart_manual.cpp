@@ -6,7 +6,7 @@
 
 namespace rm_manual
 {
-DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : ManualBase(nh, nh_referee)
+DartManual::DartManual(ros::NodeHandle& nh) : ManualBase(nh)
 {
   ros::NodeHandle nh_yaw = ros::NodeHandle(nh, "yaw");
   ros::NodeHandle nh_left_pitch = ros::NodeHandle(nh, "left_pitch");
@@ -49,23 +49,23 @@ void DartManual::sendCommand(const ros::Time& time)
   yaw_sender_->sendCommand(time);
 }
 
-void DartManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
+void DartManual::updateRc()
 {
-  ManualBase::updateRc(dbus_data);
-  move(pitch_sender_, dbus_data->ch_r_y);
-  move(yaw_sender_, dbus_data->ch_l_x);
+  ManualBase::updateRc();
+  move(pitch_sender_, dbus_data_.ch_r_y);
+  move(yaw_sender_, dbus_data_.ch_l_x);
 }
 
-void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
+void DartManual::updatePc()
 {
-  ManualBase::updatePc(dbus_data);
-  recordPosition(dbus_data);
-  if (dbus_data->ch_l_y == 1.)
+  ManualBase::updatePc();
+  recordPosition();
+  if (dbus_data_.ch_l_y == 1.)
   {
     pitch_sender_->setPoint(pitch_outpost_);
     yaw_sender_->setPoint(yaw_outpost_);
   }
-  if (dbus_data->ch_l_y == -1.)
+  if (dbus_data_.ch_l_y == -1.)
   {
     pitch_sender_->setPoint(pitch_base_);
     yaw_sender_->setPoint(yaw_base_);
@@ -75,6 +75,8 @@ void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 void DartManual::checkReferee()
 {
   ManualBase::checkReferee();
+  chassis_power_on_event_.update(game_robot_status_data_.mains_power_chassis_output);
+  gimbal_power_on_event_.update(game_robot_status_data_.mains_power_gimbal_output);
 }
 
 void DartManual::remoteControlTurnOn()
@@ -128,15 +130,15 @@ void DartManual::move(rm_common::JointPointCommandSender* joint, double ch)
   }
 }
 
-void DartManual::recordPosition(const rm_msgs::DbusData::ConstPtr& dbus_data)
+void DartManual::recordPosition()
 {
-  if (dbus_data->ch_r_y == 1.)
+  if (dbus_data_.ch_r_y == 1.)
   {
     pitch_outpost_ = joint_state_.position[pitch_sender_->getIndex()];
     yaw_outpost_ = joint_state_.position[yaw_sender_->getIndex()];
     ROS_INFO("recorded outpost position");
   }
-  if (dbus_data->ch_r_y == -1.)
+  if (dbus_data_.ch_r_y == -1.)
   {
     pitch_base_ = joint_state_.position[pitch_sender_->getIndex()];
     yaw_base_ = joint_state_.position[yaw_sender_->getIndex()];
