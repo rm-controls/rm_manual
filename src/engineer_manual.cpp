@@ -169,8 +169,7 @@ void EngineerManual::sendCommand(const ros::Time& time)
 void EngineerManual::updateServo()
 {
   servo_command_sender_->setLinearVel(dbus_data_.ch_l_y, -dbus_data_.ch_l_x, -dbus_data_.wheel);
-  servo_command_sender_->setAngularVel(-dbus_data_.ch_r_x, -dbus_data_.ch_r_y, angular_z_scale_);
-  ROS_INFO("Z = %f",angular_z_scale_);
+  servo_command_sender_->setAngularVel(dbus_data_.ch_r_x, dbus_data_.ch_r_y, angular_z_scale_);
 }
 
 void EngineerManual::remoteControlTurnOff()
@@ -324,8 +323,9 @@ void EngineerManual::ctrlDPress()
 
 void EngineerManual::ctrlFPress()
 {
-  root_ = "EXCHANGE";
+  root_ = "EXCHANGE_WAIT";
   stone_num_ -= 1;
+  runStepQueue(root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
