@@ -20,13 +20,13 @@ namespace rm_manual
 class EngineerManual : public ChassisGimbalManual
 {
 public:
-  explicit EngineerManual(ros::NodeHandle& nh);
+  explicit EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
 private:
-  void checkKeyboard() override;
-  void updateRc() override;
-  void updatePc() override;
+  void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
+  void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
+  void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void sendCommand(const ros::Time& time) override;
   void remoteControlTurnOff() override;
   void chassisOutputOn() override;
