@@ -113,7 +113,7 @@ private:
   ros::Subscriber reversal_vision_sub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
-  rm_common::JointPositionBinaryCommandSender* drag_command_sender_;
+  rm_common::ThreeSwitchCommandSender* drag_command_sender_;
   rm_common::ReversalCommandSender* reversal_command_sender_;
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;

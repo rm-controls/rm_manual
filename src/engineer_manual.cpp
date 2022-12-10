@@ -18,7 +18,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   reversal_vision_sub_ = nh.subscribe<rm_msgs::ReversalCmd>("/reversal", 1, &EngineerManual::visionCB, this);
   // Command sender
   ros::NodeHandle nh_drag(nh, "drag");
-  drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_drag);
+  drag_command_sender_ = new rm_common::ThreeSwitchCommandSender(nh_drag);
   ros::NodeHandle nh_reversal(nh, "reversal");
   // Servo
   ros::NodeHandle nh_servo(nh, "servo");
