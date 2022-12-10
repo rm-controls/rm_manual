@@ -353,12 +353,9 @@ void EngineerManual::ctrlGPress()
 
 void EngineerManual::ctrlZPress()
 {
-  // reversal
-  toward_change_mode_ = 0;
-  data_reversal_ = *reversal_rt_buffer_.readFromNonRT();
-  double translate_err = data_reversal_.error;
-  judgeReversal(translate_err, data_reversal_.mode, ros::Time::now() - last_time_);
-  last_time_ = ros::Time::now();
+  drag_command_sender_->rise();
+  ROS_INFO("DRAG RISE");
+  drag_command_sender_->sendCommand(ros::Time::now());
 }
 
 void EngineerManual::ctrlXPress()
@@ -366,16 +363,17 @@ void EngineerManual::ctrlXPress()
   // drag
   if (drag_state_ == 0)
   {
-    drag_command_sender_->on();
+    drag_command_sender_->up();
     ROS_INFO("DRAG UP");
     drag_state_ = 1;
   }
   else
   {
-    drag_command_sender_->off();
+    drag_command_sender_->down();
     ROS_INFO("DRAG DOWN");
     drag_state_ = 0;
   }
+  drag_command_sender_->sendCommand(ros::Time::now());
 }
 
 void EngineerManual::ctrlCPress()
