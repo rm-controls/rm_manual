@@ -46,31 +46,31 @@ private:
   void leftSwitchUpRise() override;
   void leftSwitchUpFall();
   void leftSwitchDownFall();
-  void ctrlQPress();         // choose "left_" situation // "has_stone_" // "sky"
-  void ctrlWPress();         // choose "mid_" situation // "no_stone_"
-  void ctrlEPress();         // choose "right_" situation //  ""
-  void ctrlAPress();         // choose "sky" situation
-  void ctrlSPress();         // choose "grasp" situation
-  void ctrlDPress();         // choose "exchange" situation
-  void ctrlZPress();         // choose "store" situation
-  void ctrlXPress();         // choose "_gain" situation
-  void ctrlCPress();         // cancel and delete scence
+  void ctrlQPress();  // choose "left_" situation // "has_stone_" // "sky"
+  void ctrlWPress();  // choose "mid_" situation // "no_stone_"
+  void ctrlEPress();  // choose "right_" situation //  ""
+  void ctrlAPress();  // choose "sky" situation
+  void ctrlSPress();  // choose "grasp" situation
+  void ctrlDPress();  // choose "exchange" situation
+  void ctrlZPress();  // choose "store" situation
+  void ctrlXPress();  // choose "_gain" situation
+  void ctrlCPress();  // cancel and delete scence
   void ctrlVPress();
-  void ctrlBPress();         // choose "ground_stone" situation
-  void ctrlFPress();         // execute next
-  void ctrlGPress();         // execute repeat
-  void ctrlRPress();         // choose "ready_" situation
-  void shiftPressing();      // low speed
-  void shiftRelease();       // low speed
-  void shiftQPress();        // servo's angular z
-  void shiftQRelease();      // servo's angular z
-  void shiftEPress();        // servo's angular z
-  void shiftERelease();      // servo's angular z
-  void shiftZPress();        // gimbal toward 1
-  void shiftXPress();        // gimbal toward 2
-  void shiftCPress();        // gimbal toward 3
+  void ctrlBPress();     // choose "ground_stone" situation
+  void ctrlFPress();     // execute next
+  void ctrlGPress();     // execute repeat
+  void ctrlRPress();     // choose "ready_" situation
+  void shiftPressing();  // low speed
+  void shiftRelease();   // low speed
+  void shiftQPress();    // servo's angular z
+  void shiftQRelease();  // servo's angular z
+  void shiftEPress();    // servo's angular z
+  void shiftERelease();  // servo's angular z
+  void shiftZPress();    // gimbal toward 1
+  void shiftXPress();    // gimbal toward 2
+  void shiftCPress();    // gimbal toward 3
   void shiftBPress();
-  void shiftVPress();        // gimbal toward 4
+  void shiftVPress();  // gimbal toward 4
   void shiftVRelease();
   void rPress();             // calibration
   void zPress();             // card long
@@ -83,8 +83,8 @@ private:
   void gRelease();           // gripper
   void mouseLeftRelease();   // execute next
   void mouseRightRelease();  // execute repeat
-  void judgeReversal(double translate_err,int reversal_look,ros::Duration period);
-  void visionCB(const rm_msgs::ReversalCmdConstPtr & msg);
+  void judgeReversal(double translate_err, int reversal_look, ros::Duration period);
+  void visionCB(const rm_msgs::ReversalCmdConstPtr& msg);
   enum
   {
     MANUAL,
@@ -107,7 +107,7 @@ private:
   int reversal_look_{};
   double angular_z_scale_{};
   std::string prefix_, root_, reversal_state_;
-  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{} ;
+  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{};
   std::map<std::string, int> prefix_list_, root_list_;
   ros::Time last_time_;
   ros::Subscriber reversal_vision_sub_;

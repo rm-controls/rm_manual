@@ -14,12 +14,12 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
-  //Vision
+  // Vision
   reversal_vision_sub_ = nh.subscribe<rm_msgs::ReversalCmd>("/reversal", 1, &EngineerManual::visionCB, this);
   // Command sender
   ros::NodeHandle nh_drag(nh, "drag");
   drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_drag);
-  ros::NodeHandle nh_reversal(nh,"reversal");
+  ros::NodeHandle nh_reversal(nh, "reversal");
   // Servo
   ros::NodeHandle nh_servo(nh, "servo");
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
@@ -42,7 +42,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ctrl_e_event_.setRising(boost::bind(&EngineerManual::ctrlEPress, this));
   ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
-  ctrl_v_event_.setRising(boost::bind(&EngineerManual::ctrlVPress,this));
+  ctrl_v_event_.setRising(boost::bind(&EngineerManual::ctrlVPress, this));
   ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
   ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
   ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
@@ -123,20 +123,23 @@ void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
-    if (dbus_data->ch_l_y == 1)
-    {
-        arm_calibration_->reset();
-        power_on_calibration_->reset();
-    } else if (dbus_data->ch_l_y == -1)
-    {
-        runStepQueue("HOME0");
-    } else if (dbus_data->ch_l_x == -1)
-    {
-        runStepQueue("SKY_BIG_ISLAND0");
-    }else if (dbus_data->ch_l_x == 1)
-    {
-        runStepQueue("SKY_BIG_ISLAND00");
-    }
+  if (dbus_data->ch_l_y == 1)
+  {
+    arm_calibration_->reset();
+    power_on_calibration_->reset();
+  }
+  else if (dbus_data->ch_l_y == -1)
+  {
+    runStepQueue("HOME0");
+  }
+  else if (dbus_data->ch_l_x == -1)
+  {
+    runStepQueue("SKY_BIG_ISLAND0");
+  }
+  else if (dbus_data->ch_l_x == 1)
+  {
+    runStepQueue("SKY_BIG_ISLAND00");
+  }
 }
 
 void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -155,10 +158,10 @@ void EngineerManual::sendCommand(const ros::Time& time)
   }
   if (servo_mode_ == SERVO)
   {
-      servo_command_sender_->sendCommand(time);
-      z_event_.update(dbus_data_.key_z & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
-      x_event_.update(dbus_data_.key_x & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
-      c_event_.update(dbus_data_.key_c & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+    servo_command_sender_->sendCommand(time);
+    z_event_.update(dbus_data_.key_z & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+    x_event_.update(dbus_data_.key_x & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+    c_event_.update(dbus_data_.key_c & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
   }
   if (gimbal_mode_ == RATE)
   {
@@ -218,17 +221,20 @@ void EngineerManual::leftSwitchUpRise()
 
 void EngineerManual::leftSwitchDownFall()
 {
-  switch (stone_num_) {
-      case 0: root_ = "HOME0";
-      case 1: root_ = "HOME1";
-      case 2: root_ = "HOME2";
+  switch (stone_num_)
+  {
+    case 0:
+      root_ = "HOME0";
+    case 1:
+      root_ = "HOME1";
+    case 2:
+      root_ = "HOME2";
   }
   ROS_INFO("RUN_HOME");
 }
 
 void EngineerManual::leftSwitchUpFall()
 {
-
 }
 
 void EngineerManual::runStepQueue(const std::string& step_queue_name)
@@ -331,10 +337,14 @@ void EngineerManual::ctrlFPress()
 
 void EngineerManual::ctrlGPress()
 {
-  switch (stone_num_) {
-      case 0: root_ = "STORE_STONE0";
-      case 1: root_ = "STORE_STONE1";
-      case 2: root_ = "STORE_STONE2";
+  switch (stone_num_)
+  {
+    case 0:
+      root_ = "STORE_STONE0";
+    case 1:
+      root_ = "STORE_STONE1";
+    case 2:
+      root_ = "STORE_STONE2";
   }
   prefix_ = "";
   stone_num_ += 1;
@@ -343,66 +353,73 @@ void EngineerManual::ctrlGPress()
 
 void EngineerManual::ctrlZPress()
 {
-  //reversal
+  // reversal
   toward_change_mode_ = 0;
   data_reversal_ = *reversal_rt_buffer_.readFromNonRT();
   double translate_err = data_reversal_.error;
-  judgeReversal(translate_err,data_reversal_.mode,ros::Time::now()-last_time_);
+  judgeReversal(translate_err, data_reversal_.mode, ros::Time::now() - last_time_);
   last_time_ = ros::Time::now();
 }
 
 void EngineerManual::ctrlXPress()
 {
-  //drag
+  // drag
   if (drag_state_ == 0)
   {
     drag_command_sender_->on();
     ROS_INFO("DRAG UP");
     drag_state_ = 1;
   }
-  else {
-      drag_command_sender_->off();
-      ROS_INFO("DRAG DOWN");
-      drag_state_ = 0;
+  else
+  {
+    drag_command_sender_->off();
+    ROS_INFO("DRAG DOWN");
+    drag_state_ = 0;
   }
 }
 
 void EngineerManual::ctrlCPress()
 {
-  //servo
+  // servo
   if (servo_mode_ == JOINT)
   {
-      servo_mode_ = SERVO;
-      servo_reset_caller_->callService();
-      ROS_INFO("ENTER SERVO");
-  } else{
-      servo_mode_ = JOINT;
-      ROS_INFO("OUT SERVO");
+    servo_mode_ = SERVO;
+    servo_reset_caller_->callService();
+    ROS_INFO("ENTER SERVO");
+  }
+  else
+  {
+    servo_mode_ = JOINT;
+    ROS_INFO("OUT SERVO");
   }
 }
 
 void EngineerManual::ctrlVPress()
 {
-    //gripper
-    if (gripper_state_ == 0)
-    {
-        runStepQueue("OPEN_GRIPPER");
-        ROS_INFO("GRIPPER OPEN");
-        gripper_state_ = 1;
-    }
-    else
-    {
-        runStepQueue("CLOSE_GRIPPER");
-        ROS_INFO("GRIPPER CLOSE");
-        gripper_state_ = 0;
-    }
+  // gripper
+  if (gripper_state_ == 0)
+  {
+    runStepQueue("OPEN_GRIPPER");
+    ROS_INFO("GRIPPER OPEN");
+    gripper_state_ = 1;
+  }
+  else
+  {
+    runStepQueue("CLOSE_GRIPPER");
+    ROS_INFO("GRIPPER CLOSE");
+    gripper_state_ = 0;
+  }
 }
 void EngineerManual::ctrlBPress()
 {
-  switch (stone_num_) {
-      case 0: root_ = "HOME0";
-      case 1: root_ = "HOME1";
-      case 2: root_ = "HOME2";
+  switch (stone_num_)
+  {
+    case 0:
+      root_ = "HOME0";
+    case 1:
+      root_ = "HOME1";
+    case 2:
+      root_ = "HOME2";
   }
   ROS_INFO("RUN_HOME");
   runStepQueue(root_);
@@ -429,27 +446,27 @@ void EngineerManual::rPress()
 
 void EngineerManual::vPress()
 {
-   //reversal roll
-   reversal_command_sender_->setGroupVel(1.0,0.,0.);
-   ROS_INFO("REVERSAL ROLL");
+  // reversal roll
+  reversal_command_sender_->setGroupVel(1.0, 0., 0.);
+  ROS_INFO("REVERSAL ROLL");
 }
 
 void EngineerManual::gPress()
 {
-  //reversal pitch
-  reversal_command_sender_->setGroupVel(0.,1.0,0.);
+  // reversal pitch
+  reversal_command_sender_->setGroupVel(0., 1.0, 0.);
   ROS_INFO("REVERSAL ROLL");
 }
 void EngineerManual::gRelease()
 {
-  //reversal down
-  reversal_command_sender_->setGroupVel(0.,0.,-1.0);
+  // reversal down
+  reversal_command_sender_->setGroupVel(0., 0., -1.0);
   ROS_INFO("REVERSAL IN");
 }
 void EngineerManual::fPress()
 {
-  //reversal up
-  reversal_command_sender_->setGroupVel(0.,0.,1.0);
+  // reversal up
+  reversal_command_sender_->setGroupVel(0., 0., 1.0);
   ROS_INFO("REVERSAL IN");
 }
 void EngineerManual::shiftPressing()
@@ -459,99 +476,107 @@ void EngineerManual::shiftPressing()
 }
 void EngineerManual::shiftRelease()
 {
-    speed_change_mode_ = 0;
+  speed_change_mode_ = 0;
 }
 void EngineerManual::shiftQPress()
 {
-    toward_change_mode_ = 0;
-    runStepQueue("ISLAND_GIMBAL");
-    ROS_INFO("enter gimbal ISLAND_GIMBAL");
+  toward_change_mode_ = 0;
+  runStepQueue("ISLAND_GIMBAL");
+  ROS_INFO("enter gimbal ISLAND_GIMBAL");
 }
 void EngineerManual::shiftEPress()
 {
-    toward_change_mode_ = 0;
-    runStepQueue("SKY_GIMBAL");
-    ROS_INFO("enter gimbal SKY_GIMBAL");
+  toward_change_mode_ = 0;
+  runStepQueue("SKY_GIMBAL");
+  ROS_INFO("enter gimbal SKY_GIMBAL");
 }
 
 void EngineerManual::shiftCPress()
 {
-    toward_change_mode_ = 0;
-    runStepQueue("GROUND_GIMBAL");
-    ROS_INFO("enter gimbal GROUND_GIMBAL");
+  toward_change_mode_ = 0;
+  runStepQueue("GROUND_GIMBAL");
+  ROS_INFO("enter gimbal GROUND_GIMBAL");
 }
 void EngineerManual::shiftZPress()
 {
-    toward_change_mode_ = 0;
-    runStepQueue("REVERSAL_GIMBAL");
-    ROS_INFO("enter gimbal REVERSAL_GIMBAL");
+  toward_change_mode_ = 0;
+  runStepQueue("REVERSAL_GIMBAL");
+  ROS_INFO("enter gimbal REVERSAL_GIMBAL");
 }
 void EngineerManual::shiftVPress()
 {
-    //gimbal
-    gimbal_mode_ = RATE;
-    ROS_INFO("MANUAL_VIEW");
+  // gimbal
+  gimbal_mode_ = RATE;
+  ROS_INFO("MANUAL_VIEW");
 }
 
 void EngineerManual::shiftVRelease()
 {
-    //gimbal
-    gimbal_mode_ = DIRECT;
-    ROS_INFO("DIRECT");
+  // gimbal
+  gimbal_mode_ = DIRECT;
+  ROS_INFO("DIRECT");
 }
 
 void EngineerManual::shiftBPress()
 {
-    toward_change_mode_ = 1;
-    runStepQueue("BACK_GIMBAL");
-    ROS_INFO("enter gimbal BACK_GIMBAL");
+  toward_change_mode_ = 1;
+  runStepQueue("BACK_GIMBAL");
+  ROS_INFO("enter gimbal BACK_GIMBAL");
 }
 
-void EngineerManual::judgeReversal(double translate_err,int reversal_look,ros::Duration period) {
-    double translate_dif{};
-    bool is_roll{},is_pitch{};
-    //reversal roll to pitch
-    switch (reversal_look) {
-        case 2: {
-            reversal_state_ = "F_R";
-            is_roll = 1;
-            is_pitch = 0;
-        }
-        case 3: {
-            reversal_state_ = "B_L";
-            is_roll = 1;
-            is_pitch = 0;
-        }
-    }
-    //reversal pitch to ready
-    switch (reversal_look_) {
-        case 0:
-            reversal_state_ = "White";
-            is_roll = 0;
-            is_pitch = 0;
-        case 1: {
-            reversal_state_ = "F_L";
-            is_roll = 0;
-            is_pitch = 1;
-        }
-        case 4: {
-            reversal_state_ = "B_R";
-            is_roll = 0;
-            is_pitch = 1;
-        case 5:{
-            reversal_state_ = "QR code";
-            is_roll = 0;
-            is_pitch = 1;
-        }
-        }
-    }
-    if (is_roll)
-        reversal_command_sender_->visionReversal(0.7,0.,translate_err,period);
-    if (is_pitch)
-        reversal_command_sender_->visionReversal(0.,0.7,translate_err+translate_dif,period);
-}
-void EngineerManual::visionCB(const rm_msgs::ReversalCmdConstPtr & msg)
+void EngineerManual::judgeReversal(double translate_err, int reversal_look, ros::Duration period)
 {
-    reversal_rt_buffer_.writeFromNonRT(*msg);
+  double translate_dif{};
+  bool is_roll{}, is_pitch{};
+  // reversal roll to pitch
+  switch (reversal_look)
+  {
+    case 2:
+    {
+      reversal_state_ = "F_R";
+      is_roll = 1;
+      is_pitch = 0;
+    }
+    case 3:
+    {
+      reversal_state_ = "B_L";
+      is_roll = 1;
+      is_pitch = 0;
+    }
+  }
+  // reversal pitch to ready
+  switch (reversal_look_)
+  {
+    case 0:
+      reversal_state_ = "White";
+      is_roll = 0;
+      is_pitch = 0;
+    case 1:
+    {
+      reversal_state_ = "F_L";
+      is_roll = 0;
+      is_pitch = 1;
+    }
+    case 4:
+    {
+      reversal_state_ = "B_R";
+      is_roll = 0;
+      is_pitch = 1;
+      case 5:
+      {
+        reversal_state_ = "QR code";
+        is_roll = 0;
+        is_pitch = 1;
+      }
+    }
+  }
+  if (is_roll)
+    reversal_command_sender_->visionReversal(0.7, 0., translate_err, period);
+  if (is_pitch)
+    reversal_command_sender_->visionReversal(0., 0.7, translate_err + translate_dif, period);
 }
-} // namespace rm_manual
+void EngineerManual::visionCB(const rm_msgs::ReversalCmdConstPtr& msg)
+{
+  reversal_rt_buffer_.writeFromNonRT(*msg);
+}
+}  // namespace rm_manual
