@@ -88,6 +88,7 @@ void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ctrl_e_event_.update(dbus_data_.key_ctrl & dbus_data_.key_e);
   ctrl_d_event_.update(dbus_data_.key_ctrl & dbus_data_.key_d);
   ctrl_c_event_.update(dbus_data_.key_ctrl & dbus_data_.key_c);
+  ctrl_v_event_.update(dbus_data_.key_ctrl & dbus_data_.key_v);
   ctrl_e_event_.update(dbus_data_.key_ctrl & dbus_data_.key_e);
   ctrl_b_event_.update(dbus_data_.key_ctrl & dbus_data_.key_b);
   ctrl_r_event_.update(dbus_data_.key_ctrl & dbus_data_.key_r);
@@ -217,6 +218,8 @@ void EngineerManual::rightSwitchUpRise()
 
 void EngineerManual::leftSwitchUpRise()
 {
+    runStepQueue("REVERSAL_GIMBAL");
+    ROS_INFO("REVERSAL_GIMBAL");
 }
 
 void EngineerManual::leftSwitchDownFall()
@@ -353,7 +356,7 @@ void EngineerManual::ctrlGPress()
 
 void EngineerManual::ctrlZPress()
 {
-  drag_command_sender_->rise();
+  //drag_command_sender_->rise();
   ROS_INFO("DRAG RISE");
   drag_command_sender_->sendCommand(ros::Time::now());
 }
@@ -363,13 +366,13 @@ void EngineerManual::ctrlXPress()
   // drag
   if (drag_state_ == 0)
   {
-    drag_command_sender_->up();
+    //drag_command_sender_->up();
     ROS_INFO("DRAG UP");
     drag_state_ = 1;
   }
   else
   {
-    drag_command_sender_->down();
+    //drag_command_sender_->down();
     ROS_INFO("DRAG DOWN");
     drag_state_ = 0;
   }
