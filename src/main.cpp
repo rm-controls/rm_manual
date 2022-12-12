@@ -2,7 +2,7 @@
 // Created by luohx on 7/27/20.
 //
 
-#include "rm_manual/common/manual_base.h"
+#include "rm_manual/manual_base.h"
 #include "rm_manual/chassis_gimbal_shooter_cover_manual.h"
 #include "rm_manual/engineer_manual.h"
 #include "rm_manual/dart_manual.h"

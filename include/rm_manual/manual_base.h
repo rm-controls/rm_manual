@@ -30,14 +30,14 @@
 #include <rm_msgs/GimbalDesError.h>
 #include <rm_msgs/GameRobotStatus.h>
 #include <rm_msgs/ManualToReferee.h>
-#include "rm_manual/common/input_event.h"
+#include "rm_manual/input_event.h"
 
 namespace rm_manual
 {
 class ManualBase
 {
 public:
-  explicit ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
+  ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   enum
   {
     PASSIVE,
@@ -87,6 +87,8 @@ protected:
         remote_is_open_ = false;
       }
     }
+
+    sendCommand(data->stamp);
   }
   virtual void trackCallback(const rm_msgs::TrackData::ConstPtr& data)
   {

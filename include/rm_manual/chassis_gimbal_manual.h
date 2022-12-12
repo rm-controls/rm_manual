@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "rm_manual/common/manual_base.h"
+#include "rm_manual/manual_base.h"
 
 namespace rm_manual
 {
 class ChassisGimbalManual : public ManualBase
 {
 public:
-  explicit ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
+  ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
 
 protected:
   void sendCommand(const ros::Time& time) override;

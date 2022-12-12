@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "rm_manual/common/manual_base.h"
+#include "rm_manual/manual_base.h"
 #include <rm_common/decision/calibration_queue.h>
 
 namespace rm_manual
@@ -12,7 +12,7 @@ namespace rm_manual
 class DartManual : public ManualBase
 {
 public:
-  explicit DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
+  DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
 
 protected:
   void sendCommand(const ros::Time& time) override;

@@ -12,7 +12,7 @@ namespace rm_manual
 class ChassisGimbalShooterManual : public ChassisGimbalManual
 {
 public:
-  explicit ChassisGimbalShooterManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
+  ChassisGimbalShooterManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
 protected:

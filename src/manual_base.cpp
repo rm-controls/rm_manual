@@ -2,7 +2,7 @@
 // Created by peter on 2020/12/3.
 //
 
-#include "rm_manual/common/manual_base.h"
+#include "rm_manual/manual_base.h"
 namespace rm_manual
 {
 ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
@@ -44,9 +44,7 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 
 void ManualBase::run()
 {
-  ros::Time time = ros::Time::now();
   checkReferee();
-  sendCommand(time);
   controller_manager_.update();
 }
 
