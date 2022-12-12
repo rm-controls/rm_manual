@@ -28,12 +28,7 @@ protected:
   void move(rm_common::JointPointCommandSender* joint, double ch);
   void recordPosition(const rm_msgs::DbusData::ConstPtr& dbus_data);
 
-  void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override
-  {
-    ManualBase::gameRobotStatusCallback(data);
-    chassis_power_on_event_.update(data->mains_power_chassis_output);
-    gimbal_power_on_event_.update(data->mains_power_gimbal_output);
-  }
+  void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
 
   rm_common::JointPointCommandSender *trigger_sender_, *friction_left_sender_, *friction_right_sender_;
   rm_common::JointPointCommandSender *pitch_sender_, *yaw_sender_;

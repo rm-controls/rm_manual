@@ -90,6 +90,38 @@ void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr
   mouse_right_event_.update(dbus_data->p_r);
 }
 
+void ChassisGimbalShooterManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
+{
+  ChassisGimbalManual::gameRobotStatusCallback(data);
+  shooter_cmd_sender_->updateGameRobotStatus(*data);
+  shooter_power_on_event_.update(data->mains_power_shooter_output);
+}
+
+void ChassisGimbalShooterManual::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
+{
+  ChassisGimbalManual::powerHeatDataCallback(data);
+  shooter_cmd_sender_->updatePowerHeatData(*data);
+}
+
+void ChassisGimbalShooterManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
+{
+  ChassisGimbalManual::dbusDataCallback(data);
+  chassis_cmd_sender_->updateRefereeStatus(referee_is_online_);
+  shooter_cmd_sender_->updateRefereeStatus(referee_is_online_);
+}
+
+void ChassisGimbalShooterManual::gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data)
+{
+  ChassisGimbalManual::gameStatusCallback(data);
+  self_inspection_event_.update(data->game_progress == 2);
+  game_start_event_.update(data->game_progress == 4);
+}
+
+void ChassisGimbalShooterManual::gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
+{
+  ChassisGimbalManual::gimbalDesErrorCallback(data);
+}
+
 void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
 {
   ChassisGimbalManual::sendCommand(time);

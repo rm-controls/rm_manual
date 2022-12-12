@@ -25,37 +25,12 @@ protected:
   void rightSwitchUpRise() override;
   void leftSwitchMidFall() override;
   void leftSwitchDownRise() override;
-  void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override
-  {
-    ManualBase::gameStatusCallback(data);
-    chassis_cmd_sender_->updateGameStatus(*data);
-  }
-  void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override
-  {
-    ManualBase::gameRobotStatusCallback(data);
-    chassis_cmd_sender_->updateGameRobotStatus(*data);
-    chassis_power_on_event_.update(data->mains_power_chassis_output);
-    gimbal_power_on_event_.update(data->mains_power_gimbal_output);
-  }
-  void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data) override
-  {
-    ManualBase::powerHeatDataCallback(data);
-    chassis_cmd_sender_->updatePowerHeatData(*data);
-  }
-  void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override
-  {
-    ManualBase::dbusDataCallback(data);
-    chassis_cmd_sender_->updateRefereeStatus(referee_is_online_);
-  }
-  void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data) override
-  {
-    ManualBase::capacityDataCallback(data);
-    chassis_cmd_sender_->updateCapacityData(*data);
-  }
-  void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override
-  {
-    ManualBase::trackCallback(data);
-  }
+  void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override;
+  void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
+  void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data) override;
+  void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override;
+  void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data) override;
+  void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override;
   virtual void wPress()
   {
     x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;

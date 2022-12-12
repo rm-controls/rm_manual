@@ -54,63 +54,13 @@ protected:
   virtual void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data);
   virtual void sendCommand(const ros::Time& time) = 0;
 
-  virtual void jointStateCallback(const sensor_msgs::JointState::ConstPtr& data)
-  {
-    joint_state_ = *data;
-  }
-  virtual void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
-  {
-    dbus_data_ = *data;
-    if (ros::Time::now() - data->stamp < ros::Duration(0.2))
-    {
-      if (!remote_is_open_)
-      {
-        ROS_INFO("Remote controller ON");
-        remoteControlTurnOn();
-        remote_is_open_ = true;
-      }
-      right_switch_down_event_.update(data->s_r == rm_msgs::DbusData::DOWN);
-      right_switch_mid_event_.update(data->s_r == rm_msgs::DbusData::MID);
-      right_switch_up_event_.update(data->s_r == rm_msgs::DbusData::UP);
-
-      if (state_ == RC)
-        updateRc(data);
-      else if (state_ == PC)
-        updatePc(data);
-    }
-    else
-    {
-      if (remote_is_open_)
-      {
-        ROS_INFO("Remote controller OFF");
-        remoteControlTurnOff();
-        remote_is_open_ = false;
-      }
-    }
-
-    sendCommand(data->stamp);
-  }
-  virtual void trackCallback(const rm_msgs::TrackData::ConstPtr& data)
-  {
-    track_data_ = *data;
-  }
-  virtual void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
-  {
-    robot_id_ = data->robot_id;
-    robot_hp_event_.update(data->remain_hp != 0);
-  }
-  virtual void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
-  {
-    referee_last_get_stamp_ = data->stamp;
-  }
-  virtual void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
-  {
-    gimbal_des_error_ = *data;
-  }
-  virtual void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data)
-  {
-    chassis_power_ = data->chassis_power;
-  }
+  virtual void jointStateCallback(const sensor_msgs::JointState::ConstPtr& data);
+  virtual void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data);
+  virtual void trackCallback(const rm_msgs::TrackData::ConstPtr& data);
+  virtual void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data);
+  virtual void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data);
+  virtual void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data);
+  virtual void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data);
   virtual void odomCallback(const nav_msgs::Odometry::ConstPtr& data)
   {
   }

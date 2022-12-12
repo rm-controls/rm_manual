@@ -102,6 +102,43 @@ void ChassisGimbalManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_
   mouse_mid_event_.update(dbus_data->m_z != 0.);
 }
 
+void ChassisGimbalManual::gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data)
+{
+  ManualBase::gameStatusCallback(data);
+  chassis_cmd_sender_->updateGameStatus(*data);
+}
+
+void ChassisGimbalManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
+{
+  ManualBase::gameRobotStatusCallback(data);
+  chassis_cmd_sender_->updateGameRobotStatus(*data);
+  chassis_power_on_event_.update(data->mains_power_chassis_output);
+  gimbal_power_on_event_.update(data->mains_power_gimbal_output);
+}
+
+void ChassisGimbalManual::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
+{
+  ManualBase::powerHeatDataCallback(data);
+  chassis_cmd_sender_->updatePowerHeatData(*data);
+}
+
+void ChassisGimbalManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
+{
+  ManualBase::dbusDataCallback(data);
+  chassis_cmd_sender_->updateRefereeStatus(referee_is_online_);
+}
+
+void ChassisGimbalManual::capacityDataCallback(const rm_msgs::CapacityData::ConstPtr& data)
+{
+  ManualBase::capacityDataCallback(data);
+  chassis_cmd_sender_->updateCapacityData(*data);
+}
+
+void ChassisGimbalManual::trackCallback(const rm_msgs::TrackData::ConstPtr& data)
+{
+  ManualBase::trackCallback(data);
+}
+
 void ChassisGimbalManual::remoteControlTurnOff()
 {
   ManualBase::remoteControlTurnOff();
