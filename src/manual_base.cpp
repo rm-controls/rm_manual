@@ -108,11 +108,6 @@ void ManualBase::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& d
   referee_last_get_stamp_ = data->stamp;
 }
 
-void ManualBase::gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
-{
-  gimbal_des_error_ = *data;
-}
-
 void ManualBase::capacityDataCallback(const rm_msgs::CapacityData::ConstPtr& data)
 {
   chassis_power_ = data->chassis_power;

@@ -120,6 +120,7 @@ void ChassisGimbalShooterManual::gameStatusCallback(const rm_msgs::GameStatus::C
 void ChassisGimbalShooterManual::gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
 {
   ChassisGimbalManual::gimbalDesErrorCallback(data);
+  shooter_cmd_sender_->updateGimbalDesError(*data);
 }
 
 void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
@@ -241,12 +242,12 @@ void ChassisGimbalShooterManual::leftSwitchUpOn(ros::Duration duration)
   if (duration > ros::Duration(1.))
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-    shooter_cmd_sender_->checkError(gimbal_des_error_, ros::Time::now());
+    shooter_cmd_sender_->checkError(ros::Time::now());
   }
   else if (duration < ros::Duration(0.02))
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-    shooter_cmd_sender_->checkError(gimbal_des_error_, ros::Time::now());
+    shooter_cmd_sender_->checkError(ros::Time::now());
   }
   else
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
@@ -256,7 +257,7 @@ void ChassisGimbalShooterManual::mouseLeftPress()
 {
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
   if (dbus_data_.p_r)
-    shooter_cmd_sender_->checkError(gimbal_des_error_, ros::Time::now());
+    shooter_cmd_sender_->checkError(ros::Time::now());
 }
 
 void ChassisGimbalShooterManual::mouseRightPress()

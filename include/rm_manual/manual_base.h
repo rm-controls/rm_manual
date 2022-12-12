@@ -59,8 +59,10 @@ protected:
   virtual void trackCallback(const rm_msgs::TrackData::ConstPtr& data);
   virtual void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data);
   virtual void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data);
-  virtual void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data);
   virtual void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data);
+  virtual void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
+  {
+  }
   virtual void odomCallback(const nav_msgs::Odometry::ConstPtr& data)
   {
   }
@@ -112,24 +114,12 @@ protected:
 
   ros::Publisher manual_to_referee_pub_;
 
-  ros::Subscriber odom_sub_;
-  ros::Subscriber dbus_sub_;
-  ros::Subscriber track_sub_;
-  ros::Subscriber referee_sub_;
-  ros::Subscriber capacity_sub_;
-  ros::Subscriber game_status_sub_;
-  ros::Subscriber joint_state_sub_;
-  ros::Subscriber game_robot_hp_sub_;
-  ros::Subscriber actuator_state_sub_;
-  ros::Subscriber power_heat_data_sub_;
-  ros::Subscriber gimbal_des_error_sub_;
-  ros::Subscriber game_robot_status_sub_;
+  ros::Subscriber odom_sub_, dbus_sub_, track_sub_, referee_sub_, capacity_sub_, game_status_sub_, joint_state_sub_,
+      game_robot_hp_sub_, actuator_state_sub_, power_heat_data_sub_, gimbal_des_error_sub_, game_robot_status_sub_;
 
-  nav_msgs::Odometry odom_;
   sensor_msgs::JointState joint_state_;
   rm_msgs::DbusData dbus_data_;
   rm_msgs::TrackData track_data_;
-  rm_msgs::GimbalDesError gimbal_des_error_;
   rm_msgs::ManualToReferee manual_to_referee_pub_data_;
 
   rm_common::ControllerManager controller_manager_;
