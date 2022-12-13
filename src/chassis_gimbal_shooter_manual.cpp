@@ -10,7 +10,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   : ChassisGimbalManual(nh, nh_referee)
 {
   ros::NodeHandle shooter_nh(nh, "shooter");
-  shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh, track_data_);
+  shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh);
 
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
@@ -78,7 +78,7 @@ void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr
   g_event_.update(dbus_data->key_g);
   q_event_.update((!dbus_data->key_ctrl) & dbus_data->key_q);
   f_event_.update(dbus_data->key_f);
-  b_event_.update((!dbus_data->key_ctrl) & dbus_data->key_b);
+  b_event_.update((!dbus_data->key_ctrl && !dbus_data->key_shift) & dbus_data->key_b);
   x_event_.update(dbus_data->key_x);
   ctrl_c_event_.update(dbus_data->key_ctrl & dbus_data->key_c);
   ctrl_v_event_.update(dbus_data->key_ctrl & dbus_data->key_v);
@@ -121,6 +121,12 @@ void ChassisGimbalShooterManual::gimbalDesErrorCallback(const rm_msgs::GimbalDes
 {
   ChassisGimbalManual::gimbalDesErrorCallback(data);
   shooter_cmd_sender_->updateGimbalDesError(*data);
+}
+
+void ChassisGimbalShooterManual::trackCallback(const rm_msgs::TrackData::ConstPtr& data)
+{
+  ChassisGimbalManual::trackCallback(data);
+  shooter_cmd_sender_->updateTrackData(*data);
 }
 
 void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
@@ -256,8 +262,7 @@ void ChassisGimbalShooterManual::leftSwitchUpOn(ros::Duration duration)
 void ChassisGimbalShooterManual::mouseLeftPress()
 {
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-  if (dbus_data_.p_r)
-    shooter_cmd_sender_->checkError(ros::Time::now());
+  shooter_cmd_sender_->checkError(ros::Time::now());
 }
 
 void ChassisGimbalShooterManual::mouseRightPress()
@@ -304,8 +309,7 @@ void ChassisGimbalShooterManual::cPress()
 
 void ChassisGimbalShooterManual::bPress()
 {
-  if (!dbus_data_.key_ctrl && !dbus_data_.key_shift)
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
 }
 
 void ChassisGimbalShooterManual::wPress()

@@ -61,7 +61,6 @@ void ManualBase::jointStateCallback(const sensor_msgs::JointState::ConstPtr& dat
 
 void ManualBase::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
-  dbus_data_ = *data;
   if (ros::Time::now() - data->stamp < ros::Duration(0.2))
   {
     if (!remote_is_open_)

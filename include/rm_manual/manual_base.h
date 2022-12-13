@@ -118,7 +118,6 @@ protected:
       game_robot_hp_sub_, actuator_state_sub_, power_heat_data_sub_, gimbal_des_error_sub_, game_robot_status_sub_;
 
   sensor_msgs::JointState joint_state_;
-  rm_msgs::DbusData dbus_data_;
   rm_msgs::TrackData track_data_;
   rm_msgs::ManualToReferee manual_to_referee_pub_data_;
 

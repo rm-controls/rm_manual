@@ -55,7 +55,7 @@ protected:
   void aPressing();
   void sPressing();
   void dPressing();
-  void mouseMidRise();
+  void mouseMidRise(int m_z);
 
   rm_common::Vel2DCommandSender* vel_cmd_sender_{};
   rm_common::GimbalCommandSender* gimbal_cmd_sender_{};
@@ -65,6 +65,6 @@ protected:
   double gyro_move_reduction_{ 1. };
   double gyro_rotate_reduction_{ 1. };
 
-  InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_, mouse_mid_event_;
+  InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_;
 };
 }  // namespace rm_manual

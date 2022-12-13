@@ -40,7 +40,6 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& n
   a_event_.setActiveHigh(boost::bind(&ChassisGimbalManual::aPressing, this));
   d_event_.setEdge(boost::bind(&ChassisGimbalManual::dPress, this), boost::bind(&ChassisGimbalManual::dRelease, this));
   d_event_.setActiveHigh(boost::bind(&ChassisGimbalManual::dPressing, this));
-  mouse_mid_event_.setRising(boost::bind(&ChassisGimbalManual::mouseMidRise, this));
 }
 
 void ChassisGimbalManual::sendCommand(const ros::Time& time)
@@ -99,7 +98,10 @@ void ChassisGimbalManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_
     a_event_.update(dbus_data->key_a);
     d_event_.update(dbus_data->key_d);
   }
-  mouse_mid_event_.update(dbus_data->m_z != 0.);
+  if (dbus_data->m_z != 0)
+  {
+    mouseMidRise(dbus_data->m_z);
+  }
 }
 
 void ChassisGimbalManual::gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data)
@@ -242,13 +244,13 @@ void ChassisGimbalManual::dRelease()
   vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
 }
 
-void ChassisGimbalManual::mouseMidRise()
+void ChassisGimbalManual::mouseMidRise(int m_z)
 {
   if (gimbal_scale_ >= 0. && gimbal_scale_ <= 3.)
   {
-    if (gimbal_scale_ + 0.2 <= 3. && dbus_data_.m_z > 0.)
+    if (gimbal_scale_ + 0.2 <= 3. && m_z > 0.)
       gimbal_scale_ += 0.2;
-    else if (gimbal_scale_ - 0.2 >= 0. && dbus_data_.m_z < 0.)
+    else if (gimbal_scale_ - 0.2 >= 0. && m_z < 0.)
       gimbal_scale_ -= 0.2;
   }
 }
