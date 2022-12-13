@@ -46,6 +46,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
   ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
   ctrl_g_event_.setRising(boost::bind(&EngineerManual::ctrlGPress, this));
+  e_event_.setRising(boost::bind(&EngineerManual::ePress, this));
+  q_event_.setRising(boost::bind(&EngineerManual::qPress, this));
   z_event_.setRising(boost::bind(&EngineerManual::zPress, this));
   x_event_.setRising(boost::bind(&EngineerManual::xPress, this));
   c_event_.setRising(boost::bind(&EngineerManual::cPress, this));
@@ -103,6 +105,8 @@ void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
   g_event_.update(dbus_data_.key_g & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
   f_event_.update(dbus_data_.key_f & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
   r_event_.update(dbus_data_.key_r & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+  q_event_.update(dbus_data_.key_q & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+  e_event_.update(dbus_data_.key_e & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
 
   shift_z_event_.update(dbus_data_.key_shift & dbus_data_.key_z);
   shift_x_event_.update(dbus_data_.key_shift & dbus_data_.key_x);
@@ -146,6 +150,7 @@ void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updatePc(dbus_data);
+  left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   vel_cmd_sender_->setAngularZVel(-dbus_data_.m_x);
 }
@@ -356,7 +361,7 @@ void EngineerManual::ctrlGPress()
 
 void EngineerManual::ctrlZPress()
 {
-  //drag_command_sender_->rise();
+  drag_command_sender_->first_pos();
   ROS_INFO("DRAG RISE");
   drag_command_sender_->sendCommand(ros::Time::now());
 }
@@ -366,13 +371,13 @@ void EngineerManual::ctrlXPress()
   // drag
   if (drag_state_ == 0)
   {
-    //drag_command_sender_->up();
+    drag_command_sender_->second_pos();
     ROS_INFO("DRAG UP");
     drag_state_ = 1;
   }
   else
   {
-    //drag_command_sender_->down();
+    drag_command_sender_->third_pos();
     ROS_INFO("DRAG DOWN");
     drag_state_ = 0;
   }
@@ -424,6 +429,16 @@ void EngineerManual::ctrlBPress()
   }
   ROS_INFO("RUN_HOME");
   runStepQueue(root_);
+}
+
+void EngineerManual::qPress()
+{
+  runStepQueue("CHASSIS_TURN_LEFT");
+}
+
+void EngineerManual::ePress()
+{
+  runStepQueue("CHASSIS_TURN_RIGHT");
 }
 
 void EngineerManual::zPress()
