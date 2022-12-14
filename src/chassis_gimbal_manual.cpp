@@ -19,17 +19,6 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& n
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh);
 
-  dbus_sub_ = nh.subscribe<rm_msgs::DbusData>("/dbus_data", 10, &ChassisGimbalManual::dbusDataCallback, this);
-  track_sub_ = nh.subscribe<rm_msgs::TrackData>("/track", 10, &ChassisGimbalManual::trackCallback, this);
-  game_robot_status_sub_ = nh_referee.subscribe<rm_msgs::GameRobotStatus>(
-      "game_robot_status", 10, &ChassisGimbalManual::gameRobotStatusCallback, this);
-  game_status_sub_ =
-      nh_referee.subscribe<rm_msgs::GameStatus>("game_status", 10, &ChassisGimbalManual::gameStatusCallback, this);
-  capacity_sub_ = nh_referee.subscribe<rm_msgs::CapacityData>("capacity_data", 10,
-                                                              &ChassisGimbalManual::capacityDataCallback, this);
-  power_heat_data_sub_ = nh_referee.subscribe<rm_msgs::PowerHeatData>(
-      "power_heat_data", 10, &ChassisGimbalManual::powerHeatDataCallback, this);
-
   chassis_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::chassisOutputOn, this));
   gimbal_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::gimbalOutputOn, this));
   w_event_.setEdge(boost::bind(&ChassisGimbalManual::wPress, this), boost::bind(&ChassisGimbalManual::wRelease, this));
