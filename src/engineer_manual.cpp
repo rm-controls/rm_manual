@@ -20,6 +20,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ros::NodeHandle nh_drag(nh, "drag");
   drag_command_sender_ = new rm_common::ThreeSwitchCommandSender(nh_drag);
   ros::NodeHandle nh_reversal(nh, "reversal");
+  reversal_command_sender_ = new rm_common::ReversalCommandSender(nh_reversal);
   // Servo
   ros::NodeHandle nh_servo(nh, "servo");
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
@@ -153,6 +154,8 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   vel_cmd_sender_->setAngularZVel(-dbus_data_.m_x);
+  reversal_command_sender_->setGroupVel(dbus_data->ch_l_x,dbus_data->ch_r_x,dbus_data->ch_l_y + dbus_data->ch_r_y);
+  reversal_command_sender_->sendCommand();
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
