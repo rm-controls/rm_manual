@@ -137,17 +137,14 @@ void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   else if (dbus_data->ch_l_y == -1)
   {
     runStepQueue("SKY_BIG_ISLAND_TEST");
-
   }
   else if (dbus_data->ch_l_x == -1)
   {
     runStepQueue("SKY_BIG_ISLAND0");
-
   }
   else if (dbus_data->ch_l_x == 1)
   {
     runStepQueue("SKY_BIG_ISLAND00");
-
   }
 }
 
@@ -157,7 +154,7 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   vel_cmd_sender_->setAngularZVel(-dbus_data_.m_x);
-  reversal_command_sender_->setGroupVel(dbus_data->ch_l_x,dbus_data->ch_r_x,dbus_data->ch_l_y + dbus_data->ch_r_y);
+  reversal_command_sender_->setGroupVel(dbus_data->ch_l_x, dbus_data->ch_r_x, dbus_data->ch_l_y + dbus_data->ch_r_y);
   reversal_command_sender_->sendCommand();
 }
 
@@ -229,9 +226,9 @@ void EngineerManual::rightSwitchUpRise()
 
 void EngineerManual::leftSwitchUpRise()
 {
-    drag_command_sender_->third_pos();
-    drag_command_sender_->sendCommand(ros::Time::now());
-    ROS_INFO("REVERSAL_GIMBAL");
+  drag_command_sender_->third_pos();
+  drag_command_sender_->sendCommand(ros::Time::now());
+  ROS_INFO("REVERSAL_GIMBAL");
 }
 
 void EngineerManual::leftSwitchDownFall()
