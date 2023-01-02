@@ -136,15 +136,18 @@ void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   }
   else if (dbus_data->ch_l_y == -1)
   {
-    runStepQueue("HOME0");
+    runStepQueue("SKY_BIG_ISLAND_TEST");
+
   }
   else if (dbus_data->ch_l_x == -1)
   {
     runStepQueue("SKY_BIG_ISLAND0");
+
   }
   else if (dbus_data->ch_l_x == 1)
   {
     runStepQueue("SKY_BIG_ISLAND00");
+
   }
 }
 
@@ -226,7 +229,8 @@ void EngineerManual::rightSwitchUpRise()
 
 void EngineerManual::leftSwitchUpRise()
 {
-    runStepQueue("REVERSAL_GIMBAL");
+    drag_command_sender_->third_pos();
+    drag_command_sender_->sendCommand(ros::Time::now());
     ROS_INFO("REVERSAL_GIMBAL");
 }
 
@@ -241,11 +245,15 @@ void EngineerManual::leftSwitchDownFall()
     case 2:
       root_ = "HOME2";
   }
+  drag_command_sender_->first_pos();
+  drag_command_sender_->sendCommand(ros::Time::now());
   ROS_INFO("RUN_HOME");
 }
 
 void EngineerManual::leftSwitchUpFall()
 {
+  drag_command_sender_->second_pos();
+  drag_command_sender_->sendCommand(ros::Time::now());
 }
 
 void EngineerManual::runStepQueue(const std::string& step_queue_name)
