@@ -84,7 +84,7 @@ void EngineerManual::run()
   power_on_calibration_->update(ros::Time::now(), state_ != PASSIVE);
   arm_calibration_->update(ros::Time::now());
   updateServo();
-  sendUi(prefix_+root_,reversal_state_,drag_state_,stone_num_);
+  sendUi(prefix_ + root_, reversal_state_, drag_state_, stone_num_);
 }
 
 void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -148,17 +148,14 @@ void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   else if (dbus_data->ch_l_y == -1)
   {
     runStepQueue("SKY_BIG_ISLAND_TEST");
-
   }
   else if (dbus_data->ch_l_x == -1)
   {
     runStepQueue("SKY_BIG_ISLAND0");
-
   }
   else if (dbus_data->ch_l_x == 1)
   {
     runStepQueue("SKY_BIG_ISLAND00");
-
   }
 }
 
@@ -168,7 +165,7 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   vel_cmd_sender_->setAngularZVel(-dbus_data_.m_x);
-  //reversal_command_sender_->setGroupVel(dbus_data->ch_l_x,dbus_data->ch_r_x,dbus_data->ch_l_y + dbus_data->ch_r_y);
+  // reversal_command_sender_->setGroupVel(dbus_data->ch_l_x,dbus_data->ch_r_x,dbus_data->ch_l_y + dbus_data->ch_r_y);
   reversal_command_sender_->sendCommand();
 }
 
@@ -240,8 +237,7 @@ void EngineerManual::rightSwitchUpRise()
 
 void EngineerManual::leftSwitchUpRise()
 {
-
-    ROS_INFO("REVERSAL_GIMBAL");
+  ROS_INFO("REVERSAL_GIMBAL");
 }
 
 void EngineerManual::leftSwitchDownFall()
@@ -260,7 +256,6 @@ void EngineerManual::leftSwitchDownFall()
 
 void EngineerManual::leftSwitchUpFall()
 {
-
 }
 
 void EngineerManual::runStepQueue(const std::string& step_queue_name)
@@ -375,11 +370,11 @@ void EngineerManual::ctrlGPress()
     case 0:
       root_ = "STORE_WHEN_ZERO_STONE";
       stone_num_ = 1;
-          break;
+      break;
     case 1:
       root_ = "STORE_WHEN_ONE_STONE";
       stone_num_ = 2;
-          break;
+      break;
   }
   prefix_ = "";
   ROS_INFO("STORE_STONE");
@@ -414,8 +409,8 @@ void EngineerManual::ctrlXPress()
 void EngineerManual::ctrlCPress()
 {
   // servo
-  root_="";
-  prefix_="WAIT";
+  root_ = "";
+  prefix_ = "WAIT";
 }
 
 void EngineerManual::ctrlVPress()
@@ -440,13 +435,13 @@ void EngineerManual::ctrlBPress()
   {
     case 0:
       root_ = "HOME_ZERO_STONE";
-          break;
+      break;
     case 1:
       root_ = "HOME_ONE_STONE";
-          break;
+      break;
     case 2:
       root_ = "HOME_TWO_STONE";
-          break;
+      break;
   }
   ROS_INFO("RUN_HOME");
   prefix_ = "";
@@ -473,7 +468,7 @@ void EngineerManual::zPress()
 
 void EngineerManual::zRelease()
 {
-    angular_z_scale_ = 0.;
+  angular_z_scale_ = 0.;
 }
 
 void EngineerManual::cPress()
@@ -483,12 +478,11 @@ void EngineerManual::cPress()
 
 void EngineerManual::cRelease()
 {
-    angular_z_scale_ = 0.;
+  angular_z_scale_ = 0.;
 }
 
 void EngineerManual::rPress()
 {
-
 }
 
 void EngineerManual::vPress()
@@ -501,10 +495,10 @@ void EngineerManual::vPress()
 
 void EngineerManual::vRelease()
 {
-    // reversal up
-    reversal_command_sender_->setZero();
-    reversal_state_ = "STOP";
-    ROS_INFO("REVERSAL STOP");
+  // reversal up
+  reversal_command_sender_->setZero();
+  reversal_state_ = "STOP";
+  ROS_INFO("REVERSAL STOP");
 }
 
 void EngineerManual::bPress()
@@ -517,10 +511,10 @@ void EngineerManual::bPress()
 
 void EngineerManual::bRelease()
 {
-    // reversal up
-    reversal_command_sender_->setZero();
-    reversal_state_ = "STOP";
-    ROS_INFO("REVERSAL STOP");
+  // reversal up
+  reversal_command_sender_->setZero();
+  reversal_state_ = "STOP";
+  ROS_INFO("REVERSAL STOP");
 }
 
 void EngineerManual::gPress()
@@ -532,10 +526,10 @@ void EngineerManual::gPress()
 }
 void EngineerManual::gRelease()
 {
-    // reversal up
-    reversal_command_sender_->setZero();
-    reversal_state_ = "STOP";
-    ROS_INFO("REVERSAL STOP");
+  // reversal up
+  reversal_command_sender_->setZero();
+  reversal_state_ = "STOP";
+  ROS_INFO("REVERSAL STOP");
 }
 void EngineerManual::fPress()
 {
@@ -546,10 +540,10 @@ void EngineerManual::fPress()
 }
 void EngineerManual::fRelease()
 {
-    // reversal up
-    reversal_command_sender_->setZero();
-    reversal_state_ = "STOP";
-    ROS_INFO("REVERSAL STOP");
+  // reversal up
+  reversal_command_sender_->setZero();
+  reversal_state_ = "STOP";
+  ROS_INFO("REVERSAL STOP");
 }
 void EngineerManual::shiftPressing()
 {
@@ -575,7 +569,6 @@ void EngineerManual::shiftEPress()
 
 void EngineerManual::shiftCPress()
 {
-
 }
 void EngineerManual::shiftZPress()
 {
@@ -606,30 +599,30 @@ void EngineerManual::shiftBPress()
 
 void EngineerManual::shiftXPress()
 {
-    toward_change_mode_ = 0;
-    runStepQueue("GROUND_GIMBAL");
-    ROS_INFO("enter gimbal GROUND_GIMBAL");
+  toward_change_mode_ = 0;
+  runStepQueue("GROUND_GIMBAL");
+  ROS_INFO("enter gimbal GROUND_GIMBAL");
 }
 
 void EngineerManual::shiftGPress()
 {
-    switch (stone_num_)
-    {
-        case 0:
-            root_ = "NO!!";
-            stone_num_=0;
-            break;
-        case 1:
-            root_ = "TAKE_WHEN_ONE_STONE";
-            stone_num_=0;
-            break;
-        case 2:
-            root_ = "TAKE_WHEN_TWO_STONE";
-            stone_num_=1;
-            break;
-    }
-    prefix_ = "";
-    ROS_INFO("TAKE_STONE");
+  switch (stone_num_)
+  {
+    case 0:
+      root_ = "NO!!";
+      stone_num_ = 0;
+      break;
+    case 1:
+      root_ = "TAKE_WHEN_ONE_STONE";
+      stone_num_ = 0;
+      break;
+    case 2:
+      root_ = "TAKE_WHEN_TWO_STONE";
+      stone_num_ = 1;
+      break;
+  }
+  prefix_ = "";
+  ROS_INFO("TAKE_STONE");
 }
 
 void EngineerManual::judgeReversal(double translate_err, int reversal_look, ros::Duration period)
@@ -688,30 +681,33 @@ void EngineerManual::visionCB(const rm_msgs::ReversalCmdConstPtr& msg)
   reversal_rt_buffer_.writeFromNonRT(*msg);
 }
 void EngineerManual::updateUiDate(std::string step_name, std::string reversal_state, std::string drag_state,
-                                  uint8_t stone_num) {
-    engineer_ui_.current_step_name = step_name;
-    engineer_ui_.reversal_state = reversal_state;
-    engineer_ui_.drag_state = drag_state;
-    engineer_ui_.stone_num = stone_num;
-    step_name_last_ = step_name;
-    reversal_state_last_ = reversal_state;
-    drag_state_last_ = drag_state;
-    stone_num_last_ = stone_num;
+                                  uint8_t stone_num)
+{
+  engineer_ui_.current_step_name = step_name;
+  engineer_ui_.reversal_state = reversal_state;
+  engineer_ui_.drag_state = drag_state;
+  engineer_ui_.stone_num = stone_num;
+  step_name_last_ = step_name;
+  reversal_state_last_ = reversal_state;
+  drag_state_last_ = drag_state;
+  stone_num_last_ = stone_num;
 }
 bool EngineerManual::judgeUiChange(std::string step_name, std::string reversal_state, std::string drag_state,
-                                   uint8_t stone_num){
-    if (step_name!=step_name_last_||reversal_state!=reversal_state_last_||drag_state!=drag_state_last_||stone_num!=stone_num_last_)
-    {
-        updateUiDate(step_name,reversal_state,drag_state,stone_num);
-        return true;
-    }
-    else
-        return false;
-
+                                   uint8_t stone_num)
+{
+  if (step_name != step_name_last_ || reversal_state != reversal_state_last_ || drag_state != drag_state_last_ ||
+      stone_num != stone_num_last_)
+  {
+    updateUiDate(step_name, reversal_state, drag_state, stone_num);
+    return true;
+  }
+  else
+    return false;
 }
 
-void EngineerManual::sendUi(std::string step_name, std::string reversal_state, std::string drag_state,uint8_t stone_num){
-    if(judgeUiChange(step_name,reversal_state,drag_state,stone_num))
-        ui_send_.publish(engineer_ui_);
+void EngineerManual::sendUi(std::string step_name, std::string reversal_state, std::string drag_state, uint8_t stone_num)
+{
+  if (judgeUiChange(step_name, reversal_state, drag_state, stone_num))
+    ui_send_.publish(engineer_ui_);
 }
 }  // namespace rm_manual
