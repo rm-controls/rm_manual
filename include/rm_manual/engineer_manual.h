@@ -14,7 +14,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <utility>
 #include <rm_msgs/ReversalCmd.h>
-#include <rm_msgs/EngineerCmd.h>
+#include <rm_msgs/EngineerUi.h>
 namespace rm_manual
 {
 class EngineerManual : public ChassisGimbalManual
@@ -93,6 +93,9 @@ private:
   void mouseRightRelease();  // execute repeat
   void judgeReversal(double translate_err, int reversal_look, ros::Duration period);
   void visionCB(const rm_msgs::ReversalCmdConstPtr& msg);
+  void updateUiDate(std::string step_name, std::string reversal_state, std::string drag_state, uint8_t stone_num);
+  bool judgeUiChange(std::string step_name, std::string reversal_state, std::string drag_state,uint8_t stone_num);
+  void sendUi(std::string step_name, std::string reversal_state, std::string drag_state,uint8_t stone_num);
   enum
   {
     MANUAL,
@@ -109,17 +112,15 @@ private:
     DIRECT
   };
 
-  rm_msgs::EngineerCmd engineer_ui_;
-  rm_msgs::EngineerCmd drag_ui_;
-  rm_msgs::EngineerCmd reversal_ui_;
-  ros::Publisher ui_send_,drag_ui_send_,reversal_ui_send_;
+  rm_msgs::EngineerUi engineer_ui_;
+  ros::Publisher ui_send_;
   realtime_tools::RealtimeBuffer<rm_msgs::ReversalCmd> reversal_rt_buffer_;
   rm_msgs::ReversalCmd data_reversal_;
   double translate_err_{};
   int reversal_look_{};
   double angular_z_scale_{};
-  std::string prefix_, root_, reversal_state_ ;
-  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{};
+  std::string prefix_, root_, reversal_state_,drag_state_,reversal_state_last_,drag_state_last_ ,step_name_last_;
+  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, stone_num_last_{}, gripper_state_{};
   std::map<std::string, int> prefix_list_, root_list_;
   ros::Time last_time_;
   ros::Subscriber reversal_vision_sub_;
