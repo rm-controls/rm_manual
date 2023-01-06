@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "rm_manual/common/manual_base.h"
+#include "rm_manual/manual_base.h"
 #include <rm_common/decision/calibration_queue.h>
 
 namespace rm_manual
@@ -12,7 +12,7 @@ namespace rm_manual
 class DartManual : public ManualBase
 {
 public:
-  explicit DartManual(ros::NodeHandle& nh);
+  DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
 
 protected:
   void sendCommand(const ros::Time& time) override;
@@ -23,10 +23,12 @@ protected:
   void leftSwitchDownRise() override;
   void leftSwitchMidRise() override;
   void leftSwitchUpRise() override;
-  void updateRc() override;
-  void updatePc() override;
+  void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
+  void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void move(rm_common::JointPointCommandSender* joint, double ch);
-  void recordPosition();
+  void recordPosition(const rm_msgs::DbusData::ConstPtr& dbus_data);
+
+  void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
 
   rm_common::JointPointCommandSender *trigger_sender_, *friction_left_sender_, *friction_right_sender_;
   rm_common::JointPointCommandSender *pitch_sender_, *yaw_sender_;

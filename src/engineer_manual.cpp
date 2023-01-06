@@ -6,8 +6,10 @@
 
 namespace rm_manual
 {
-EngineerManual::EngineerManual(ros::NodeHandle& nh)
-  : ChassisGimbalManual(nh), operating_mode_(MANUAL), action_client_("/engineer_middleware/move_steps", true)
+EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
+  : ChassisGimbalManual(nh, nh_referee)
+  , operating_mode_(MANUAL)
+  , action_client_("/engineer_middleware/move_steps", true)
 {
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
@@ -46,43 +48,43 @@ void EngineerManual::run()
   arm_calibration_->update(ros::Time::now());
 }
 
-void EngineerManual::checkKeyboard()
+void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  ChassisGimbalManual::checkKeyboard();
-  ctrl_c_event_.update(dbus_data_.key_ctrl & dbus_data_.key_c);
-  ctrl_r_event_.update(dbus_data_.key_ctrl & dbus_data_.key_r);
-  ctrl_z_event_.update(dbus_data_.key_ctrl & dbus_data_.key_z);
-  ctrl_b_event_.update(dbus_data_.key_ctrl & dbus_data_.key_b);
-  ctrl_f_event_.update(dbus_data_.key_ctrl & dbus_data_.key_f);
-  ctrl_x_event_.update(dbus_data_.key_ctrl & dbus_data_.key_x);
-  ctrl_v_event_.update(dbus_data_.key_ctrl & dbus_data_.key_v);
-  ctrl_g_event_.update(dbus_data_.key_ctrl & dbus_data_.key_g);
-  ctrl_s_event_.update(dbus_data_.key_ctrl & dbus_data_.key_s);
-  ctrl_d_event_.update(dbus_data_.key_ctrl & dbus_data_.key_d);
-  ctrl_q_event_.update(dbus_data_.key_ctrl & dbus_data_.key_q);
-  ctrl_w_event_.update(dbus_data_.key_ctrl & dbus_data_.key_w);
-  ctrl_e_event_.update(dbus_data_.key_ctrl & dbus_data_.key_e);
+  ChassisGimbalManual::checkKeyboard(dbus_data);
+  ctrl_c_event_.update(dbus_data->key_ctrl & dbus_data->key_c);
+  ctrl_r_event_.update(dbus_data->key_ctrl & dbus_data->key_r);
+  ctrl_z_event_.update(dbus_data->key_ctrl & dbus_data->key_z);
+  ctrl_b_event_.update(dbus_data->key_ctrl & dbus_data->key_b);
+  ctrl_f_event_.update(dbus_data->key_ctrl & dbus_data->key_f);
+  ctrl_x_event_.update(dbus_data->key_ctrl & dbus_data->key_x);
+  ctrl_v_event_.update(dbus_data->key_ctrl & dbus_data->key_v);
+  ctrl_g_event_.update(dbus_data->key_ctrl & dbus_data->key_g);
+  ctrl_s_event_.update(dbus_data->key_ctrl & dbus_data->key_s);
+  ctrl_d_event_.update(dbus_data->key_ctrl & dbus_data->key_d);
+  ctrl_q_event_.update(dbus_data->key_ctrl & dbus_data->key_q);
+  ctrl_w_event_.update(dbus_data->key_ctrl & dbus_data->key_w);
+  ctrl_e_event_.update(dbus_data->key_ctrl & dbus_data->key_e);
 
-  shift_w_event_.update(dbus_data_.key_shift & dbus_data_.key_w);
-  shift_s_event_.update(dbus_data_.key_shift & dbus_data_.key_s);
-  shift_c_event_.update(dbus_data_.key_shift & dbus_data_.key_c);
-  shift_x_event_.update(dbus_data_.key_shift & dbus_data_.key_x);
+  shift_w_event_.update(dbus_data->key_shift & dbus_data->key_w);
+  shift_s_event_.update(dbus_data->key_shift & dbus_data->key_s);
+  shift_c_event_.update(dbus_data->key_shift & dbus_data->key_c);
+  shift_x_event_.update(dbus_data->key_shift & dbus_data->key_x);
 
-  c_event_.update(dbus_data_.key_c & !dbus_data_.key_ctrl & !dbus_data_.key_shift);
+  c_event_.update(dbus_data->key_c & !dbus_data->key_ctrl & !dbus_data->key_shift);
 }
 
-void EngineerManual::updateRc()
+void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  ChassisGimbalManual::updateRc();
+  ChassisGimbalManual::updateRc(dbus_data);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  left_switch_up_event_.update(dbus_data_.s_l == rm_msgs::DbusData::UP);
-  left_switch_down_event_.update(dbus_data_.s_l == rm_msgs::DbusData::DOWN);
+  left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
+  left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
 }
 
-void EngineerManual::updatePc()
+void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  ChassisGimbalManual::updatePc();
-  vel_cmd_sender_->setAngularZVel(-dbus_data_.m_x);
+  ChassisGimbalManual::updatePc(dbus_data);
+  vel_cmd_sender_->setAngularZVel(-dbus_data->m_x);
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
