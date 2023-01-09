@@ -31,6 +31,7 @@ protected:
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override;
   void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data) override;
   void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override;
+  double judgeMode(double scale);
   virtual void wPress()
   {
     x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
@@ -61,7 +62,7 @@ protected:
   rm_common::GimbalCommandSender* gimbal_cmd_sender_{};
   rm_common::ChassisCommandSender* chassis_cmd_sender_{};
 
-  double x_scale_{}, y_scale_{}, final_x_scale_{}, final_y_scale_{};
+  double x_scale_{}, y_scale_{};
   bool speed_change_mode_{ 0 }, toward_change_mode_{ 0 };
   double speed_change_scale_{ 1. };
   double gimbal_scale_{ 1. };
