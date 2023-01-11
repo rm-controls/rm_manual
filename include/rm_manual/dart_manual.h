@@ -6,6 +6,7 @@
 
 #include "rm_manual/manual_base.h"
 #include <rm_common/decision/calibration_queue.h>
+#include <position_controllers/joint_position_controller.h>
 
 namespace rm_manual
 {
@@ -13,16 +14,19 @@ class DartManual : public ManualBase
 {
 public:
   DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
-
 protected:
   void sendCommand(const ros::Time& time) override;
   void run() override;
   void checkReferee() override;
   void remoteControlTurnOn() override;
-  void leftSwitchUpFall();
-  void leftSwitchDownRise() override;
+//  void leftSwitchUpFall();
   void leftSwitchMidRise() override;
+  void leftSwitchDownRise() override;
   void leftSwitchUpRise() override;
+
+  void rightSwitchMidRise() override;
+  void rightSwitchUpRise() override;
+
   void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void move(rm_common::JointPointCommandSender* joint, double ch);
@@ -39,5 +43,10 @@ protected:
   bool if_stop_{ true };
 
   InputEvent chassis_power_on_event_, gimbal_power_on_event_;
+
+  ros::Time start_;
+  ros::Duration duration_ = ros::Duration(0.);
+  int flag_ = 0;
+
 };
 }  // namespace rm_manual
