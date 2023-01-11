@@ -6,7 +6,6 @@
 
 #include "rm_manual/manual_base.h"
 #include <rm_common/decision/calibration_queue.h>
-#include <position_controllers/joint_position_controller.h>
 
 namespace rm_manual
 {
