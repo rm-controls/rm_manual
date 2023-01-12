@@ -1,10 +1,14 @@
 <launch>
     <arg name="robot_type" default="$(env ROBOT_TYPE)" doc="Robot type [standard, hero, engineer]"/>
-
+    <param name="robot_type" value="robot_type"/>
     <rosparam file="$(find rm_config)/config/rm_controllers/$(arg robot_type).yaml" command="load"/>
     <rosparam file="$(find rm_manual)/config/$(arg robot_type).yaml" command="load"/>
 
 
     <node name="rm_manual" pkg="rm_manual" type="rm_manual" respawn="false"/>
+    <node name="controller_loader" pkg="controller_manager" type="spawner" output="screen"
+          args="
+            controllers/joint_state_controller
+    "/>
 
 </launch>
