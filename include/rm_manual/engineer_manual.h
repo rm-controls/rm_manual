@@ -47,56 +47,56 @@ private:
   void leftSwitchUpRise() override;
   void leftSwitchUpFall();
   void leftSwitchDownFall();
-  void ctrlQPress();    // LF small island
-  void ctrlWPress();    // SKY island
-  void ctrlEPress();    // RT small island
-  void ctrlAPress();    // MID small island
-  void ctrlSPress();    // MID big island
-  void ctrlDPress();    // Ground stone
-  void ctrlZPress();    // Drag back
-  void ctrlXPress();    // Drag down
-  void ctrlCPress();    // Cancel name
-  void ctrlVRelease();  // Gripper
+  void ctrlQPress();
+  void ctrlWPress();
+  void ctrlEPress();
+  void ctrlAPress();
+  void ctrlSPress();
+  void ctrlZPress();
+  void ctrlXPress();
+  void ctrlCPress();
+  void ctrlDPress();
+  void ctrlVRelease();
   void ctrlVPress();
-  void ctrlBPress();     // HOME
-  void ctrlFPress();     // Exchange
-  void ctrlGPress();     // Store stone
-  void ctrlRPress();     // Calibration
-  void shiftPressing();  // low speed
-  void shiftRelease();   // low speed
-  void shiftQPress();    // Gimbal island
-  void shiftQRelease();  //
-  void shiftEPress();    //  Gimbal sky
-  void shiftERelease();  //
-  void shiftZPress();    //  Gimbal reversal
-  void shiftXPress();    // Gimbal ground
-  void shiftCPress();    //
-  void shiftBPress();    // Gimbal back to home
+  void ctrlBPress();
+  void ctrlFPress();
+  void ctrlGPress();
+  void ctrlRPress();
+  void shiftPressing();
+  void shiftRelease();
+  void shiftQPress();
+  void shiftQRelease();
+  void shiftEPress();
+  void shiftERelease();
+  void shiftZPress();
+  void shiftXPress();
+  void shiftCPress();
+  void shiftBPress();
   void shiftBRelease();
-  void shiftGPress();  // Take stone
+  void shiftGPress();
   void shiftRPress();
-  void shiftVPress();  // Gimbal Rate Mode
+  void shiftVPress();
   void shiftVRelease();
-  void rPress();  //
+  void rPress();
   void qPressing();
   void qRelease();
   void ePressing();
   void eRelease();
-  void zPressing();  // Servo z
-  void zRelease();   //
-  void xPress();     //
-  void cPressing();  // Servo z
-  void cRelease();   //
+  void zPressing();
+  void zRelease();
+  void xPress();
+  void cPressing();
+  void cRelease();
   void bPressing();
-  void bRelease();  //
+  void bRelease();
   void vPressing();
   void vRelease();
   void fPressing();
-  void fRelease();  //
+  void fRelease();
   void gPressing();
-  void gRelease();           //
-  void mouseLeftRelease();   // execute next
-  void mouseRightRelease();  // execute repeat
+  void gRelease();
+  void mouseLeftRelease();
+  void mouseRightRelease();
   enum
   {
     MANUAL,
@@ -113,19 +113,15 @@ private:
     DIRECT
   };
 
-  int state;
+  int state_;
   rm_msgs::EngineerCmd engineer_ui_;
-  rm_msgs::EngineerCmd drag_ui_;
-  rm_msgs::EngineerCmd reversal_ui_;
-  ros::Publisher ui_send_, drag_ui_send_, reversal_ui_send_;
-  double translate_err_{};
-  int reversal_look_{};
   double angular_z_scale_{};
   std::string prefix_, root_, reversal_state_;
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{};
   std::map<std::string, int> prefix_list_, root_list_;
   ros::Time last_time_;
   ros::Subscriber reversal_vision_sub_;
+  ros::Publisher ui_send_pub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   rm_common::Vel3DCommandSender* servo_command_sender_;
