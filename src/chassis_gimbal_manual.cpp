@@ -177,8 +177,6 @@ double ChassisGimbalManual::judgeMode(double scale)
 {
   if (speed_change_mode_)
     scale *= speed_change_scale_;
-  if (toward_change_mode_)
-    scale *= -1;
   return scale;
 }
 
