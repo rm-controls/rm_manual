@@ -109,8 +109,10 @@ protected:
   }
   virtual void rightSwitchUpRise()
   {
-      if(robot=="dart") state_ = RC;
-      else state_ = PC;
+    if (robot == "dart")
+      state_ = RC;
+    else
+      state_ = PC;
   }
 
   ros::Publisher manual_to_referee_pub_;
@@ -135,7 +137,7 @@ protected:
   int robot_id_, chassis_power_;
   std::string robot;
   InputEvent robot_hp_event_, right_switch_down_event_, right_switch_mid_event_, right_switch_up_event_,
-    left_switch_down_event_, left_switch_mid_event_, left_switch_up_event_;
+      left_switch_down_event_, left_switch_mid_event_, left_switch_up_event_;
 };
 
 }  // namespace rm_manual

@@ -13,12 +13,13 @@ class DartManual : public ManualBase
 {
 public:
   DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
+
 protected:
   void sendCommand(const ros::Time& time) override;
   void run() override;
   void checkReferee() override;
   void remoteControlTurnOn() override;
-//  void leftSwitchUpFall();
+  //  void leftSwitchUpFall();
   void leftSwitchMidRise() override;
   void leftSwitchDownRise() override;
   void leftSwitchUpRise() override;
@@ -46,6 +47,5 @@ protected:
   ros::Time start_;
   ros::Duration duration_ = ros::Duration(0.);
   int flag_ = 0;
-
 };
 }  // namespace rm_manual

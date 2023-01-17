@@ -99,37 +99,39 @@ void DartManual::leftSwitchDownRise()
 void DartManual::leftSwitchUpRise()
 {
   ManualBase::leftSwitchUpRise();
-  if(flag_ == 0) {
-      start_ = ros::Time::now();
-      flag_ = 1;
+  if (flag_ == 0)
+  {
+    start_ = ros::Time::now();
+    flag_ = 1;
   }
   duration_ = ros::Time::now() - start_;
-  if(duration_.toSec() > ros::Duration(2.2).toSec()) trigger_sender_->setPoint(0.);
-  else trigger_sender_->setPoint(upward_vel_);
+  if (duration_.toSec() > ros::Duration(2.2).toSec())
+    trigger_sender_->setPoint(0.);
+  else
+    trigger_sender_->setPoint(upward_vel_);
 }
 
 void DartManual::leftSwitchMidRise()
 {
-    ManualBase::leftSwitchMidRise();
-    flag_ = 0;
-    trigger_sender_->setPoint(0.);
+  ManualBase::leftSwitchMidRise();
+  flag_ = 0;
+  trigger_sender_->setPoint(0.);
 }
 
 void DartManual::rightSwitchMidRise()
 {
-    ManualBase::rightSwitchMidRise();
-    friction_right_sender_->setPoint(0.);
-    friction_left_sender_->setPoint(0.);
+  ManualBase::rightSwitchMidRise();
+  friction_right_sender_->setPoint(0.);
+  friction_left_sender_->setPoint(0.);
 }
 
 void DartManual::rightSwitchUpRise()
 {
-    ManualBase::rightSwitchUpRise();
-    ROS_INFO("Ready to shooter");
-    friction_right_sender_->setPoint(qd_);
-    friction_left_sender_->setPoint(qd_);
+  ManualBase::rightSwitchUpRise();
+  ROS_INFO("Ready to shooter");
+  friction_right_sender_->setPoint(qd_);
+  friction_left_sender_->setPoint(qd_);
 }
-
 
 void DartManual::move(rm_common::JointPointCommandSender* joint, double ch)
 {
