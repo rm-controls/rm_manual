@@ -19,7 +19,6 @@ protected:
   void run() override;
   void checkReferee() override;
   void remoteControlTurnOn() override;
-  //  void leftSwitchUpFall();
   void leftSwitchMidRise() override;
   void leftSwitchDownRise() override;
   void leftSwitchUpRise() override;
