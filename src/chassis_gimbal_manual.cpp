@@ -157,6 +157,7 @@ void ChassisGimbalManual::rightSwitchMidRise()
 void ChassisGimbalManual::rightSwitchUpRise()
 {
   ManualBase::rightSwitchUpRise();
+  state_ = PC;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   vel_cmd_sender_->setZero();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);

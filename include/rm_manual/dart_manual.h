@@ -21,7 +21,7 @@ protected:
   void remoteControlTurnOn() override;
   void leftSwitchMidRise() override;
   void leftSwitchDownRise() override;
-  void leftSwitchUpRise() override;
+  void leftSwitchUpOn() override;
 
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
@@ -45,6 +45,7 @@ protected:
 
   ros::Time start_;
   ros::Duration duration_ = ros::Duration(0.);
-  int flag_ = 0;
+  ros::Duration upward_time_ = ros::Duration(0.);
+  bool flag_ = 0;
 };
 }  // namespace rm_manual

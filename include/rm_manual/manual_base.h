@@ -99,6 +99,7 @@ protected:
   virtual void leftSwitchMidRise(){};
   virtual void leftSwitchMidFall(){};
   virtual void leftSwitchUpRise(){};
+  virtual void leftSwitchUpOn(){};
   virtual void rightSwitchDownRise()
   {
     state_ = IDLE;
@@ -107,13 +108,7 @@ protected:
   {
     state_ = RC;
   }
-  virtual void rightSwitchUpRise()
-  {
-    if (robot_ == "dart")
-      state_ = RC;
-    else
-      state_ = PC;
-  }
+  virtual void rightSwitchUpRise(){};
 
   ros::Publisher manual_to_referee_pub_;
 

@@ -28,7 +28,7 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
   nh.getParam("gimbal_calibration", gimbal_rpc_value);
   gimbal_calibration_ = new rm_common::CalibrationQueue(gimbal_rpc_value, nh, controller_manager_);
 
-  left_switch_up_event_.setActiveHigh(boost::bind(&DartManual::leftSwitchUpRise, this));
+  left_switch_up_event_.setActiveHigh(boost::bind(&DartManual::leftSwitchUpOn, this));
   chassis_power_on_event_.setRising(boost::bind(&DartManual::chassisOutputOn, this));
   gimbal_power_on_event_.setRising(boost::bind(&DartManual::gimbalOutputOn, this));
 }
@@ -96,16 +96,17 @@ void DartManual::leftSwitchDownRise()
   trigger_calibration_->reset();
 }
 
-void DartManual::leftSwitchUpRise()
+void DartManual::leftSwitchUpOn()
 {
-  ManualBase::leftSwitchUpRise();
+  ManualBase::leftSwitchUpOn();
   if (flag_ == 0)
   {
     start_ = ros::Time::now();
     flag_ = 1;
   }
   duration_ = ros::Time::now() - start_;
-  if (duration_.toSec() > ros::Duration(2.2).toSec())
+  upward_time_ = ros::Duration(2.2);
+  if (duration_.toSec() > upward_time_.toSec())
     trigger_sender_->setPoint(0.);
   else
     trigger_sender_->setPoint(upward_vel_);
@@ -128,6 +129,7 @@ void DartManual::rightSwitchMidRise()
 void DartManual::rightSwitchUpRise()
 {
   ManualBase::rightSwitchUpRise();
+  state_ = RC;
   ROS_INFO("Ready to shooter");
   friction_right_sender_->setPoint(qd_);
   friction_left_sender_->setPoint(qd_);
