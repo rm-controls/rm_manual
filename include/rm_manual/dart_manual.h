@@ -45,7 +45,7 @@ protected:
 
   ros::Time start_;
   ros::Duration duration_ = ros::Duration(0.);
-  ros::Duration upward_time_ = ros::Duration(0.);
+  ros::Duration upward_time_ = ros::Duration(2.2);
   bool flag_ = 0;
 };
 }  // namespace rm_manual

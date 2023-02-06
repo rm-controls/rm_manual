@@ -105,7 +105,6 @@ void DartManual::leftSwitchUpOn()
     flag_ = 1;
   }
   duration_ = ros::Time::now() - start_;
-  upward_time_ = ros::Duration(2.2);
   if (duration_.toSec() > upward_time_.toSec())
     trigger_sender_->setPoint(0.);
   else
