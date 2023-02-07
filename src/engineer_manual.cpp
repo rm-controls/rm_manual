@@ -248,7 +248,6 @@ void EngineerManual::runStepQueue(const std::string& step_queue_name)
   }
   else
     ROS_ERROR("Can not connect to middleware");
-  current_step_name_.total_steps = stone_num_;
 }
 
 void EngineerManual::actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback)
