@@ -11,7 +11,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   , operating_mode_(MANUAL)
   , action_client_("/engineer_middleware/move_steps", true)
 {
-  step_name_pub_ = nh.advertise<rm_msgs::EngineerCmd>("/current_step_name", 10);
+  step_name_pub_ = nh.advertise<rm_msgs::StepQueueState>("/current_step_name", 10);
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");

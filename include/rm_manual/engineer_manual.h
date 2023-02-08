@@ -13,7 +13,7 @@
 #include <std_msgs/Float64.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <rm_msgs/EngineerAction.h>
-#include <rm_msgs/EngineerCmd.h>
+#include <rm_msgs/StepQueueState.h>
 
 namespace rm_manual
 {
@@ -114,7 +114,7 @@ private:
   };
 
   int state_;
-  rm_msgs::EngineerCmd current_step_name_;
+  rm_msgs::StepQueueState current_step_name_;
   double angular_z_scale_{};
   std::string prefix_, root_, reversal_state_;
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{};
