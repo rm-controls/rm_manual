@@ -204,7 +204,6 @@ void EngineerManual::rightSwitchMidRise()
   ChassisGimbalManual::rightSwitchMidRise();
   servo_mode_ = JOINT;
   gimbal_mode_ = RATE;
-  toward_change_mode_ = 0;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
@@ -212,7 +211,6 @@ void EngineerManual::rightSwitchUpRise()
 {
   ChassisGimbalManual::rightSwitchUpRise();
   gimbal_mode_ = DIRECT;
-  toward_change_mode_ = 0;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
@@ -492,38 +490,28 @@ void EngineerManual::fRelease()
 }
 void EngineerManual::shiftPressing()
 {
-  speed_change_mode_ = 1;
-  speed_change_scale_ = 0.1;
 }
 void EngineerManual::shiftRelease()
 {
-  speed_change_mode_ = 0;
 }
 void EngineerManual::shiftQPress()
 {
   vel_cmd_sender_->setAngularZVel(0.1);
-  speed_change_mode_ = 1;
-  speed_change_scale_ = 0.1;
 }
 void EngineerManual::shiftQRelease()
 {
   vel_cmd_sender_->setAngularZVel(0);
-  speed_change_mode_ = 0;
 }
 void EngineerManual::shiftEPress()
 {
   vel_cmd_sender_->setAngularZVel(-0.1);
-  speed_change_mode_ = 1;
-  speed_change_scale_ = 0.1;
 }
 void EngineerManual::shiftERelease()
 {
   vel_cmd_sender_->setAngularZVel(0);
-  speed_change_mode_ = 0;
 }
 void EngineerManual::shiftRPress()
 {
-  toward_change_mode_ = 0;
   runStepQueue("SKY_GIMBAL");
   current_step_name_.step_queue_name = "gimbal SKY_GIMBAL";
   ROS_INFO("enter gimbal SKY_GIMBAL");
@@ -548,7 +536,6 @@ void EngineerManual::shiftCPress()
 }
 void EngineerManual::shiftZPress()
 {
-  toward_change_mode_ = 0;
   runStepQueue("REVERSAL_GIMBAL");
   ROS_INFO("enter gimbal REVERSAL_GIMBAL");
   current_step_name_.step_queue_name = "gimbal REVERSAL_GIMBAL";
@@ -571,7 +558,6 @@ void EngineerManual::shiftVRelease()
 
 void EngineerManual::shiftBPress()
 {
-  toward_change_mode_ = 1;
   runStepQueue("TEMP_GIMBAL");
   ROS_INFO("enter gimbal BACK_GIMBAL");
   current_step_name_.step_queue_name = "gimbal BACK_GIMBAL";
@@ -584,7 +570,6 @@ void EngineerManual::shiftBRelease()
 
 void EngineerManual::shiftXPress()
 {
-  toward_change_mode_ = 0;
   runStepQueue("GROUND_GIMBAL");
   ROS_INFO("enter gimbal GROUND_GIMBAL");
   current_step_name_.step_queue_name = "gimbal GROUND_GIMBAL";
