@@ -128,7 +128,7 @@ void DartManual::rightSwitchMidRise()
 void DartManual::rightSwitchUpRise()
 {
   ManualBase::rightSwitchUpRise();
-  state_ = RC;
+  rightSwitchUpRiseState();
   ROS_INFO("Ready to shooter");
   friction_right_sender_->setPoint(qd_);
   friction_left_sender_->setPoint(qd_);

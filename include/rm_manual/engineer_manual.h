@@ -33,6 +33,7 @@ private:
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
+
   void leftSwitchUpFall()
   {
     runStepQueue("ARM_TEST");

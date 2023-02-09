@@ -109,6 +109,7 @@ protected:
     state_ = RC;
   }
   virtual void rightSwitchUpRise(){};
+  virtual void rightSwitchUpRiseState() = 0;
 
   ros::Publisher manual_to_referee_pub_;
 
