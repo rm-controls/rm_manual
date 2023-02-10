@@ -133,6 +133,11 @@ void DartManual::rightSwitchUpRise()
   friction_right_sender_->setPoint(qd_);
   friction_left_sender_->setPoint(qd_);
 }
+void DartManual::rightSwitchDownRise()
+{
+  ManualBase::rightSwitchDownRise();
+  rightSwitchDownRiseState();
+}
 
 void DartManual::move(rm_common::JointPointCommandSender* joint, double ch)
 {

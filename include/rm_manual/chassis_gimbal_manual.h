@@ -21,6 +21,11 @@ protected:
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void remoteControlTurnOff() override;
   void rightSwitchDownRise() override;
+  void rightSwitchDownRiseState() override
+  {
+    ManualBase::rightSwitchDownRiseState();
+    state_ = IDLE;
+  }
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
   void rightSwitchUpRiseState() override

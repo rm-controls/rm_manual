@@ -100,10 +100,8 @@ protected:
   virtual void leftSwitchMidFall(){};
   virtual void leftSwitchUpRise(){};
   virtual void leftSwitchUpOn(){};
-  virtual void rightSwitchDownRise()
-  {
-    state_ = IDLE;
-  }
+  virtual void rightSwitchDownRise(){};
+  virtual void rightSwitchDownRiseState() = 0;
   virtual void rightSwitchMidRise()
   {
     state_ = RC;
