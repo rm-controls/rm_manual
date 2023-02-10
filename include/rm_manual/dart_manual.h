@@ -30,7 +30,6 @@ protected:
     ManualBase::rightSwitchUpRiseState();
     state_ = RC;
   }
-  void rightSwitchDownRise() override;
   void rightSwitchDownRiseState() override
   {
     ManualBase::rightSwitchDownRiseState();
