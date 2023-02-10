@@ -19,10 +19,24 @@ protected:
   void run() override;
   void checkReferee() override;
   void remoteControlTurnOn() override;
-  void leftSwitchUpFall();
-  void leftSwitchDownRise() override;
   void leftSwitchMidRise() override;
-  void leftSwitchUpRise() override;
+  void leftSwitchDownRise() override;
+  void leftSwitchUpOn() override;
+
+  void rightSwitchMidRise() override;
+  void rightSwitchUpRise() override;
+  void rightSwitchUpRiseState() override
+  {
+    ManualBase::rightSwitchUpRiseState();
+    state_ = RC;
+  }
+  void rightSwitchDownRise() override;
+  void rightSwitchDownRiseState() override
+  {
+    ManualBase::rightSwitchDownRiseState();
+    state_ = PC;
+  }
+
   void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void move(rm_common::JointPointCommandSender* joint, double ch);
@@ -39,5 +53,10 @@ protected:
   bool if_stop_{ true };
 
   InputEvent chassis_power_on_event_, gimbal_power_on_event_;
+
+  ros::Time start_;
+  ros::Duration duration_ = ros::Duration(0.);
+  ros::Duration upward_time_ = ros::Duration(2.2);
+  bool flag_ = 0;
 };
 }  // namespace rm_manual

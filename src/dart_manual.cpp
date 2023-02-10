@@ -19,6 +19,7 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
   qd_ = getParam(nh_friction_left, "qd_", 0.);
   upward_vel_ = getParam(nh_trigger, "upward_vel", 0.);
   trigger_sender_ = new rm_common::JointPointCommandSender(nh_trigger, joint_state_);
+
   friction_left_sender_ = new rm_common::JointPointCommandSender(nh_friction_left, joint_state_);
   friction_right_sender_ = new rm_common::JointPointCommandSender(nh_friction_right, joint_state_);
   XmlRpc::XmlRpcValue trigger_rpc_value, gimbal_rpc_value;
@@ -27,8 +28,7 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
   nh.getParam("gimbal_calibration", gimbal_rpc_value);
   gimbal_calibration_ = new rm_common::CalibrationQueue(gimbal_rpc_value, nh, controller_manager_);
 
-  left_switch_up_event_.setEdge(boost::bind(&DartManual::leftSwitchUpRise, this),
-                                boost::bind(&DartManual::leftSwitchUpFall, this));
+  left_switch_up_event_.setActiveHigh(boost::bind(&DartManual::leftSwitchUpOn, this));
   chassis_power_on_event_.setRising(boost::bind(&DartManual::chassisOutputOn, this));
   gimbal_power_on_event_.setRising(boost::bind(&DartManual::gimbalOutputOn, this));
 }
@@ -93,28 +93,50 @@ void DartManual::remoteControlTurnOn()
 void DartManual::leftSwitchDownRise()
 {
   ManualBase::leftSwitchDownRise();
-  friction_right_sender_->setPoint(0.);
-  friction_left_sender_->setPoint(0.);
   trigger_calibration_->reset();
+}
+
+void DartManual::leftSwitchUpOn()
+{
+  ManualBase::leftSwitchUpOn();
+  if (flag_ == 0)
+  {
+    start_ = ros::Time::now();
+    flag_ = 1;
+  }
+  duration_ = ros::Time::now() - start_;
+  if (duration_.toSec() > upward_time_.toSec())
+    trigger_sender_->setPoint(0.);
+  else
+    trigger_sender_->setPoint(upward_vel_);
 }
 
 void DartManual::leftSwitchMidRise()
 {
   ManualBase::leftSwitchMidRise();
+  flag_ = 0;
+  trigger_sender_->setPoint(0.);
+}
+
+void DartManual::rightSwitchMidRise()
+{
+  ManualBase::rightSwitchMidRise();
+  friction_right_sender_->setPoint(0.);
+  friction_left_sender_->setPoint(0.);
+}
+
+void DartManual::rightSwitchUpRise()
+{
+  ManualBase::rightSwitchUpRise();
+  rightSwitchUpRiseState();
   ROS_INFO("Ready to shooter");
   friction_right_sender_->setPoint(qd_);
   friction_left_sender_->setPoint(qd_);
 }
-
-void DartManual::leftSwitchUpRise()
+void DartManual::rightSwitchDownRise()
 {
-  ManualBase::leftSwitchUpRise();
-  trigger_sender_->setPoint(upward_vel_);
-}
-
-void DartManual::leftSwitchUpFall()
-{
-  trigger_sender_->setPoint(0.);
+  ManualBase::rightSwitchDownRise();
+  rightSwitchDownRiseState();
 }
 
 void DartManual::move(rm_common::JointPointCommandSender* joint, double ch)

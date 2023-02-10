@@ -141,6 +141,7 @@ void ChassisGimbalManual::remoteControlTurnOff()
 void ChassisGimbalManual::rightSwitchDownRise()
 {
   ManualBase::rightSwitchDownRise();
+  rightSwitchDownRiseState();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   vel_cmd_sender_->setZero();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
@@ -157,6 +158,7 @@ void ChassisGimbalManual::rightSwitchMidRise()
 void ChassisGimbalManual::rightSwitchUpRise()
 {
   ManualBase::rightSwitchUpRise();
+  rightSwitchUpRiseState();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   vel_cmd_sender_->setZero();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);

@@ -99,18 +99,15 @@ protected:
   virtual void leftSwitchMidRise(){};
   virtual void leftSwitchMidFall(){};
   virtual void leftSwitchUpRise(){};
-  virtual void rightSwitchDownRise()
-  {
-    state_ = IDLE;
-  }
+  virtual void leftSwitchUpOn(){};
+  virtual void rightSwitchDownRise(){};
+  virtual void rightSwitchDownRiseState() = 0;
   virtual void rightSwitchMidRise()
   {
     state_ = RC;
   }
-  virtual void rightSwitchUpRise()
-  {
-    state_ = PC;
-  }
+  virtual void rightSwitchUpRise(){};
+  virtual void rightSwitchUpRiseState() = 0;
 
   ros::Publisher manual_to_referee_pub_;
 
@@ -132,6 +129,7 @@ protected:
   bool remote_is_open_{}, referee_is_online_ = false;
   int state_ = PASSIVE;
   int robot_id_, chassis_power_;
+  std::string robot_;
   InputEvent robot_hp_event_, right_switch_down_event_, right_switch_mid_event_, right_switch_up_event_,
       left_switch_down_event_, left_switch_mid_event_, left_switch_up_event_;
 };
