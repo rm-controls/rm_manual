@@ -20,6 +20,24 @@ namespace rm_manual
 class EngineerManual : public ChassisGimbalManual
 {
 public:
+  enum control_mode
+  {
+    MANUAL,
+    MIDDLEWARE
+  };
+
+  enum joint_mode
+  {
+    SERVO,
+    JOINT
+  };
+
+  enum gimbal_mode
+  {
+    RATE,
+    DIRECT
+  };
+
   EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
@@ -97,21 +115,6 @@ private:
   void gRelease();
   void mouseLeftRelease();
   void mouseRightRelease();
-  enum
-  {
-    MANUAL,
-    MIDDLEWARE
-  };
-  enum
-  {
-    SERVO,
-    JOINT
-  };
-  enum
-  {
-    RATE,
-    DIRECT
-  };
 
   int state_;
   rm_msgs::StepQueueState step_queue_state_;
