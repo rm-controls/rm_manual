@@ -20,19 +20,19 @@ namespace rm_manual
 class EngineerManual : public ChassisGimbalManual
 {
 public:
-  enum control_mode
+  enum ControlMode
   {
     MANUAL,
     MIDDLEWARE
   };
 
-  enum joint_mode
+  enum JointMode
   {
     SERVO,
     JOINT
   };
 
-  enum gimbal_mode
+  enum GimbalMode
   {
     RATE,
     DIRECT
@@ -122,9 +122,11 @@ private:
   std::string prefix_, root_, reversal_state_;
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{};
   std::map<std::string, int> prefix_list_, root_list_;
+
   ros::Time last_time_;
   ros::Subscriber reversal_vision_sub_;
   ros::Publisher step_queue_state_pub_;
+
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   rm_common::Vel3DCommandSender* servo_command_sender_;
