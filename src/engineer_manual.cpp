@@ -15,8 +15,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
-  //Reversal
-  ros::NodeHandle nh_reversal(nh,"reversal");
+  // Reversal
+  ros::NodeHandle nh_reversal(nh, "reversal");
   reversal_command_sender_ = new rm_common::MultiDofCommandSender(nh_reversal);
   // Servo
   ros::NodeHandle nh_servo(nh, "servo");
@@ -466,55 +466,55 @@ void EngineerManual::rPress()
 
 void EngineerManual::vPressing()
 {
-    //ROLL
-    reversal_command_sender_->setGroupVel(0.5,0.,0.,0.,0.,0.);
-    reversal_state_ = "ROLL";
+  // ROLL
+  reversal_command_sender_->setGroupVel(0.5, 0., 0., 0., 0., 0.);
+  reversal_state_ = "ROLL";
 }
 
 void EngineerManual::vRelease()
 {
-    //stop
-    reversal_command_sender_->setZero();
-    reversal_state_ = "STOP";
+  // stop
+  reversal_command_sender_->setZero();
+  reversal_state_ = "STOP";
 }
 
 void EngineerManual::bPressing()
 {
-    //PITCH
-    reversal_command_sender_->setGroupVel(0.,0.5,0.,0.,0.,0.);
-    reversal_state_ = "PITCH";
+  // PITCH
+  reversal_command_sender_->setGroupVel(0., 0.5, 0., 0., 0., 0.);
+  reversal_state_ = "PITCH";
 }
 
 void EngineerManual::bRelease()
 {
-    //stop
-    reversal_command_sender_->setZero();
-    reversal_state_ = "STOP";
+  // stop
+  reversal_command_sender_->setZero();
+  reversal_state_ = "STOP";
 }
 
 void EngineerManual::gPressing()
 {
-    //Z in
-    reversal_command_sender_->setGroupVel(0.,0.,0.,0.,0.,0.5);
-    reversal_state_ = "Z OUT";
+  // Z in
+  reversal_command_sender_->setGroupVel(0., 0., 0., 0., 0., 0.5);
+  reversal_state_ = "Z OUT";
 }
 void EngineerManual::gRelease()
 {
-    //stop
-    reversal_command_sender_->setZero();
-    reversal_state_ = "STOP";
+  // stop
+  reversal_command_sender_->setZero();
+  reversal_state_ = "STOP";
 }
 void EngineerManual::fPressing()
 {
-    //Z out
-    reversal_command_sender_->setGroupVel(0.,0.,0.,0.,0.,-0.5);
-    reversal_state_ = "Z IN";
+  // Z out
+  reversal_command_sender_->setGroupVel(0., 0., 0., 0., 0., -0.5);
+  reversal_state_ = "Z IN";
 }
 void EngineerManual::fRelease()
 {
-    //stop
-    reversal_command_sender_->setZero();
-    reversal_state_ = "STOP";
+  // stop
+  reversal_command_sender_->setZero();
+  reversal_state_ = "STOP";
 }
 void EngineerManual::shiftPressing()
 {
