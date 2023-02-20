@@ -101,13 +101,20 @@ protected:
   virtual void leftSwitchUpRise(){};
   virtual void leftSwitchUpOn(){};
   virtual void rightSwitchDownRiseState() = 0;
-  virtual void rightSwitchDownRise();
+  virtual void rightSwitchDownRise()
+  {
+    rightSwitchDownRiseState();
+  }
+
   virtual void rightSwitchMidRise()
   {
     state_ = RC;
   }
   virtual void rightSwitchUpRiseState() = 0;
-  virtual void rightSwitchUpRise();
+  virtual void rightSwitchUpRise()
+  {
+    rightSwitchUpRiseState();
+  }
 
   ros::Publisher manual_to_referee_pub_;
 
