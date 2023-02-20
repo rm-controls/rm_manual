@@ -60,8 +60,6 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   b_event_.setFalling(boost::bind(&EngineerManual::bRelease, this));
   f_event_.setActiveHigh(boost::bind(&EngineerManual::fPressing, this));
   f_event_.setFalling(boost::bind(&EngineerManual::fRelease, this));
-  shift_e_event_.setRising(boost::bind(&EngineerManual::shiftEPress, this));
-  shift_e_event_.setFalling(boost::bind(&EngineerManual::shiftERelease, this));
   shift_z_event_.setRising(boost::bind(&EngineerManual::shiftZPress, this));
   shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
   shift_v_event_.setRising(boost::bind(&EngineerManual::shiftVPress, this));
@@ -71,8 +69,6 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
   shift_g_event_.setRising(boost::bind(&EngineerManual::shiftGPress, this));
   shift_r_event_.setRising(boost::bind(&EngineerManual::shiftRPress, this));
-  shift_q_event_.setRising(boost::bind(&EngineerManual::shiftQPress, this));
-  shift_q_event_.setFalling(boost::bind(&EngineerManual::shiftQRelease, this));
   shift_event_.setActiveHigh(boost::bind(&EngineerManual::shiftPressing, this));
   shift_event_.setFalling(boost::bind(&EngineerManual::shiftRelease, this));
   mouse_left_event_.setFalling(boost::bind(&EngineerManual::mouseLeftRelease, this));
@@ -114,8 +110,8 @@ void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
   g_event_.update(dbus_data->key_g & !dbus_data->key_ctrl & !dbus_data->key_shift);
   f_event_.update(dbus_data->key_f & !dbus_data->key_ctrl & !dbus_data->key_shift);
   r_event_.update(dbus_data->key_r & !dbus_data->key_ctrl & !dbus_data->key_shift);
-  q_event_.update(dbus_data->key_q & !dbus_data->key_ctrl & !dbus_data->key_shift);
-  e_event_.update(dbus_data->key_e & !dbus_data->key_ctrl & !dbus_data->key_shift);
+  q_event_.update(dbus_data->key_q & !dbus_data->key_ctrl);
+  e_event_.update(dbus_data->key_e & !dbus_data->key_ctrl);
 
   shift_z_event_.update(dbus_data->key_shift & dbus_data->key_z);
   shift_x_event_.update(dbus_data->key_shift & dbus_data->key_x);
@@ -418,7 +414,10 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::qPressing()
 {
-  vel_cmd_sender_->setAngularZVel(0.3);
+  if (speed_change_mode_ == 1)
+    vel_cmd_sender_->setAngularZVel(0.1);
+  else
+    vel_cmd_sender_->setAngularZVel(0.3);
 }
 
 void EngineerManual::qRelease()
@@ -428,7 +427,10 @@ void EngineerManual::qRelease()
 
 void EngineerManual::ePressing()
 {
-  vel_cmd_sender_->setAngularZVel(-0.3);
+  if (speed_change_mode_ == 1)
+    vel_cmd_sender_->setAngularZVel(-0.1);
+  else
+    vel_cmd_sender_->setAngularZVel(-0.3);
 }
 
 void EngineerManual::eRelease()
@@ -491,29 +493,10 @@ void EngineerManual::fRelease()
 void EngineerManual::shiftPressing()
 {
   speed_change_mode_ = 1;
-  std::cout << "enter low_speed" << std::endl;
 }
 void EngineerManual::shiftRelease()
 {
   speed_change_mode_ = 0;
-  std::cout << "out low_speed" << std::endl;
-
-}
-void EngineerManual::shiftQPress()
-{
-  vel_cmd_sender_->setAngularZVel(0.1);
-}
-void EngineerManual::shiftQRelease()
-{
-  vel_cmd_sender_->setAngularZVel(0);
-}
-void EngineerManual::shiftEPress()
-{
-  vel_cmd_sender_->setAngularZVel(-0.1);
-}
-void EngineerManual::shiftERelease()
-{
-  vel_cmd_sender_->setAngularZVel(0);
 }
 void EngineerManual::shiftRPress()
 {
