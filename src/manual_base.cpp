@@ -152,14 +152,4 @@ void ManualBase::robotDie()
   }
 }
 
-// void ManualBase::rightSwitchDownRise()
-//{
-//   rightSwitchDownRiseState();
-// }
-//
-// void ManualBase::rightSwitchUpRise()
-//{
-//   rightSwitchUpRiseState();
-// }
-
 }  // namespace rm_manual
