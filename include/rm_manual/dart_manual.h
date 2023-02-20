@@ -31,7 +31,6 @@ protected:
   }
   void rightSwitchDownRiseState() override
   {
-    //    ManualBase::rightSwitchDownRiseState();
     state_ = PC;
   }
 
