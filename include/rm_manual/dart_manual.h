@@ -27,12 +27,10 @@ protected:
   void rightSwitchUpRise() override;
   void rightSwitchUpRiseState() override
   {
-    ManualBase::rightSwitchUpRiseState();
     state_ = RC;
   }
   void rightSwitchDownRiseState() override
   {
-    ManualBase::rightSwitchDownRiseState();
     state_ = PC;
   }
 

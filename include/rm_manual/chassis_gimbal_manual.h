@@ -23,14 +23,12 @@ protected:
   void rightSwitchDownRise() override;
   void rightSwitchDownRiseState() override
   {
-    ManualBase::rightSwitchDownRiseState();
     state_ = IDLE;
   }
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
   void rightSwitchUpRiseState() override
   {
-    ManualBase::rightSwitchUpRiseState();
     state_ = PC;
   }
   void leftSwitchMidFall() override;
