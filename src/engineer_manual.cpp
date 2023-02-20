@@ -145,7 +145,7 @@ void EngineerManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updateRc(dbus_data);
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
 }
@@ -154,7 +154,7 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updatePc(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -192,7 +192,7 @@ void EngineerManual::chassisOutputOn()
 void EngineerManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
   servo_mode_ = SERVO;
   gimbal_mode_ = DIRECT;
   servo_reset_caller_->callService();
@@ -204,14 +204,14 @@ void EngineerManual::rightSwitchMidRise()
   ChassisGimbalManual::rightSwitchMidRise();
   servo_mode_ = JOINT;
   gimbal_mode_ = RATE;
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
 }
 
 void EngineerManual::rightSwitchUpRise()
 {
   ChassisGimbalManual::rightSwitchUpRise();
   gimbal_mode_ = DIRECT;
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
 }
 
 void EngineerManual::leftSwitchUpRise()

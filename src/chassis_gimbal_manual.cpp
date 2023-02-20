@@ -185,7 +185,10 @@ void ChassisGimbalManual::wRelease()
 {
   x_scale_ = x_scale_ <= -1.0 ? -1.0 : x_scale_ - 1.0;
   vel_cmd_sender_->setLinearXVel(x_scale_);
-  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
+  if (gyro_rotate_reduction_ == 0)
+    vel_cmd_sender_->setAngularZVel(0);
+  else
+    vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
 }
 
 void ChassisGimbalManual::sPressing()
@@ -200,7 +203,10 @@ void ChassisGimbalManual::sRelease()
 {
   x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
   vel_cmd_sender_->setLinearXVel(x_scale_);
-  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
+  if (gyro_rotate_reduction_ == 0)
+    vel_cmd_sender_->setAngularZVel(0);
+  else
+    vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
 }
 
 void ChassisGimbalManual::aPressing()
@@ -215,7 +221,10 @@ void ChassisGimbalManual::aRelease()
 {
   y_scale_ = y_scale_ <= -1.0 ? -1.0 : y_scale_ - 1.0;
   vel_cmd_sender_->setLinearYVel(y_scale_);
-  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
+  if (gyro_rotate_reduction_ == 0)
+    vel_cmd_sender_->setAngularZVel(0);
+  else
+    vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
 }
 
 void ChassisGimbalManual::dPressing()
@@ -230,7 +239,10 @@ void ChassisGimbalManual::dRelease()
 {
   y_scale_ = y_scale_ >= 1.0 ? 1.0 : y_scale_ + 1.0;
   vel_cmd_sender_->setLinearYVel(y_scale_);
-  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
+  if (gyro_rotate_reduction_ == 0)
+    vel_cmd_sender_->setAngularZVel(0);
+  else
+    vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
 }
 
 void ChassisGimbalManual::mouseMidRise(int m_z)
