@@ -490,9 +490,14 @@ void EngineerManual::fRelease()
 }
 void EngineerManual::shiftPressing()
 {
+  speed_change_mode_ = 1;
+  std::cout << "enter low_speed" << std::endl;
 }
 void EngineerManual::shiftRelease()
 {
+  speed_change_mode_ = 0;
+  std::cout << "out low_speed" << std::endl;
+
 }
 void EngineerManual::shiftQPress()
 {

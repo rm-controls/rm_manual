@@ -31,6 +31,7 @@ protected:
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override;
   void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data) override;
   void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override;
+  double judgeMode(double scale);
   virtual void wPress()
   {
     x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
@@ -60,11 +61,13 @@ protected:
   rm_common::Vel2DCommandSender* vel_cmd_sender_{};
   rm_common::GimbalCommandSender* gimbal_cmd_sender_{};
   rm_common::ChassisCommandSender* chassis_cmd_sender_{};
+
   double x_scale_{}, y_scale_{};
+  bool speed_change_mode_{ 0 };
+  double speed_change_scale_{ 1. };
   double gimbal_scale_{ 1. };
   double gyro_move_reduction_{ 1. };
   double gyro_rotate_reduction_{ 1. };
-
   InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_;
 };
 }  // namespace rm_manual
