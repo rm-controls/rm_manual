@@ -100,20 +100,18 @@ protected:
   virtual void leftSwitchMidFall(){};
   virtual void leftSwitchUpRise(){};
   virtual void leftSwitchUpOn(){};
-  virtual void rightSwitchDownRiseState() = 0;
   virtual void rightSwitchDownRise()
   {
-    rightSwitchDownRiseState();
+    state_ = IDLE;
   }
 
   virtual void rightSwitchMidRise()
   {
     state_ = RC;
   }
-  virtual void rightSwitchUpRiseState() = 0;
   virtual void rightSwitchUpRise()
   {
-    rightSwitchUpRiseState();
+    state_ = PC;
   }
 
   ros::Publisher manual_to_referee_pub_;

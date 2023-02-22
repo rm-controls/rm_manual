@@ -31,6 +31,8 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
   left_switch_up_event_.setActiveHigh(boost::bind(&DartManual::leftSwitchUpOn, this));
   chassis_power_on_event_.setRising(boost::bind(&DartManual::chassisOutputOn, this));
   gimbal_power_on_event_.setRising(boost::bind(&DartManual::gimbalOutputOn, this));
+
+  dbus_sub_ = nh.subscribe<rm_msgs::DbusData>("/dbus_data", 10, &DartManual::dbusDataCallback, this);
 }
 
 void DartManual::run()
@@ -66,17 +68,8 @@ void DartManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ManualBase::updatePc(dbus_data);
-  recordPosition(dbus_data);
-  if (dbus_data->ch_l_y == 1.)
-  {
-    pitch_sender_->setPoint(pitch_outpost_);
-    yaw_sender_->setPoint(yaw_outpost_);
-  }
-  if (dbus_data->ch_l_y == -1.)
-  {
-    pitch_sender_->setPoint(pitch_base_);
-    yaw_sender_->setPoint(yaw_base_);
-  }
+  move(pitch_sender_, dbus_data->ch_r_y);
+  move(yaw_sender_, dbus_data->ch_l_x);
 }
 
 void DartManual::checkReferee()
@@ -133,6 +126,22 @@ void DartManual::rightSwitchUpRise()
   friction_left_sender_->setPoint(qd_);
 }
 
+void DartManual::rightSwitchDownRise()
+{
+  ManualBase::rightSwitchDownRise();
+  recordPosition(data_);
+  if (data_->ch_l_y == 1.)
+  {
+    pitch_sender_->setPoint(pitch_outpost_);
+    yaw_sender_->setPoint(yaw_outpost_);
+  }
+  if (data_->ch_l_y == -1.)
+  {
+    pitch_sender_->setPoint(pitch_base_);
+    yaw_sender_->setPoint(yaw_base_);
+  }
+}
+
 void DartManual::move(rm_common::JointPointCommandSender* joint, double ch)
 {
   if (!joint_state_.position.empty())
@@ -166,4 +175,9 @@ void DartManual::recordPosition(const rm_msgs::DbusData::ConstPtr& dbus_data)
     ROS_INFO("recorded base position");
   }
 }
+void DartManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
+{
+  data_ = data;
+}
+
 }  // namespace rm_manual

@@ -25,14 +25,7 @@ protected:
 
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
-  void rightSwitchUpRiseState() override
-  {
-    state_ = RC;
-  }
-  void rightSwitchDownRiseState() override
-  {
-    state_ = PC;
-  }
+  void rightSwitchDownRise() override;
 
   void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
@@ -40,6 +33,7 @@ protected:
   void recordPosition(const rm_msgs::DbusData::ConstPtr& dbus_data);
 
   void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
+  void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override;
 
   rm_common::JointPointCommandSender *trigger_sender_, *friction_left_sender_, *friction_right_sender_;
   rm_common::JointPointCommandSender *pitch_sender_, *yaw_sender_;
@@ -55,5 +49,6 @@ protected:
   ros::Duration duration_ = ros::Duration(0.);
   ros::Duration upward_time_ = ros::Duration(2.2);
   bool flag_ = 0;
+  rm_msgs::DbusData::ConstPtr data_;
 };
 }  // namespace rm_manual
