@@ -113,6 +113,7 @@ private:
     DIRECT
   };
 
+  rm_common::MultiDofCommandSender* reversal_command_sender;
   int state_;
   rm_msgs::StepQueueState step_queue_state_;
   double angular_z_scale_{};

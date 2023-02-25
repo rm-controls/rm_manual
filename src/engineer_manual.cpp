@@ -15,6 +15,9 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
+  //Reversal
+  ros::NodeHandle nh_reversal(nh, "reversal");
+  reversal_command_sender = new rm_common::MultiDofCommandSender(nh_reversal);
   // Servo
   ros::NodeHandle nh_servo(nh, "servo");
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
@@ -145,16 +148,17 @@ void EngineerManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updateRc(dbus_data);
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
+  reversal_command_sender->setGroupVel(dbus_data->ch_l_x,dbus_data->ch_l_y,0.,0.,0.,dbus_data->ch_r_y);
 }
 
 void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updatePc(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -163,6 +167,7 @@ void EngineerManual::sendCommand(const ros::Time& time)
   {
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
+    reversal_command_sender->sendCommand();
   }
   if (servo_mode_ == SERVO)
     servo_command_sender_->sendCommand(time);
@@ -192,7 +197,7 @@ void EngineerManual::chassisOutputOn()
 void EngineerManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
   servo_mode_ = SERVO;
   gimbal_mode_ = DIRECT;
   servo_reset_caller_->callService();
@@ -204,14 +209,14 @@ void EngineerManual::rightSwitchMidRise()
   ChassisGimbalManual::rightSwitchMidRise();
   servo_mode_ = JOINT;
   gimbal_mode_ = RATE;
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
 }
 
 void EngineerManual::rightSwitchUpRise()
 {
   ChassisGimbalManual::rightSwitchUpRise();
   gimbal_mode_ = DIRECT;
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
 }
 
 void EngineerManual::leftSwitchUpRise()
