@@ -175,16 +175,11 @@ void ChassisGimbalManual::leftSwitchDownRise()
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
 }
 
-double ChassisGimbalManual::judgeMode(double scale)
-{
-  if (speed_change_mode_)
-    scale *= speed_change_scale_;
-  return scale;
-}
-
 void ChassisGimbalManual::wPressing()
 {
-  double final_x_scale = judgeMode(x_scale_);
+  double final_x_scale = x_scale_;
+  if (speed_change_mode_)
+    final_x_scale = x_scale_ * speed_change_scale_;
   vel_cmd_sender_->setLinearXVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
                                      final_x_scale * gyro_move_reduction_ :
                                      final_x_scale);
@@ -201,7 +196,9 @@ void ChassisGimbalManual::wRelease()
 
 void ChassisGimbalManual::sPressing()
 {
-  double final_x_scale = judgeMode(x_scale_);
+  double final_x_scale = x_scale_;
+  if (speed_change_mode_)
+    final_x_scale = x_scale_ * speed_change_scale_;
   vel_cmd_sender_->setLinearXVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
                                      final_x_scale * gyro_move_reduction_ :
                                      final_x_scale);
@@ -218,7 +215,9 @@ void ChassisGimbalManual::sRelease()
 
 void ChassisGimbalManual::aPressing()
 {
-  double final_y_scale = judgeMode(y_scale_);
+  double final_y_scale = y_scale_;
+  if (speed_change_mode_)
+    final_y_scale = y_scale_ * speed_change_scale_;
   vel_cmd_sender_->setLinearYVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
                                      final_y_scale * gyro_move_reduction_ :
                                      final_y_scale);
@@ -235,7 +234,9 @@ void ChassisGimbalManual::aRelease()
 
 void ChassisGimbalManual::dPressing()
 {
-  double final_y_scale = judgeMode(y_scale_);
+  double final_y_scale = y_scale_;
+  if (speed_change_mode_)
+    final_y_scale = y_scale_ * speed_change_scale_;
   vel_cmd_sender_->setLinearYVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ?
                                      final_y_scale * gyro_move_reduction_ :
                                      final_y_scale);

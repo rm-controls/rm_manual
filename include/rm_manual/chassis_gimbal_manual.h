@@ -31,7 +31,6 @@ protected:
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override;
   void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data) override;
   void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override;
-  double judgeMode(double scale);
   virtual void wPress()
   {
     x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
