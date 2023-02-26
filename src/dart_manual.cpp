@@ -177,6 +177,7 @@ void DartManual::recordPosition(const rm_msgs::DbusData::ConstPtr& dbus_data)
 }
 void DartManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
+  ManualBase::dbusDataCallback(data);
   data_ = data;
 }
 
