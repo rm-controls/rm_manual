@@ -29,6 +29,7 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
   gimbal_calibration_ = new rm_common::CalibrationQueue(gimbal_rpc_value, nh, controller_manager_);
 
   left_switch_up_event_.setActiveHigh(boost::bind(&DartManual::leftSwitchUpOn, this));
+  right_switch_down_event_.setActiveHigh(boost::bind(&DartManual::rightSwitchDownOn, this));
   chassis_power_on_event_.setRising(boost::bind(&DartManual::chassisOutputOn, this));
   gimbal_power_on_event_.setRising(boost::bind(&DartManual::gimbalOutputOn, this));
 
@@ -126,9 +127,9 @@ void DartManual::rightSwitchUpRise()
   friction_left_sender_->setPoint(qd_);
 }
 
-void DartManual::rightSwitchDownRise()
+void DartManual::rightSwitchDownOn()
 {
-  ManualBase::rightSwitchDownRise();
+  ManualBase::rightSwitchDownOn();
   recordPosition(data_);
   if (data_->ch_l_y == 1.)
   {

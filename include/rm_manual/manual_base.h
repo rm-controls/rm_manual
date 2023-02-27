@@ -113,6 +113,10 @@ protected:
   {
     state_ = PC;
   }
+  virtual void rightSwitchDownOn()
+  {
+    state_ = IDLE;
+  }
 
   ros::Publisher manual_to_referee_pub_;
 
