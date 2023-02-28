@@ -151,6 +151,7 @@ void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
+  reversal_command_sender_->setGroupVel(dbus_data->ch_l_x, dbus_data->ch_l_y, 0., 0., 0., dbus_data->ch_r_y);
 }
 
 void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -227,7 +228,7 @@ void EngineerManual::leftSwitchUpRise()
 
 void EngineerManual::leftSwitchDownFall()
 {
-  runStepQueue("HOME1");
+  runStepQueue("HOME_ONE_STONE");
   runStepQueue("OPEN_GRIPPER");
   step_queue_state_.step_queue_name = "HOME1";
 }
@@ -265,6 +266,10 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   ROS_INFO("Result: %i", result->finish);
   ROS_INFO("Done %s", (prefix_ + root_).c_str());
   step_queue_state_.step_queue_name += " done!";
+  if (prefix_ + root_ == "TAKE_WHEN_TWO_STONE000" || prefix_ + root_ == "TAKE_WHEN_ONE_STONE000")
+    stone_num_ -= 1;
+  if (prefix_ + root_ == "STORE_WHEN_ZERO_STONE00" || prefix_ + root_ == "STORE_WHEN_ONE_STONE00")
+    stone_num_ += 1;
   operating_mode_ = MANUAL;
 }
 
@@ -352,12 +357,10 @@ void EngineerManual::ctrlGPress()
   switch (stone_num_)
   {
     case 0:
-      root_ = "STORE_STONE0";
-      stone_num_ = 1;
+      root_ = "STORE_WHEN_ZERO_STONE0";
       break;
     case 1:
-      root_ = "STORE_STONE1";
-      stone_num_ = 2;
+      root_ = "STORE_WHEN_ONE_STONE0";
       break;
   }
   runStepQueue(root_);
@@ -377,6 +380,8 @@ void EngineerManual::ctrlXPress()
 void EngineerManual::ctrlCPress()
 {
   action_client_.cancelAllGoals();
+  prefix_ = "";
+  root_ = "";
   step_queue_state_.step_queue_name = "cancel";
 }
 
@@ -405,13 +410,13 @@ void EngineerManual::ctrlBPress()
   switch (stone_num_)
   {
     case 0:
-      root_ = "HOME0";
+      root_ = "HOME_ZERO_STONE";
       break;
     case 1:
-      root_ = "HOME1";
+      root_ = "HOME_ONE_STONE";
       break;
     case 2:
-      root_ = "HOME2";
+      root_ = "HOME_TWO_STONE";
       break;
   }
   ROS_INFO("RUN_HOME");
@@ -586,14 +591,13 @@ void EngineerManual::shiftVRelease()
 
 void EngineerManual::shiftBPress()
 {
-  runStepQueue("TEMP_GIMBAL");
+  runStepQueue("BACK_GIMBAL");
   ROS_INFO("enter gimbal BACK_GIMBAL");
   step_queue_state_.step_queue_name = "gimbal BACK_GIMBAL";
 }
 
 void EngineerManual::shiftBRelease()
 {
-  runStepQueue("BACK_GIMBAL");
 }
 
 void EngineerManual::shiftXPress()
@@ -608,16 +612,13 @@ void EngineerManual::shiftGPress()
   switch (stone_num_)
   {
     case 0:
-      root_ = "NO!!";
-      stone_num_ = 0;
+      root_ = "NO STONE!!";
       break;
     case 1:
-      root_ = "TAKE_STONE0";
-      stone_num_ = 0;
+      root_ = "TAKE_WHEN_ONE_STONE0";
       break;
     case 2:
-      root_ = "TAKE_STONE1";
-      stone_num_ = 1;
+      root_ = "TAKE_WHEN_TWO_STONE0";
       break;
   }
   runStepQueue(root_);
