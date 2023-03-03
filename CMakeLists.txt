@@ -16,7 +16,6 @@ find_package(catkin REQUIRED
         COMPONENTS
         roscpp
         sensor_msgs
-        roslint
         rm_msgs
         rm_common
         tf2_geometry_msgs
@@ -45,7 +44,6 @@ catkin_package(
         CATKIN_DEPENDS
         roscpp
         sensor_msgs
-        roslint
         rm_msgs
         rm_common
         tf2_geometry_msgs
@@ -118,8 +116,4 @@ install(
 #  target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME}_core)
 #endif ()
 
-##########################
-## Static code analysis ##
-##########################
 
-roslint_cpp()
