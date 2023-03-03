@@ -109,9 +109,10 @@ protected:
   {
     state_ = RC;
   }
+  virtual void rightSwitchUpRiseState() = 0;
   virtual void rightSwitchUpRise()
   {
-    state_ = PC;
+    rightSwitchUpRiseState();
   }
   virtual void rightSwitchDownOn()
   {

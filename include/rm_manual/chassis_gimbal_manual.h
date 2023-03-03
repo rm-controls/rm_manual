@@ -23,6 +23,10 @@ protected:
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
+  void rightSwitchUpRiseState() override
+  {
+    state_ = PC;
+  }
   void leftSwitchMidFall() override;
   void leftSwitchDownRise() override;
   void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override;

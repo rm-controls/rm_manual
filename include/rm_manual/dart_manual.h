@@ -25,6 +25,10 @@ protected:
 
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
+  void rightSwitchUpRiseState() override
+  {
+    state_ = RC;
+  }
   void rightSwitchDownOn() override;
 
   void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
