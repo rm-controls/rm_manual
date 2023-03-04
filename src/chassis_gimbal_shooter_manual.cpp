@@ -11,6 +11,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
 {
   ros::NodeHandle shooter_nh(nh, "shooter");
   shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh);
+  ros::NodeHandle camera_nh(nh, "camera");
+  camera_switch_cmd_sender_ = new rm_common::CameraSwitchCommandSender(camera_nh);
 
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
@@ -28,6 +30,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::qPress, this));
   f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::fPress, this));
   b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::bPress, this));
+  r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::rPress, this));
   ctrl_c_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlCPress, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this));
@@ -70,6 +73,7 @@ void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr
   f_event_.update(dbus_data->key_f);
   b_event_.update((!dbus_data->key_ctrl && !dbus_data->key_shift) & dbus_data->key_b);
   x_event_.update(dbus_data->key_x);
+  r_event_.update((!dbus_data->key_ctrl) & dbus_data->key_r);
   ctrl_c_event_.update(dbus_data->key_ctrl & dbus_data->key_c);
   ctrl_v_event_.update(dbus_data->key_ctrl & dbus_data->key_v);
   ctrl_r_event_.update(dbus_data->key_ctrl & dbus_data->key_r);
@@ -123,6 +127,7 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
 {
   ChassisGimbalManual::sendCommand(time);
   shooter_cmd_sender_->sendCommand(time);
+  camera_switch_cmd_sender_->sendCommand(time);
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOff()
@@ -300,6 +305,15 @@ void ChassisGimbalShooterManual::cPress()
 void ChassisGimbalShooterManual::bPress()
 {
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
+}
+
+void ChassisGimbalShooterManual::rPress()
+{
+  std::string current_camera = camera_switch_cmd_sender_->getCurrentCameraName();
+  if (current_camera == camera_switch_cmd_sender_->getShortCameraName())
+    camera_switch_cmd_sender_->switchLongCamera();
+  else
+    camera_switch_cmd_sender_->switchShortCamera();
 }
 
 void ChassisGimbalShooterManual::wPress()
