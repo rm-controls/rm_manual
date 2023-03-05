@@ -64,10 +64,6 @@ private:
   void ctrlRPress();
   void shiftPressing();
   void shiftRelease();
-  void shiftQPress();
-  void shiftQRelease();
-  void shiftEPress();
-  void shiftERelease();
   void shiftZPress();
   void shiftXPress();
   void shiftCPress();
