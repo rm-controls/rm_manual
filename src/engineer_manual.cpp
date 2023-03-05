@@ -60,8 +60,6 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   b_event_.setFalling(boost::bind(&EngineerManual::bRelease, this));
   f_event_.setActiveHigh(boost::bind(&EngineerManual::fPressing, this));
   f_event_.setFalling(boost::bind(&EngineerManual::fRelease, this));
-  shift_e_event_.setRising(boost::bind(&EngineerManual::shiftEPress, this));
-  shift_e_event_.setFalling(boost::bind(&EngineerManual::shiftERelease, this));
   shift_z_event_.setRising(boost::bind(&EngineerManual::shiftZPress, this));
   shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
   shift_v_event_.setRising(boost::bind(&EngineerManual::shiftVPress, this));
@@ -71,8 +69,6 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
   shift_g_event_.setRising(boost::bind(&EngineerManual::shiftGPress, this));
   shift_r_event_.setRising(boost::bind(&EngineerManual::shiftRPress, this));
-  shift_q_event_.setRising(boost::bind(&EngineerManual::shiftQPress, this));
-  shift_q_event_.setFalling(boost::bind(&EngineerManual::shiftQRelease, this));
   shift_event_.setActiveHigh(boost::bind(&EngineerManual::shiftPressing, this));
   shift_event_.setFalling(boost::bind(&EngineerManual::shiftRelease, this));
   mouse_left_event_.setFalling(boost::bind(&EngineerManual::mouseLeftRelease, this));
@@ -145,7 +141,7 @@ void EngineerManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updateRc(dbus_data);
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
 }
@@ -154,7 +150,7 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updatePc(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -192,7 +188,7 @@ void EngineerManual::chassisOutputOn()
 void EngineerManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   servo_mode_ = SERVO;
   gimbal_mode_ = DIRECT;
   servo_reset_caller_->callService();
@@ -204,14 +200,14 @@ void EngineerManual::rightSwitchMidRise()
   ChassisGimbalManual::rightSwitchMidRise();
   servo_mode_ = JOINT;
   gimbal_mode_ = RATE;
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
 void EngineerManual::rightSwitchUpRise()
 {
   ChassisGimbalManual::rightSwitchUpRise();
   gimbal_mode_ = DIRECT;
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
 void EngineerManual::leftSwitchUpRise()

@@ -43,7 +43,6 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
 void ChassisGimbalShooterManual::run()
 {
   ChassisGimbalManual::run();
-  shooter_cmd_sender_->computeTargetAcceleration();
   shooter_calibration_->update(ros::Time::now());
 }
 
@@ -170,7 +169,7 @@ void ChassisGimbalShooterManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbu
 {
   ChassisGimbalManual::updatePc(dbus_data);
   if (chassis_cmd_sender_->power_limit_->getState() != rm_common::PowerLimit::CHARGE &&
-      chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::GYRO)
+      chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::RAW)
   {
     if (!dbus_data->key_shift && chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW &&
         std::sqrt(std::pow(vel_cmd_sender_->getMsg()->linear.x, 2) + std::pow(vel_cmd_sender_->getMsg()->linear.y, 2)) >
@@ -281,14 +280,14 @@ void ChassisGimbalShooterManual::ePress()
 
 void ChassisGimbalShooterManual::cPress()
 {
-  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO)
+  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW)
   {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setAngularZVel(0.0);
   }
   else
   {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
     if (x_scale_ != 0.0 || y_scale_ != 0.0)
       vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
@@ -358,49 +357,49 @@ void ChassisGimbalShooterManual::wPressing()
 {
   ChassisGimbalManual::wPressing();
   vel_cmd_sender_->setAngularZVel(
-      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? gyro_rotate_reduction_ : 0);
+      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW ? gyro_rotate_reduction_ : 0);
 }
 
 void ChassisGimbalShooterManual::aPressing()
 {
   ChassisGimbalManual::aPressing();
   vel_cmd_sender_->setAngularZVel(
-      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? gyro_rotate_reduction_ : 0);
+      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW ? gyro_rotate_reduction_ : 0);
 }
 
 void ChassisGimbalShooterManual::sPressing()
 {
   ChassisGimbalManual::sPressing();
   vel_cmd_sender_->setAngularZVel(
-      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? gyro_rotate_reduction_ : 0);
+      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW ? gyro_rotate_reduction_ : 0);
 }
 
 void ChassisGimbalShooterManual::dPressing()
 {
   ChassisGimbalManual::dPressing();
   vel_cmd_sender_->setAngularZVel(
-      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? gyro_rotate_reduction_ : 0);
+      chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW ? gyro_rotate_reduction_ : 0);
 }
 
 void ChassisGimbalShooterManual::wRelease()
 {
   ChassisGimbalManual::wRelease();
-  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
+  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW ? 1 : 0);
 }
 void ChassisGimbalShooterManual::aRelease()
 {
   ChassisGimbalManual::aRelease();
-  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
+  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW ? 1 : 0);
 }
 void ChassisGimbalShooterManual::sRelease()
 {
   ChassisGimbalManual::sRelease();
-  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
+  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW ? 1 : 0);
 }
 void ChassisGimbalShooterManual::dRelease()
 {
   ChassisGimbalManual::dRelease();
-  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::GYRO ? 1 : 0);
+  vel_cmd_sender_->setAngularZVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW ? 1 : 0);
 }
 
 void ChassisGimbalShooterManual::shiftPress()
@@ -431,7 +430,7 @@ void ChassisGimbalShooterManual::ctrlRPress()
 {
   if (robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO)
   {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
     gimbal_cmd_sender_->setEject(true);
   }
@@ -440,7 +439,7 @@ void ChassisGimbalShooterManual::ctrlRPress()
     switch_detection_srv_->switchTargetType();
     switch_detection_srv_->callService();
     if (switch_detection_srv_->getTarget())
-      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
     else
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   }
