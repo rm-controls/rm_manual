@@ -16,6 +16,20 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& n
     ROS_ERROR("Gyro move reduction no defined (namespace: %s)", nh.getNamespace().c_str());
   if (!vel_nh.getParam("gyro_rotate_reduction", gyro_rotate_reduction_))
     ROS_ERROR("Gyro rotate reduction no defined (namespace: %s)", nh.getNamespace().c_str());
+  XmlRpc::XmlRpcValue xml;
+  if (!nh.getParam("chassis_calibrate_motor", xml))
+    ROS_ERROR("chassis_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
+  else
+    for (int i = 0; i < xml.size(); i++)
+    {
+      chassis_calibrate_motor_.push_back(xml[i]);
+    }
+  if (!nh.getParam("gimbal_calibrate_motor", xml))
+    ROS_ERROR("gimbal_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
+  else
+    for (int i = 0; i < xml.size(); i++)
+      gimbal_calibrate_motor_.push_back(xml[i]);
+
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh);
 
@@ -58,7 +72,6 @@ void ChassisGimbalManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
                                      -dbus_data->ch_r_x);
   gimbal_cmd_sender_->setRate(-dbus_data->ch_l_x, -dbus_data->ch_l_y);
 }
-
 void ChassisGimbalManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ManualBase::updatePc(dbus_data);
@@ -68,6 +81,8 @@ void ChassisGimbalManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 void ChassisGimbalManual::checkReferee()
 {
   ManualBase::checkReferee();
+  chassis_power_on_event_.update((ros::Time::now() - chassis_actuator_last_get_stamp_) < ros::Duration(0.3));
+  gimbal_power_on_event_.update((ros::Time::now() - gimbal_actuator_last_get_stamp_) < ros::Duration(0.3));
 }
 
 void ChassisGimbalManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -93,6 +108,12 @@ void ChassisGimbalManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_
   }
 }
 
+void ChassisGimbalManual::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
+{
+  updateActuatorStamp(data, chassis_calibrate_motor_, chassis_actuator_last_get_stamp_);
+  updateActuatorStamp(data, gimbal_calibrate_motor_, gimbal_actuator_last_get_stamp_);
+}
+
 void ChassisGimbalManual::gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data)
 {
   ManualBase::gameStatusCallback(data);
@@ -103,8 +124,6 @@ void ChassisGimbalManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus
 {
   ManualBase::gameRobotStatusCallback(data);
   chassis_cmd_sender_->updateGameRobotStatus(*data);
-  chassis_power_on_event_.update(data->mains_power_chassis_output);
-  gimbal_power_on_event_.update(data->mains_power_gimbal_output);
 }
 
 void ChassisGimbalManual::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)

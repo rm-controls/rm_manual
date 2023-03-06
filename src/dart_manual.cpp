@@ -26,6 +26,19 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
   trigger_calibration_ = new rm_common::CalibrationQueue(trigger_rpc_value, nh, controller_manager_);
   nh.getParam("gimbal_calibration", gimbal_rpc_value);
   gimbal_calibration_ = new rm_common::CalibrationQueue(gimbal_rpc_value, nh, controller_manager_);
+  XmlRpc::XmlRpcValue xml;
+  if (!nh.getParam("chassis_calibrate_motor", xml))
+    ROS_ERROR("chassis_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
+  else
+    for (int i = 0; i < xml.size(); i++)
+    {
+      chassis_calibrate_motor_.push_back(xml[i]);
+    }
+  if (!nh.getParam("gimbal_calibrate_motor", xml))
+    ROS_ERROR("gimbal_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
+  else
+    for (int i = 0; i < xml.size(); i++)
+      gimbal_calibrate_motor_.push_back(xml[i]);
 
   left_switch_up_event_.setEdge(boost::bind(&DartManual::leftSwitchUpRise, this),
                                 boost::bind(&DartManual::leftSwitchUpFall, this));
@@ -38,6 +51,12 @@ void DartManual::run()
   ManualBase::run();
   trigger_calibration_->update(ros::Time::now());
   gimbal_calibration_->update(ros::Time::now());
+}
+
+void DartManual::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
+{
+  updateActuatorStamp(data, chassis_calibrate_motor_, chassis_actuator_last_get_stamp_);
+  updateActuatorStamp(data, gimbal_calibrate_motor_, gimbal_actuator_last_get_stamp_);
 }
 
 void DartManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
@@ -82,6 +101,8 @@ void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 void DartManual::checkReferee()
 {
   ManualBase::checkReferee();
+  chassis_power_on_event_.update((ros::Time::now() - chassis_actuator_last_get_stamp_) < ros::Duration(0.3));
+  gimbal_power_on_event_.update((ros::Time::now() - gimbal_actuator_last_get_stamp_) < ros::Duration(0.3));
 }
 
 void DartManual::remoteControlTurnOn()

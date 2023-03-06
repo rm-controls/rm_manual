@@ -25,6 +25,7 @@ protected:
   void rightSwitchUpRise() override;
   void leftSwitchMidFall() override;
   void leftSwitchDownRise() override;
+  void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data) override;
   void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override;
   void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
   void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data) override;
@@ -60,10 +61,13 @@ protected:
   rm_common::Vel2DCommandSender* vel_cmd_sender_{};
   rm_common::GimbalCommandSender* gimbal_cmd_sender_{};
   rm_common::ChassisCommandSender* chassis_cmd_sender_{};
+
   double x_scale_{}, y_scale_{};
   double gimbal_scale_{ 1. };
   double gyro_move_reduction_{ 1. };
   double gyro_rotate_reduction_{ 1. };
+  ros::Time chassis_actuator_last_get_stamp_, gimbal_actuator_last_get_stamp_;
+  std::vector<std::string> chassis_calibrate_motor_, gimbal_calibrate_motor_;
 
   InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_;
 };

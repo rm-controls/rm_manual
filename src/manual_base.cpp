@@ -54,6 +54,24 @@ void ManualBase::checkReferee()
   manual_to_referee_pub_.publish(manual_to_referee_pub_data_);
 }
 
+void ManualBase::updateActuatorStamp(const rm_msgs::ActuatorState::ConstPtr& data, std::vector<std::string> act_vector,
+                                     ros::Time& last_get_stamp)
+{
+  int dis;
+  for (long unsigned int i = 0; i < act_vector.size(); i++)
+  {
+    auto it = std::find(data->name.begin(), data->name.end(), act_vector.at(i));
+    if (it == data->name.end())
+    {
+      ROS_WARN("can't find actuator named \"%s\" in ActuatorStateData", act_vector.at(i).c_str());
+      continue;
+    }
+    dis = std::distance(data->name.begin(), it);
+    if (data->stamp.at(dis) > last_get_stamp)
+      last_get_stamp = data->stamp.at(dis);
+  }
+}
+
 void ManualBase::jointStateCallback(const sensor_msgs::JointState::ConstPtr& data)
 {
   joint_state_ = *data;

@@ -28,6 +28,7 @@ protected:
   void move(rm_common::JointPointCommandSender* joint, double ch);
   void recordPosition(const rm_msgs::DbusData::ConstPtr& dbus_data);
 
+  void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data) override;
   void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
 
   rm_common::JointPointCommandSender *trigger_sender_, *friction_left_sender_, *friction_right_sender_;
@@ -37,6 +38,9 @@ protected:
   double qd_, upward_vel_;
   double scale_{ 0.04 };
   bool if_stop_{ true };
+
+  ros::Time chassis_actuator_last_get_stamp_, gimbal_actuator_last_get_stamp_;
+  std::vector<std::string> chassis_calibrate_motor_, gimbal_calibrate_motor_;
 
   InputEvent chassis_power_on_event_, gimbal_power_on_event_;
 };

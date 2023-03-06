@@ -53,6 +53,8 @@ protected:
   virtual void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data);
   virtual void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data);
   virtual void sendCommand(const ros::Time& time) = 0;
+  virtual void updateActuatorStamp(const rm_msgs::ActuatorState::ConstPtr& data, std::vector<std::string> act_vector,
+                                   ros::Time& last_get_stamp);
 
   virtual void jointStateCallback(const sensor_msgs::JointState::ConstPtr& data);
   virtual void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data);

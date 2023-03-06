@@ -17,6 +17,12 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("shooter_calibration", rpc_value);
   shooter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  XmlRpc::XmlRpcValue xml;
+  if (!nh.getParam("shooter_calibrate_motor", xml))
+    ROS_ERROR("shooter_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
+  else
+    for (int i = 0; i < xml.size(); i++)
+      shooter_calibrate_motor_.push_back(xml[i]);
 
   shooter_power_on_event_.setRising(boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
   self_inspection_event_.setRising(boost::bind(&ChassisGimbalShooterManual::selfInspectionStart, this));
@@ -58,6 +64,7 @@ void ChassisGimbalShooterManual::checkReferee()
   manual_to_referee_pub_data_.det_target = switch_detection_srv_->getTarget();
   manual_to_referee_pub_data_.stamp = ros::Time::now();
   ChassisGimbalManual::checkReferee();
+  shooter_power_on_event_.update((ros::Time::now() - shooter_actuator_last_get_stamp_) < ros::Duration(0.3));
 }
 
 void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -80,11 +87,16 @@ void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr
   mouse_right_event_.update(dbus_data->p_r);
 }
 
+void ChassisGimbalShooterManual::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
+{
+  ChassisGimbalManual::actuatorStateCallback(data);
+  updateActuatorStamp(data, shooter_calibrate_motor_, shooter_actuator_last_get_stamp_);
+}
+
 void ChassisGimbalShooterManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
 {
   ChassisGimbalManual::gameRobotStatusCallback(data);
   shooter_cmd_sender_->updateGameRobotStatus(*data);
-  shooter_power_on_event_.update(data->mains_power_shooter_output);
 }
 
 void ChassisGimbalShooterManual::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
