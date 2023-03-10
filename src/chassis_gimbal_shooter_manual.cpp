@@ -284,6 +284,7 @@ void ChassisGimbalShooterManual::cPress()
   {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setAngularZVel(0.0);
+    is_gyro_ = false;
   }
   else
   {
@@ -446,7 +447,10 @@ void ChassisGimbalShooterManual::ctrlRPress()
       is_gyro_ = true;
     }
     else
+    {
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+      is_gyro_ = false;
+    }
   }
 }
 

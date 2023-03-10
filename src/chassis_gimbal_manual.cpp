@@ -49,7 +49,10 @@ void ChassisGimbalManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     is_gyro_ = true;
   }
   else
+  {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    is_gyro_ = false;
+  }
   vel_cmd_sender_->setAngularZVel((std::abs(dbus_data->ch_r_y) > 0.01 || std::abs(dbus_data->ch_r_x) > 0.01) ?
                                       dbus_data->wheel * gyro_rotate_reduction_ :
                                       dbus_data->wheel);
