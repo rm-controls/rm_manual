@@ -288,6 +288,7 @@ void ChassisGimbalShooterManual::cPress()
   else
   {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+    is_gyro_ = true;
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
     if (x_scale_ != 0.0 || y_scale_ != 0.0)
       vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
@@ -431,6 +432,7 @@ void ChassisGimbalShooterManual::ctrlRPress()
   if (robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO)
   {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+    is_gyro_ = true;
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
     gimbal_cmd_sender_->setEject(true);
   }
@@ -439,7 +441,10 @@ void ChassisGimbalShooterManual::ctrlRPress()
     switch_detection_srv_->switchTargetType();
     switch_detection_srv_->callService();
     if (switch_detection_srv_->getTarget())
+    {
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+      is_gyro_ = true;
+    }
     else
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   }

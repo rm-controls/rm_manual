@@ -35,7 +35,7 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& n
 
 void ChassisGimbalManual::sendCommand(const ros::Time& time)
 {
-  chassis_cmd_sender_->sendCommand(time);
+  chassis_cmd_sender_->sendChassisCommand(time, is_gyro_);
   vel_cmd_sender_->sendCommand(time);
   gimbal_cmd_sender_->sendCommand(time);
 }
@@ -46,6 +46,7 @@ void ChassisGimbalManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   if (std::abs(dbus_data->wheel) > 0.01)
   {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+    is_gyro_ = true;
   }
   else
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);

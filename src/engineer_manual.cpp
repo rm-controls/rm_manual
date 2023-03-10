@@ -157,7 +157,7 @@ void EngineerManual::sendCommand(const ros::Time& time)
 {
   if (operating_mode_ == MANUAL)
   {
-    chassis_cmd_sender_->sendCommand(time);
+    chassis_cmd_sender_->sendChassisCommand(time, false);
     vel_cmd_sender_->sendCommand(time);
   }
   if (servo_mode_ == SERVO)
