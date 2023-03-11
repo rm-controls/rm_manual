@@ -111,7 +111,7 @@ private:
 
   int state_;
   rm_msgs::StepQueueState step_queue_state_;
-  double angular_z_scale_{};
+  double angular_z_scale_{}, gyro_scale_{};
   std::string prefix_, root_, reversal_state_;
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{};
   std::map<std::string, int> prefix_list_, root_list_;

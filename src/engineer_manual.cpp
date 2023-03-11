@@ -19,6 +19,10 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ros::NodeHandle nh_servo(nh, "servo");
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
   servo_reset_caller_ = new rm_common::ServiceCallerBase<std_srvs::Empty>(nh_servo, "/servo_server/reset_servo_status");
+  // Vel
+  ros::NodeHandle vel_nh(nh, "vel");
+  if (!vel_nh.getParam("gyro_scale", gyro_scale_))
+    gyro_scale_ = 0.2;
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("power_on_calibration", rpc_value);
@@ -419,9 +423,9 @@ void EngineerManual::ctrlBPress()
 void EngineerManual::qPressing()
 {
   if (speed_change_mode_ == 1)
-    vel_cmd_sender_->setAngularZVel(0.1);
+    vel_cmd_sender_->setAngularZVel(gyro_scale_ * speed_change_scale_);
   else
-    vel_cmd_sender_->setAngularZVel(0.3);
+    vel_cmd_sender_->setAngularZVel(gyro_scale_);
 }
 
 void EngineerManual::qRelease()
@@ -432,9 +436,9 @@ void EngineerManual::qRelease()
 void EngineerManual::ePressing()
 {
   if (speed_change_mode_ == 1)
-    vel_cmd_sender_->setAngularZVel(-0.1);
+    vel_cmd_sender_->setAngularZVel(-gyro_scale_ * speed_change_scale_);
   else
-    vel_cmd_sender_->setAngularZVel(-0.3);
+    vel_cmd_sender_->setAngularZVel(-gyro_scale_);
 }
 
 void EngineerManual::eRelease()
