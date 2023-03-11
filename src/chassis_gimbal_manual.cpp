@@ -43,25 +43,6 @@ void ChassisGimbalManual::sendCommand(const ros::Time& time)
 void ChassisGimbalManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ManualBase::updateRc(dbus_data);
-  if (std::abs(dbus_data->wheel) > 0.01)
-  {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-    is_gyro_ = true;
-  }
-  else
-  {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    is_gyro_ = false;
-  }
-  vel_cmd_sender_->setAngularZVel((std::abs(dbus_data->ch_r_y) > 0.01 || std::abs(dbus_data->ch_r_x) > 0.01) ?
-                                      dbus_data->wheel * gyro_rotate_reduction_ :
-                                      dbus_data->wheel);
-  vel_cmd_sender_->setLinearXVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW ?
-                                     dbus_data->ch_r_y * gyro_move_reduction_ :
-                                     dbus_data->ch_r_y);
-  vel_cmd_sender_->setLinearYVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW ?
-                                     -dbus_data->ch_r_x * gyro_move_reduction_ :
-                                     -dbus_data->ch_r_x);
   gimbal_cmd_sender_->setRate(-dbus_data->ch_l_x, -dbus_data->ch_l_y);
 }
 

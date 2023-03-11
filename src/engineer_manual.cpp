@@ -142,6 +142,10 @@ void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updateRc(dbus_data);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  vel_cmd_sender_->setAngularZVel(dbus_data->wheel);
+  vel_cmd_sender_->setLinearXVel(dbus_data->ch_r_y);
+  vel_cmd_sender_->setLinearYVel(-dbus_data->ch_r_x);
+
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
 }
