@@ -20,6 +20,24 @@ namespace rm_manual
 class EngineerManual : public ChassisGimbalManual
 {
 public:
+  enum ControlMode
+  {
+    MANUAL,
+    MIDDLEWARE
+  };
+
+  enum JointMode
+  {
+    SERVO,
+    JOINT
+  };
+
+  enum GimbalMode
+  {
+    RATE,
+    DIRECT
+  };
+
   EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
@@ -97,21 +115,6 @@ private:
   void gRelease();
   void mouseLeftRelease();
   void mouseRightRelease();
-  enum
-  {
-    MANUAL,
-    MIDDLEWARE
-  };
-  enum
-  {
-    SERVO,
-    JOINT
-  };
-  enum
-  {
-    RATE,
-    DIRECT
-  };
 
   int state_;
   rm_msgs::StepQueueState step_queue_state_;
@@ -119,9 +122,11 @@ private:
   std::string prefix_, root_, reversal_state_;
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{};
   std::map<std::string, int> prefix_list_, root_list_;
+
   ros::Time last_time_;
   ros::Subscriber reversal_vision_sub_;
   ros::Publisher step_queue_state_pub_;
+
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   rm_common::Vel3DCommandSender* servo_command_sender_;
