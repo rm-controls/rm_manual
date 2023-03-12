@@ -23,6 +23,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ros::NodeHandle vel_nh(nh, "vel");
   if (!vel_nh.getParam("gyro_scale", gyro_scale_))
     gyro_scale_ = 0.2;
+  if (!vel_nh.getParam("gyro_low_scale", gyro_low_scale_))
+    gyro_low_scale_ = 0.3;
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("power_on_calibration", rpc_value);
@@ -268,6 +270,38 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   operating_mode_ = MANUAL;
 }
 
+void EngineerManual::wPressing()
+{
+  double final_x_scale = x_scale_;
+  if (speed_change_mode_)
+    final_x_scale = x_scale_ * speed_change_scale_;
+  vel_cmd_sender_->setLinearXVel(final_x_scale);
+}
+
+void EngineerManual::aPressing()
+{
+  double final_y_scale = y_scale_;
+  if (speed_change_mode_)
+    final_y_scale = y_scale_ * speed_change_scale_;
+  vel_cmd_sender_->setLinearYVel(final_y_scale);
+}
+
+void EngineerManual::sPressing()
+{
+  double final_x_scale = x_scale_;
+  if (speed_change_mode_)
+    final_x_scale = x_scale_ * speed_change_scale_;
+  vel_cmd_sender_->setLinearXVel(final_x_scale);
+}
+
+void EngineerManual::dPressing()
+{
+  double final_y_scale = y_scale_;
+  if (speed_change_mode_)
+    final_y_scale = y_scale_ * speed_change_scale_;
+  vel_cmd_sender_->setLinearYVel(final_y_scale);
+}
+
 void EngineerManual::mouseLeftRelease()
 {
   root_ += "0";
@@ -423,7 +457,7 @@ void EngineerManual::ctrlBPress()
 void EngineerManual::qPressing()
 {
   if (speed_change_mode_ == 1)
-    vel_cmd_sender_->setAngularZVel(gyro_scale_ * speed_change_scale_);
+    vel_cmd_sender_->setAngularZVel(gyro_low_scale_);
   else
     vel_cmd_sender_->setAngularZVel(gyro_scale_);
 }
@@ -436,7 +470,7 @@ void EngineerManual::qRelease()
 void EngineerManual::ePressing()
 {
   if (speed_change_mode_ == 1)
-    vel_cmd_sender_->setAngularZVel(-gyro_scale_ * speed_change_scale_);
+    vel_cmd_sender_->setAngularZVel(-gyro_low_scale_);
   else
     vel_cmd_sender_->setAngularZVel(-gyro_scale_);
 }

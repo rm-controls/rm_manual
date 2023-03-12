@@ -176,46 +176,16 @@ void ChassisGimbalManual::wRelease()
   vel_cmd_sender_->setLinearXVel(x_scale_);
 }
 
-void ChassisGimbalManual::sPressing()
-{
-  double final_x_scale = x_scale_;
-  if (speed_change_mode_)
-    final_x_scale = x_scale_ * speed_change_scale_;
-  vel_cmd_sender_->setLinearXVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW ?
-                                     final_x_scale * gyro_move_reduction_ :
-                                     final_x_scale);
-}
-
 void ChassisGimbalManual::sRelease()
 {
   x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
   vel_cmd_sender_->setLinearXVel(x_scale_);
 }
 
-void ChassisGimbalManual::aPressing()
-{
-  double final_y_scale = y_scale_;
-  if (speed_change_mode_)
-    final_y_scale = y_scale_ * speed_change_scale_;
-  vel_cmd_sender_->setLinearYVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW ?
-                                     final_y_scale * gyro_move_reduction_ :
-                                     final_y_scale);
-}
-
 void ChassisGimbalManual::aRelease()
 {
   y_scale_ = y_scale_ <= -1.0 ? -1.0 : y_scale_ - 1.0;
   vel_cmd_sender_->setLinearYVel(y_scale_);
-}
-
-void ChassisGimbalManual::dPressing()
-{
-  double final_y_scale = y_scale_;
-  if (speed_change_mode_)
-    final_y_scale = y_scale_ * speed_change_scale_;
-  vel_cmd_sender_->setLinearYVel(chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW ?
-                                     final_y_scale * gyro_move_reduction_ :
-                                     final_y_scale);
 }
 
 void ChassisGimbalManual::dRelease()

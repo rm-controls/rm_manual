@@ -372,25 +372,37 @@ void ChassisGimbalShooterManual::dPress()
 
 void ChassisGimbalShooterManual::wPressing()
 {
-  ChassisGimbalManual::wPressing();
+  double final_x_scale = x_scale_;
+  if (speed_change_mode_)
+    final_x_scale = x_scale_ * speed_change_scale_;
+  vel_cmd_sender_->setLinearXVel(is_gyro_ ? final_x_scale * gyro_move_reduction_ : final_x_scale);
   vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0);
 }
 
 void ChassisGimbalShooterManual::aPressing()
 {
-  ChassisGimbalManual::aPressing();
+  double final_y_scale = y_scale_;
+  if (speed_change_mode_)
+    final_y_scale = y_scale_ * speed_change_scale_;
+  vel_cmd_sender_->setLinearYVel(is_gyro_ ? final_y_scale * gyro_move_reduction_ : final_y_scale);
   vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0);
 }
 
 void ChassisGimbalShooterManual::sPressing()
 {
-  ChassisGimbalManual::sPressing();
+  double final_x_scale = x_scale_;
+  if (speed_change_mode_)
+    final_x_scale = x_scale_ * speed_change_scale_;
+  vel_cmd_sender_->setLinearXVel(is_gyro_ ? final_x_scale * gyro_move_reduction_ : final_x_scale);
   vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0);
 }
 
 void ChassisGimbalShooterManual::dPressing()
 {
-  ChassisGimbalManual::dPressing();
+  double final_y_scale = y_scale_;
+  if (speed_change_mode_)
+    final_y_scale = y_scale_ * speed_change_scale_;
+  vel_cmd_sender_->setLinearYVel(is_gyro_ ? final_y_scale * gyro_move_reduction_ : final_y_scale);
   vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0);
 }
 
