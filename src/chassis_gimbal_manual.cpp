@@ -28,8 +28,9 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& n
     ROS_ERROR("gimbal_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
   else
     for (int i = 0; i < xml.size(); i++)
+    {
       gimbal_calibrate_motor_.push_back(xml[i]);
-
+    }
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh);
 

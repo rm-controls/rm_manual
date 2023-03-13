@@ -22,7 +22,9 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
     ROS_ERROR("shooter_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
   else
     for (int i = 0; i < xml.size(); i++)
+    {
       shooter_calibrate_motor_.push_back(xml[i]);
+    }
 
   shooter_power_on_event_.setRising(boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
   self_inspection_event_.setRising(boost::bind(&ChassisGimbalShooterManual::selfInspectionStart, this));

@@ -30,6 +30,7 @@ void ChassisGimbalShooterCoverManual::run()
 {
   ChassisGimbalShooterManual::run();
   gimbal_calibration_->update(ros::Time::now());
+  if(chassis_calibration_)
   chassis_calibration_->update(ros::Time::now());
 }
 
