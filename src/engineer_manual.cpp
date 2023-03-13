@@ -272,34 +272,26 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
 
 void EngineerManual::wPressing()
 {
-  double final_x_scale = x_scale_;
-  if (speed_change_mode_)
-    final_x_scale = x_scale_ * speed_change_scale_;
-  vel_cmd_sender_->setLinearXVel(final_x_scale);
+  ChassisGimbalManual::wPressing();
+  vel_cmd_sender_->setLinearXVel(final_x_scale_);
 }
 
 void EngineerManual::aPressing()
 {
-  double final_y_scale = y_scale_;
-  if (speed_change_mode_)
-    final_y_scale = y_scale_ * speed_change_scale_;
-  vel_cmd_sender_->setLinearYVel(final_y_scale);
+  ChassisGimbalManual::aPressing();
+  vel_cmd_sender_->setLinearYVel(final_y_scale_);
 }
 
 void EngineerManual::sPressing()
 {
-  double final_x_scale = x_scale_;
-  if (speed_change_mode_)
-    final_x_scale = x_scale_ * speed_change_scale_;
-  vel_cmd_sender_->setLinearXVel(final_x_scale);
+  ChassisGimbalManual::sPressing();
+  vel_cmd_sender_->setLinearXVel(final_x_scale_);
 }
 
 void EngineerManual::dPressing()
 {
-  double final_y_scale = y_scale_;
-  if (speed_change_mode_)
-    final_y_scale = y_scale_ * speed_change_scale_;
-  vel_cmd_sender_->setLinearYVel(final_y_scale);
+  ChassisGimbalManual::dPressing();
+  vel_cmd_sender_->setLinearYVel(final_y_scale_);
 }
 
 void EngineerManual::mouseLeftRelease()
