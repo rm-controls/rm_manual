@@ -15,6 +15,12 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("gimbal_calibration", rpc_value);
   gimbal_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  if (nh.hasParam("chassis_calibration"))
+  {
+    nh.getParam("chassis_calibration", rpc_value);
+    chassis_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  }
+
   ctrl_z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this),
                         boost::bind(&ChassisGimbalShooterCoverManual::ctrlZRelease, this));
   ctrl_q_event_.setRising(boost::bind(&ChassisGimbalShooterCoverManual::ctrlQPress, this));
@@ -24,6 +30,7 @@ void ChassisGimbalShooterCoverManual::run()
 {
   ChassisGimbalShooterManual::run();
   gimbal_calibration_->update(ros::Time::now());
+  chassis_calibration_->update(ros::Time::now());
 }
 
 void ChassisGimbalShooterCoverManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -95,6 +102,16 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
   }
   ChassisGimbalShooterManual::sendCommand(time);
   cover_command_sender_->sendCommand(time);
+}
+
+void ChassisGimbalShooterCoverManual::chassisOutputOn()
+{
+  ChassisGimbalShooterManual::chassisOutputOn();
+  if (chassis_calibration_)
+  {
+    ROS_INFO("reset chassis");
+    chassis_calibration_->reset();
+  }
 }
 
 void ChassisGimbalShooterCoverManual::gimbalOutputOn()

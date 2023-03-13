@@ -20,6 +20,7 @@ protected:
   void checkReferee() override;
   void sendCommand(const ros::Time& time) override;
   void gimbalOutputOn() override;
+  void chassisOutputOn() override;
   void remoteControlTurnOff() override;
   void remoteControlTurnOn() override;
   void rightSwitchDownRise() override;
@@ -34,6 +35,7 @@ protected:
 
   rm_common::JointPositionBinaryCommandSender* cover_command_sender_{};
   rm_common::CalibrationQueue* gimbal_calibration_;
+  rm_common::CalibrationQueue* chassis_calibration_;
 
   bool supply_ = false;
   bool cover_close_ = true;

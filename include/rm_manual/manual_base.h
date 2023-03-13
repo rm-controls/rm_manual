@@ -19,6 +19,7 @@
 #include <rm_common/ros_utilities.h>
 #include <rm_common/decision/command_sender.h>
 #include <rm_common/decision/controller_manager.h>
+#include <rm_common/decision/calibration_queue.h>
 
 #include <rm_msgs/DbusData.h>
 #include <rm_msgs/TrackData.h>

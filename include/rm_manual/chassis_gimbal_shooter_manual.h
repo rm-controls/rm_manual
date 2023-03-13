@@ -5,7 +5,6 @@
 #pragma once
 
 #include "rm_manual/chassis_gimbal_manual.h"
-#include <rm_common/decision/calibration_queue.h>
 
 namespace rm_manual
 {
