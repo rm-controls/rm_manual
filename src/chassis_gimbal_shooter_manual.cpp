@@ -17,6 +17,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("shooter_calibration", rpc_value);
   shooter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  ros::NodeHandle sentry_nh(nh, "sentry_data");
+  sentry_cmd_sender_ = new rm_common::SentryDataCommandSender(sentry_nh);
 
   shooter_power_on_event_.setRising(boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
   self_inspection_event_.setRising(boost::bind(&ChassisGimbalShooterManual::selfInspectionStart, this));
@@ -28,6 +30,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::qPress, this));
   f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::fPress, this));
   b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::bPress, this));
+  t_event_.setRising(boost::bind(&ChassisGimbalShooterManual::tPress, this));
   ctrl_c_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlCPress, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this));
@@ -70,6 +73,7 @@ void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr
   f_event_.update(dbus_data->key_f);
   b_event_.update((!dbus_data->key_ctrl && !dbus_data->key_shift) & dbus_data->key_b);
   x_event_.update(dbus_data->key_x);
+  t_event_.update((!dbus_data->key_ctrl) & dbus_data->key_t);
   ctrl_c_event_.update(dbus_data->key_ctrl & dbus_data->key_c);
   ctrl_v_event_.update(dbus_data->key_ctrl & dbus_data->key_v);
   ctrl_r_event_.update(dbus_data->key_ctrl & dbus_data->key_r);
@@ -123,6 +127,7 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
 {
   ChassisGimbalManual::sendCommand(time);
   shooter_cmd_sender_->sendCommand(time);
+  sentry_cmd_sender_->sendCommand(time);
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOff()
@@ -351,6 +356,14 @@ void ChassisGimbalShooterManual::dPress()
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+  }
+}
+
+void ChassisGimbalShooterManual::tPress()
+{
+  if (sentry_cmd_sender_->getMsg()->mode != rm_msgs::SentryData::CRUISE_GYRO)
+  {
+    sentry_cmd_sender_->setCruiseGyro();
   }
 }
 
