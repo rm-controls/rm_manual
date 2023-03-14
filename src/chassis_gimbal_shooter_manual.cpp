@@ -365,6 +365,10 @@ void ChassisGimbalShooterManual::tPress()
   {
     sentry_cmd_sender_->setCruiseGyro();
   }
+  else
+  {
+    sentry_cmd_sender_->setCruiseState();
+  }
 }
 
 void ChassisGimbalShooterManual::shiftPress()
