@@ -16,7 +16,11 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
   ros::NodeHandle nh_trigger = ros::NodeHandle(nh, "trigger");
   ros::NodeHandle nh_friction_left = ros::NodeHandle(nh, "friction_left");
   ros::NodeHandle nh_friction_right = ros::NodeHandle(nh, "friction_right");
-  qd_ = getParam(nh_friction_left, "qd_", 0.);
+  qd_1_ = getParam(nh_friction_left, "qd_1", 0.);
+  qd_2_ = getParam(nh_friction_left, "qd_2", 0.);
+  qd_3_ = getParam(nh_friction_left, "qd_3", 0.);
+  qd_4_ = getParam(nh_friction_left, "qd_4", 0.);
+  qd_ = qd_1_;
   upward_vel_ = getParam(nh_trigger, "upward_vel", 0.);
   trigger_sender_ = new rm_common::JointPointCommandSender(nh_trigger, joint_state_);
 
@@ -33,6 +37,8 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
   chassis_power_on_event_.setRising(boost::bind(&DartManual::chassisOutputOn, this));
   gimbal_power_on_event_.setRising(boost::bind(&DartManual::gimbalOutputOn, this));
 
+  gpio_state_sub_ = nh.subscribe<rm_msgs::GpioData>("/controllers/gpio_controller/gpio_states", 10,
+                                                    &DartManual::gpioStateCallback, this);
   dbus_sub_ = nh.subscribe<rm_msgs::DbusData>("/dbus_data", 10, &DartManual::dbusDataCallback, this);
 }
 
@@ -180,6 +186,54 @@ void DartManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
   ManualBase::dbusDataCallback(data);
   data_ = data;
+}
+void DartManual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
+{
+  door_state_2_ = data->gpio_state[2];
+  door_state_3_ = data->gpio_state[3];
+  door_state_4_ = data->gpio_state[4];
+  if (door_state_2_ || door_state_3_ || door_state_4_)
+  {
+    analog_level_ = 1;
+    if((analog_level_ - last_level_) > 0)
+    {
+      if (door_state_2_)
+        state_ = 2;
+      if (door_state_3_)
+        state_ = 3;
+      if (door_state_4_)
+        state_ = 4;
+      switch (state_)
+      {
+        case 1:
+          qd_ = qd_1_;
+          break;
+        case 2:
+          if (!return_state_1_)
+          {
+            qd_ = qd_2_;
+          }
+          else
+          {
+            qd_ = qd_1_;
+          }
+          return_state_1_ = !return_state_1_;
+          break;
+        case 3:
+          qd_ = qd_3_;
+          break;
+        case 4:
+          qd_ = qd_4_;
+          break;
+      }
+      friction_right_sender_->setPoint(qd_);
+      friction_left_sender_->setPoint(qd_);
+    }
+  }
+  else
+  {
+    analog_level_ = 0;
+  }
 }
 
 }  // namespace rm_manual
