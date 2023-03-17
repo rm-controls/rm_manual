@@ -16,11 +16,16 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
   ros::NodeHandle nh_trigger = ros::NodeHandle(nh, "trigger");
   ros::NodeHandle nh_friction_left = ros::NodeHandle(nh, "friction_left");
   ros::NodeHandle nh_friction_right = ros::NodeHandle(nh, "friction_right");
-  qd_1_ = getParam(nh_friction_left, "qd_1", 0.);
-  qd_2_ = getParam(nh_friction_left, "qd_2", 0.);
-  qd_3_ = getParam(nh_friction_left, "qd_3", 0.);
-  qd_4_ = getParam(nh_friction_left, "qd_4", 0.);
-  qd_ = qd_1_;
+  qd_normal_[1] = getParam(nh_friction_left, "qd_1", 0.);
+  qd_normal_[2] = getParam(nh_friction_left, "qd_2", 0.);
+  qd_normal_[3] = getParam(nh_friction_left, "qd_3", 0.);
+  qd_normal_[4] = getParam(nh_friction_left, "qd_4", 0.);
+  qd_base_[1] = getParam(nh_friction_left, "qd_base_1", 0.);
+  qd_base_[2] = getParam(nh_friction_left, "qd_base_2", 0.);
+  qd_base_[3] = getParam(nh_friction_left, "qd_base_3", 0.);
+  qd_base_[4] = getParam(nh_friction_left, "qd_base_4", 0.);
+  qd_ = qd_normal_[1];
+  scale_micro_ = getParam(nh_left_pitch, "scale_micro", 0.);
   upward_vel_ = getParam(nh_trigger, "upward_vel", 0.);
   trigger_sender_ = new rm_common::JointPointCommandSender(nh_trigger, joint_state_);
 
@@ -31,7 +36,6 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
   trigger_calibration_ = new rm_common::CalibrationQueue(trigger_rpc_value, nh, controller_manager_);
   nh.getParam("gimbal_calibration", gimbal_rpc_value);
   gimbal_calibration_ = new rm_common::CalibrationQueue(gimbal_rpc_value, nh, controller_manager_);
-
   left_switch_up_event_.setActiveHigh(boost::bind(&DartManual::leftSwitchUpOn, this));
   right_switch_down_event_.setActiveHigh(boost::bind(&DartManual::rightSwitchDownOn, this));
   chassis_power_on_event_.setRising(boost::bind(&DartManual::chassisOutputOn, this));
@@ -186,6 +190,54 @@ void DartManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
   ManualBase::dbusDataCallback(data);
   data_ = data;
+  wheel_state_ = data->wheel;
+  if (wheel_state_ == 1.0 || wheel_state_ == -1.0)
+  {
+    wheel_analog_level_ = 1;
+    if ((wheel_analog_level_ - wheel_last_level_) > 0)
+    {
+      if(wheel_state_ == 1.0)
+      {
+        if (!wheel_flag_)
+        {
+          scale_ = scale_micro_;
+          wheel_flag_ = !wheel_flag_;
+        }
+        else
+        {
+          scale_ = 0.04;
+          wheel_flag_ = !wheel_flag_;
+        }
+      }
+      if(wheel_state_ == -1.0)
+      {
+        if(!base_flag_)
+        {
+          speed_base_flag_ = 1;
+          qd_ = qd_base_[state_];
+          friction_right_sender_->setPoint(qd_);
+          friction_left_sender_->setPoint(qd_);
+          ROS_INFO("friction wheels : BASE_MODE");
+          base_flag_ = !base_flag_;
+        }
+        else
+        {
+          qd_ = qd_normal_[state_];
+          friction_right_sender_->setPoint(qd_);
+          friction_left_sender_->setPoint(qd_);
+          ROS_INFO("friction wheels : NORMAL_MODE");
+          speed_base_flag_ = 0;
+          base_flag_ = !base_flag_;
+        }
+      }
+    }
+  }
+  else
+  {
+    wheel_analog_level_ = 0;
+  }
+  wheel_last_level_ = wheel_analog_level_;
+
 }
 void DartManual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
 {
@@ -206,24 +258,45 @@ void DartManual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
       switch (state_)
       {
         case 1:
-          qd_ = qd_1_;
+          qd_ = qd_normal_[1];
+          if(speed_base_flag_)
+          {
+            qd_ = qd_base_[1];
+          }
           break;
         case 2:
           if (!return_state_1_)
           {
-            qd_ = qd_2_;
+            qd_ = qd_normal_[2];
+            if(speed_base_flag_)
+            {
+              qd_ = qd_base_[2];
+            }
           }
           else
           {
-            qd_ = qd_1_;
+            qd_ = qd_normal_[1];
+            state_ = 1;
+            if(speed_base_flag_)
+            {
+              qd_ = qd_base_[1];
+            }
           }
           return_state_1_ = !return_state_1_;
           break;
         case 3:
-          qd_ = qd_3_;
+          qd_ = qd_normal_[3];
+          if(speed_base_flag_)
+          {
+            qd_ = qd_base_[3];
+          }
           break;
         case 4:
-          qd_ = qd_4_;
+          qd_ = qd_normal_[4];
+          if(speed_base_flag_)
+          {
+            qd_ = qd_base_[4];
+          }
           break;
       }
       friction_right_sender_->setPoint(qd_);
@@ -234,6 +307,7 @@ void DartManual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
   {
     analog_level_ = 0;
   }
+  last_level_ = analog_level_;
 }
 
 }  // namespace rm_manual

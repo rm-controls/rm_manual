@@ -45,8 +45,12 @@ protected:
   rm_common::JointPointCommandSender *pitch_sender_, *yaw_sender_;
   rm_common::CalibrationQueue *trigger_calibration_, *gimbal_calibration_;
   double pitch_outpost_{}, pitch_base_{}, yaw_outpost_{}, yaw_base_{};
-  double qd_, qd_1_, qd_2_, qd_3_, qd_4_, upward_vel_;
-  double scale_{ 0.04 };
+  double qd_, upward_vel_;
+  double qd_normal_[5];
+  double qd_base_[5];
+  double wheel_state_ = 0.0;
+  bool wheel_flag_ = 0, speed_base_flag_ = 0, base_flag_ = 0;
+  double scale_{ 0.04 }, scale_micro_{ 0.01 };
   bool if_stop_{ true };
 
   InputEvent chassis_power_on_event_, gimbal_power_on_event_;
@@ -60,6 +64,7 @@ protected:
   rm_control::GpioData gpio_state_;
   ros::Subscriber gpio_state_sub_;
   bool analog_level_ = 0, last_level_ = 0;
+  bool wheel_analog_level_ = 0, wheel_last_level_ = 0;
   bool door_state_2_ = false, door_state_3_ = false, door_state_4_ = false;
   bool return_state_1_ = false;
 };
