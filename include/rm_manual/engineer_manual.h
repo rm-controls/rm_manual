@@ -37,11 +37,8 @@ private:
   {
     state_ = PC;
   }
-  void leftSwitchUpFall()
-  {
-    runStepQueue("ARM_TEST");
-    engineer_cmd_data_.step_queue_name = "ARM_TEST";
-  }
+  void leftSwitchUpRise() override;
+  void leftSwitchUpFall();
   void leftSwitchDownFall();
   void runStepQueue(const std::string& step_queue_name);
   void actionActiveCallback()
