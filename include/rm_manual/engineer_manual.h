@@ -92,11 +92,6 @@ private:
   void gPressing();
   void gRelease();
 
-  void wPressing() override;
-  void aPressing() override;
-  void sPressing() override;
-  void dPressing() override;
-
   void mouseLeftRelease();
   void mouseRightRelease();
   enum

@@ -162,34 +162,34 @@ void ChassisGimbalManual::leftSwitchDownRise()
 
 void ChassisGimbalManual::wPressing()
 {
-  final_x_scale_ = x_scale_;
+  double final_x_scale = x_scale_;
   if (speed_change_mode_)
-    final_x_scale_ = x_scale_ * speed_change_scale_;
-  vel_cmd_sender_->setLinearXVel(is_gyro_ ? final_x_scale_ * gyro_move_reduction_ : final_x_scale_);
+    final_x_scale = x_scale_ * speed_change_scale_;
+  vel_cmd_sender_->setLinearXVel(is_gyro_ ? final_x_scale * gyro_move_reduction_ : final_x_scale);
 }
 
 void ChassisGimbalManual::aPressing()
 {
-  final_y_scale_ = y_scale_;
+  double final_y_scale = y_scale_;
   if (speed_change_mode_)
-    final_y_scale_ = y_scale_ * speed_change_scale_;
-  vel_cmd_sender_->setLinearYVel(is_gyro_ ? final_y_scale_ * gyro_move_reduction_ : final_y_scale_);
+    final_y_scale = y_scale_ * speed_change_scale_;
+  vel_cmd_sender_->setLinearYVel(is_gyro_ ? final_y_scale * gyro_move_reduction_ : final_y_scale);
 }
 
 void ChassisGimbalManual::sPressing()
 {
-  final_x_scale_ = x_scale_;
+  double final_x_scale = x_scale_;
   if (speed_change_mode_)
-    final_x_scale_ = x_scale_ * speed_change_scale_;
-  vel_cmd_sender_->setLinearXVel(is_gyro_ ? final_x_scale_ * gyro_move_reduction_ : final_x_scale_);
+    final_x_scale = x_scale_ * speed_change_scale_;
+  vel_cmd_sender_->setLinearXVel(is_gyro_ ? final_x_scale * gyro_move_reduction_ : final_x_scale);
 }
 
 void ChassisGimbalManual::dPressing()
 {
-  final_y_scale_ = y_scale_;
+  double final_y_scale = y_scale_;
   if (speed_change_mode_)
-    final_y_scale_ = y_scale_ * speed_change_scale_;
-  vel_cmd_sender_->setLinearYVel(is_gyro_ ? final_y_scale_ * gyro_move_reduction_ : final_y_scale_);
+    final_y_scale = y_scale_ * speed_change_scale_;
+  vel_cmd_sender_->setLinearYVel(is_gyro_ ? final_y_scale * gyro_move_reduction_ : final_y_scale);
 }
 
 void ChassisGimbalManual::wRelease()

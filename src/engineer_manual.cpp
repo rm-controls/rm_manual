@@ -269,31 +269,6 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   step_queue_state_.step_queue_name += " done!";
   operating_mode_ = MANUAL;
 }
-
-void EngineerManual::wPressing()
-{
-  ChassisGimbalManual::wPressing();
-  vel_cmd_sender_->setLinearXVel(final_x_scale_);
-}
-
-void EngineerManual::aPressing()
-{
-  ChassisGimbalManual::aPressing();
-  vel_cmd_sender_->setLinearYVel(final_y_scale_);
-}
-
-void EngineerManual::sPressing()
-{
-  ChassisGimbalManual::sPressing();
-  vel_cmd_sender_->setLinearXVel(final_x_scale_);
-}
-
-void EngineerManual::dPressing()
-{
-  ChassisGimbalManual::dPressing();
-  vel_cmd_sender_->setLinearYVel(final_y_scale_);
-}
-
 void EngineerManual::mouseLeftRelease()
 {
   root_ += "0";
