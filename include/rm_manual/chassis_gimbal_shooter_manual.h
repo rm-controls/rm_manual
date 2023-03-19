@@ -13,14 +13,14 @@ namespace rm_manual
 class ChassisGimbalShooterManual : public ChassisGimbalManual
 {
 public:
-  explicit ChassisGimbalShooterManual(ros::NodeHandle& nh);
+  ChassisGimbalShooterManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
 protected:
   void checkReferee() override;
-  void checkKeyboard() override;
-  void updateRc() override;
-  void updatePc() override;
+  void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
+  void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
+  void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void sendCommand(const ros::Time& time) override;
   void chassisOutputOn() override;
   void shooterOutputOn() override;
@@ -42,6 +42,12 @@ protected:
   void leftSwitchMidRise() override;
   void leftSwitchMidOn(ros::Duration duration);
   void leftSwitchUpRise() override;
+  void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
+  void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data) override;
+  void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override;
+  void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override;
+  void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data) override;
+  void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override;
   void leftSwitchUpOn(ros::Duration duration);
   void mouseLeftPress();
   void mouseLeftRelease()
