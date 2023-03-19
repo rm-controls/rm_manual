@@ -62,10 +62,8 @@ void ChassisGimbalManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 void ChassisGimbalManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ManualBase::updatePc(dbus_data);
-  gimbal_cmd_sender_->setRate(-dbus_data->m_x * gimbal_scale_, dbus_data->m_y * gimbal_scale_);
-  ManualBase::updatePc();
   if (!turn_flag_)
-    gimbal_cmd_sender_->setRate(-dbus_data_.m_x * gimbal_scale_, dbus_data_.m_y * gimbal_scale_);
+    gimbal_cmd_sender_->setRate(-dbus_data->m_x * gimbal_scale_, dbus_data->m_y * gimbal_scale_);
   else
     gimbal_cmd_sender_->setRate(gimbal_scale_, gimbal_scale_);
 }
