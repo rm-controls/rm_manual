@@ -14,6 +14,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <rm_msgs/EngineerAction.h>
 #include <rm_msgs/StepQueueState.h>
+#include <rm_msgs/MultiDofCmd.h>
 
 namespace rm_manual
 {
@@ -112,9 +113,15 @@ private:
     RATE,
     DIRECT
   };
+  enum
+  {
+    VELOCITY,
+    POSITION
+  };
 
   int state_;
   rm_msgs::StepQueueState step_queue_state_;
+  rm_msgs::MultiDofCmd multi_dof_cmd_;
   double angular_z_scale_{};
   std::string prefix_, root_, reversal_state_;
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{};
@@ -126,6 +133,7 @@ private:
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
+  rm_common::MultiDofCommandSender* multi_dof_command_sender_;
   InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_q_event_, ctrl_a_event_, ctrl_z_event_, ctrl_w_event_,
       ctrl_s_event_, ctrl_x_event_, ctrl_e_event_, ctrl_d_event_, ctrl_c_event_, ctrl_b_event_, ctrl_v_event_, z_event_,
       q_event_, e_event_, x_event_, c_event_, v_event_, b_event_, f_event_, shift_z_event_, shift_x_event_,

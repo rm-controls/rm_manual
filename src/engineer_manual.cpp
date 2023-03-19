@@ -15,6 +15,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
+  ros::NodeHandle nh_multi_dof(nh, "reversal");
+  multi_dof_command_sender_ = new rm_common::MultiDofCommandSender(nh_multi_dof);
   // Servo
   ros::NodeHandle nh_servo(nh, "servo");
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
@@ -163,6 +165,9 @@ void EngineerManual::sendCommand(const ros::Time& time)
   {
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
+    multi_dof_command_sender_->sendCommand(time);
+    if (multi_dof_command_sender_->getMode())
+      multi_dof_command_sender_->setZero();
   }
   if (servo_mode_ == SERVO)
     servo_command_sender_->sendCommand(time);
@@ -216,9 +221,11 @@ void EngineerManual::rightSwitchUpRise()
 
 void EngineerManual::leftSwitchUpRise()
 {
-  arm_calibration_->reset();
-  power_on_calibration_->reset();
-  runStepQueue("OPEN_GRIPPER");
+//  arm_calibration_->reset();
+//  power_on_calibration_->reset();
+//  runStepQueue("OPEN_GRIPPER");
+    multi_dof_command_sender_->moveZ(0.1);
+    multi_dof_command_sender_->setMode(1);
 }
 
 void EngineerManual::leftSwitchDownFall()
