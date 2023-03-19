@@ -64,6 +64,7 @@ protected:
   double gimbal_scale_{ 1. };
   double gyro_move_reduction_{ 1. };
   double gyro_rotate_reduction_{ 1. };
+  double yaw_turn_vel_{};
 
   bool turn_flag_ = false;
 

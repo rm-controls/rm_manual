@@ -375,7 +375,7 @@ void ChassisGimbalShooterManual::xRelease()
   {
     double roll{}, pitch{}, yaw{};
     quatToRPY(tf_buffer_.lookupTransform("map", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
-    if (std::abs(angles::shortest_angular_distance(yaw, yaw_)) > 3)
+    if (std::abs(angles::shortest_angular_distance(yaw, yaw_)) > M_PI)
       turn_flag_ = false;
   }
   catch (tf2::TransformException& ex)
