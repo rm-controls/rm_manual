@@ -308,11 +308,7 @@ void ChassisGimbalShooterManual::bPress()
 
 void ChassisGimbalShooterManual::rPress()
 {
-  std::string current_camera = camera_switch_cmd_sender_->getCurrentCameraName();
-  if (current_camera == camera_switch_cmd_sender_->getCameraOneName())
-    camera_switch_cmd_sender_->switchCameraTwo();
-  else
-    camera_switch_cmd_sender_->switchCameraOne();
+  camera_switch_cmd_sender_->switchCamera();
 }
 
 void ChassisGimbalShooterManual::wPress()
