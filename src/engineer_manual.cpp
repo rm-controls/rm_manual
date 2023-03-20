@@ -387,13 +387,13 @@ void EngineerManual::ctrlVPress()
   {
     runStepQueue("CLOSE_GRIPPER");
     step_queue_state_.step_queue_name = "CLOSE_GRIPPER";
-    state_ = 0;
+    state_ = false;
   }
   else if (!state_)
   {
     runStepQueue("OPEN_GRIPPER");
     step_queue_state_.step_queue_name = "OPEN_GRIPPER";
-    state_ = 1;
+    state_ = true;
   }
 }
 
@@ -511,14 +511,14 @@ void EngineerManual::shiftCPress()
 {
   if (servo_mode_)
   {
-    servo_mode_ = 0;
+    servo_mode_ = false;
     step_queue_state_.step_queue_name = "ENTER servo";
 
     ROS_INFO("EXIT SERVO");
   }
   else
   {
-    servo_mode_ = 1;
+    servo_mode_ = true;
     step_queue_state_.step_queue_name = "exit SERVO";
 
     ROS_INFO("ENTER SERVO");
