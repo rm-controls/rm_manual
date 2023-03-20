@@ -383,13 +383,13 @@ void EngineerManual::ctrlCPress()
 
 void EngineerManual::ctrlVPress()
 {
-  if (state_ == 1)
+  if (state_)
   {
     runStepQueue("CLOSE_GRIPPER");
     step_queue_state_.step_queue_name = "CLOSE_GRIPPER";
     state_ = 0;
   }
-  else if (state_ == 0)
+  else if (!state_)
   {
     runStepQueue("OPEN_GRIPPER");
     step_queue_state_.step_queue_name = "OPEN_GRIPPER";
@@ -423,10 +423,7 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::qPressing()
 {
-  if (speed_change_mode_ == 1)
-    vel_cmd_sender_->setAngularZVel(gyro_low_scale_);
-  else
-    vel_cmd_sender_->setAngularZVel(gyro_scale_);
+  vel_cmd_sender_->setAngularZVel(speed_change_mode_ ? gyro_low_scale_ : gyro_scale_);
 }
 
 void EngineerManual::qRelease()
@@ -436,10 +433,7 @@ void EngineerManual::qRelease()
 
 void EngineerManual::ePressing()
 {
-  if (speed_change_mode_ == 1)
-    vel_cmd_sender_->setAngularZVel(-gyro_low_scale_);
-  else
-    vel_cmd_sender_->setAngularZVel(-gyro_scale_);
+  vel_cmd_sender_->setAngularZVel(speed_change_mode_ ? -gyro_low_scale_ : -gyro_scale_);
 }
 
 void EngineerManual::eRelease()
@@ -501,11 +495,11 @@ void EngineerManual::fRelease()
 }
 void EngineerManual::shiftPressing()
 {
-  speed_change_mode_ = 1;
+  speed_change_mode_ = true;
 }
 void EngineerManual::shiftRelease()
 {
-  speed_change_mode_ = 0;
+  speed_change_mode_ = false;
 }
 void EngineerManual::shiftRPress()
 {
@@ -515,7 +509,7 @@ void EngineerManual::shiftRPress()
 }
 void EngineerManual::shiftCPress()
 {
-  if (servo_mode_ == 1)
+  if (servo_mode_)
   {
     servo_mode_ = 0;
     step_queue_state_.step_queue_name = "ENTER servo";
