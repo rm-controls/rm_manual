@@ -93,6 +93,6 @@ protected:
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
 
-  double yaw_{};
+  double yaw_current_{};
 };
 }  // namespace rm_manual

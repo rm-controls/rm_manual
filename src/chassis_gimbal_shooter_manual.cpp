@@ -361,7 +361,7 @@ void ChassisGimbalShooterManual::xPress()
   try
   {
     double roll{}, pitch{};
-    quatToRPY(tf_buffer_.lookupTransform("map", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw_);
+    quatToRPY(tf_buffer_.lookupTransform("map", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw_current_);
   }
   catch (tf2::TransformException& ex)
   {
@@ -375,7 +375,7 @@ void ChassisGimbalShooterManual::xRelease()
   {
     double roll{}, pitch{}, yaw{};
     quatToRPY(tf_buffer_.lookupTransform("map", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
-    if (std::abs(angles::shortest_angular_distance(yaw, yaw_)) > M_PI)
+    if (std::abs(angles::shortest_angular_distance(yaw, yaw_current_)) > M_PI)
       turn_flag_ = false;
   }
   catch (tf2::TransformException& ex)
