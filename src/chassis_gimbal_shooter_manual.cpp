@@ -17,8 +17,6 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("shooter_calibration", rpc_value);
   shooter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  ros::NodeHandle sentry_nh(nh, "sentry_data");
-  sentry_cmd_sender_ = new rm_common::SentryDataCommandSender(sentry_nh);
 
   shooter_power_on_event_.setRising(boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
   self_inspection_event_.setRising(boost::bind(&ChassisGimbalShooterManual::selfInspectionStart, this));
@@ -125,8 +123,6 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
 {
   ChassisGimbalManual::sendCommand(time);
   shooter_cmd_sender_->sendCommand(time);
-  if (robot_id_ != rm_msgs::GameRobotStatus::RED_SENTRY || robot_id_ != rm_msgs::GameRobotStatus::BLUE_SENTRY)
-    sentry_cmd_sender_->sendCommand(time);
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOff()
