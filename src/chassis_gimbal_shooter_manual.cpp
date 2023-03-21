@@ -126,7 +126,8 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
 {
   ChassisGimbalManual::sendCommand(time);
   shooter_cmd_sender_->sendCommand(time);
-  sentry_cmd_sender_->sendCommand(time);
+  if (robot_id_ != rm_msgs::GameRobotStatus::RED_SENTRY || robot_id_ != rm_msgs::GameRobotStatus::BLUE_SENTRY)
+    sentry_cmd_sender_->sendCommand(time);
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOff()
@@ -204,6 +205,17 @@ void ChassisGimbalShooterManual::rightSwitchUpRise()
   ChassisGimbalManual::rightSwitchUpRise();
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+  if (robot_id_ != rm_msgs::GameRobotStatus::RED_SENTRY || robot_id_ != rm_msgs::GameRobotStatus::BLUE_SENTRY)
+  {
+    if (sentry_cmd_sender_->getMsg()->mode != rm_msgs::SentryData::CRUISE_GYRO)
+    {
+      sentry_cmd_sender_->setCruiseGyro();
+    }
+    else
+    {
+      sentry_cmd_sender_->setCruiseState();
+    }
+  }
 }
 
 void ChassisGimbalShooterManual::leftSwitchDownRise()
@@ -360,13 +372,16 @@ void ChassisGimbalShooterManual::dPress()
 
 void ChassisGimbalShooterManual::tPress()
 {
-  if (sentry_cmd_sender_->getMsg()->mode != rm_msgs::SentryData::CRUISE_GYRO)
+  if (robot_id_ != rm_msgs::GameRobotStatus::RED_SENTRY || robot_id_ != rm_msgs::GameRobotStatus::BLUE_SENTRY)
   {
-    sentry_cmd_sender_->setCruiseGyro();
-  }
-  else
-  {
-    sentry_cmd_sender_->setCruiseState();
+    if (sentry_cmd_sender_->getMsg()->mode != rm_msgs::SentryData::CRUISE_GYRO)
+    {
+      sentry_cmd_sender_->setCruiseGyro();
+    }
+    else
+    {
+      sentry_cmd_sender_->setCruiseState();
+    }
   }
 }
 
