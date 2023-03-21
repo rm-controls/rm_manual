@@ -207,13 +207,13 @@ void ChassisGimbalShooterManual::rightSwitchUpRise()
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   if (robot_id_ != rm_msgs::GameRobotStatus::RED_SENTRY || robot_id_ != rm_msgs::GameRobotStatus::BLUE_SENTRY)
   {
-    if (manual_to_referee_pub_data_.mode != rm_msgs::ManualToReferee::CRUISE_GYRO)
+    if (manual_to_referee_pub_data_.sentry_state != rm_msgs::ManualToReferee::CRUISE_GYRO)
     {
-      manual_to_referee_pub_data_.mode = rm_msgs::ManualToReferee::CRUISE_GYRO;
+      manual_to_referee_pub_data_.sentry_state = rm_msgs::ManualToReferee::CRUISE_GYRO;
     }
     else
     {
-      manual_to_referee_pub_data_.mode = rm_msgs::ManualToReferee::CRUISE;
+      manual_to_referee_pub_data_.sentry_state = rm_msgs::ManualToReferee::CRUISE;
     }
     ChassisGimbalShooterManual::checkReferee();
   }
@@ -375,13 +375,13 @@ void ChassisGimbalShooterManual::tPress()
 {
   if (robot_id_ != rm_msgs::GameRobotStatus::RED_SENTRY || robot_id_ != rm_msgs::GameRobotStatus::BLUE_SENTRY)
   {
-    if (manual_to_referee_pub_data_.mode != rm_msgs::ManualToReferee::CRUISE_GYRO)
+    if (manual_to_referee_pub_data_.sentry_state != rm_msgs::ManualToReferee::CRUISE_GYRO)
     {
-      manual_to_referee_pub_data_.mode = rm_msgs::ManualToReferee::CRUISE_GYRO;
+      manual_to_referee_pub_data_.sentry_state = rm_msgs::ManualToReferee::CRUISE_GYRO;
     }
     else
     {
-      manual_to_referee_pub_data_.mode = rm_msgs::ManualToReferee::CRUISE;
+      manual_to_referee_pub_data_.sentry_state = rm_msgs::ManualToReferee::CRUISE;
     }
     ChassisGimbalShooterManual::checkReferee();
   }
