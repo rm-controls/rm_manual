@@ -366,7 +366,7 @@ void ChassisGimbalShooterManual::gPress()
     {
       manual_to_referee_pub_data_.sentry_state = rm_msgs::ManualToReferee::CRUISE;
     }
-    ChassisGimbalShooterManual::checkReferee();
+    ManualBase::checkReferee();
   }
 }
 
