@@ -30,7 +30,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::qPress, this));
   f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::fPress, this));
   b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::bPress, this));
-  t_event_.setRising(boost::bind(&ChassisGimbalShooterManual::tPress, this));
+  g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
   ctrl_c_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlCPress, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this));
@@ -67,12 +67,11 @@ void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr
   ChassisGimbalManual::checkKeyboard(dbus_data);
   e_event_.update(dbus_data->key_e);
   c_event_.update(dbus_data->key_c);
-  g_event_.update(dbus_data->key_g);
+  g_event_.update((!dbus_data->key_ctrl) & dbus_data->key_g);
   q_event_.update((!dbus_data->key_ctrl) & dbus_data->key_q);
   f_event_.update(dbus_data->key_f);
   b_event_.update((!dbus_data->key_ctrl && !dbus_data->key_shift) & dbus_data->key_b);
   x_event_.update(dbus_data->key_x);
-  t_event_.update((!dbus_data->key_ctrl) & dbus_data->key_t);
   ctrl_c_event_.update(dbus_data->key_ctrl & dbus_data->key_c);
   ctrl_v_event_.update(dbus_data->key_ctrl & dbus_data->key_v);
   ctrl_r_event_.update(dbus_data->key_ctrl & dbus_data->key_r);
@@ -371,7 +370,7 @@ void ChassisGimbalShooterManual::dPress()
   }
 }
 
-void ChassisGimbalShooterManual::tPress()
+void ChassisGimbalShooterManual::gPress()
 {
   if (robot_id_ != rm_msgs::GameRobotStatus::RED_SENTRY || robot_id_ != rm_msgs::GameRobotStatus::BLUE_SENTRY)
   {
