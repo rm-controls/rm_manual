@@ -48,7 +48,7 @@ protected:
   void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data) override;
   void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override;
   void leftSwitchUpOn(ros::Duration duration);
-  void mouseLeftPress();
+  void mouseLeftPress(ros::Duration duration);
   void mouseLeftRelease()
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
