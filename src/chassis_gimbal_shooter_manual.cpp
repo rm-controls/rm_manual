@@ -250,7 +250,10 @@ void ChassisGimbalShooterManual::leftSwitchUpOn(ros::Duration duration)
 
 void ChassisGimbalShooterManual::mouseLeftPress()
 {
-  shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+  if (shooter_cmd_sender_->getMode() == rm_msgs::ShootCmd::STOP)
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+  else
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
   shooter_cmd_sender_->checkError(ros::Time::now());
 }
 
