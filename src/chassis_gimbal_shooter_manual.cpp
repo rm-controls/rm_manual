@@ -356,18 +356,11 @@ void ChassisGimbalShooterManual::dPress()
 
 void ChassisGimbalShooterManual::gPress()
 {
-  if (robot_id_ != rm_msgs::GameRobotStatus::RED_SENTRY || robot_id_ != rm_msgs::GameRobotStatus::BLUE_SENTRY)
-  {
-    if (manual_to_referee_pub_data_.sentry_state != rm_msgs::ManualToReferee::CRUISE_GYRO)
-    {
-      manual_to_referee_pub_data_.sentry_state = rm_msgs::ManualToReferee::CRUISE_GYRO;
-    }
-    else
-    {
-      manual_to_referee_pub_data_.sentry_state = rm_msgs::ManualToReferee::CRUISE;
-    }
-    ManualBase::checkReferee();
-  }
+  manual_to_referee_pub_data_.sentry_state =
+      manual_to_referee_pub_data_.sentry_state == rm_msgs::ManualToReferee::CRUISE ?
+          rm_msgs::ManualToReferee ::CRUISE_GYRO :
+          rm_msgs::ManualToReferee::CRUISE;
+  ManualBase::checkReferee();
 }
 
 void ChassisGimbalShooterManual::shiftPress()
