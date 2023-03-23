@@ -356,9 +356,8 @@ void ChassisGimbalShooterManual::dPress()
 
 void ChassisGimbalShooterManual::gPress()
 {
-  sentry_data_.sentry_state = sentry_data_.sentry_state == rm_msgs::SentryData ::CRUISE ?
-                                  rm_msgs::SentryData::CRUISE_GYRO :
-                                  rm_msgs::SentryData::CRUISE;
+  sentry_data_.state = sentry_data_.state == rm_msgs::SentryData ::CRUISE ? rm_msgs::SentryData::CRUISE_GYRO :
+                                                                            rm_msgs::SentryData::CRUISE;
   ManualBase::checkReferee();
 }
 
