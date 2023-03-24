@@ -34,7 +34,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
   shift_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::shiftPress, this),
                        boost::bind(&ChassisGimbalShooterManual::shiftRelease, this));
-  mouse_left_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseLeftPress, this, _1));
+  mouse_left_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseLeftPress, this));
   mouse_left_event_.setFalling(boost::bind(&ChassisGimbalShooterManual::mouseLeftRelease, this));
   mouse_right_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseRightPress, this));
   mouse_right_event_.setFalling(boost::bind(&ChassisGimbalShooterManual::mouseRightRelease, this));
@@ -248,13 +248,18 @@ void ChassisGimbalShooterManual::leftSwitchUpOn(ros::Duration duration)
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
 }
 
-void ChassisGimbalShooterManual::mouseLeftPress(ros::Duration duration)
+void ChassisGimbalShooterManual::mouseLeftPress()
 {
-  if (duration.toSec() < 0.1)
+  if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::STOP)
+  {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
-  else
+    start_shooting_ = true;
+  }
+  if (!start_shooting_)
+  {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-  shooter_cmd_sender_->checkError(ros::Time::now());
+    shooter_cmd_sender_->checkError(ros::Time::now());
+  }
 }
 
 void ChassisGimbalShooterManual::mouseRightPress()

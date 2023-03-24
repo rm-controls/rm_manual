@@ -48,10 +48,11 @@ protected:
   void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data) override;
   void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override;
   void leftSwitchUpOn(ros::Duration duration);
-  void mouseLeftPress(ros::Duration duration);
+  void mouseLeftPress();
   void mouseLeftRelease()
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+    start_shooting_ = false;
   }
   void mouseRightPress();
   void mouseRightRelease()
@@ -89,5 +90,7 @@ protected:
   rm_common::ShooterCommandSender* shooter_cmd_sender_{};
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
+
+  bool start_shooting_ = false;
 };
 }  // namespace rm_manual
