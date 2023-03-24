@@ -52,6 +52,7 @@ protected:
   void mouseLeftRelease()
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+    prepare_shoot_ = true;
   }
   void mouseRightPress();
   void mouseRightRelease()
@@ -62,6 +63,15 @@ protected:
   void aPress() override;
   void sPress() override;
   void dPress() override;
+  void wPressing() override;
+  void aPressing() override;
+  void sPressing() override;
+  void dPressing() override;
+  void wRelease() override;
+  void aRelease() override;
+  void sRelease() override;
+  void dRelease() override;
+
   void ePress();
   void cPress();
   void bPress();
@@ -90,5 +100,7 @@ protected:
   rm_common::ShooterCommandSender* shooter_cmd_sender_{};
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
+
+  bool prepare_shoot_ = false;
 };
 }  // namespace rm_manual
