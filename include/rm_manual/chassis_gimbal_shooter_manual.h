@@ -52,7 +52,7 @@ protected:
   void mouseLeftRelease()
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
-    start_shooting_ = false;
+    prepare_shoot_ = true;
   }
   void mouseRightPress();
   void mouseRightRelease()
@@ -91,6 +91,6 @@ protected:
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
 
-  bool start_shooting_ = false;
+  bool prepare_shoot_ = false;
 };
 }  // namespace rm_manual

@@ -253,9 +253,9 @@ void ChassisGimbalShooterManual::mouseLeftPress()
   if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::STOP)
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
-    start_shooting_ = true;
+    prepare_shoot_ = false;
   }
-  if (!start_shooting_)
+  if (prepare_shoot_)
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
     shooter_cmd_sender_->checkError(ros::Time::now());
