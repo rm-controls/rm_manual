@@ -150,6 +150,7 @@ void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
+  multi_dof_command_sender_->setGroupVel(0.,0.,dbus_data->ch_r_y,dbus_data->ch_l_x,dbus_data->ch_l_y,0.);
 }
 
 void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -165,9 +166,9 @@ void EngineerManual::sendCommand(const ros::Time& time)
   {
     chassis_cmd_sender_->sendCommand(time);
     vel_cmd_sender_->sendCommand(time);
-    //multi_dof_command_sender_->sendCommand(time);
-    //if (multi_dof_command_sender_->getMode())
-      //multi_dof_command_sender_->setZero();
+    multi_dof_command_sender_->sendCommand(time);
+    if (multi_dof_command_sender_->getMode())
+      multi_dof_command_sender_->setZero();
   }
   if (servo_mode_ == SERVO)
     servo_command_sender_->sendCommand(time);
@@ -221,11 +222,9 @@ void EngineerManual::rightSwitchUpRise()
 
 void EngineerManual::leftSwitchUpRise()
 {
-//  arm_calibration_->reset();
-//  power_on_calibration_->reset();
-//  runStepQueue("OPEN_GRIPPER");
-    multi_dof_command_sender_->moveZ(0.1);
-    multi_dof_command_sender_->setMode(1);
+  arm_calibration_->reset();
+  power_on_calibration_->reset();
+  runStepQueue("OPEN_GRIPPER");
 }
 
 void EngineerManual::leftSwitchDownFall()
