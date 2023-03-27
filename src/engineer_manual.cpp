@@ -150,7 +150,7 @@ void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
-  multi_dof_command_sender_->setGroupVel(0.,0.,dbus_data->ch_r_y,dbus_data->ch_l_x,dbus_data->ch_l_y,0.);
+  multi_dof_command_sender_->setGroupVel(0., 0., dbus_data->ch_r_y, dbus_data->ch_l_x, dbus_data->ch_l_y, 0.);
 }
 
 void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
