@@ -19,6 +19,12 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ros::NodeHandle nh_servo(nh, "servo");
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
   servo_reset_caller_ = new rm_common::ServiceCallerBase<std_srvs::Empty>(nh_servo, "/servo_server/reset_servo_status");
+  // Vel
+  ros::NodeHandle vel_nh(nh, "vel");
+  if (!vel_nh.getParam("gyro_scale", gyro_scale_))
+    gyro_scale_ = 0.2;
+  if (!vel_nh.getParam("gyro_low_scale", gyro_low_scale_))
+    gyro_low_scale_ = 0.3;
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("power_on_calibration", rpc_value);
@@ -60,8 +66,6 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   b_event_.setFalling(boost::bind(&EngineerManual::bRelease, this));
   f_event_.setActiveHigh(boost::bind(&EngineerManual::fPressing, this));
   f_event_.setFalling(boost::bind(&EngineerManual::fRelease, this));
-  shift_e_event_.setRising(boost::bind(&EngineerManual::shiftEPress, this));
-  shift_e_event_.setFalling(boost::bind(&EngineerManual::shiftERelease, this));
   shift_z_event_.setRising(boost::bind(&EngineerManual::shiftZPress, this));
   shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
   shift_v_event_.setRising(boost::bind(&EngineerManual::shiftVPress, this));
@@ -71,8 +75,6 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
   shift_g_event_.setRising(boost::bind(&EngineerManual::shiftGPress, this));
   shift_r_event_.setRising(boost::bind(&EngineerManual::shiftRPress, this));
-  shift_q_event_.setRising(boost::bind(&EngineerManual::shiftQPress, this));
-  shift_q_event_.setFalling(boost::bind(&EngineerManual::shiftQRelease, this));
   shift_event_.setActiveHigh(boost::bind(&EngineerManual::shiftPressing, this));
   shift_event_.setFalling(boost::bind(&EngineerManual::shiftRelease, this));
   mouse_left_event_.setFalling(boost::bind(&EngineerManual::mouseLeftRelease, this));
@@ -114,8 +116,8 @@ void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
   g_event_.update(dbus_data->key_g & !dbus_data->key_ctrl & !dbus_data->key_shift);
   f_event_.update(dbus_data->key_f & !dbus_data->key_ctrl & !dbus_data->key_shift);
   r_event_.update(dbus_data->key_r & !dbus_data->key_ctrl & !dbus_data->key_shift);
-  q_event_.update(dbus_data->key_q & !dbus_data->key_ctrl & !dbus_data->key_shift);
-  e_event_.update(dbus_data->key_e & !dbus_data->key_ctrl & !dbus_data->key_shift);
+  q_event_.update(dbus_data->key_q & !dbus_data->key_ctrl);
+  e_event_.update(dbus_data->key_e & !dbus_data->key_ctrl);
 
   shift_z_event_.update(dbus_data->key_shift & dbus_data->key_z);
   shift_x_event_.update(dbus_data->key_shift & dbus_data->key_x);
@@ -146,6 +148,10 @@ void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updateRc(dbus_data);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  vel_cmd_sender_->setAngularZVel(dbus_data->wheel);
+  vel_cmd_sender_->setLinearXVel(dbus_data->ch_r_y);
+  vel_cmd_sender_->setLinearYVel(-dbus_data->ch_r_x);
+
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
 }
@@ -161,7 +167,7 @@ void EngineerManual::sendCommand(const ros::Time& time)
 {
   if (operating_mode_ == MANUAL)
   {
-    chassis_cmd_sender_->sendCommand(time);
+    chassis_cmd_sender_->sendChassisCommand(time, false);
     vel_cmd_sender_->sendCommand(time);
   }
   if (servo_mode_ == SERVO)
@@ -263,7 +269,6 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   step_queue_state_.step_queue_name += " done!";
   operating_mode_ = MANUAL;
 }
-
 void EngineerManual::mouseLeftRelease()
 {
   root_ += "0";
@@ -378,17 +383,17 @@ void EngineerManual::ctrlCPress()
 
 void EngineerManual::ctrlVPress()
 {
-  if (state_ == 1)
+  if (state_)
   {
     runStepQueue("CLOSE_GRIPPER");
     step_queue_state_.step_queue_name = "CLOSE_GRIPPER";
-    state_ = 0;
+    state_ = false;
   }
-  else if (state_ == 0)
+  else if (!state_)
   {
     runStepQueue("OPEN_GRIPPER");
     step_queue_state_.step_queue_name = "OPEN_GRIPPER";
-    state_ = 1;
+    state_ = true;
   }
 }
 
@@ -418,7 +423,7 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::qPressing()
 {
-  vel_cmd_sender_->setAngularZVel(0.3);
+  vel_cmd_sender_->setAngularZVel(speed_change_mode_ ? gyro_low_scale_ : gyro_scale_);
 }
 
 void EngineerManual::qRelease()
@@ -428,7 +433,7 @@ void EngineerManual::qRelease()
 
 void EngineerManual::ePressing()
 {
-  vel_cmd_sender_->setAngularZVel(-0.3);
+  vel_cmd_sender_->setAngularZVel(speed_change_mode_ ? -gyro_low_scale_ : -gyro_scale_);
 }
 
 void EngineerManual::eRelease()
@@ -490,25 +495,11 @@ void EngineerManual::fRelease()
 }
 void EngineerManual::shiftPressing()
 {
+  speed_change_mode_ = true;
 }
 void EngineerManual::shiftRelease()
 {
-}
-void EngineerManual::shiftQPress()
-{
-  vel_cmd_sender_->setAngularZVel(0.1);
-}
-void EngineerManual::shiftQRelease()
-{
-  vel_cmd_sender_->setAngularZVel(0);
-}
-void EngineerManual::shiftEPress()
-{
-  vel_cmd_sender_->setAngularZVel(-0.1);
-}
-void EngineerManual::shiftERelease()
-{
-  vel_cmd_sender_->setAngularZVel(0);
+  speed_change_mode_ = false;
 }
 void EngineerManual::shiftRPress()
 {
@@ -518,16 +509,16 @@ void EngineerManual::shiftRPress()
 }
 void EngineerManual::shiftCPress()
 {
-  if (servo_mode_ == 1)
+  if (servo_mode_)
   {
-    servo_mode_ = 0;
+    servo_mode_ = false;
     step_queue_state_.step_queue_name = "ENTER servo";
 
     ROS_INFO("EXIT SERVO");
   }
   else
   {
-    servo_mode_ = 1;
+    servo_mode_ = true;
     step_queue_state_.step_queue_name = "exit SERVO";
 
     ROS_INFO("ENTER SERVO");
