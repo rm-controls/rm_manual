@@ -65,7 +65,7 @@ void ChassisGimbalShooterManual::checkReferee()
   manual_to_referee_pub_data_.det_target = switch_detection_srv_->getTarget();
   manual_to_referee_pub_data_.stamp = ros::Time::now();
   ChassisGimbalManual::checkReferee();
-  shooter_power_on_event_.update((ros::Time::now() - shooter_actuator_last_get_stamp_) < ros::Duration(0.5));
+  shooter_power_on_event_.update((ros::Time::now() - shooter_actuator_last_get_stamp_) < ros::Duration(0.7));
 }
 
 void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
