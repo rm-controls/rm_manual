@@ -20,8 +20,8 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& n
     ROS_ERROR("Gyro rotate reduction no defined (namespace: %s)", nh.getNamespace().c_str());
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh);
-  if (!gimbal_nh.getParam("yaw_turn_vel", yaw_turn_vel_))
-    ROS_ERROR("Yaw turn velocity no defined (namespace: %s)", nh.getNamespace().c_str());
+  if (!gimbal_nh.getParam("finish_turning_threshold", finish_turning_threshold_))
+    ROS_ERROR("Finish turning threshold no defined (namespace: %s)", nh.getNamespace().c_str());
 
   chassis_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::chassisOutputOn, this));
   gimbal_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::gimbalOutputOn, this));
@@ -51,13 +51,7 @@ void ChassisGimbalManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 void ChassisGimbalManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ManualBase::updatePc(dbus_data);
-  if (!turn_flag_)
-    gimbal_cmd_sender_->setRate(-dbus_data->m_x * gimbal_scale_, dbus_data->m_y * gimbal_scale_);
-  else
-  {
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-    gimbal_cmd_sender_->setRate(yaw_turn_vel_, 0.0);
-  }
+  gimbal_cmd_sender_->setRate(-dbus_data->m_x * gimbal_scale_, dbus_data->m_y * gimbal_scale_);
 }
 
 void ChassisGimbalManual::checkReferee()

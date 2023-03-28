@@ -423,13 +423,21 @@ void ChassisGimbalShooterManual::dPressing()
   ChassisGimbalManual::dPressing();
   vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0);
 }
+
 void ChassisGimbalShooterManual::xPress()
 {
   turn_flag_ = true;
+  geometry_msgs::PointStamped point_in;
   try
   {
+    point_in.header.frame_id = "yaw";
+    point_in.point.x = -1.;
+    point_in.point.y = 0.;
+    point_in.point.z = abs(tf_buffer_.lookupTransform("yaw", "pitch", ros::Time(0)).transform.translation.z);
+    tf2::doTransform(point_in, point_out_, tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)));
+
     double roll{}, pitch{};
-    quatToRPY(tf_buffer_.lookupTransform("map", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw_current_);
+    quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw_current_);
   }
   catch (tf2::TransformException& ex)
   {
@@ -439,16 +447,17 @@ void ChassisGimbalShooterManual::xPress()
 
 void ChassisGimbalShooterManual::xRelease()
 {
-  try
+  if (turn_flag_)
   {
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
+    gimbal_cmd_sender_->setPoint(point_out_);
     double roll{}, pitch{}, yaw{};
-    quatToRPY(tf_buffer_.lookupTransform("map", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
-    if (std::abs(angles::shortest_angular_distance(yaw, yaw_current_)) > M_PI)
+    quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
+    if (std::abs(angles::shortest_angular_distance(yaw, yaw_current_)) > finish_turning_threshold_)
+    {
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
       turn_flag_ = false;
-  }
-  catch (tf2::TransformException& ex)
-  {
-    ROS_WARN("%s", ex.what());
+    }
   }
 }
 

@@ -103,7 +103,9 @@ protected:
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
 
-  bool prepare_shoot_ = false;
+  geometry_msgs::PointStamped point_out_;
+
+  bool prepare_shoot_ = false, turn_flag_ = false;
   double yaw_current_{};
 };
 }  // namespace rm_manual
