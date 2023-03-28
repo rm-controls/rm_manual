@@ -113,11 +113,6 @@ private:
     RATE,
     DIRECT
   };
-  enum
-  {
-    VELOCITY,
-    POSITION
-  };
 
   int state_;
   rm_msgs::StepQueueState step_queue_state_;
