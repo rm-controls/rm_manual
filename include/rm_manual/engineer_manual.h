@@ -21,6 +21,24 @@ namespace rm_manual
 class EngineerManual : public ChassisGimbalManual
 {
 public:
+  enum ControlMode
+  {
+    MANUAL,
+    MIDDLEWARE
+  };
+
+  enum JointMode
+  {
+    SERVO,
+    JOINT
+  };
+
+  enum GimbalMode
+  {
+    RATE,
+    DIRECT
+  };
+
   EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
@@ -34,8 +52,6 @@ private:
   void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback);
   void actionDoneCallback(const actionlib::SimpleClientGoalState& state, const rm_msgs::EngineerResultConstPtr& result);
   void runStepQueue(const std::string& step_queue_name);
-  void judgePrefix();
-  void judgeRoot();
   void actionActiveCallback()
   {
     operating_mode_ = MIDDLEWARE;
@@ -65,10 +81,6 @@ private:
   void ctrlRPress();
   void shiftPressing();
   void shiftRelease();
-  void shiftQPress();
-  void shiftQRelease();
-  void shiftEPress();
-  void shiftERelease();
   void shiftZPress();
   void shiftXPress();
   void shiftCPress();
@@ -96,34 +108,21 @@ private:
   void fRelease();
   void gPressing();
   void gRelease();
+
   void mouseLeftRelease();
   void mouseRightRelease();
-  enum
-  {
-    MANUAL,
-    MIDDLEWARE
-  };
-  enum
-  {
-    SERVO,
-    JOINT
-  };
-  enum
-  {
-    RATE,
-    DIRECT
-  };
 
   int state_;
   rm_msgs::StepQueueState step_queue_state_;
-  rm_msgs::MultiDofCmd multi_dof_cmd_;
-  double angular_z_scale_{};
+  double angular_z_scale_{}, gyro_scale_{}, gyro_low_scale_{};
   std::string prefix_, root_, reversal_state_;
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{};
   std::map<std::string, int> prefix_list_, root_list_;
+
   ros::Time last_time_;
   ros::Subscriber reversal_vision_sub_;
   ros::Publisher step_queue_state_pub_;
+
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
   rm_common::Vel3DCommandSender* servo_command_sender_;

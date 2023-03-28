@@ -52,6 +52,7 @@ protected:
   void mouseLeftRelease()
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+    prepare_shoot_ = true;
   }
   void mouseRightPress();
   void mouseRightRelease()
@@ -62,9 +63,19 @@ protected:
   void aPress() override;
   void sPress() override;
   void dPress() override;
+  void wPressing() override;
+  void aPressing() override;
+  void sPressing() override;
+  void dPressing() override;
+  void wRelease() override;
+  void aRelease() override;
+  void sRelease() override;
+  void dRelease() override;
+
   void ePress();
   void cPress();
   void bPress();
+  void rPress();
   void qPress()
   {
     if (shooter_cmd_sender_->getShootFrequency() != rm_common::HeatLimit::LOW)
@@ -84,10 +95,13 @@ protected:
   void ctrlBPress();
 
   InputEvent shooter_power_on_event_, self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_,
-      f_event_, b_event_, x_event_, ctrl_c_event_, ctrl_v_event_, ctrl_r_event_, ctrl_b_event_, shift_event_,
+      f_event_, b_event_, x_event_, r_event_, ctrl_c_event_, ctrl_v_event_, ctrl_r_event_, ctrl_b_event_, shift_event_,
       ctrl_shift_b_event_, mouse_left_event_, mouse_right_event_;
   rm_common::ShooterCommandSender* shooter_cmd_sender_{};
+  rm_common::CameraSwitchCommandSender* camera_switch_cmd_sender_{};
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
+
+  bool prepare_shoot_ = false;
 };
 }  // namespace rm_manual
