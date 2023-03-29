@@ -41,6 +41,7 @@ protected:
   void leftSwitchMidRise() override;
   void leftSwitchMidOn(ros::Duration duration);
   void leftSwitchUpRise() override;
+  void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data) override;
   void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
   void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data) override;
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override;
