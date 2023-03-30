@@ -69,9 +69,7 @@ protected:
   virtual void odomCallback(const nav_msgs::Odometry::ConstPtr& data)
   {
   }
-  virtual void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
-  {
-  }
+  virtual void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data);
   virtual void gameRobotHpCallback(const rm_msgs::GameRobotHp::ConstPtr& data)
   {
   }
@@ -137,6 +135,10 @@ protected:
   int robot_id_, chassis_power_;
   InputEvent robot_hp_event_, right_switch_down_event_, right_switch_mid_event_, right_switch_up_event_,
       left_switch_down_event_, left_switch_mid_event_, left_switch_up_event_;
+
+  InputEvent chassis_power_on_event_, gimbal_power_on_event_, shooter_power_on_event_;
+  ros::Time chassis_actuator_last_get_stamp_, gimbal_actuator_last_get_stamp_, shooter_actuator_last_get_stamp_;
+  std::vector<std::string> chassis_calibrate_motor_, gimbal_calibrate_motor_, shooter_calibrate_motor_;
 };
 
 }  // namespace rm_manual

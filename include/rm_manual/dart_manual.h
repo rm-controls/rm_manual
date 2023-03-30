@@ -38,10 +38,5 @@ protected:
   double qd_, upward_vel_;
   double scale_{ 0.04 };
   bool if_stop_{ true };
-
-  ros::Time chassis_actuator_last_get_stamp_, gimbal_actuator_last_get_stamp_;
-  std::vector<std::string> chassis_calibrate_motor_, gimbal_calibrate_motor_;
-
-  InputEvent chassis_power_on_event_, gimbal_power_on_event_;
 };
 }  // namespace rm_manual

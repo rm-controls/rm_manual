@@ -55,15 +55,12 @@ void DartManual::run()
 
 void DartManual::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
 {
-  updateActuatorStamp(data, chassis_calibrate_motor_, chassis_actuator_last_get_stamp_);
-  updateActuatorStamp(data, gimbal_calibrate_motor_, gimbal_actuator_last_get_stamp_);
+  ManualBase::actuatorStateCallback(data);
 }
 
 void DartManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
 {
   ManualBase::gameRobotStatusCallback(data);
-  chassis_power_on_event_.update(data->mains_power_chassis_output);
-  gimbal_power_on_event_.update(data->mains_power_gimbal_output);
 }
 
 void DartManual::sendCommand(const ros::Time& time)
@@ -101,8 +98,6 @@ void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 void DartManual::checkReferee()
 {
   ManualBase::checkReferee();
-  chassis_power_on_event_.update((ros::Time::now() - chassis_actuator_last_get_stamp_) < ros::Duration(0.3));
-  gimbal_power_on_event_.update((ros::Time::now() - gimbal_actuator_last_get_stamp_) < ros::Duration(0.3));
 }
 
 void DartManual::remoteControlTurnOn()

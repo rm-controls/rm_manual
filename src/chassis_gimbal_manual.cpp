@@ -69,8 +69,6 @@ void ChassisGimbalManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 void ChassisGimbalManual::checkReferee()
 {
   ManualBase::checkReferee();
-  chassis_power_on_event_.update((ros::Time::now() - chassis_actuator_last_get_stamp_) < ros::Duration(0.7));
-  gimbal_power_on_event_.update((ros::Time::now() - gimbal_actuator_last_get_stamp_) < ros::Duration(0.7));
 }
 
 void ChassisGimbalManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -98,8 +96,7 @@ void ChassisGimbalManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_
 
 void ChassisGimbalManual::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
 {
-  updateActuatorStamp(data, chassis_calibrate_motor_, chassis_actuator_last_get_stamp_);
-  updateActuatorStamp(data, gimbal_calibrate_motor_, gimbal_actuator_last_get_stamp_);
+  ManualBase::actuatorStateCallback(data);
 }
 
 void ChassisGimbalManual::gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data)

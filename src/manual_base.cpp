@@ -50,6 +50,9 @@ void ManualBase::run()
 
 void ManualBase::checkReferee()
 {
+  chassis_power_on_event_.update((ros::Time::now() - chassis_actuator_last_get_stamp_) < ros::Duration(0.7));
+  gimbal_power_on_event_.update((ros::Time::now() - gimbal_actuator_last_get_stamp_) < ros::Duration(0.7));
+  shooter_power_on_event_.update((ros::Time::now() - shooter_actuator_last_get_stamp_) < ros::Duration(0.7));
   referee_is_online_ = (ros::Time::now() - referee_last_get_stamp_ < ros::Duration(0.3));
   manual_to_referee_pub_.publish(manual_to_referee_pub_data_);
 }
@@ -75,6 +78,13 @@ void ManualBase::updateActuatorStamp(const rm_msgs::ActuatorState::ConstPtr& dat
 void ManualBase::jointStateCallback(const sensor_msgs::JointState::ConstPtr& data)
 {
   joint_state_ = *data;
+}
+
+void ManualBase::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
+{
+  updateActuatorStamp(data, chassis_calibrate_motor_, chassis_actuator_last_get_stamp_);
+  updateActuatorStamp(data, gimbal_calibrate_motor_, gimbal_actuator_last_get_stamp_);
+  updateActuatorStamp(data, shooter_calibrate_motor_, shooter_actuator_last_get_stamp_);
 }
 
 void ManualBase::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)

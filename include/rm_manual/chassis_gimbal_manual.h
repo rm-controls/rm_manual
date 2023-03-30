@@ -68,9 +68,7 @@ protected:
   double gimbal_scale_{ 1. };
   double gyro_move_reduction_{ 1. };
   double gyro_rotate_reduction_{ 1. };
-  ros::Time chassis_actuator_last_get_stamp_, gimbal_actuator_last_get_stamp_;
-  std::vector<std::string> chassis_calibrate_motor_, gimbal_calibrate_motor_;
 
-  InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_;
+  InputEvent w_event_, s_event_, a_event_, d_event_;
 };
 }  // namespace rm_manual
