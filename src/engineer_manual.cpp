@@ -11,7 +11,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   , operating_mode_(MANUAL)
   , action_client_("/engineer_middleware/move_steps", true)
 {
-  step_queue_state_pub_ = nh.advertise<rm_msgs::StepQueueState>("/step_queue_state", 10);
+  engineer_ui_pub_ = nh.advertise<rm_msgs::EngineerUi>("/engineer_ui", 10);
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
@@ -86,7 +86,7 @@ void EngineerManual::run()
   ChassisGimbalManual::run();
   power_on_calibration_->update(ros::Time::now(), state_ != PASSIVE);
   arm_calibration_->update(ros::Time::now());
-  step_queue_state_pub_.publish(step_queue_state_);
+  engineer_ui_pub_.publish(engineer_ui_);
 }
 
 void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -231,7 +231,7 @@ void EngineerManual::leftSwitchDownFall()
 {
   runStepQueue("HOME1");
   runStepQueue("OPEN_GRIPPER");
-  step_queue_state_.step_queue_name = "HOME1";
+  engineer_ui_.step_queue_name = "HOME1";
 }
 
 void EngineerManual::leftSwitchUpFall()
@@ -256,8 +256,8 @@ void EngineerManual::runStepQueue(const std::string& step_queue_name)
 
 void EngineerManual::actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback)
 {
-  step_queue_state_.current_step_name = feedback->current_step;
-  step_queue_state_.total_steps = feedback->total_steps;
+  engineer_ui_.current_step_name = feedback->current_step;
+  engineer_ui_.total_steps = feedback->total_steps;
 }
 
 void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& state,
@@ -266,20 +266,20 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
   ROS_INFO("Done %s", (prefix_ + root_).c_str());
-  step_queue_state_.step_queue_name += " done!";
+  engineer_ui_.step_queue_name += " done!";
   operating_mode_ = MANUAL;
 }
 void EngineerManual::mouseLeftRelease()
 {
   root_ += "0";
-  step_queue_state_.step_queue_name = prefix_ + root_;
+  engineer_ui_.step_queue_name = prefix_ + root_;
   runStepQueue(prefix_ + root_);
   ROS_INFO("Finished %s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::mouseRightRelease()
 {
-  step_queue_state_.step_queue_name = prefix_ + root_;
+  engineer_ui_.step_queue_name = prefix_ + root_;
   runStepQueue(prefix_ + root_);
   ROS_INFO("Finished %s", (prefix_ + root_).c_str());
 }
@@ -287,7 +287,7 @@ void EngineerManual::ctrlQPress()
 {
   prefix_ = "LF_";
   root_ = "SMALL_ISLAND";
-  step_queue_state_.step_queue_name = prefix_ + root_;
+  engineer_ui_.step_queue_name = prefix_ + root_;
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -295,7 +295,7 @@ void EngineerManual::ctrlWPress()
 {
   prefix_ = "SKY_";
   root_ = "BIG_ISLAND";
-  step_queue_state_.step_queue_name = prefix_ + root_;
+  engineer_ui_.step_queue_name = prefix_ + root_;
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -303,14 +303,14 @@ void EngineerManual::ctrlEPress()
 {
   prefix_ = "RT_";
   root_ = "SMALL_ISLAND";
-  step_queue_state_.step_queue_name = prefix_ + root_;
+  engineer_ui_.step_queue_name = prefix_ + root_;
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlRPress()
 {
   arm_calibration_->reset();
-  step_queue_state_.step_queue_name = "calibration";
+  engineer_ui_.step_queue_name = "calibration";
   ROS_INFO("Calibrated");
 }
 
@@ -318,7 +318,7 @@ void EngineerManual::ctrlAPress()
 {
   prefix_ = "";
   root_ = "SMALL_ISLAND";
-  step_queue_state_.step_queue_name = prefix_ + root_;
+  engineer_ui_.step_queue_name = prefix_ + root_;
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -326,7 +326,7 @@ void EngineerManual::ctrlSPress()
 {
   prefix_ = "";
   root_ = "BIG_ISLAND";
-  step_queue_state_.step_queue_name = prefix_ + root_;
+  engineer_ui_.step_queue_name = prefix_ + root_;
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -335,7 +335,7 @@ void EngineerManual::ctrlDPress()
   prefix_ = "";
   root_ = "GROUND_STONE";
   runStepQueue(root_);
-  step_queue_state_.step_queue_name = prefix_ + root_;
+  engineer_ui_.step_queue_name = prefix_ + root_;
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -344,7 +344,7 @@ void EngineerManual::ctrlFPress()
   prefix_ = "";
   root_ = "EXCHANGE_WAIT";
   runStepQueue(root_);
-  step_queue_state_.step_queue_name = prefix_ + root_;
+  engineer_ui_.step_queue_name = prefix_ + root_;
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -363,7 +363,7 @@ void EngineerManual::ctrlGPress()
   }
   runStepQueue(root_);
   prefix_ = "";
-  step_queue_state_.step_queue_name = prefix_ + root_;
+  engineer_ui_.step_queue_name = prefix_ + root_;
   ROS_INFO("STORE_STONE");
 }
 
@@ -378,7 +378,7 @@ void EngineerManual::ctrlXPress()
 void EngineerManual::ctrlCPress()
 {
   action_client_.cancelAllGoals();
-  step_queue_state_.step_queue_name = "cancel";
+  engineer_ui_.step_queue_name = "cancel";
 }
 
 void EngineerManual::ctrlVPress()
@@ -386,13 +386,13 @@ void EngineerManual::ctrlVPress()
   if (state_)
   {
     runStepQueue("CLOSE_GRIPPER");
-    step_queue_state_.step_queue_name = "CLOSE_GRIPPER";
+    engineer_ui_.step_queue_name = "CLOSE_GRIPPER";
     state_ = false;
   }
   else if (!state_)
   {
     runStepQueue("OPEN_GRIPPER");
-    step_queue_state_.step_queue_name = "OPEN_GRIPPER";
+    engineer_ui_.step_queue_name = "OPEN_GRIPPER";
     state_ = true;
   }
 }
@@ -416,7 +416,7 @@ void EngineerManual::ctrlBPress()
       break;
   }
   ROS_INFO("RUN_HOME");
-  step_queue_state_.step_queue_name = prefix_ + root_;
+  engineer_ui_.step_queue_name = prefix_ + root_;
   prefix_ = "";
   runStepQueue(root_);
 }
@@ -504,7 +504,7 @@ void EngineerManual::shiftRelease()
 void EngineerManual::shiftRPress()
 {
   runStepQueue("SKY_GIMBAL");
-  step_queue_state_.step_queue_name = "gimbal SKY_GIMBAL";
+  engineer_ui_.step_queue_name = "gimbal SKY_GIMBAL";
   ROS_INFO("enter gimbal SKY_GIMBAL");
 }
 void EngineerManual::shiftCPress()
@@ -512,14 +512,14 @@ void EngineerManual::shiftCPress()
   if (servo_mode_)
   {
     servo_mode_ = false;
-    step_queue_state_.step_queue_name = "ENTER servo";
+    engineer_ui_.step_queue_name = "ENTER servo";
 
     ROS_INFO("EXIT SERVO");
   }
   else
   {
     servo_mode_ = true;
-    step_queue_state_.step_queue_name = "exit SERVO";
+    engineer_ui_.step_queue_name = "exit SERVO";
 
     ROS_INFO("ENTER SERVO");
   }
@@ -529,14 +529,14 @@ void EngineerManual::shiftZPress()
 {
   runStepQueue("REVERSAL_GIMBAL");
   ROS_INFO("enter gimbal REVERSAL_GIMBAL");
-  step_queue_state_.step_queue_name = "gimbal REVERSAL_GIMBAL";
+  engineer_ui_.step_queue_name = "gimbal REVERSAL_GIMBAL";
 }
 void EngineerManual::shiftVPress()
 {
   // gimbal
   gimbal_mode_ = RATE;
   ROS_INFO("MANUAL_VIEW");
-  step_queue_state_.step_queue_name = "gimbal MANUAL_VIEW";
+  engineer_ui_.step_queue_name = "gimbal MANUAL_VIEW";
 }
 
 void EngineerManual::shiftVRelease()
@@ -544,14 +544,14 @@ void EngineerManual::shiftVRelease()
   // gimbal
   gimbal_mode_ = DIRECT;
   ROS_INFO("DIRECT");
-  step_queue_state_.step_queue_name = "gimbal DIRECT";
+  engineer_ui_.step_queue_name = "gimbal DIRECT";
 }
 
 void EngineerManual::shiftBPress()
 {
   runStepQueue("TEMP_GIMBAL");
   ROS_INFO("enter gimbal BACK_GIMBAL");
-  step_queue_state_.step_queue_name = "gimbal BACK_GIMBAL";
+  engineer_ui_.step_queue_name = "gimbal BACK_GIMBAL";
 }
 
 void EngineerManual::shiftBRelease()
@@ -563,7 +563,7 @@ void EngineerManual::shiftXPress()
 {
   runStepQueue("GROUND_GIMBAL");
   ROS_INFO("enter gimbal GROUND_GIMBAL");
-  step_queue_state_.step_queue_name = "gimbal GROUND_GIMBAL";
+  engineer_ui_.step_queue_name = "gimbal GROUND_GIMBAL";
 }
 
 void EngineerManual::shiftGPress()
@@ -585,7 +585,7 @@ void EngineerManual::shiftGPress()
   }
   runStepQueue(root_);
   prefix_ = "";
-  step_queue_state_.step_queue_name = "TAKE_STONE";
+  engineer_ui_.step_queue_name = "TAKE_STONE";
 
   ROS_INFO("TAKE_STONE");
 }

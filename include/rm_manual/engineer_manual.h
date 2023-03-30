@@ -13,7 +13,7 @@
 #include <std_msgs/Float64.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <rm_msgs/EngineerAction.h>
-#include <rm_msgs/StepQueueState.h>
+#include <rm_msgs/EngineerUi.h>
 
 namespace rm_manual
 {
@@ -114,7 +114,7 @@ private:
   void mouseRightRelease();
 
   int state_;
-  rm_msgs::StepQueueState step_queue_state_;
+  rm_msgs::EngineerUi engineer_ui_;
   double angular_z_scale_{}, gyro_scale_{}, gyro_low_scale_{};
   std::string prefix_, root_, reversal_state_;
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{};
@@ -122,7 +122,7 @@ private:
 
   ros::Time last_time_;
   ros::Subscriber reversal_vision_sub_;
-  ros::Publisher step_queue_state_pub_;
+  ros::Publisher engineer_ui_pub_;
 
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
   rm_common::CalibrationQueue *power_on_calibration_{}, *arm_calibration_{};
