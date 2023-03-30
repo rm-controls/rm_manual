@@ -66,7 +66,7 @@ void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr
 {
   ChassisGimbalManual::checkKeyboard(dbus_data);
   e_event_.update(dbus_data->key_e);
-  c_event_.update(dbus_data->key_c);
+  c_event_.update((!dbus_data->key_ctrl) & dbus_data->key_c);
   g_event_.update(dbus_data->key_g);
   q_event_.update((!dbus_data->key_ctrl) & dbus_data->key_q);
   f_event_.update(dbus_data->key_f);
@@ -120,6 +120,11 @@ void ChassisGimbalShooterManual::trackCallback(const rm_msgs::TrackData::ConstPt
 {
   ChassisGimbalManual::trackCallback(data);
   shooter_cmd_sender_->updateTrackData(*data);
+}
+
+void ChassisGimbalShooterManual::suggestFireCallback(const std_msgs::BoolConstPtr& data)
+{
+  suggest_fire_ = data->data;
 }
 
 void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
@@ -290,6 +295,10 @@ void ChassisGimbalShooterManual::mouseRightPress()
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
     gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
+    if (suggest_fire_ && shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::READY)
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+    else
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
   }
 }
 
@@ -445,6 +454,7 @@ void ChassisGimbalShooterManual::ctrlCPress()
 {
   switch_detection_srv_->switchArmorTargetType();
   switch_detection_srv_->callService();
+  ROS_INFO_STREAM("target type: " << switch_detection_srv_->getArmorTarget());
 }
 
 void ChassisGimbalShooterManual::ctrlVPress()

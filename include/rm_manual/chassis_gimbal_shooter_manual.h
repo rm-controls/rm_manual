@@ -46,6 +46,7 @@ protected:
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override;
   void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override;
   void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data) override;
+  void suggestFireCallback(const std_msgs::BoolConstPtr& data) override;
   void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override;
   void leftSwitchUpOn(ros::Duration duration);
   void mouseLeftPress();
@@ -102,6 +103,6 @@ protected:
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
 
-  bool prepare_shoot_ = false;
+  bool prepare_shoot_ = false, suggest_fire_ = false;
 };
 }  // namespace rm_manual

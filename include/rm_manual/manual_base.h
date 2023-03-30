@@ -8,6 +8,7 @@
 #include <iostream>
 #include <ros/ros.h>
 #include <serial/serial.h>
+#include <std_msgs/Bool.h>
 #include <tf2_ros/buffer.h>
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_listener.h>
@@ -75,6 +76,9 @@ protected:
   virtual void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data)
   {
   }
+  virtual void suggestFireCallback(const std_msgs::BoolConstPtr& data)
+  {
+  }
 
   // Referee
   virtual void chassisOutputOn()
@@ -115,7 +119,8 @@ protected:
   ros::Publisher manual_to_referee_pub_;
 
   ros::Subscriber odom_sub_, dbus_sub_, track_sub_, referee_sub_, capacity_sub_, game_status_sub_, joint_state_sub_,
-      game_robot_hp_sub_, actuator_state_sub_, power_heat_data_sub_, gimbal_des_error_sub_, game_robot_status_sub_;
+      game_robot_hp_sub_, actuator_state_sub_, power_heat_data_sub_, gimbal_des_error_sub_, game_robot_status_sub_,
+      suggest_fire_sub_;
 
   sensor_msgs::JointState joint_state_;
   rm_msgs::TrackData track_data_;
