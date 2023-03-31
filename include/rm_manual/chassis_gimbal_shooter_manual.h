@@ -59,6 +59,7 @@ protected:
   void mouseRightRelease()
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
   }
   void wPress() override;
   void aPress() override;
