@@ -28,7 +28,7 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
       nh_referee.subscribe<rm_msgs::CapacityData>("capacity_data", 10, &ManualBase::capacityDataCallback, this);
   power_heat_data_sub_ =
       nh_referee.subscribe<rm_msgs::PowerHeatData>("power_heat_data", 10, &ManualBase::powerHeatDataCallback, this);
-  suggest_fire_sub_ = nh.subscribe("/forecast/suggest_fire", 1, &ManualBase::suggestFireCallback, this);
+  suggest_fire_sub_ = nh.subscribe<std_msgs::Bool>("/forecast/suggest_fire", 10, &ManualBase::suggestFireCallback, this);
 
   // pub
   manual_to_referee_pub_ = nh.advertise<rm_msgs::ManualToReferee>("/manual_to_referee", 1);

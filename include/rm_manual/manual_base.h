@@ -76,7 +76,7 @@ protected:
   virtual void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data)
   {
   }
-  virtual void suggestFireCallback(const std_msgs::BoolConstPtr& data)
+  virtual void suggestFireCallback(const std_msgs::Bool::ConstPtr& data)
   {
   }
 

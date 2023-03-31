@@ -122,9 +122,10 @@ void ChassisGimbalShooterManual::trackCallback(const rm_msgs::TrackData::ConstPt
   shooter_cmd_sender_->updateTrackData(*data);
 }
 
-void ChassisGimbalShooterManual::suggestFireCallback(const std_msgs::BoolConstPtr& data)
+void ChassisGimbalShooterManual::suggestFireCallback(const std_msgs::Bool::ConstPtr& data)
 {
-  suggest_fire_ = data->data;
+  ManualBase::suggestFireCallback(data);
+  shooter_cmd_sender_->updateSuggestFireData(*data);
 }
 
 void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
@@ -295,10 +296,14 @@ void ChassisGimbalShooterManual::mouseRightPress()
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
     gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
-    if (suggest_fire_ && shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::READY)
+  }
+  if (switch_detection_srv_->getArmorTarget() == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
+  {
+    if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP)
+    {
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-    else
-      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+      shooter_cmd_sender_->checkError(ros::Time::now());
+    }
   }
 }
 
