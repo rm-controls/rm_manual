@@ -459,7 +459,7 @@ void ChassisGimbalShooterManual::ctrlCPress()
 {
   switch_detection_srv_->switchArmorTargetType();
   switch_detection_srv_->callService();
-  ROS_INFO_STREAM("target type: " << switch_detection_srv_->getArmorTarget());
+  shooter_cmd_sender_->setArmorType(switch_detection_srv_->getArmorTarget());
 }
 
 void ChassisGimbalShooterManual::ctrlVPress()
