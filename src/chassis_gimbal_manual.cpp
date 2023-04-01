@@ -18,21 +18,6 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& n
     ROS_ERROR("Gyro move reduction no defined (namespace: %s)", nh.getNamespace().c_str());
   if (!vel_nh.getParam("gyro_rotate_reduction", gyro_rotate_reduction_))
     ROS_ERROR("Gyro rotate reduction no defined (namespace: %s)", nh.getNamespace().c_str());
-  XmlRpc::XmlRpcValue xml;
-  if (!nh.getParam("chassis_calibrate_motor", xml))
-    ROS_ERROR("chassis_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
-  else
-    for (int i = 0; i < xml.size(); i++)
-    {
-      chassis_calibrate_motor_.push_back(xml[i]);
-    }
-  if (!nh.getParam("gimbal_calibrate_motor", xml))
-    ROS_ERROR("gimbal_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
-  else
-    for (int i = 0; i < xml.size(); i++)
-    {
-      gimbal_calibrate_motor_.push_back(xml[i]);
-    }
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh);
 

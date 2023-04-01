@@ -40,6 +40,27 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   left_switch_mid_event_.setEdge(boost::bind(&ManualBase::leftSwitchMidRise, this),
                                  boost::bind(&ManualBase::leftSwitchMidFall, this));
   robot_hp_event_.setEdge(boost::bind(&ManualBase::robotRevive, this), boost::bind(&ManualBase::robotDie, this));
+
+  XmlRpc::XmlRpcValue xml;
+  if (!nh.getParam("chassis_calibrate_motor", xml))
+    ROS_ERROR("chassis_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
+  else
+    for (int i = 0; i < xml.size(); i++)
+    {
+      chassis_calibrate_motor_.push_back(xml[i]);
+    }
+  if (!nh.getParam("gimbal_calibrate_motor", xml))
+    ROS_ERROR("gimbal_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
+  else
+    for (int i = 0; i < xml.size(); i++)
+      gimbal_calibrate_motor_.push_back(xml[i]);
+  if (!nh.getParam("shooter_calibrate_motor", xml))
+    ROS_ERROR("shooter_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
+  else
+    for (int i = 0; i < xml.size(); i++)
+    {
+      shooter_calibrate_motor_.push_back(xml[i]);
+    }
 }
 
 void ManualBase::run()

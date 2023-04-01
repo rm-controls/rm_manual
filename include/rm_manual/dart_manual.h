@@ -28,7 +28,6 @@ protected:
   void move(rm_common::JointPointCommandSender* joint, double ch);
   void recordPosition(const rm_msgs::DbusData::ConstPtr& dbus_data);
 
-  void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data) override;
   void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
 
   rm_common::JointPointCommandSender *trigger_sender_, *friction_left_sender_, *friction_right_sender_;
