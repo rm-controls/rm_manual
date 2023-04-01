@@ -79,11 +79,6 @@ void ChassisGimbalManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_
   }
 }
 
-void ChassisGimbalManual::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
-{
-  ManualBase::actuatorStateCallback(data);
-}
-
 void ChassisGimbalManual::gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data)
 {
   ManualBase::gameStatusCallback(data);

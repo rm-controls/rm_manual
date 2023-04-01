@@ -25,7 +25,6 @@ protected:
   void rightSwitchUpRise() override;
   void leftSwitchMidFall() override;
   void leftSwitchDownRise() override;
-  void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data) override;
   void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override;
   void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
   void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data) override;

@@ -46,9 +46,7 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
     ROS_ERROR("chassis_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
   else
     for (int i = 0; i < xml.size(); i++)
-    {
       chassis_calibrate_motor_.push_back(xml[i]);
-    }
   if (!nh.getParam("gimbal_calibrate_motor", xml))
     ROS_ERROR("gimbal_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
   else
@@ -58,9 +56,7 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
     ROS_ERROR("shooter_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
   else
     for (int i = 0; i < xml.size(); i++)
-    {
       shooter_calibrate_motor_.push_back(xml[i]);
-    }
 }
 
 void ManualBase::run()
