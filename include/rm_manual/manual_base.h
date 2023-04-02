@@ -30,7 +30,7 @@
 #include <rm_msgs/GimbalDesError.h>
 #include <rm_msgs/GameRobotStatus.h>
 #include <rm_msgs/ManualToReferee.h>
-#include <rm_msgs/SentryData.h>
+#include <rm_msgs/RobotCmd.h>
 
 #include "rm_manual/input_event.h"
 
@@ -114,7 +114,7 @@ protected:
     state_ = PC;
   }
 
-  ros::Publisher manual_to_referee_pub_, sentry_data_pub_;
+  ros::Publisher manual_to_referee_pub_, robot_cmd_pub_;
 
   ros::Subscriber odom_sub_, dbus_sub_, track_sub_, referee_sub_, capacity_sub_, game_status_sub_, joint_state_sub_,
       game_robot_hp_sub_, actuator_state_sub_, power_heat_data_sub_, gimbal_des_error_sub_, game_robot_status_sub_;
@@ -122,7 +122,7 @@ protected:
   sensor_msgs::JointState joint_state_;
   rm_msgs::TrackData track_data_;
   rm_msgs::ManualToReferee manual_to_referee_pub_data_;
-  rm_msgs::SentryData sentry_data_;
+  rm_msgs::RobotCmd robot_cmd_;
 
   rm_common::ControllerManager controller_manager_;
 

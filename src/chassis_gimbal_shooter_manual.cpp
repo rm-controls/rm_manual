@@ -434,9 +434,8 @@ void ChassisGimbalShooterManual::dPressing()
 }
 void ChassisGimbalShooterManual::gPress()
 {
-  sentry_data_.state = sentry_data_.state == rm_msgs::SentryData ::CRUISE ? rm_msgs::SentryData::CRUISE_GYRO :
-                                                                            rm_msgs::SentryData::CRUISE;
-  sentry_data_pub_.publish(sentry_data_);
+  robot_cmd_.cmd_key = 0x04;
+  robot_cmd_pub_.publish(robot_cmd_);
 }
 
 void ChassisGimbalShooterManual::shiftPress()
