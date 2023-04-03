@@ -30,7 +30,7 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
       nh_referee.subscribe<rm_msgs::PowerHeatData>("power_heat_data", 10, &ManualBase::powerHeatDataCallback, this);
   // pub
   manual_to_referee_pub_ = nh.advertise<rm_msgs::ManualToReferee>("/manual_to_referee", 1);
-  robot_cmd_pub_ = nh.advertise<rm_msgs::RobotCmd>("/sentry/command", 1);
+  client_map_receive_pub_ = nh.advertise<rm_msgs::ClientMapReceiveData>("/sentry/command", 1);
 
   controller_manager_.startStateControllers();
   right_switch_down_event_.setRising(boost::bind(&ManualBase::rightSwitchDownRise, this));

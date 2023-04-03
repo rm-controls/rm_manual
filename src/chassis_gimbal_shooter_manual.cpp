@@ -434,8 +434,8 @@ void ChassisGimbalShooterManual::dPressing()
 }
 void ChassisGimbalShooterManual::gPress()
 {
-  robot_cmd_.cmd_key = 0x04;
-  robot_cmd_pub_.publish(robot_cmd_);
+  client_map_receive_data_.command_keyboard = 0x04;
+  client_map_receive_pub_.publish(client_map_receive_data_);
 }
 
 void ChassisGimbalShooterManual::shiftPress()
