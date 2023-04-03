@@ -114,7 +114,7 @@ protected:
     state_ = PC;
   }
 
-  ros::Publisher manual_to_referee_pub_, client_map_receive_pub_;
+  ros::Publisher manual_to_referee_pub_, client_map_receive_data_pub_;
 
   ros::Subscriber odom_sub_, dbus_sub_, track_sub_, referee_sub_, capacity_sub_, game_status_sub_, joint_state_sub_,
       game_robot_hp_sub_, actuator_state_sub_, power_heat_data_sub_, gimbal_des_error_sub_, game_robot_status_sub_;
