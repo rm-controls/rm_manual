@@ -89,7 +89,7 @@ void EngineerManual::run()
 {
   ChassisGimbalManual::run();
   calibration_gather_->update(ros::Time::now());
-  sendUi(prefix_ + root_, reversal_state_, drag_state_, stone_num_, joint_temperature_, gripper_state_);
+  sendUi();
 }
 
 void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -329,43 +329,15 @@ void EngineerManual::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPt
   }
 }
 
-void EngineerManual::updateUiDate(std::string step_name, std::string reversal_state, std::string drag_state,
-                                  uint8_t stone_num, std::string joint_temperature, std::string gripper_state)
+void EngineerManual::sendUi()
 {
-  engineer_ui_.current_step_name = step_name;
-  engineer_ui_.reversal_state = reversal_state;
-  engineer_ui_.drag_state = drag_state;
-  engineer_ui_.stone_num = stone_num;
-  engineer_ui_.joint_temperature = joint_temperature;
-  engineer_ui_.gripper_state = gripper_state;
-
-  step_name_last_ = step_name;
-  reversal_state_last_ = reversal_state;
-  drag_state_last_ = drag_state;
-  stone_num_last_ = stone_num;
-  joint_temperature_last_ = joint_temperature;
-  gripper_state_last_ = gripper_state;
-}
-
-bool EngineerManual::judgeUiChange(std::string step_name, std::string reversal_state, std::string drag_state,
-                                   uint8_t stone_num, std::string joint_temperature, std::string gripper_state)
-{
-  if (step_name != step_name_last_ || reversal_state != reversal_state_last_ || drag_state != drag_state_last_ ||
-      stone_num != stone_num_last_ || joint_temperature != joint_temperature_last_ ||
-      gripper_state != gripper_state_last_)
-  {
-    updateUiDate(step_name, reversal_state, drag_state, stone_num, joint_temperature, gripper_state);
-    return true;
-  }
-  else
-    return false;
-}
-
-void EngineerManual::sendUi(std::string step_name, std::string reversal_state, std::string drag_state,
-                            uint8_t stone_num, std::string joint_temperature, std::string gripper_state)
-{
-  if (judgeUiChange(step_name, reversal_state, drag_state, stone_num, joint_temperature, gripper_state))
-    ui_send_.publish(engineer_ui_);
+  engineer_ui_.current_step_name = prefix_ + root_;
+  engineer_ui_.reversal_state = reversal_state_;
+  engineer_ui_.drag_state = drag_state_;
+  engineer_ui_.stone_num = stone_num_;
+  engineer_ui_.joint_temperature = joint_temperature_;
+  engineer_ui_.gripper_state = gripper_state_;
+  ui_send_.publish(engineer_ui_);
 }
 
 void EngineerManual::mouseLeftRelease()

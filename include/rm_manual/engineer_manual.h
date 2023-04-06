@@ -116,20 +116,14 @@ private:
   void mouseRightRelease();
   void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data) override;
   void exchangeCallback(const rm_msgs::ExchangerMsg::ConstPtr& data);
-  void updateUiDate(std::string step_name, std::string reversal_state, std::string drag_state, uint8_t stone_num,
-                    std::string joint_temperature, std::string gripper_state);
-  bool judgeUiChange(std::string step_name, std::string reversal_state, std::string drag_state, uint8_t stone_num,
-                     std::string joint_temperature, std::string gripper_state);
-  void sendUi(std::string step_name, std::string reversal_state, std::string drag_state, uint8_t stone_num,
-              std::string joint_temperature, std::string gripper_state);
+  void sendUi();
 
   bool reversal_motion_{};
   bool change_flag_{ 1 }, is_exchange_{}, target_shape_{};
-  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, stone_num_last_{}, max_temperature_{};
+  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, max_temperature_{};
   double angular_z_scale_{};
-  std::string prefix_{}, root_{}, step_name_last_{}, reversal_state_last_{}, drag_state_{}, drag_state_last_{},
-      max_temperature_joint_{}, joint_temperature_{}, joint_temperature_last_{}, reversal_state_{}, gripper_state_{},
-      gripper_state_last_{};
+  std::string prefix_{}, root_{}, drag_state_{}, max_temperature_joint_{}, joint_temperature_{}, reversal_state_{},
+      gripper_state_{};
 
   ros::Time last_time_;
   ros::Publisher ui_send_;
