@@ -30,7 +30,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("calibration_gather", rpc_value);
-  calibration_gather = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  calibration_gather_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_up_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpRise, this));
   left_switch_down_event_.setFalling(boost::bind(&EngineerManual::leftSwitchDownFall, this));
@@ -88,7 +88,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 void EngineerManual::run()
 {
   ChassisGimbalManual::run();
-  calibration_gather->update(ros::Time::now(), state_ != PASSIVE);
+  calibration_gather_->update(ros::Time::now(), state_ != PASSIVE);
   sendUi(prefix_ + root_, reversal_state_, drag_state_, stone_num_, joint_temperature_, gripper_state_);
 }
 
@@ -239,7 +239,7 @@ void EngineerManual::rightSwitchUpRise()
 
 void EngineerManual::leftSwitchUpRise()
 {
-  calibration_gather->reset();
+  calibration_gather_->reset();
   runStepQueue("CLOSE_GRIPPER");
   gripper_state_ = "close";
 }
@@ -405,7 +405,7 @@ void EngineerManual::ctrlEPress()
 
 void EngineerManual::ctrlRPress()
 {
-  calibration_gather->reset();
+  calibration_gather_->reset();
   engineer_ui_.current_step_name = "calibration";
   ROS_INFO("Calibrated");
 }
