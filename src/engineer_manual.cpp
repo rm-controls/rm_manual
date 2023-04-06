@@ -495,6 +495,7 @@ void EngineerManual::ctrlXPress()
 
 void EngineerManual::ctrlCPress()
 {
+  runStepQueue("DELETE_SCENE");
   action_client_.cancelAllGoals();
   prefix_ = "";
   root_ = "";
