@@ -15,6 +15,7 @@
 #include <rm_msgs/EngineerAction.h>
 #include <rm_msgs/EngineerUi.h>
 #include <rm_msgs/MultiDofCmd.h>
+#include <rm_msgs/GpioData.h>
 
 namespace rm_manual
 {
@@ -116,6 +117,7 @@ private:
   void mouseRightRelease();
   void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data) override;
   void exchangeCallback(const rm_msgs::ExchangerMsg::ConstPtr& data);
+  void gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data);
   void sendUi();
 
   bool reversal_motion_{};
@@ -128,9 +130,11 @@ private:
   ros::Time last_time_;
   ros::Publisher ui_send_;
   ros::Subscriber reversal_vision_sub_;
+  ros::Subscriber gripper_state_sub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 
   rm_msgs::EngineerUi engineer_ui_;
+  rm_msgs::GpioData gpio_state_;
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::MultiDofCommandSender* reversal_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;

@@ -27,6 +27,9 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ros::NodeHandle nh_servo(nh, "servo");
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
   servo_reset_caller_ = new rm_common::ServiceCallerBase<std_srvs::Empty>(nh_servo, "/servo_server/reset_servo_status");
+  // Gripper State
+  gripper_state_sub_ = nh.subscribe<rm_msgs::GpioData>("/controllers/gpio_controller/gpio_states", 10,
+                                                       &EngineerManual::gpioStateCallback, this);
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("calibration_gather", rpc_value);
@@ -154,6 +157,14 @@ void EngineerManual::exchangeCallback(const rm_msgs::ExchangerMsg ::ConstPtr& da
   target_shape_ = data->shape;
 }
 
+void EngineerManual::gpioStateCallback(const rm_msgs::GpioData ::ConstPtr& data)
+{
+  gpio_state_.gpio_state = data->gpio_state;
+  if (!gpio_state_.gpio_state[0])
+    gripper_state_ = "open";
+  else
+    gripper_state_ = "close";
+}
 void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updateRc(dbus_data);
@@ -167,7 +178,7 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ChassisGimbalManual::updatePc(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::GYRO);
-  if (!reversal_motion_)
+  if (!reversal_motion_ && servo_mode_ == JOINT)
     reversal_command_sender_->setGroupVel(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                           0.);
 }
@@ -184,7 +195,6 @@ void EngineerManual::sendCommand(const ros::Time& time)
   if (servo_mode_ == SERVO)
   {
     servo_command_sender_->sendCommand(time);
-    reversal_command_sender_->setZero();
   }
   if (gimbal_mode_ == RATE)
     gimbal_cmd_sender_->sendCommand(time);
@@ -241,7 +251,6 @@ void EngineerManual::leftSwitchUpRise()
 {
   calibration_gather_->reset();
   runStepQueue("CLOSE_GRIPPER");
-  gripper_state_ = "close";
 }
 
 void EngineerManual::leftSwitchDownFall()
@@ -250,7 +259,6 @@ void EngineerManual::leftSwitchDownFall()
   runStepQueue("CLOSE_GRIPPER");
   drag_command_sender_->on();
   drag_state_ = "on";
-  gripper_state_ = "off";
 }
 
 void EngineerManual::leftSwitchUpFall()
@@ -382,6 +390,7 @@ void EngineerManual::ctrlRPress()
   calibration_gather_->reset();
   engineer_ui_.current_step_name = "calibration";
   ROS_INFO("Calibrated");
+  runStepQueue("CLOSE_GRIPPER");
 }
 
 void EngineerManual::ctrlAPress()
@@ -484,13 +493,11 @@ void EngineerManual::ctrlVPress()
   {
     runStepQueue("CLOSE_GRIPPER");
     engineer_ui_.current_step_name = "CLOSE_GRIPPER";
-    gripper_state_ = "close";
   }
-  else if (gripper_state_ == "close")
+  else
   {
     runStepQueue("OPEN_GRIPPER");
     engineer_ui_.current_step_name = "OPEN_GRIPPER";
-    gripper_state_ = "open";
   }
 }
 
@@ -580,11 +587,15 @@ void EngineerManual::xPress()
   {
     drag_command_sender_->off();
     drag_state_ = "off";
+    runStepQueue(root_);
   }
   else
   {
     drag_command_sender_->on();
     drag_state_ = "on";
+    prefix_ = "";
+    root_ = "DRAG_CAR0";
+    runStepQueue(root_);
   }
 }
 void EngineerManual::vPressing()
