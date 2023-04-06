@@ -88,7 +88,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 void EngineerManual::run()
 {
   ChassisGimbalManual::run();
-  calibration_gather_->update(ros::Time::now(), state_ != PASSIVE);
+  calibration_gather_->update(ros::Time::now());
   sendUi(prefix_ + root_, reversal_state_, drag_state_, stone_num_, joint_temperature_, gripper_state_);
 }
 
@@ -264,6 +264,7 @@ void EngineerManual::leftSwitchDownRise()
 void EngineerManual::runStepQueue(const std::string& step_queue_name)
 {
   rm_msgs::EngineerGoal goal;
+  reversal_motion_ = 1;
   goal.step_queue_name = step_queue_name;
   if (action_client_.isServerConnected())
   {
@@ -312,6 +313,7 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
     stone_num_ = 3;
   }
   operating_mode_ = MANUAL;
+  reversal_motion_ = 0;
 }
 
 void EngineerManual::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
