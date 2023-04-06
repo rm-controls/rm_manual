@@ -29,10 +29,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   servo_reset_caller_ = new rm_common::ServiceCallerBase<std_srvs::Empty>(nh_servo, "/servo_server/reset_servo_status");
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
-  nh.getParam("power_on_calibration", rpc_value);
-  power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  nh.getParam("arm_calibration", rpc_value);
-  arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  nh.getParam("calibration_gather", rpc_value);
+  calibration_gather = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_up_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpRise, this));
   left_switch_down_event_.setFalling(boost::bind(&EngineerManual::leftSwitchDownFall, this));
@@ -90,8 +88,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 void EngineerManual::run()
 {
   ChassisGimbalManual::run();
-  power_on_calibration_->update(ros::Time::now(), state_ != PASSIVE);
-  arm_calibration_->update(ros::Time::now());
+  calibration_gather->update(ros::Time::now(), state_ != PASSIVE);
   sendUi(prefix_ + root_, reversal_state_, drag_state_, stone_num_, joint_temperature_, gripper_state_);
 }
 
@@ -210,7 +207,6 @@ void EngineerManual::remoteControlTurnOff()
 
 void EngineerManual::chassisOutputOn()
 {
-  power_on_calibration_->reset();
   if (MIDDLEWARE)
     action_client_.cancelAllGoals();
 }
@@ -243,8 +239,7 @@ void EngineerManual::rightSwitchUpRise()
 
 void EngineerManual::leftSwitchUpRise()
 {
-  arm_calibration_->reset();
-  power_on_calibration_->reset();
+  calibration_gather->reset();
   runStepQueue("CLOSE_GRIPPER");
   gripper_state_ = "close";
 }
@@ -410,7 +405,7 @@ void EngineerManual::ctrlEPress()
 
 void EngineerManual::ctrlRPress()
 {
-  arm_calibration_->reset();
+  calibration_gather->reset();
   engineer_ui_.current_step_name = "calibration";
   ROS_INFO("Calibrated");
 }
