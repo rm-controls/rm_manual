@@ -12,7 +12,6 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   , action_client_("/engineer_middleware/move_steps", true)
 {
   exchange_sub_ = nh.subscribe<rm_msgs::ExchangerMsg>("/pnp_publisher", 10, &EngineerManual::exchangeCallback, this);
-  step_queue_state_pub_ = nh.advertise<rm_msgs::StepQueueState>("/step_queue_state", 10);
   ROS_INFO("Waiting for middleware to start.");
   //  action_client_.waitForServer();
   ROS_INFO("Middleware started.");
@@ -254,6 +253,8 @@ void EngineerManual::leftSwitchDownFall()
 {
   runStepQueue("HOME_ONE_STONE");
   runStepQueue("OPEN_GRIPPER");
+  drag_command_sender_->on();
+  drag_state_ = "on";
   gripper_state_ = "on";
 }
 
@@ -283,8 +284,6 @@ void EngineerManual::runStepQueue(const std::string& step_queue_name)
 
 void EngineerManual::actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback)
 {
-  step_queue_state_.current_step_name = feedback->current_step;
-  step_queue_state_.total_steps = feedback->total_steps;
 }
 
 void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& state,

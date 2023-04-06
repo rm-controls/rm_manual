@@ -13,7 +13,6 @@
 #include <std_msgs/Float64.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <rm_msgs/EngineerAction.h>
-#include <rm_msgs/StepQueueState.h>
 #include <rm_msgs/EngineerUi.h>
 #include <rm_msgs/MultiDofCmd.h>
 
@@ -82,10 +81,6 @@ private:
   void ctrlRPress();
   void shiftPressing();
   void shiftRelease();
-  void shiftQPress();
-  void shiftQRelease();
-  void shiftEPress();
-  void shiftERelease();
   void shiftZPress();
   void shiftXPress();
   void shiftCPress();
@@ -126,21 +121,19 @@ private:
               std::string joint_temperature, std::string gripper_state);
 
   bool reversal_motion_{};
-  bool change_flag_ = 1, is_exchange_, target_shape_;
+  bool change_flag_ = 1, is_exchange_{}, target_shape_{};
   int state_, operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, stone_num_last_{}, max_temperature_{};
   double angular_z_scale_{};
-  std::string prefix_, root_, step_name_last_, reversal_state_last_, drag_state_, drag_state_last_,
-      max_temperature_joint_, joint_temperature_, joint_temperature_last_, reversal_state_, gripper_state_,
-      gripper_state_last_;
+  std::string prefix_{}, root_{}, step_name_last_{}, reversal_state_last_{}, drag_state_{}, drag_state_last_{},
+      max_temperature_joint_{}, joint_temperature_{}, joint_temperature_last_{}, reversal_state_{}, gripper_state_{},
+      gripper_state_last_{};
 
   ros::Time last_time_;
   ros::Publisher ui_send_;
   ros::Subscriber reversal_vision_sub_;
-  ros::Publisher step_queue_state_pub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 
   rm_msgs::EngineerUi engineer_ui_;
-  rm_msgs::StepQueueState step_queue_state_;
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::MultiDofCommandSender* reversal_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
