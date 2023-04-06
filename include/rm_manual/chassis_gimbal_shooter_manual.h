@@ -72,10 +72,10 @@ protected:
   void sRelease() override;
   void dRelease() override;
 
-  void ePress();
-  void cPress();
-  void bPress();
-  void rPress();
+  virtual void ePress();
+  virtual void cPress();
+  virtual void bPress();
+  virtual void rPress();
   void qPress()
   {
     if (shooter_cmd_sender_->getShootFrequency() != rm_common::HeatLimit::LOW)
@@ -94,6 +94,7 @@ protected:
   void ctrlRPress();
   void ctrlBPress();
 
+  bool is_balance_ = false;
   InputEvent self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_, f_event_, b_event_,
       x_event_, r_event_, ctrl_c_event_, ctrl_v_event_, ctrl_r_event_, ctrl_b_event_, shift_event_, ctrl_shift_b_event_,
       mouse_left_event_, mouse_right_event_;
