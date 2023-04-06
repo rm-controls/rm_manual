@@ -13,7 +13,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 {
   exchange_sub_ = nh.subscribe<rm_msgs::ExchangerMsg>("/pnp_publisher", 10, &EngineerManual::exchangeCallback, this);
   ROS_INFO("Waiting for middleware to start.");
-  //  action_client_.waitForServer();
+  action_client_.waitForServer();
   ROS_INFO("Middleware started.");
   // UI
   ui_send_ = nh.advertise<rm_msgs::EngineerUi>("/engineer_ui", 10);
@@ -245,17 +245,17 @@ void EngineerManual::leftSwitchUpRise()
 {
   arm_calibration_->reset();
   power_on_calibration_->reset();
-  runStepQueue("OPEN_GRIPPER");
-  gripper_state_ = "on";
+  runStepQueue("CLOSE_GRIPPER");
+  gripper_state_ = "close";
 }
 
 void EngineerManual::leftSwitchDownFall()
 {
   runStepQueue("HOME_ONE_STONE");
-  runStepQueue("OPEN_GRIPPER");
+  runStepQueue("CLOSE_GRIPPER");
   drag_command_sender_->on();
   drag_state_ = "on";
-  gripper_state_ = "on";
+  gripper_state_ = "off";
 }
 
 void EngineerManual::leftSwitchUpFall()
