@@ -21,21 +21,24 @@ namespace rm_manual
 class EngineerManual : public ChassisGimbalManual
 {
 public:
-  enum
+  enum ControlMode
   {
     MANUAL,
     MIDDLEWARE
   };
-  enum
+
+  enum ArmMode
   {
     SERVO,
     JOINT
   };
-  enum
+
+  enum GimbalMode
   {
     RATE,
     DIRECT
   };
+
   EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
