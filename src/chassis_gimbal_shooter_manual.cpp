@@ -31,7 +31,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::fPress, this));
   b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::bPress, this));
   x_event_.setRising(boost::bind(&ChassisGimbalShooterManual::xPress, this));
-  x_event_.setActiveLow(boost::bind(&ChassisGimbalShooterManual::xRelease, this));
+  x_event_.setActiveLow(boost::bind(&ChassisGimbalShooterManual::xReleasing, this));
   r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::rPress, this));
   ctrl_c_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlCPress, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
@@ -443,7 +443,7 @@ void ChassisGimbalShooterManual::xPress()
     point_in.header.frame_id = "yaw";
     point_in.point.x = -1.;
     point_in.point.y = 0.;
-    point_in.point.z = abs(tf_buffer_.lookupTransform("yaw", "pitch", ros::Time(0)).transform.translation.z);
+    point_in.point.z = tf_buffer_.lookupTransform("yaw", "pitch", ros::Time(0)).transform.translation.z;
     tf2::doTransform(point_in, point_out_, tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)));
 
     double roll{}, pitch{};
@@ -455,7 +455,7 @@ void ChassisGimbalShooterManual::xPress()
   }
 }
 
-void ChassisGimbalShooterManual::xRelease()
+void ChassisGimbalShooterManual::xReleasing()
 {
   if (turn_flag_)
   {
