@@ -271,8 +271,8 @@ void EngineerManual::leftSwitchDownRise()
 
 void EngineerManual::runStepQueue(const std::string& step_queue_name)
 {
+  reversal_motion_ = true;
   rm_msgs::EngineerGoal goal;
-  reversal_motion_ = 1;
   goal.step_queue_name = step_queue_name;
   if (action_client_.isServerConnected())
   {
@@ -295,7 +295,6 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
 {
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
-  change_flag_ = 1;
   ROS_INFO("Done %s", (prefix_ + root_).c_str());
   engineer_ui_.current_step_name += " done!";
   if (prefix_ + root_ == "TAKE_WHEN_TWO_STONE00" || prefix_ + root_ == "TAKE_WHEN_ONE_STONE00" ||
@@ -321,7 +320,8 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
     stone_num_ = 3;
   }
   operating_mode_ = MANUAL;
-  reversal_motion_ = 0;
+  reversal_motion_ = false;
+  change_flag_ = true;
 }
 
 void EngineerManual::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
@@ -353,7 +353,7 @@ void EngineerManual::mouseLeftRelease()
   if (change_flag_)
   {
     root_ += "0";
-    change_flag_ = 0;
+    change_flag_ = false;
     runStepQueue(prefix_ + root_);
     ROS_INFO("Finished %s", (prefix_ + root_).c_str());
   }
@@ -529,7 +529,7 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::qPressing()
 {
-  if (speed_change_mode_ == 1)
+  if (speed_change_mode_ == true)
     vel_cmd_sender_->setAngularZVel(0.05);
   else
     vel_cmd_sender_->setAngularZVel(0.5);
@@ -542,7 +542,7 @@ void EngineerManual::qRelease()
 
 void EngineerManual::ePressing()
 {
-  if (speed_change_mode_ == 1)
+  if (speed_change_mode_ == true)
     vel_cmd_sender_->setAngularZVel(-0.05);
   else
     vel_cmd_sender_->setAngularZVel(-0.5);
@@ -583,25 +583,24 @@ void EngineerManual::rPress()
 
 void EngineerManual::xPress()
 {
+  prefix_ = "";
+  root_ = "DRAG_CAR0";
+  runStepQueue(root_);
   if (drag_state_ == "on")
   {
     drag_command_sender_->off();
     drag_state_ = "off";
-    runStepQueue(root_);
   }
   else
   {
     drag_command_sender_->on();
     drag_state_ = "on";
-    prefix_ = "";
-    root_ = "DRAG_CAR0";
-    runStepQueue(root_);
   }
 }
 void EngineerManual::vPressing()
 {
   // ROLL
-  reversal_motion_ = 1;
+  reversal_motion_ = true;
   reversal_command_sender_->setGroupVel(0., 0., 0., 1., 0., 0.);
   reversal_state_ = "ROLL";
 }
@@ -609,7 +608,7 @@ void EngineerManual::vPressing()
 void EngineerManual::vRelease()
 {
   // stop
-  reversal_motion_ = 0;
+  reversal_motion_ = false;
   reversal_command_sender_->setZero();
   reversal_state_ = "STOP";
 }
@@ -617,7 +616,7 @@ void EngineerManual::vRelease()
 void EngineerManual::bPressing()
 {
   // PITCH
-  reversal_motion_ = 1;
+  reversal_motion_ = true;
   reversal_command_sender_->setGroupVel(0., 0., -0.3, 0., 1.5, 0.);
   reversal_state_ = "PITCH";
 }
@@ -625,7 +624,7 @@ void EngineerManual::bPressing()
 void EngineerManual::bRelease()
 {
   // stop
-  reversal_motion_ = 0;
+  reversal_motion_ = false;
   reversal_command_sender_->setZero();
   reversal_state_ = "STOP";
 }
@@ -633,21 +632,21 @@ void EngineerManual::bRelease()
 void EngineerManual::gPressing()
 {
   // Z in
-  reversal_motion_ = 1;
+  reversal_motion_ = true;
   reversal_command_sender_->setGroupVel(0., 0., -1., 0., 0., 0.);
   reversal_state_ = "Z IN";
 }
 void EngineerManual::gRelease()
 {
   // stop
-  reversal_motion_ = 0;
+  reversal_motion_ = false;
   reversal_command_sender_->setZero();
   reversal_state_ = "STOP";
 }
 void EngineerManual::fPressing()
 {
   // Z out
-  reversal_motion_ = 1;
+  reversal_motion_ = true;
   reversal_command_sender_->setGroupVel(0., 0., 1., 0., 0., 0.);
   reversal_state_ = "Z OUT";
 }
@@ -659,11 +658,11 @@ void EngineerManual::fRelease()
 }
 void EngineerManual::shiftPressing()
 {
-  speed_change_mode_ = 0;
+  speed_change_mode_ = false;
 }
 void EngineerManual::shiftRelease()
 {
-  speed_change_mode_ = 1;
+  speed_change_mode_ = true;
 }
 void EngineerManual::shiftFPress()
 {
@@ -681,9 +680,9 @@ void EngineerManual::shiftRPress()
 }
 void EngineerManual::shiftCPress()
 {
-  if (servo_mode_ == 1)
+  if (servo_mode_ == true)
   {
-    servo_mode_ = 0;
+    servo_mode_ = false;
     engineer_ui_.current_step_name = "ENTER servo";
     ROS_INFO("EXIT SERVO");
   }

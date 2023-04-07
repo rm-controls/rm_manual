@@ -120,12 +120,11 @@ private:
   void gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data);
   void sendUi();
 
-  bool reversal_motion_{};
-  bool change_flag_{ 1 }, is_exchange_{}, target_shape_{};
+  bool change_flag_{ 1 }, is_exchange_{}, target_shape_{}, reversal_motion_{};
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, max_temperature_{};
   double angular_z_scale_{};
-  std::string prefix_{}, root_{}, drag_state_{}, max_temperature_joint_{}, joint_temperature_{}, reversal_state_{},
-      gripper_state_{};
+  std::string prefix_{}, root_{}, drag_state_{ "on" }, max_temperature_joint_{}, joint_temperature_{},
+      reversal_state_{}, gripper_state_{};
 
   ros::Time last_time_;
   ros::Publisher ui_send_;
