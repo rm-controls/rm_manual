@@ -122,7 +122,7 @@ private:
 
   bool change_flag_{ 1 }, is_exchange_{}, target_shape_{}, reversal_motion_{};
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, max_temperature_{};
-  double angular_z_scale_{};
+  double angular_z_scale_{}, gyro_scale_{}, gyro_low_scale_{};
   std::string prefix_{}, root_{}, drag_state_{ "on" }, max_temperature_joint_{}, joint_temperature_{},
       reversal_state_{}, gripper_state_{};
 

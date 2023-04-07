@@ -15,7 +15,13 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
-  // UI
+  // Vel
+  ros::NodeHandle vel_nh(nh, "vel");
+  if (!vel_nh.getParam("gyro_scale", gyro_scale_))
+    gyro_scale_ = 0.5;
+  if (!vel_nh.getParam("gyro_low_scale", gyro_low_scale_))
+    gyro_low_scale_ = 0.05;
+  // Ui
   ui_send_ = nh.advertise<rm_msgs::EngineerUi>("/engineer_ui", 10);
   // Drag
   ros::NodeHandle nh_drag(nh, "drag");
@@ -529,10 +535,7 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::qPressing()
 {
-  if (speed_change_mode_ == true)
-    vel_cmd_sender_->setAngularZVel(0.05);
-  else
-    vel_cmd_sender_->setAngularZVel(0.5);
+  vel_cmd_sender_->setAngularZVel(speed_change_mode_ ? gyro_low_scale_ : gyro_scale_);
 }
 
 void EngineerManual::qRelease()
@@ -542,10 +545,7 @@ void EngineerManual::qRelease()
 
 void EngineerManual::ePressing()
 {
-  if (speed_change_mode_ == true)
-    vel_cmd_sender_->setAngularZVel(-0.05);
-  else
-    vel_cmd_sender_->setAngularZVel(-0.5);
+  vel_cmd_sender_->setAngularZVel(speed_change_mode_ ? -gyro_low_scale_ : -gyro_scale_);
 }
 
 void EngineerManual::eRelease()
