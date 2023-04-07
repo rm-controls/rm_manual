@@ -309,15 +309,9 @@ void ChassisGimbalShooterManual::mouseRightPress()
 
 void ChassisGimbalShooterManual::ePress()
 {
-  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::TWIST)
-  {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-  }
-  else
-  {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-  }
+  switch_detection_srv_->switchArmorTargetType();
+  switch_detection_srv_->callService();
+  shooter_cmd_sender_->setArmorType(switch_detection_srv_->getArmorTarget());
 }
 
 void ChassisGimbalShooterManual::cPress()
@@ -453,13 +447,6 @@ void ChassisGimbalShooterManual::shiftPress()
 void ChassisGimbalShooterManual::shiftRelease()
 {
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-}
-
-void ChassisGimbalShooterManual::ctrlCPress()
-{
-  switch_detection_srv_->switchArmorTargetType();
-  switch_detection_srv_->callService();
-  shooter_cmd_sender_->setArmorType(switch_detection_srv_->getArmorTarget());
 }
 
 void ChassisGimbalShooterManual::ctrlVPress()
