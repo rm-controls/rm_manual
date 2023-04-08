@@ -11,11 +11,7 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
 {
   ros::NodeHandle cover_nh(nh, "cover");
   nh.param("supply_frame", supply_frame_, std::string("supply_frame"));
-  if (nh.hasParam("flank_frame"))
-  {
-    nh.getParam("flank_frame", flank_frame_);
-    need_flank_ = true;
-  }
+
   cover_command_sender_ = new rm_common::JointPositionBinaryCommandSender(cover_nh);
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("gimbal_calibration", rpc_value);
@@ -64,29 +60,21 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
 {
   if (supply_)
   {
-    if (!need_flank_)
+    chassis_cmd_sender_->getMsg()->follow_source_frame = supply_frame_;
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    cover_close_ = false;
+    try
     {
-      chassis_cmd_sender_->getMsg()->follow_source_frame = supply_frame_;
-      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-      cover_close_ = false;
-      try
-      {
-        double roll, pitch, yaw;
-        quatToRPY(tf_buffer_.lookupTransform("base_link", supply_frame_, ros::Time(0)).transform.rotation, roll, pitch,
-                  yaw);
-        if (std::abs(yaw) < 0.05)
-          cover_command_sender_->on();
-      }
-      catch (tf2::TransformException& ex)
-      {
-        ROS_WARN("%s", ex.what());
-      }
+      double roll, pitch, yaw;
+      quatToRPY(tf_buffer_.lookupTransform("base_link", supply_frame_, ros::Time(0)).transform.rotation, roll, pitch,
+                yaw);
+      if (std::abs(yaw) < 0.05)
+        cover_command_sender_->on();
     }
-    else
+    catch (tf2::TransformException& ex)
     {
-      cover_close_ = false;
-      cover_command_sender_->on();
+      ROS_WARN("%s", ex.what());
     }
   }
   else
@@ -94,40 +82,29 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
     cover_command_sender_->off();
     if (!cover_close_)
     {
-      if (!need_flank_)
-      {
-        try
-        {
-          double roll, pitch, yaw;
-          quatToRPY(tf_buffer_.lookupTransform("base_link", "cover", ros::Time(0)).transform.rotation, roll, pitch, yaw);
-          if (pitch - cover_command_sender_->getMsg()->data > 0.05)
-          {
-            chassis_cmd_sender_->getMsg()->follow_source_frame = supply_frame_;
-            chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-            chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-          }
-          else
-          {
-            cover_close_ = true;
-            chassis_cmd_sender_->getMsg()->follow_source_frame = "yaw";
-          }
-        }
-        catch (tf2::TransformException& ex)
-        {
-          ROS_WARN("%s", ex.what());
-        }
-      }
-      else
+      try
       {
         double roll, pitch, yaw;
         quatToRPY(tf_buffer_.lookupTransform("base_link", "cover", ros::Time(0)).transform.rotation, roll, pitch, yaw);
-        if (yaw - cover_command_sender_->getMsg()->data < 0.05)
+        if (pitch - cover_command_sender_->getMsg()->data > 0.05)
+        {
+          chassis_cmd_sender_->getMsg()->follow_source_frame = supply_frame_;
+          chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+          chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+        }
+        else
         {
           cover_close_ = true;
+          chassis_cmd_sender_->getMsg()->follow_source_frame = "yaw";
         }
+      }
+      catch (tf2::TransformException& ex)
+      {
+        ROS_WARN("%s", ex.what());
       }
     }
   }
+
   ChassisGimbalShooterManual::sendCommand(time);
   cover_command_sender_->sendCommand(time);
 }

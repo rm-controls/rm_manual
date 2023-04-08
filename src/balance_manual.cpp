@@ -13,9 +13,15 @@ BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   balance_cmd_sender_ = new rm_common::BalanceCommandSender(balance_nh);
   balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
 
+  nh.param("flank_frame", flank_frame_, std::string("flank_frame"));
+  nh.param("dis_frame", dis_frame_, std::string("yaw_dis_frame"));
+
   is_balance_ = true;
+  dis_ = true;
   state_sub_ = balance_nh.subscribe<rm_msgs::BalanceState>("/state", 1, &BalanceManual::balanceStateCallback, this);
-  c_event_.setDelayTriggered(boost::bind(&BalanceManual::stateNormalizeDelay, this), 1.0, true);
+  v_event_.setRising(boost::bind(&BalanceManual::vPress, this));
+  g_event_.setRising(boost::bind(&BalanceManual::gPress, this));
+  c_event_.setDelayTriggered(boost::bind(&BalanceManual::stateNormalizeDelay, this), 0.05, true);
   //  w_event_.setDelayTriggered(boost::bind(&BalanceManual::stateNormalizeDelay, this), 0.5, true);
   //  s_event_.setDelayTriggered(boost::bind(&BalanceManual::stateNormalizeDelay, this), 0.5, true);
   //  a_event_.setDelayTriggered(boost::bind(&BalanceManual::stateNormalizeDelay, this), 0.5, true);
@@ -26,6 +32,13 @@ BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 
 void BalanceManual::sendCommand(const ros::Time& time)
 {
+  if (flank_)
+    chassis_cmd_sender_->getMsg()->follow_source_frame = flank_frame_;
+  else if (dis_)
+    chassis_cmd_sender_->getMsg()->follow_source_frame = dis_frame_;
+  else
+    chassis_cmd_sender_->getMsg()->follow_source_frame = "yaw";
+
   ChassisGimbalShooterCoverManual::sendCommand(time);
   balance_cmd_sender_->sendCommand(time);
 }
@@ -33,7 +46,23 @@ void BalanceManual::sendCommand(const ros::Time& time)
 void BalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalShooterCoverManual::checkKeyboard(dbus_data);
+  v_event_.update(dbus_data->key_v);
+  g_event_.update(dbus_data->key_g);
   ctrl_x_event_.update(dbus_data->key_ctrl && dbus_data->key_x);
+}
+
+void BalanceManual::vPress()
+{
+  flank_ = !flank_;
+  if (dis_)
+    dis_ = false;
+}
+
+void BalanceManual::gPress()
+{
+  dis_ = !dis_;
+  if (flank_)
+    flank_ = false;
 }
 
 void BalanceManual::cPress()
@@ -78,17 +107,19 @@ void BalanceManual::balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& 
 {
   if ((ros::Time::now() - msg->header.stamp).toSec() < 0.2)
   {
-    if (std::abs(msg->theta) > 0.1)
-    {
+    if (std::abs(msg->theta) > 0.3)
       chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
-    }
+    else
+      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
 }
 
 void BalanceManual::stateNormalizeDelay()
 {
-  if (!shift_event_.getState())
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+  //  if (!shift_event_.getState())
+  //    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+  if (is_gyro_)
+    vel_cmd_sender_->setAngularZVel(1.0);
   ROS_INFO("state normalize");
 }
 

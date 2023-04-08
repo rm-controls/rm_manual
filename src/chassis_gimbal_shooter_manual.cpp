@@ -321,7 +321,7 @@ void ChassisGimbalShooterManual::cPress()
     if (x_scale_ != 0.0 || y_scale_ != 0.0)
       vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
     else
-      vel_cmd_sender_->setAngularZVel(1.0);
+      vel_cmd_sender_->setAngularZVel(0.4);
   }
 }
 

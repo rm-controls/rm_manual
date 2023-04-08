@@ -14,6 +14,8 @@ public:
   BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
 
 protected:
+  void vPress();
+  void gPress();
   void cPress() override;
   void wPress() override;
   void sPress() override;
@@ -30,6 +32,9 @@ protected:
 
 private:
   ros::Subscriber state_sub_;
-  InputEvent ctrl_x_event_;
+
+  bool flank_ = false, dis_ = false;
+  std::string flank_frame_, dis_frame_;
+  InputEvent v_event_, g_event_, ctrl_x_event_;
 };
 }  // namespace rm_manual

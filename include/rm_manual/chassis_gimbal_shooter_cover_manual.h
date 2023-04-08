@@ -37,9 +37,9 @@ protected:
   rm_common::CalibrationQueue* gimbal_calibration_;
   rm_common::CalibrationQueue* chassis_calibration_;
 
-  std::string supply_frame_, flank_frame_;
-  bool supply_ = false, flank_ = false;
-  bool cover_close_ = true, need_flank_ = false;
+  std::string supply_frame_;
+  bool supply_ = false;
+  bool cover_close_ = true;
 
   InputEvent ctrl_z_event_, ctrl_q_event_;
 };
