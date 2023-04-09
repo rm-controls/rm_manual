@@ -136,6 +136,7 @@ void ChassisGimbalShooterManual::remoteControlTurnOff()
   ChassisGimbalManual::remoteControlTurnOff();
   shooter_cmd_sender_->setZero();
   shooter_calibration_->stop();
+  turn_flag_ = false;
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOn()
@@ -150,6 +151,7 @@ void ChassisGimbalShooterManual::robotDie()
 {
   ManualBase::robotDie();
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+  turn_flag_ = false;
 }
 
 void ChassisGimbalShooterManual::chassisOutputOn()
