@@ -33,8 +33,8 @@ protected:
 private:
   ros::Subscriber state_sub_;
 
-  bool flank_ = false, dis_ = false;
-  std::string flank_frame_, dis_frame_;
+  bool flank_ = false, reverse_ = false;
+  std::string flank_frame_, reverse_frame_;
   InputEvent v_event_, g_event_, ctrl_x_event_;
 };
 }  // namespace rm_manual

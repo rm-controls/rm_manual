@@ -14,10 +14,10 @@ BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
 
   nh.param("flank_frame", flank_frame_, std::string("flank_frame"));
-  nh.param("dis_frame", dis_frame_, std::string("yaw_dis_frame"));
+  nh.param("reverse_frame", reverse_frame_, std::string("yaw_reverse_frame"));
 
   is_balance_ = true;
-  dis_ = true;
+  reverse_ = true;
   state_sub_ = balance_nh.subscribe<rm_msgs::BalanceState>("/state", 1, &BalanceManual::balanceStateCallback, this);
   v_event_.setRising(boost::bind(&BalanceManual::vPress, this));
   g_event_.setRising(boost::bind(&BalanceManual::gPress, this));
@@ -34,8 +34,8 @@ void BalanceManual::sendCommand(const ros::Time& time)
 {
   if (flank_)
     chassis_cmd_sender_->getMsg()->follow_source_frame = flank_frame_;
-  else if (dis_)
-    chassis_cmd_sender_->getMsg()->follow_source_frame = dis_frame_;
+  else if (reverse_)
+    chassis_cmd_sender_->getMsg()->follow_source_frame = reverse_frame_;
   else
     chassis_cmd_sender_->getMsg()->follow_source_frame = "yaw";
 
@@ -54,13 +54,13 @@ void BalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
 void BalanceManual::vPress()
 {
   flank_ = !flank_;
-  if (dis_)
-    dis_ = false;
+  if (reverse_)
+    reverse_ = false;
 }
 
 void BalanceManual::gPress()
 {
-  dis_ = !dis_;
+  reverse_ = !reverse_;
   if (flank_)
     flank_ = false;
 }
