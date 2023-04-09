@@ -434,8 +434,8 @@ void ChassisGimbalShooterManual::dPressing()
 }
 void ChassisGimbalShooterManual::gPress()
 {
-  client_map_receive_data_.command_keyboard = 0x04;
-  client_map_receive_data_pub_.publish(client_map_receive_data_);
+  client_map_send_data_.command_keyboard = 0x04;
+  client_map_send_data_pub_.publish(client_map_send_data_);
 }
 
 void ChassisGimbalShooterManual::shiftPress()
