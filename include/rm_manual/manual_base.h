@@ -14,6 +14,7 @@
 #include <tf/transform_listener.h>
 #include <sensor_msgs/JointState.h>
 #include <tf2_ros/transform_listener.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <controller_manager_msgs/SwitchController.h>
 
 #include <rm_common/ori_tool.h>
