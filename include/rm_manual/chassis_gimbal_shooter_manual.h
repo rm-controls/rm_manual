@@ -6,6 +6,7 @@
 
 #include "rm_manual/chassis_gimbal_manual.h"
 #include <rm_common/decision/calibration_queue.h>
+#include <angles/angles.h>
 
 namespace rm_manual
 {
@@ -75,6 +76,8 @@ protected:
   void ePress();
   void cPress();
   void bPress();
+  void xPress();
+  void xReleasing();
   void rPress();
   void qPress()
   {
@@ -102,6 +105,9 @@ protected:
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
 
-  bool prepare_shoot_ = false;
+  geometry_msgs::PointStamped point_out_;
+
+  bool prepare_shoot_ = false, turn_flag_ = false;
+  double yaw_current_{};
 };
 }  // namespace rm_manual
