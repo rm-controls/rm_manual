@@ -16,6 +16,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
 
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
+  ros::NodeHandle armor_target_switch_nh(nh, "armor_target_switch");
+  switch_armor_target_srv_ = new rm_common::SwitchDetectionCaller(armor_target_switch_nh);
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("shooter_calibration", rpc_value);
   shooter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
@@ -311,9 +313,9 @@ void ChassisGimbalShooterManual::mouseRightPress()
 
 void ChassisGimbalShooterManual::ePress()
 {
-  switch_detection_srv_->switchArmorTargetType();
-  switch_detection_srv_->callService();
-  shooter_cmd_sender_->setArmorType(switch_detection_srv_->getArmorTarget());
+  switch_armor_target_srv_->switchArmorTargetType();
+  switch_armor_target_srv_->callService();
+  shooter_cmd_sender_->setArmorType(switch_armor_target_srv_->getArmorTarget());
 }
 
 void ChassisGimbalShooterManual::cPress()
