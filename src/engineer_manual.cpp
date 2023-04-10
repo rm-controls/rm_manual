@@ -332,6 +332,7 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
 
 void EngineerManual::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
 {
+  max_temperature_ = data->temperature[0];
   for (std::vector<int>::size_type i = 0; i < data->id.size(); ++i)
   {
     if (data->temperature[i] > max_temperature_)
@@ -680,19 +681,9 @@ void EngineerManual::shiftRPress()
 }
 void EngineerManual::shiftCPress()
 {
-  if (servo_mode_ == true)
-  {
-    servo_mode_ = false;
-    engineer_ui_.current_step_name = "ENTER servo";
-    ROS_INFO("EXIT SERVO");
-  }
-  else
-  {
-    servo_mode_ = 1;
-    engineer_ui_.current_step_name = "exit SERVO";
-    ROS_INFO("ENTER SERVO");
-  }
-  ROS_INFO("cancel all goal");
+  prefix_ = "";
+  root_ = "EXCHANGE_CONTINUE";
+  runStepQueue(root_);
 }
 void EngineerManual::shiftZPress()
 {
