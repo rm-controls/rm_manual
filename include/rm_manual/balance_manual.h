@@ -27,11 +27,15 @@ protected:
   void balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& msg);
   void stateNormalizeDelay();
   void modeNormalizeDelay();
+  void gyroCPressedCallback();
 
   rm_common::BalanceCommandSender* balance_cmd_sender_{};
 
 private:
   ros::Subscriber state_sub_;
+
+  double gyro_scale_;
+  ros::Timer gyro_timer_;
 
   bool flank_ = false, dis_ = false;
   std::string flank_frame_, dis_frame_;

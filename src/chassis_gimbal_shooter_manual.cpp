@@ -188,7 +188,7 @@ void ChassisGimbalShooterManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbu
 void ChassisGimbalShooterManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updatePc(dbus_data);
-  if (chassis_cmd_sender_->power_limit_->getState() != rm_common::PowerLimit::CHARGE && !is_gyro_ && !is_balance_)
+  if (chassis_cmd_sender_->power_limit_->getState() != rm_common::PowerLimit::CHARGE && !is_gyro_)
   {
     if (!dbus_data->key_shift && chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW &&
         std::sqrt(std::pow(vel_cmd_sender_->getMsg()->linear.x, 2) + std::pow(vel_cmd_sender_->getMsg()->linear.y, 2)) >
@@ -321,7 +321,7 @@ void ChassisGimbalShooterManual::cPress()
     if (x_scale_ != 0.0 || y_scale_ != 0.0)
       vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
     else
-      vel_cmd_sender_->setAngularZVel(0.4);
+      vel_cmd_sender_->setAngularZVel(1.0);
   }
 }
 

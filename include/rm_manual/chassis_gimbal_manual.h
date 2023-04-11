@@ -34,11 +34,13 @@ protected:
   virtual void wPress()
   {
     x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
+    ramp_x_->clear();
   }
   virtual void wRelease();
   virtual void sPress()
   {
     x_scale_ = x_scale_ <= -1.0 ? -1.0 : x_scale_ - 1.0;
+    ramp_x_->clear();
   }
   virtual void sRelease();
   virtual void aPress()
@@ -61,10 +63,13 @@ protected:
   rm_common::GimbalCommandSender* gimbal_cmd_sender_{};
   rm_common::ChassisCommandSender* chassis_cmd_sender_{};
 
+  double final_x_ = 0;
+  RampFilter<double>* ramp_x_{};
+
   double x_scale_{}, y_scale_{};
   bool speed_change_mode_{ 0 }, is_gyro_{ 0 };
   double speed_change_scale_{ 1. };
-  double gimbal_scale_{ 1. };
+  double gimbal_scale_{ 3. };
   double gyro_move_reduction_{ 1. };
   double gyro_rotate_reduction_{ 1. };
 
