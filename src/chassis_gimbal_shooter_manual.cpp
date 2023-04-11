@@ -442,7 +442,6 @@ void ChassisGimbalShooterManual::gPress()
   client_map_send_data_pub_.publish(client_map_send_data_);
 }
 
-
 void ChassisGimbalShooterManual::xPress()
 {
   turn_flag_ = true;
