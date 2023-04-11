@@ -31,6 +31,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::fPress, this));
   b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::bPress, this));
   g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
+  x_event_.setRising(boost::bind(&ChassisGimbalShooterManual::xPress, this));
+  x_event_.setActiveLow(boost::bind(&ChassisGimbalShooterManual::xReleasing, this));
   r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::rPress, this));
   ctrl_c_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlCPress, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
@@ -135,6 +137,7 @@ void ChassisGimbalShooterManual::remoteControlTurnOff()
   ChassisGimbalManual::remoteControlTurnOff();
   shooter_cmd_sender_->setZero();
   shooter_calibration_->stop();
+  turn_flag_ = false;
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOn()
@@ -149,6 +152,7 @@ void ChassisGimbalShooterManual::robotDie()
 {
   ManualBase::robotDie();
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+  turn_flag_ = false;
 }
 
 void ChassisGimbalShooterManual::chassisOutputOn()
@@ -436,6 +440,44 @@ void ChassisGimbalShooterManual::gPress()
 {
   client_map_send_data_.command_keyboard = 0x04;
   client_map_send_data_pub_.publish(client_map_send_data_);
+}
+
+
+void ChassisGimbalShooterManual::xPress()
+{
+  turn_flag_ = true;
+  geometry_msgs::PointStamped point_in;
+  try
+  {
+    point_in.header.frame_id = "yaw";
+    point_in.point.x = -1.;
+    point_in.point.y = 0.;
+    point_in.point.z = tf_buffer_.lookupTransform("yaw", "pitch", ros::Time(0)).transform.translation.z;
+    tf2::doTransform(point_in, point_out_, tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)));
+
+    double roll{}, pitch{};
+    quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw_current_);
+  }
+  catch (tf2::TransformException& ex)
+  {
+    ROS_WARN("%s", ex.what());
+  }
+}
+
+void ChassisGimbalShooterManual::xReleasing()
+{
+  if (turn_flag_)
+  {
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
+    gimbal_cmd_sender_->setPoint(point_out_);
+    double roll{}, pitch{}, yaw{};
+    quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
+    if (std::abs(angles::shortest_angular_distance(yaw, yaw_current_)) > finish_turning_threshold_)
+    {
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+      turn_flag_ = false;
+    }
+  }
 }
 
 void ChassisGimbalShooterManual::shiftPress()
