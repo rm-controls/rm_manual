@@ -109,9 +109,9 @@ private:
   void bRelease();
   void vPressing();
   void vRelease();
-  void fPressing();
+  void fPress();
   void fRelease();
-  void gPressing();
+  void gPress();
   void gRelease();
   void mouseLeftRelease();
   void mouseRightRelease();
