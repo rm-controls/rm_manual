@@ -72,11 +72,11 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   r_event_.setRising(boost::bind(&EngineerManual::rPress, this));
   v_event_.setActiveHigh(boost::bind(&EngineerManual::vPressing, this));
   v_event_.setFalling(boost::bind(&EngineerManual::vRelease, this));
-  g_event_.setActiveHigh(boost::bind(&EngineerManual::gPressing, this));
+  g_event_.setRising(boost::bind(&EngineerManual::gPress, this));
   g_event_.setFalling(boost::bind(&EngineerManual::gRelease, this));
   b_event_.setActiveHigh(boost::bind(&EngineerManual::bPressing, this));
   b_event_.setFalling(boost::bind(&EngineerManual::bRelease, this));
-  f_event_.setActiveHigh(boost::bind(&EngineerManual::fPressing, this));
+  f_event_.setRising(boost::bind(&EngineerManual::fPress, this));
   f_event_.setFalling(boost::bind(&EngineerManual::fRelease, this));
   shift_z_event_.setRising(boost::bind(&EngineerManual::shiftZPress, this));
   shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
@@ -211,8 +211,16 @@ void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
   servo_command_sender_->setLinearVel(dbus_data->ch_l_y, -dbus_data->ch_l_x, -dbus_data->wheel);
   servo_command_sender_->setAngularVel(dbus_data->ch_r_x, dbus_data->ch_r_y, angular_z_scale_);
   z_event_.update(dbus_data->key_z & !dbus_data->key_ctrl & !dbus_data->key_shift);
+  shift_f_event_.update(dbus_data->key_f & !dbus_data->key_ctrl & dbus_data->key_shift);
   c_event_.update(dbus_data->key_c & !dbus_data->key_ctrl & !dbus_data->key_shift);
   ctrl_v_event_.update(dbus_data->key_ctrl & dbus_data->key_v);
+  ctrl_f_event_.update(dbus_data->key_ctrl & dbus_data->key_f);
+  shift_g_event_.update(dbus_data->key_shift & dbus_data->key_g);
+  shift_c_event_.update(dbus_data->key_shift & dbus_data->key_c);
+  shift_x_event_.update(dbus_data->key_shift & dbus_data->key_x);
+  shift_z_event_.update(dbus_data->key_shift & dbus_data->key_z);
+  shift_v_event_.update(dbus_data->key_shift & dbus_data->key_v);
+  ChassisGimbalManual::checkKeyboard(dbus_data);
 }
 
 void EngineerManual::remoteControlTurnOff()
@@ -598,7 +606,7 @@ void EngineerManual::xPress()
     drag_state_ = "on";
   }
 }
-void EngineerManual::vPressing()
+void EngineerManual::bPressing()
 {
   // ROLL
   reversal_motion_ = true;
@@ -614,14 +622,20 @@ void EngineerManual::vRelease()
   reversal_state_ = "STOP";
 }
 
-void EngineerManual::bPressing()
+void EngineerManual::gPress()
 {
   // PITCH
-  reversal_motion_ = true;
-  reversal_command_sender_->setGroupVel(0., 0., -0.3, 0., 1.5, 0.);
+  runStepQueue("PITCH_PI_2");
+  // reversal_command_sender_->setGroupVel(0., 0., -0.3, 0., 1.5, 0.);
   reversal_state_ = "PITCH";
 }
 
+void EngineerManual::gRelease()
+{
+  // stop
+  runStepQueue("POSITION_STOP");
+  reversal_state_ = "STOP";
+}
 void EngineerManual::bRelease()
 {
   // stop
@@ -630,31 +644,23 @@ void EngineerManual::bRelease()
   reversal_state_ = "STOP";
 }
 
-void EngineerManual::gPressing()
+void EngineerManual::vPressing()
 {
   // Z in
   reversal_motion_ = true;
   reversal_command_sender_->setGroupVel(0., 0., -1., 0., 0., 0.);
   reversal_state_ = "Z IN";
 }
-void EngineerManual::gRelease()
-{
-  // stop
-  reversal_motion_ = false;
-  reversal_command_sender_->setZero();
-  reversal_state_ = "STOP";
-}
-void EngineerManual::fPressing()
+void EngineerManual::fPress()
 {
   // Z out
-  reversal_motion_ = true;
-  reversal_command_sender_->setGroupVel(0., 0., 1., 0., 0., 0.);
+  runStepQueue("Z_REVERSAL_OUT");
   reversal_state_ = "Z OUT";
 }
 void EngineerManual::fRelease()
 {
   // stop
-  reversal_command_sender_->setZero();
+  runStepQueue("POSITION_STOP");
   reversal_state_ = "STOP";
 }
 void EngineerManual::shiftPressing()
@@ -667,16 +673,12 @@ void EngineerManual::shiftRelease()
 }
 void EngineerManual::shiftFPress()
 {
-  prefix_ = "";
-  root_ = "EXCHANGE_GIMBAL";
-  runStepQueue(root_);
+  runStepQueue("EXCHANGE_GIMBAL");
   ROS_INFO("enter gimbal EXCHANGE_GIMBAL");
 }
 void EngineerManual::shiftRPress()
 {
-  prefix_ = "";
-  root_ = "SKY_GIMBAL";
-  runStepQueue(root_);
+  runStepQueue("SKY_GIMBAL");
   ROS_INFO("enter gimbal SKY_GIMBAL");
 }
 void EngineerManual::shiftCPress()
@@ -687,9 +689,7 @@ void EngineerManual::shiftCPress()
 }
 void EngineerManual::shiftZPress()
 {
-  prefix_ = "";
-  root_ = "REVERSAL_GIMBAL";
-  runStepQueue("REVERSAL_GIMBAL");
+  runStepQueue("ISLAND_GIMBAL");
   ROS_INFO("enter gimbal REVERSAL_GIMBAL");
 }
 void EngineerManual::shiftVPress()
@@ -710,9 +710,7 @@ void EngineerManual::shiftVRelease()
 
 void EngineerManual::shiftBPress()
 {
-  prefix_ = "";
-  root_ = "BACK_GIMBAL";
-  runStepQueue(root_);
+  runStepQueue("SIDE_GIMBAL");
   ROS_INFO("enter gimbal BACK_GIMBAL");
 }
 
@@ -722,9 +720,7 @@ void EngineerManual::shiftBRelease()
 
 void EngineerManual::shiftXPress()
 {
-  prefix_ = "";
-  root_ = "GROUND_GIMBAL";
-  runStepQueue(root_);
+  runStepQueue("GROUND_GIMBAL");
   ROS_INFO("enter gimbal GROUND_GIMBAL");
 }
 
