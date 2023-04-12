@@ -14,6 +14,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <rm_msgs/EngineerAction.h>
 #include <rm_msgs/EngineerUi.h>
+#include <rm_msgs/ExchangerMsg.h>
 #include <rm_msgs/MultiDofCmd.h>
 #include <rm_msgs/GpioData.h>
 
@@ -28,7 +29,7 @@ public:
     MIDDLEWARE
   };
 
-  enum ArmMode
+  enum JointMode
   {
     SERVO,
     JOINT
@@ -113,6 +114,7 @@ private:
   void fRelease();
   void gPress();
   void gRelease();
+
   void mouseLeftRelease();
   void mouseRightRelease();
   void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data) override;
@@ -128,7 +130,7 @@ private:
 
   ros::Time last_time_;
   ros::Publisher ui_send_;
-  ros::Subscriber reversal_vision_sub_;
+  ros::Subscriber reversal_vision_sub_, exchange_sub_;
   ros::Subscriber gripper_state_sub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 
