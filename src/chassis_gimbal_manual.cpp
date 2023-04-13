@@ -62,10 +62,10 @@ void ChassisGimbalManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_
   ManualBase::checkKeyboard(dbus_data);
   if (robot_id_ == rm_msgs::GameRobotStatus::RED_ENGINEER || robot_id_ == rm_msgs::GameRobotStatus::BLUE_ENGINEER)
   {
-    w_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_w);
-    s_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_s);
-    a_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_a);
-    d_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_d);
+    w_event_.update((!dbus_data->key_ctrl) && dbus_data->key_w);
+    s_event_.update((!dbus_data->key_ctrl) && dbus_data->key_s);
+    a_event_.update((!dbus_data->key_ctrl) && dbus_data->key_a);
+    d_event_.update((!dbus_data->key_ctrl) && dbus_data->key_d);
   }
   else
   {
