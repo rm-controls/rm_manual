@@ -15,17 +15,12 @@ BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 
   nh.param("flank_frame", flank_frame_, std::string("flank_frame"));
   nh.param("reverse_frame", reverse_frame_, std::string("yaw_reverse_frame"));
+  nh.param("balance_dangerous_angle", balance_dangerous_angle_, 0.3);
 
   is_balance_ = true;
-  reverse_ = true;
   state_sub_ = balance_nh.subscribe<rm_msgs::BalanceState>("/state", 1, &BalanceManual::balanceStateCallback, this);
   v_event_.setRising(boost::bind(&BalanceManual::vPress, this));
   g_event_.setRising(boost::bind(&BalanceManual::gPress, this));
-  c_event_.setDelayTriggered(boost::bind(&BalanceManual::stateNormalizeDelay, this), 0.05, true);
-  //  w_event_.setDelayTriggered(boost::bind(&BalanceManual::stateNormalizeDelay, this), 0.5, true);
-  //  s_event_.setDelayTriggered(boost::bind(&BalanceManual::stateNormalizeDelay, this), 0.5, true);
-  //  a_event_.setDelayTriggered(boost::bind(&BalanceManual::stateNormalizeDelay, this), 0.5, true);
-  //  d_event_.setDelayTriggered(boost::bind(&BalanceManual::stateNormalizeDelay, this), 0.5, true);
   ctrl_x_event_.setDelayTriggered(boost::bind(&BalanceManual::modeNormalizeDelay, this), 3.0, true);
   ctrl_x_event_.setRising(boost::bind(&BalanceManual::ctrlXPress, this));
 
@@ -70,34 +65,32 @@ void BalanceManual::gPress()
 
 void BalanceManual::cPress()
 {
-  gyro_scale_ = 0.1;
+  if (is_gyro_)
+    gyro_scale_ = 1.0;
+  else
+    gyro_scale_ = 0.0;
   ChassisGimbalShooterCoverManual::cPress();
   gyro_timer_.start();
-  // chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
 }
 
 void BalanceManual::wPress()
 {
   ChassisGimbalShooterCoverManual::wPress();
-  // chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
 }
 
 void BalanceManual::sPress()
 {
   ChassisGimbalShooterCoverManual::sPress();
-  // chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
 }
 
 void BalanceManual::aPress()
 {
   ChassisGimbalShooterCoverManual::aPress();
-  // chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
 }
 
 void BalanceManual::dPress()
 {
   ChassisGimbalShooterCoverManual::dPress();
-  // chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
 }
 
 void BalanceManual::ctrlXPress()
@@ -110,37 +103,28 @@ void BalanceManual::ctrlXPress()
 
 void BalanceManual::balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& msg)
 {
-  //  if ((ros::Time::now() - msg->header.stamp).toSec() < 0.2)
-  //  {
-  //    if (std::abs(msg->theta) > 0.3)
-  //      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
-  //    else
-  //      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-  //  }
+  if ((ros::Time::now() - msg->header.stamp).toSec() < 0.2)
+  {
+    if (std::abs(msg->theta) > balance_dangerous_angle_)
+      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
+    else
+      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+  }
 }
 
 void BalanceManual::gyroCPressedCallback()
 {
-  if (gyro_scale_ >= 1.0)
+  if ((gyro_scale_ >= 1.0 && is_gyro_) || (gyro_scale_ <= 0 && !is_gyro_))
   {
     gyro_timer_.stop();
     return;
   }
 
   if (is_gyro_)
-  {
     gyro_scale_ = gyro_scale_ + 8 * 0.01 > 1.0 ? 1.0 : gyro_scale_ + 8 * 0.01;
-    vel_cmd_sender_->setAngularZVel(gyro_scale_);
-  }
-}
-
-void BalanceManual::stateNormalizeDelay()
-{
-  //  if (!shift_event_.getState())
-  //    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-  if (is_gyro_)
-    vel_cmd_sender_->setAngularZVel(1.0);
-  ROS_INFO("state normalize");
+  else
+    gyro_scale_ = gyro_scale_ - 8 * 0.01 < 0 ? 0 : gyro_scale_ - 8 * 0.01;
+  vel_cmd_sender_->setAngularZVel(gyro_scale_);
 }
 
 void BalanceManual::modeNormalizeDelay()

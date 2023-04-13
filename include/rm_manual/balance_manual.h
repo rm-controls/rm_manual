@@ -25,7 +25,6 @@ protected:
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void ctrlXPress();
   void balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& msg);
-  void stateNormalizeDelay();
   void modeNormalizeDelay();
   void gyroCPressedCallback();
 
@@ -34,7 +33,7 @@ protected:
 private:
   ros::Subscriber state_sub_;
 
-  double gyro_scale_;
+  double gyro_scale_, balance_dangerous_angle_;
   ros::Timer gyro_timer_;
 
   bool flank_ = false, reverse_ = false;
