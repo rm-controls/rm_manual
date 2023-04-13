@@ -72,6 +72,7 @@ void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr
   f_event_.update(dbus_data->key_f);
   b_event_.update((!dbus_data->key_ctrl && !dbus_data->key_shift) & dbus_data->key_b);
   x_event_.update(dbus_data->key_x);
+  r_event_.update((!dbus_data->key_ctrl) & dbus_data->key_r);
   ctrl_c_event_.update(dbus_data->key_ctrl & dbus_data->key_c);
   ctrl_v_event_.update(dbus_data->key_ctrl & dbus_data->key_v);
   ctrl_r_event_.update(dbus_data->key_ctrl & dbus_data->key_r);
@@ -125,6 +126,7 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
 {
   ChassisGimbalManual::sendCommand(time);
   shooter_cmd_sender_->sendCommand(time);
+  camera_switch_cmd_sender_->sendCommand(time);
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOff()
@@ -340,6 +342,11 @@ void ChassisGimbalShooterManual::wPress()
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
+}
+
+void ChassisGimbalShooterManual::rPress()
+{
+  camera_switch_cmd_sender_->switchCamera();
 }
 
 void ChassisGimbalShooterManual::aPress()
