@@ -75,6 +75,9 @@ protected:
   void ePress();
   void cPress();
   void bPress();
+  void xPress();
+  void xReleasing();
+  void rPress();
   void qPress()
   {
     if (shooter_cmd_sender_->getShootFrequency() != rm_common::HeatLimit::LOW)
