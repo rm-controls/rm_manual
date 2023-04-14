@@ -267,7 +267,7 @@ void EngineerManual::leftSwitchUpRise()
   prefix_ = "";
   root_ = "CALIBRATION";
   calibration_gather_->reset();
-  runStepQueue("CLOSE_GRIPPER");
+  runStepQueue("OPEN_GRIPPER");
   ROS_INFO_STREAM("START CALIBRATE");
 }
 
