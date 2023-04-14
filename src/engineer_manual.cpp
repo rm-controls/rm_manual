@@ -429,7 +429,7 @@ void EngineerManual::ctrlDPress()
 {
   prefix_ = "";
   root_ = "GROUND_STONE0";
-  runStepQueue(root_);
+  runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -437,7 +437,7 @@ void EngineerManual::ctrlFPress()
 {
   prefix_ = "";
   root_ = "EXCHANGE_WAIT";
-  runStepQueue(root_);
+  runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -458,8 +458,8 @@ void EngineerManual::ctrlGPress()
       root_ = "STORE_WHEN_TWO_STONE0";
       break;
   }
-  runStepQueue(root_);
   prefix_ = "";
+  runStepQueue(prefix_ + root_);
   ROS_INFO("STORE_STONE");
 }
 
@@ -687,7 +687,7 @@ void EngineerManual::shiftCPress()
 {
   prefix_ = "";
   root_ = "EXCHANGE_CONTINUE";
-  runStepQueue(root_);
+  runStepQueue(prefix_ + root_);
 }
 void EngineerManual::shiftZPress()
 {
@@ -744,7 +744,7 @@ void EngineerManual::shiftGPress()
       break;
   }
   prefix_ = "";
-  runStepQueue(root_);
+  runStepQueue(prefix_ + root_);
 
   ROS_INFO("TAKE_STONE");
 }
