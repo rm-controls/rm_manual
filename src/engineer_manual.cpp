@@ -265,6 +265,8 @@ void EngineerManual::rightSwitchUpRise()
 
 void EngineerManual::leftSwitchUpRise()
 {
+  prefix_ = "";
+  root_ = "CALIBRATION";
   calibration_gather_->reset();
   runStepQueue("CLOSE_GRIPPER");
 }
@@ -404,8 +406,9 @@ void EngineerManual::ctrlEPress()
 
 void EngineerManual::ctrlRPress()
 {
+  prefix_ = "";
+  root_ = "calibration";
   calibration_gather_->reset();
-  engineer_ui_.current_step_name = "calibration";
   ROS_INFO("Calibrated");
   runStepQueue("CLOSE_GRIPPER");
 }
