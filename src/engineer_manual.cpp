@@ -268,6 +268,7 @@ void EngineerManual::leftSwitchUpRise()
   root_ = "CALIBRATION";
   calibration_gather_->reset();
   runStepQueue("CLOSE_GRIPPER");
+  ROS_INFO_STREAM("START CALIBRATE");
 }
 
 void EngineerManual::leftSwitchDownFall()
@@ -407,8 +408,8 @@ void EngineerManual::ctrlRPress()
   prefix_ = "";
   root_ = "CALIBRATION";
   calibration_gather_->reset();
-  ROS_INFO("Calibrated");
   runStepQueue("CLOSE_GRIPPER");
+  ROS_INFO_STREAM("START CALIBRATE");
 }
 
 void EngineerManual::ctrlAPress()
