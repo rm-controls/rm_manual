@@ -233,7 +233,6 @@ void EngineerManual::remoteControlTurnOff()
 
 void EngineerManual::chassisOutputOn()
 {
-  calibration_gather_->reset();
   if (MIDDLEWARE)
     action_client_.cancelAllGoals();
 }
@@ -314,7 +313,6 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
   ROS_INFO("Done %s", (prefix_ + root_).c_str());
-  engineer_ui_.current_step_name += " done!";
   if (prefix_ + root_ == "TAKE_WHEN_TWO_STONE00" || prefix_ + root_ == "TAKE_WHEN_ONE_STONE00" ||
       prefix_ + root_ == "TAKE_WHEN_THREE_STONE00")
   {
@@ -407,7 +405,7 @@ void EngineerManual::ctrlEPress()
 void EngineerManual::ctrlRPress()
 {
   prefix_ = "";
-  root_ = "calibration";
+  root_ = "CALIBRATION";
   calibration_gather_->reset();
   ROS_INFO("Calibrated");
   runStepQueue("CLOSE_GRIPPER");
@@ -509,24 +507,15 @@ void EngineerManual::ctrlCPress()
   runStepQueue("DELETE_SCENE");
   action_client_.cancelAllGoals();
   prefix_ = "";
-  root_ = "";
-  engineer_ui_.current_step_name = "cancel";
+  root_ = "CANCEL GOALS";
 }
 
 void EngineerManual::ctrlVPress()
 {
-  root_ = "";
-  prefix_ = "";
   if (gripper_state_ == "open")
-  {
     runStepQueue("CLOSE_GRIPPER");
-    engineer_ui_.current_step_name = "CLOSE_GRIPPER";
-  }
   else
-  {
     runStepQueue("OPEN_GRIPPER");
-    engineer_ui_.current_step_name = "OPEN_GRIPPER";
-  }
 }
 
 void EngineerManual::ctrlVRelease()
@@ -552,7 +541,7 @@ void EngineerManual::ctrlBPress()
   }
   ROS_INFO("RUN_HOME");
   prefix_ = "";
-  runStepQueue(root_);
+  runStepQueue(prefix_ + root_);
 }
 
 void EngineerManual::qPressing()
@@ -607,7 +596,7 @@ void EngineerManual::xPress()
 {
   prefix_ = "";
   root_ = "DRAG_CAR0";
-  runStepQueue(root_);
+  runStepQueue(prefix_ + root_);
   if (drag_state_ == "on")
   {
     drag_command_sender_->off();
