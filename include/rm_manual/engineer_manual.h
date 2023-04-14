@@ -129,7 +129,7 @@ private:
       reversal_state_{}, gripper_state_{};
 
   ros::Time last_time_;
-  ros::Publisher ui_send_;
+  ros::Publisher engineer_ui_pub_;
   ros::Subscriber reversal_vision_sub_, exchange_sub_, gripper_state_sub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 

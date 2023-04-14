@@ -22,7 +22,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   if (!vel_nh.getParam("gyro_low_scale", gyro_low_scale_))
     gyro_low_scale_ = 0.05;
   // Ui
-  ui_send_ = nh.advertise<rm_msgs::EngineerUi>("/engineer_ui", 10);
+  engineer_ui_pub_ = nh.advertise<rm_msgs::EngineerUi>("/engineer_ui", 10);
   // Drag
   ros::NodeHandle nh_drag(nh, "drag");
   drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_drag);
@@ -362,7 +362,7 @@ void EngineerManual::sendUi()
   engineer_ui_.stone_num = stone_num_;
   engineer_ui_.joint_temperature = joint_temperature_;
   engineer_ui_.gripper_state = gripper_state_;
-  ui_send_.publish(engineer_ui_);
+  engineer_ui_pub_.publish(engineer_ui_);
 }
 
 void EngineerManual::mouseLeftRelease()
