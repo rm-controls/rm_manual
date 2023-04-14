@@ -469,7 +469,9 @@ void EngineerManual::ctrlZPress()
 {
   if (is_exchange_)
   {
-    runStepQueue("GENERATE_EXCHANGE");
+    prefix_ = "";
+    root_ = "GENERATE_EXCHANGE";
+    runStepQueue(prefix_ + root_);
     action_client_.cancelAllGoals();
   }
 }
@@ -478,7 +480,9 @@ void EngineerManual::ctrlZPressing()
 {
   if (is_exchange_)
   {
-    runStepQueue("GENERATE_EXCHANGE");
+    prefix_ = "";
+    root_ = "GENERATE_EXCHANGE";
+    runStepQueue(prefix_ + root_);
     action_client_.cancelAllGoals();
   }
 }
@@ -486,7 +490,11 @@ void EngineerManual::ctrlZPressing()
 void EngineerManual::ctrlZRelease()
 {
   if (is_exchange_)
-    runStepQueue("AUTO_EXCHANGER");
+  {
+    prefix_ = "";
+    root_ = "AUTO_EXCHANGER";
+    runStepQueue(prefix_ + root_);
+  }
 }
 
 void EngineerManual::ctrlXPress()
