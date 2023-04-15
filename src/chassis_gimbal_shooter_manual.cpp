@@ -11,7 +11,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
 {
   ros::NodeHandle shooter_nh(nh, "shooter");
   shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh);
-
+  ros::NodeHandle camera_nh(nh, "camera");
+  camera_switch_cmd_sender_ = new rm_common::CameraSwitchCommandSender(camera_nh);
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
   XmlRpc::XmlRpcValue rpc_value;
