@@ -595,18 +595,23 @@ void EngineerManual::rPress()
 
 void EngineerManual::xPress()
 {
-  prefix_ = "";
-  root_ = "DRAG_CAR0";
-  runStepQueue(prefix_ + root_);
-  if (drag_state_ == "on")
+  if (root_ != "DRAG_CAR")
   {
-    drag_command_sender_->off();
-    drag_state_ = "off";
+    prefix_ = "";
+    root_ = "DRAG_CAR";
   }
   else
   {
-    drag_command_sender_->on();
-    drag_state_ = "on";
+    if (drag_state_ == "on")
+    {
+      drag_command_sender_->off();
+      drag_state_ = "off";
+    }
+    else
+    {
+      drag_command_sender_->on();
+      drag_state_ = "on";
+    }
   }
 }
 void EngineerManual::bPressing()
