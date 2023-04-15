@@ -595,9 +595,9 @@ void EngineerManual::rPress()
 
 void EngineerManual::xPress()
 {
-  if (root_ != "DRAG_CAR")
+  if (prefix_ != "ENGINEER_")
   {
-    prefix_ = "";
+    prefix_ = "ENGINEER_";
     root_ = "DRAG_CAR";
   }
   else
