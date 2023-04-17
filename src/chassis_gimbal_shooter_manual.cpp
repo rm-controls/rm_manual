@@ -301,7 +301,7 @@ void ChassisGimbalShooterManual::mouseRightPress()
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
     gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
   }
-  if (switch_detection_srv_->getArmorTarget() == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
+  if (switch_armor_target_srv_->getArmorTarget() == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
   {
     if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP)
     {
