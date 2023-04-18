@@ -11,8 +11,11 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
 {
   ros::NodeHandle shooter_nh(nh, "shooter");
   shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh);
-  ros::NodeHandle camera_nh(nh, "camera");
-  camera_switch_cmd_sender_ = new rm_common::CameraSwitchCommandSender(camera_nh);
+  if (nh.hasParam("camera"))
+  {
+    ros::NodeHandle camera_nh(nh, "camera");
+    camera_switch_cmd_sender_ = new rm_common::CameraSwitchCommandSender(camera_nh);
+  }
 
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
@@ -128,7 +131,8 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
 {
   ChassisGimbalManual::sendCommand(time);
   shooter_cmd_sender_->sendCommand(time);
-  camera_switch_cmd_sender_->sendCommand(time);
+  if (camera_switch_cmd_sender_)
+    camera_switch_cmd_sender_->sendCommand(time);
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOff()
@@ -337,7 +341,8 @@ void ChassisGimbalShooterManual::bPress()
 
 void ChassisGimbalShooterManual::rPress()
 {
-  camera_switch_cmd_sender_->switchCamera();
+  if (camera_switch_cmd_sender_)
+    camera_switch_cmd_sender_->switchCamera();
 }
 
 void ChassisGimbalShooterManual::wPress()
