@@ -189,8 +189,8 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   if (!reversal_motion_ && servo_mode_ == JOINT)
-    reversal_command_sender_->setGroupVel(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
-                                          0.);
+    reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
+                                            0.);
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -267,14 +267,13 @@ void EngineerManual::leftSwitchUpRise()
   prefix_ = "";
   root_ = "CALIBRATION";
   calibration_gather_->reset();
-  runStepQueue("OPEN_GRIPPER");
+  EngineerManual::ctrlVPress();
   ROS_INFO_STREAM("START CALIBRATE");
 }
 
 void EngineerManual::leftSwitchDownFall()
 {
   runStepQueue("HOME_ONE_STONE");
-  runStepQueue("CLOSE_GRIPPER");
   drag_command_sender_->on();
   drag_state_ = "on";
 }
@@ -618,7 +617,7 @@ void EngineerManual::bPressing()
 {
   // ROLL
   reversal_motion_ = true;
-  reversal_command_sender_->setGroupVel(0., 0., 0., 1., 0., 0.);
+  reversal_command_sender_->setGroupValue(0., 0., 0., 1., 0., 0.);
   reversal_state_ = "ROLL";
 }
 
@@ -656,7 +655,7 @@ void EngineerManual::vPressing()
 {
   // Z in
   reversal_motion_ = true;
-  reversal_command_sender_->setGroupVel(0., 0., -1., 0., 0., 0.);
+  reversal_command_sender_->setGroupValue(0., 0., -1., 0., 0., 0.);
   reversal_state_ = "Z IN";
 }
 void EngineerManual::fPress()
