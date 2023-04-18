@@ -75,6 +75,8 @@ protected:
   void ePress();
   void cPress();
   void bPress();
+  void xPress();
+  void xReleasing();
   void rPress();
   void qPress()
   {
