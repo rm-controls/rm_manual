@@ -336,6 +336,12 @@ void ChassisGimbalShooterManual::bPress()
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
 }
 
+void ChassisGimbalShooterManual::rPress()
+{
+  if (camera_switch_cmd_sender_)
+    camera_switch_cmd_sender_->switchCamera();
+}
+
 void ChassisGimbalShooterManual::wPress()
 {
   ChassisGimbalManual::wPress();
@@ -347,11 +353,6 @@ void ChassisGimbalShooterManual::wPress()
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
-}
-
-void ChassisGimbalShooterManual::rPress()
-{
-  camera_switch_cmd_sender_->switchCamera();
 }
 
 void ChassisGimbalShooterManual::aPress()
