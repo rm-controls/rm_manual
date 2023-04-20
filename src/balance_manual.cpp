@@ -21,7 +21,9 @@ BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   state_sub_ = balance_nh.subscribe<rm_msgs::BalanceState>("/state", 1, &BalanceManual::balanceStateCallback, this);
   v_event_.setRising(boost::bind(&BalanceManual::vPress, this));
   g_event_.setRising(boost::bind(&BalanceManual::gPress, this));
-  ctrl_x_event_.setDelayTriggered(boost::bind(&BalanceManual::modeNormalizeDelay, this), 3.0, true);
+  auto_fallen_event_.setActiveHigh(boost::bind(&BalanceManual::modeFallen, this, _1));
+  auto_fallen_event_.setDelayTriggered(boost::bind(&BalanceManual::modeNormalize, this), 1.5, true);
+  // ctrl_x_event_.setDelayTriggered(boost::bind(&BalanceManual::modeNormalizeDelay, this), 3.0, true);
   ctrl_x_event_.setRising(boost::bind(&BalanceManual::ctrlXPress, this));
 
   gyro_timer_ =
@@ -107,8 +109,10 @@ void BalanceManual::balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& 
   {
     if (std::abs(msg->theta) > balance_dangerous_angle_)
       chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
-    else
-      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    //    else
+    //      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    if (msg->mode == rm_msgs::BalanceState::NORMAL)
+      auto_fallen_event_.update(std::abs(msg->theta) > 0.42 && std::abs(msg->x_dot) > 1.5);
   }
 }
 
@@ -127,9 +131,18 @@ void BalanceManual::gyroCPressedCallback()
   vel_cmd_sender_->setAngularZVel(gyro_scale_);
 }
 
-void BalanceManual::modeNormalizeDelay()
+void BalanceManual::modeNormalize()
 {
   balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
   ROS_INFO("mode normalize");
+}
+
+void BalanceManual::modeFallen(ros::Duration duration)
+{
+  if (duration.toSec() > 0.3)
+  {
+    balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
+    ROS_INFO("mode fallen");
+  }
 }
 }  // namespace rm_manual

@@ -25,7 +25,8 @@ protected:
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void ctrlXPress();
   void balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& msg);
-  void modeNormalizeDelay();
+  void modeFallen(ros::Duration duration);
+  void modeNormalize();
   void gyroCPressedCallback();
 
   rm_common::BalanceCommandSender* balance_cmd_sender_{};
@@ -38,6 +39,6 @@ private:
 
   bool flank_ = false, reverse_ = false;
   std::string flank_frame_, reverse_frame_;
-  InputEvent v_event_, g_event_, ctrl_x_event_;
+  InputEvent v_event_, g_event_, ctrl_x_event_, auto_fallen_event_;
 };
 }  // namespace rm_manual
