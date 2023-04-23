@@ -76,6 +76,8 @@ protected:
   virtual void cPress();
   virtual void bPress();
   virtual void rPress();
+  virtual void shiftPress();
+  virtual void shiftRelease();
   void qPress()
   {
     if (shooter_cmd_sender_->getShootFrequency() != rm_common::HeatLimit::LOW)
@@ -87,8 +89,6 @@ protected:
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   }
-  void shiftPress();
-  void shiftRelease();
   void ctrlCPress();
   void ctrlVPress();
   void ctrlRPress();

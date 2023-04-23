@@ -19,6 +19,8 @@ BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 
   is_balance_ = true;
   state_sub_ = balance_nh.subscribe<rm_msgs::BalanceState>("/state", 1, &BalanceManual::balanceStateCallback, this);
+  z_event_.setRising(boost::bind(&BalanceManual::zPress, this));
+  x_event_.setRising(boost::bind(&BalanceManual::xPress, this));
   v_event_.setRising(boost::bind(&BalanceManual::vPress, this));
   g_event_.setRising(boost::bind(&BalanceManual::gPress, this));
   auto_fallen_event_.setActiveHigh(boost::bind(&BalanceManual::modeFallen, this, _1));
@@ -46,9 +48,31 @@ void BalanceManual::sendCommand(const ros::Time& time)
 void BalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalShooterCoverManual::checkKeyboard(dbus_data);
+  z_event_.update(dbus_data->key_z);
+  x_event_.update(dbus_data->key_x);
   v_event_.update(dbus_data->key_v);
   g_event_.update(dbus_data->key_g);
   ctrl_x_event_.update(dbus_data->key_ctrl && dbus_data->key_x);
+}
+
+void BalanceManual::shiftRelease()
+{
+}
+
+void BalanceManual::shiftPress()
+{
+  ChassisGimbalShooterManual::shiftPress();
+  chassis_cmd_sender_->updateSafetyPower(60);
+}
+
+void BalanceManual::zPress()
+{
+  chassis_cmd_sender_->updateSafetyPower(80);
+}
+
+void BalanceManual::xPress()
+{
+  chassis_cmd_sender_->updateSafetyPower(100);
 }
 
 void BalanceManual::vPress()
@@ -99,7 +123,7 @@ void BalanceManual::ctrlXPress()
 {
   if (balance_cmd_sender_->getMsg()->data == rm_msgs::BalanceState::NORMAL)
     balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
-  else if (balance_cmd_sender_->getMsg()->data == rm_msgs::BalanceState::FALLEN)
+  else
     balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
 }
 
@@ -125,9 +149,9 @@ void BalanceManual::gyroCPressedCallback()
   }
 
   if (is_gyro_)
-    gyro_scale_ = gyro_scale_ + 8 * 0.01 > 1.0 ? 1.0 : gyro_scale_ + 8 * 0.01;
+    gyro_scale_ = gyro_scale_ + 10 * 0.01 > 1.0 ? 1.0 : gyro_scale_ + 10 * 0.01;
   else
-    gyro_scale_ = gyro_scale_ - 8 * 0.01 < 0 ? 0 : gyro_scale_ - 8 * 0.01;
+    gyro_scale_ = gyro_scale_ - 10 * 0.01 < 0 ? 0 : gyro_scale_ - 10 * 0.01;
   vel_cmd_sender_->setAngularZVel(gyro_scale_);
 }
 

@@ -318,10 +318,10 @@ void ChassisGimbalShooterManual::cPress()
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
     is_gyro_ = true;
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-    if (x_scale_ != 0.0 || y_scale_ != 0.0)
-      vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
-    else
-      vel_cmd_sender_->setAngularZVel(1.0);
+    //    if (x_scale_ != 0.0 || y_scale_ != 0.0)
+    //      vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
+    //    else
+    //      vel_cmd_sender_->setAngularZVel(1.0);
   }
 }
 

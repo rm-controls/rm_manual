@@ -21,6 +21,12 @@ protected:
   void sPress() override;
   void aPress() override;
   void dPress() override;
+  void shiftPress() override;
+  void shiftRelease() override;
+
+  void xPress();
+  void zPress();
+
   void sendCommand(const ros::Time& time) override;
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void ctrlXPress();
@@ -39,6 +45,6 @@ private:
 
   bool flank_ = false, reverse_ = false;
   std::string flank_frame_, reverse_frame_;
-  InputEvent v_event_, g_event_, ctrl_x_event_, auto_fallen_event_;
+  InputEvent x_event_, z_event_, v_event_, g_event_, ctrl_x_event_, auto_fallen_event_;
 };
 }  // namespace rm_manual
