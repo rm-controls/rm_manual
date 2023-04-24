@@ -121,6 +121,7 @@ private:
   void exchangeCallback(const rm_msgs::ExchangerMsg::ConstPtr& data);
   void gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data);
   void sendUi();
+  void judgeJoint7(const ros::Time& time);
 
   bool change_flag_{ 1 }, is_exchange_{}, target_shape_{}, reversal_motion_{};
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, max_temperature_{};
@@ -138,7 +139,7 @@ private:
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::MultiDofCommandSender* reversal_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
-  rm_common::JointPositionBinaryCommandSender* drag_command_sender_;
+  rm_common::JointPositionBinaryCommandSender *drag_command_sender_, *joint7_command_sender_;
   rm_common::CalibrationQueue* calibration_gather_{};
   InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_q_event_, ctrl_a_event_, ctrl_z_event_, ctrl_w_event_,
       ctrl_s_event_, ctrl_x_event_, ctrl_e_event_, ctrl_d_event_, ctrl_c_event_, ctrl_b_event_, ctrl_v_event_, z_event_,

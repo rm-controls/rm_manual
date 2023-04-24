@@ -26,6 +26,9 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   // Drag
   ros::NodeHandle nh_drag(nh, "drag");
   drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_drag);
+  // Joint7
+  ros::NodeHandle nh_joint7(nh, "joint7");
+  joint7_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_joint7);
   // Reversal
   ros::NodeHandle nh_reversal(nh, "reversal");
   reversal_command_sender_ = new rm_common::MultiDofCommandSender(nh_reversal);
@@ -206,6 +209,7 @@ void EngineerManual::sendCommand(const ros::Time& time)
     servo_command_sender_->sendCommand(time);
   if (gimbal_mode_ == RATE)
     gimbal_cmd_sender_->sendCommand(time);
+  judgeJoint7(time);
 }
 
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -214,6 +218,7 @@ void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
   servo_command_sender_->setAngularVel(dbus_data->ch_r_x, dbus_data->ch_r_y, angular_z_scale_);
   z_event_.update(dbus_data->key_z & !dbus_data->key_ctrl & !dbus_data->key_shift);
   shift_f_event_.update(dbus_data->key_f & !dbus_data->key_ctrl & dbus_data->key_shift);
+  c_event_.update(dbus_data->key_c & !dbus_data->key_ctrl & !dbus_data->key_shift);
   c_event_.update(dbus_data->key_c & !dbus_data->key_ctrl & !dbus_data->key_shift);
   ctrl_v_event_.update(dbus_data->key_ctrl & dbus_data->key_v);
   ctrl_f_event_.update(dbus_data->key_ctrl & dbus_data->key_f);
@@ -259,6 +264,7 @@ void EngineerManual::rightSwitchUpRise()
 {
   ChassisGimbalManual::rightSwitchUpRise();
   gimbal_mode_ = DIRECT;
+  servo_mode_ = JOINT;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
@@ -365,6 +371,19 @@ void EngineerManual::sendUi()
   engineer_ui_pub_.publish(engineer_ui_);
 }
 
+void EngineerManual::judgeJoint7(const ros::Time& time)
+{
+  if (prefix_ + root_ == "GROUND_STONE0" || prefix_ == "EXCHANGE_" || prefix_ + root_ == "GROUND_STONE00")
+  {
+    joint7_command_sender_->off();
+  }
+  else
+  {
+    joint7_command_sender_->on();
+  }
+  joint7_command_sender_->sendCommand(time);
+}
+
 void EngineerManual::mouseLeftRelease()
 {
   if (change_flag_)
@@ -406,6 +425,7 @@ void EngineerManual::ctrlRPress()
 {
   prefix_ = "";
   root_ = "CALIBRATION";
+  servo_mode_ = JOINT;
   calibration_gather_->reset();
   runStepQueue("CLOSE_GRIPPER");
   ROS_INFO_STREAM("START CALIBRATE");
@@ -427,16 +447,16 @@ void EngineerManual::ctrlSPress()
 
 void EngineerManual::ctrlDPress()
 {
-  prefix_ = "";
-  root_ = "GROUND_STONE0";
+  prefix_ = "GROUND_";
+  root_ = "STONE0";
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlFPress()
 {
-  prefix_ = "";
-  root_ = "EXCHANGE_WAIT";
+  prefix_ = "EXCHANGE_";
+  root_ = "WAIT";
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
@@ -467,8 +487,8 @@ void EngineerManual::ctrlZPress()
 {
   if (is_exchange_)
   {
-    prefix_ = "";
-    root_ = "GENERATE_EXCHANGE";
+    prefix_ = "EXCHANGE_";
+    root_ = "GENERATE";
     runStepQueue(prefix_ + root_);
     action_client_.cancelAllGoals();
   }
@@ -478,8 +498,8 @@ void EngineerManual::ctrlZPressing()
 {
   if (is_exchange_)
   {
-    prefix_ = "";
-    root_ = "GENERATE_EXCHANGE";
+    prefix_ = "EXCHANGE_";
+    root_ = "GENERATE";
     runStepQueue(prefix_ + root_);
     action_client_.cancelAllGoals();
   }
@@ -489,8 +509,8 @@ void EngineerManual::ctrlZRelease()
 {
   if (is_exchange_)
   {
-    prefix_ = "";
-    root_ = "AUTO_EXCHANGER";
+    prefix_ = "EXCHANGE_";
+    root_ = "AUTO";
     runStepQueue(prefix_ + root_);
   }
 }
@@ -613,6 +633,7 @@ void EngineerManual::xPress()
     }
   }
 }
+
 void EngineerManual::bPressing()
 {
   // ROLL
