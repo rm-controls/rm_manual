@@ -11,8 +11,11 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
 {
   ros::NodeHandle shooter_nh(nh, "shooter");
   shooter_cmd_sender_ = new rm_common::ShooterCommandSender(shooter_nh);
-  ros::NodeHandle camera_nh(nh, "camera");
-  // camera_switch_cmd_sender_ = new rm_common::CameraSwitchCommandSender(camera_nh);
+  if (nh.hasParam("camera"))
+  {
+    ros::NodeHandle camera_nh(nh, "camera");
+    camera_switch_cmd_sender_ = new rm_common::CameraSwitchCommandSender(camera_nh);
+  }
 
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
@@ -30,6 +33,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::qPress, this));
   f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::fPress, this));
   b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::bPress, this));
+  x_event_.setRising(boost::bind(&ChassisGimbalShooterManual::xPress, this));
+  x_event_.setActiveLow(boost::bind(&ChassisGimbalShooterManual::xReleasing, this));
   r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::rPress, this));
   ctrl_c_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlCPress, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
@@ -87,6 +92,7 @@ void ChassisGimbalShooterManual::gameRobotStatusCallback(const rm_msgs::GameRobo
 {
   ChassisGimbalManual::gameRobotStatusCallback(data);
   shooter_cmd_sender_->updateGameRobotStatus(*data);
+  shooter_power_on_event_.update(data->mains_power_shooter_output);
 }
 
 void ChassisGimbalShooterManual::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
@@ -125,7 +131,8 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
 {
   ChassisGimbalManual::sendCommand(time);
   shooter_cmd_sender_->sendCommand(time);
-  // camera_switch_cmd_sender_->sendCommand(time);
+  if (camera_switch_cmd_sender_)
+    camera_switch_cmd_sender_->sendCommand(time);
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOff()
@@ -133,6 +140,7 @@ void ChassisGimbalShooterManual::remoteControlTurnOff()
   ChassisGimbalManual::remoteControlTurnOff();
   shooter_cmd_sender_->setZero();
   shooter_calibration_->stop();
+  turn_flag_ = false;
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOn()
@@ -147,6 +155,7 @@ void ChassisGimbalShooterManual::robotDie()
 {
   ManualBase::robotDie();
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+  turn_flag_ = false;
 }
 
 void ChassisGimbalShooterManual::chassisOutputOn()
@@ -188,7 +197,7 @@ void ChassisGimbalShooterManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbu
 void ChassisGimbalShooterManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updatePc(dbus_data);
-  if (chassis_cmd_sender_->power_limit_->getState() != rm_common::PowerLimit::CHARGE && !is_gyro_ && !is_balance_)
+  if (chassis_cmd_sender_->power_limit_->getState() != rm_common::PowerLimit::CHARGE && !is_gyro_)
   {
     if (!dbus_data->key_shift && chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW &&
         std::sqrt(std::pow(vel_cmd_sender_->getMsg()->linear.x, 2) + std::pow(vel_cmd_sender_->getMsg()->linear.y, 2)) >
@@ -318,10 +327,10 @@ void ChassisGimbalShooterManual::cPress()
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
     is_gyro_ = true;
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-    //    if (x_scale_ != 0.0 || y_scale_ != 0.0)
-    //      vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
-    //    else
-    //      vel_cmd_sender_->setAngularZVel(1.0);
+    if (x_scale_ != 0.0 || y_scale_ != 0.0)
+      vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
+    else
+      vel_cmd_sender_->setAngularZVel(1.0);
   }
 }
 
@@ -332,7 +341,8 @@ void ChassisGimbalShooterManual::bPress()
 
 void ChassisGimbalShooterManual::rPress()
 {
-  // camera_switch_cmd_sender_->switchCamera();
+  if (camera_switch_cmd_sender_)
+    camera_switch_cmd_sender_->switchCamera();
 }
 
 void ChassisGimbalShooterManual::wPress()
@@ -430,6 +440,44 @@ void ChassisGimbalShooterManual::dPressing()
   ChassisGimbalManual::dPressing();
   vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0);
 }
+
+void ChassisGimbalShooterManual::xPress()
+{
+  turn_flag_ = true;
+  geometry_msgs::PointStamped point_in;
+  try
+  {
+    point_in.header.frame_id = "yaw";
+    point_in.point.x = -1.;
+    point_in.point.y = 0.;
+    point_in.point.z = tf_buffer_.lookupTransform("yaw", "pitch", ros::Time(0)).transform.translation.z;
+    tf2::doTransform(point_in, point_out_, tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)));
+
+    double roll{}, pitch{};
+    quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw_current_);
+  }
+  catch (tf2::TransformException& ex)
+  {
+    ROS_WARN("%s", ex.what());
+  }
+}
+
+void ChassisGimbalShooterManual::xReleasing()
+{
+  if (turn_flag_)
+  {
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
+    gimbal_cmd_sender_->setPoint(point_out_);
+    double roll{}, pitch{}, yaw{};
+    quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
+    if (std::abs(angles::shortest_angular_distance(yaw, yaw_current_)) > finish_turning_threshold_)
+    {
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+      turn_flag_ = false;
+    }
+  }
+}
+
 void ChassisGimbalShooterManual::shiftPress()
 {
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);

@@ -6,6 +6,7 @@
 
 #include "rm_manual/chassis_gimbal_manual.h"
 #include <rm_common/decision/calibration_queue.h>
+#include <angles/angles.h>
 
 namespace rm_manual
 {
@@ -94,15 +95,17 @@ protected:
   void ctrlRPress();
   void ctrlBPress();
 
-  bool is_balance_ = false;
-  InputEvent self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_, f_event_, b_event_,
-      x_event_, r_event_, ctrl_c_event_, ctrl_v_event_, ctrl_r_event_, ctrl_b_event_, shift_event_, ctrl_shift_b_event_,
-      mouse_left_event_, mouse_right_event_;
+  InputEvent shooter_power_on_event_, self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_,
+      f_event_, b_event_, x_event_, r_event_, ctrl_c_event_, ctrl_v_event_, ctrl_r_event_, ctrl_b_event_, shift_event_,
+      ctrl_shift_b_event_, mouse_left_event_, mouse_right_event_;
   rm_common::ShooterCommandSender* shooter_cmd_sender_{};
   rm_common::CameraSwitchCommandSender* camera_switch_cmd_sender_{};
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
 
-  bool prepare_shoot_ = false;
+  geometry_msgs::PointStamped point_out_;
+
+  bool prepare_shoot_ = false, turn_flag_ = false;
+  double yaw_current_{};
 };
 }  // namespace rm_manual
