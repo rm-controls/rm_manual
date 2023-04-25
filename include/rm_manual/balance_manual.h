@@ -23,6 +23,10 @@ protected:
   void dPress() override;
   void shiftPress() override;
   void shiftRelease() override;
+  void wPressing() override;
+  void aPressing() override;
+  void sPressing() override;
+  void dPressing() override;
 
   void xPress();
   void zPress();
@@ -45,6 +49,8 @@ private:
 
   bool flank_ = false, reverse_ = false;
   std::string flank_frame_, reverse_frame_;
+
+  RampFilter<double>*ramp_x_{}, *ramp_y_{};
   InputEvent x_event_, z_event_, v_event_, g_event_, ctrl_x_event_, auto_fallen_event_;
 };
 }  // namespace rm_manual

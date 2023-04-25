@@ -28,6 +28,11 @@ BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   // ctrl_x_event_.setDelayTriggered(boost::bind(&BalanceManual::modeNormalizeDelay, this), 3.0, true);
   ctrl_x_event_.setRising(boost::bind(&BalanceManual::ctrlXPress, this));
 
+  ramp_x_ = new RampFilter<double>(0, 0.01);
+  ramp_x_->setAcc(10);
+  ramp_y_ = new RampFilter<double>(0, 0.01);
+  ramp_y_->setAcc(10);
+
   gyro_timer_ =
       nh.createTimer(ros::Duration(0.03), std::bind(&BalanceManual::gyroCPressedCallback, this), false, false);
 }
@@ -101,22 +106,54 @@ void BalanceManual::cPress()
 
 void BalanceManual::wPress()
 {
-  ChassisGimbalShooterCoverManual::wPress();
+  ramp_x_->clear();
+}
+
+void BalanceManual::wPressing()
+{
+  double final_x_scale;
+  ramp_x_->input(1.0);
+  final_x_scale = ramp_x_->output();
+  vel_cmd_sender_->setLinearXVel(final_x_scale > 1.0 ? 1.0 : final_x_scale);
 }
 
 void BalanceManual::sPress()
 {
-  ChassisGimbalShooterCoverManual::sPress();
+  ramp_x_->clear();
+}
+
+void BalanceManual::sPressing()
+{
+  double final_x_scale;
+  ramp_x_->input(1.0);
+  final_x_scale = -ramp_x_->output();
+  vel_cmd_sender_->setLinearXVel(final_x_scale < -1.0 ? -1.0 : final_x_scale);
 }
 
 void BalanceManual::aPress()
 {
-  ChassisGimbalShooterCoverManual::aPress();
+  ramp_y_->clear();
+}
+
+void BalanceManual::aPressing()
+{
+  double final_y_scale;
+  ramp_y_->input(1.0);
+  final_y_scale = ramp_y_->output();
+  vel_cmd_sender_->setLinearYVel(final_y_scale > 1.0 ? 1.0 : final_y_scale);
 }
 
 void BalanceManual::dPress()
 {
-  ChassisGimbalShooterCoverManual::dPress();
+  ramp_y_->clear();
+}
+
+void BalanceManual::dPressing()
+{
+  double final_y_scale;
+  ramp_y_->input(1.0);
+  final_y_scale = -ramp_y_->output();
+  vel_cmd_sender_->setLinearYVel(final_y_scale < -1.0 ? -1.0 : final_y_scale);
 }
 
 void BalanceManual::ctrlXPress()

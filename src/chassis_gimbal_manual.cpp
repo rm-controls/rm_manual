@@ -31,9 +31,6 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& n
   a_event_.setActiveHigh(boost::bind(&ChassisGimbalManual::aPressing, this));
   d_event_.setEdge(boost::bind(&ChassisGimbalManual::dPress, this), boost::bind(&ChassisGimbalManual::dRelease, this));
   d_event_.setActiveHigh(boost::bind(&ChassisGimbalManual::dPressing, this));
-
-  ramp_x_ = new RampFilter<double>(0, 0.01);
-  ramp_x_->setAcc(10);
 }
 
 void ChassisGimbalManual::sendCommand(const ros::Time& time)
@@ -162,12 +159,10 @@ void ChassisGimbalManual::leftSwitchDownRise()
 
 void ChassisGimbalManual::wPressing()
 {
-  // double final_x_scale = x_scale_;
-  ramp_x_->input(1.0);
-  final_x_ = ramp_x_->output();
-  //  if (speed_change_mode_)
-  //    final_x_scale = x_scale_ * speed_change_scale_;
-  vel_cmd_sender_->setLinearXVel(final_x_ > 1.0 ? 1.0 : final_x_);
+  double final_x_scale = x_scale_;
+  if (speed_change_mode_)
+    final_x_scale = x_scale_ * speed_change_scale_;
+  vel_cmd_sender_->setLinearXVel(final_x_scale > 1.0 ? 1.0 : final_x_scale);
 }
 
 void ChassisGimbalManual::aPressing()
@@ -180,12 +175,10 @@ void ChassisGimbalManual::aPressing()
 
 void ChassisGimbalManual::sPressing()
 {
-  // double final_x_scale = x_scale_;
-  ramp_x_->input(1.0);
-  final_x_ = -ramp_x_->output();
-  //  if (speed_change_mode_)
-  //    final_x_scale = x_scale_ * speed_change_scale_;
-  vel_cmd_sender_->setLinearXVel(final_x_ < -1.0 ? -1.0 : final_x_);
+  double final_x_scale = x_scale_;
+  if (speed_change_mode_)
+    final_x_scale = x_scale_ * speed_change_scale_;
+  vel_cmd_sender_->setLinearXVel(final_x_scale < -1.0 ? -1.0 : final_x_scale);
 }
 
 void ChassisGimbalManual::dPressing()
