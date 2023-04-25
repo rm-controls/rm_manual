@@ -11,17 +11,10 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
 {
   ros::NodeHandle cover_nh(nh, "cover");
   nh.param("supply_frame", supply_frame_, std::string("supply_frame"));
-
   cover_command_sender_ = new rm_common::JointPositionBinaryCommandSender(cover_nh);
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("gimbal_calibration", rpc_value);
   gimbal_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  if (nh.hasParam("chassis_calibration"))
-  {
-    nh.getParam("chassis_calibration", rpc_value);
-    chassis_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  }
-
   ctrl_z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this),
                         boost::bind(&ChassisGimbalShooterCoverManual::ctrlZRelease, this));
   ctrl_q_event_.setRising(boost::bind(&ChassisGimbalShooterCoverManual::ctrlQPress, this));
@@ -31,10 +24,6 @@ void ChassisGimbalShooterCoverManual::run()
 {
   ChassisGimbalShooterManual::run();
   gimbal_calibration_->update(ros::Time::now());
-  if (chassis_calibration_)
-  {
-    chassis_calibration_->update(ros::Time::now());
-  }
 }
 
 void ChassisGimbalShooterCoverManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -104,18 +93,8 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
       }
     }
   }
-
   ChassisGimbalShooterManual::sendCommand(time);
   cover_command_sender_->sendCommand(time);
-}
-
-void ChassisGimbalShooterCoverManual::chassisOutputOn()
-{
-  ChassisGimbalShooterManual::chassisOutputOn();
-  if (chassis_calibration_)
-  {
-    chassis_calibration_->reset();
-  }
 }
 
 void ChassisGimbalShooterCoverManual::gimbalOutputOn()
@@ -128,16 +107,12 @@ void ChassisGimbalShooterCoverManual::remoteControlTurnOff()
 {
   ChassisGimbalShooterManual::remoteControlTurnOff();
   gimbal_calibration_->stop();
-  if (chassis_calibration_)
-    chassis_calibration_->stop();
 }
 
 void ChassisGimbalShooterCoverManual::remoteControlTurnOn()
 {
   ChassisGimbalShooterManual::remoteControlTurnOn();
   gimbal_calibration_->stopController();
-  if (chassis_calibration_)
-    chassis_calibration_->stopController();
 }
 
 void ChassisGimbalShooterCoverManual::rightSwitchDownRise()
@@ -166,5 +141,21 @@ void ChassisGimbalShooterCoverManual::ctrlZPress()
 void ChassisGimbalShooterCoverManual::ctrlQPress()
 {
   gimbal_calibration_->reset();
+}
+
+void ChassisGimbalShooterCoverManual::shiftPress()
+{
+  ChassisGimbalShooterManual::shiftPress();
+  chassis_cmd_sender_->updateSafetyPower(60);
+}
+
+void ChassisGimbalShooterCoverManual::zPress()
+{
+  chassis_cmd_sender_->updateSafetyPower(80);
+}
+
+void ChassisGimbalShooterCoverManual::xPress()
+{
+  chassis_cmd_sender_->updateSafetyPower(100);
 }
 }  // namespace rm_manual

@@ -20,27 +20,25 @@ protected:
   void checkReferee() override;
   void sendCommand(const ros::Time& time) override;
   void gimbalOutputOn() override;
-  void chassisOutputOn() override;
   void remoteControlTurnOff() override;
   void remoteControlTurnOn() override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
+  void shiftPress() override;
+  void xPress();
+  void zPress();
   void ctrlZPress();
   void ctrlZRelease()
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   };
   void ctrlQPress();
-
   rm_common::JointPositionBinaryCommandSender* cover_command_sender_{};
   rm_common::CalibrationQueue* gimbal_calibration_;
-  rm_common::CalibrationQueue* chassis_calibration_;
-
+  InputEvent ctrl_z_event_, ctrl_q_event_, x_event_, z_event_;
   std::string supply_frame_;
   bool supply_ = false;
   bool cover_close_ = true;
-
-  InputEvent ctrl_z_event_, ctrl_q_event_;
 };
 }  // namespace rm_manual
