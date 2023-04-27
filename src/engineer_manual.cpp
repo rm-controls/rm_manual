@@ -43,6 +43,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("calibration_gather", rpc_value);
   calibration_gather_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  nh.getParam("joint5_calibration", rpc_value);
+  joint5_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_up_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpRise, this));
   left_switch_down_event_.setFalling(boost::bind(&EngineerManual::leftSwitchDownFall, this));
@@ -101,6 +103,7 @@ void EngineerManual::run()
 {
   ChassisGimbalManual::run();
   calibration_gather_->update(ros::Time::now());
+  joint5_calibration_->update(ros::Time::now());
   sendUi();
 }
 
@@ -194,6 +197,15 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   if (!reversal_motion_ && servo_mode_ == JOINT)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
+  if (is_auxiliary_camera_)
+  {
+    chassis_cmd_sender_->getMsg()->follow_source_frame = base_link;
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+  }
+  else
+  {
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  }
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -245,7 +257,7 @@ void EngineerManual::chassisOutputOn()
 void EngineerManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  //  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   servo_mode_ = SERVO;
   gimbal_mode_ = DIRECT;
   servo_reset_caller_->callService();
@@ -286,6 +298,7 @@ void EngineerManual::leftSwitchDownFall()
 
 void EngineerManual::leftSwitchUpFall()
 {
+  joint5_calibration_->reset();
 }
 
 void EngineerManual::leftSwitchDownRise()
@@ -427,6 +440,7 @@ void EngineerManual::ctrlRPress()
   root_ = "CALIBRATION";
   servo_mode_ = JOINT;
   calibration_gather_->reset();
+  joint5_calibration_->reset();
   runStepQueue("CLOSE_GRIPPER");
   ROS_INFO_STREAM("START CALIBRATE");
 }
@@ -701,12 +715,16 @@ void EngineerManual::shiftRelease()
 }
 void EngineerManual::shiftFPress()
 {
+  prefix_ = "";
+  root_ = "EXCHANGE_GIMBAL";
   runStepQueue("EXCHANGE_GIMBAL");
   ROS_INFO("enter gimbal EXCHANGE_GIMBAL");
 }
 void EngineerManual::shiftRPress()
 {
-  runStepQueue("SKY_GIMBAL");
+  prefix_ = "";
+  root_ = "SKY_GIMBAL";
+  runStepQueue(prefix_ + root_);
   ROS_INFO("enter gimbal SKY_GIMBAL");
 }
 void EngineerManual::shiftCPress()
@@ -717,7 +735,9 @@ void EngineerManual::shiftCPress()
 }
 void EngineerManual::shiftZPress()
 {
-  runStepQueue("ISLAND_GIMBAL");
+  prefix_ = "";
+  root_ = "ISLAND_GIMBAL";
+  runStepQueue(prefix_ + root_);
   ROS_INFO("enter gimbal REVERSAL_GIMBAL");
 }
 void EngineerManual::shiftVPress()
@@ -738,7 +758,9 @@ void EngineerManual::shiftVRelease()
 
 void EngineerManual::shiftBPress()
 {
-  runStepQueue("SIDE_GIMBAL");
+  prefix_ = "";
+  root_ = "SIDE_GIMBAL";
+  runStepQueue(prefix_ + root_);
   ROS_INFO("enter gimbal BACK_GIMBAL");
 }
 
