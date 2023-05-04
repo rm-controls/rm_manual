@@ -23,6 +23,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   // Ui
   exchange_sub_ = nh.subscribe<rm_msgs::ExchangerMsg>("/pnp_publisher", 10, &EngineerManual::exchangeCallback, this);
   engineer_ui_pub_ = nh.advertise<rm_msgs::EngineerUi>("/engineer_ui", 10);
+  stone_num_sub_ = nh.subscribe<std_msgs::String>("/stone_num", 10, &EngineerManual::stoneNumCallback, this);
   // Drag
   ros::NodeHandle nh_drag(nh, "drag");
   drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_drag);
@@ -169,6 +170,19 @@ void EngineerManual::exchangeCallback(const rm_msgs::ExchangerMsg ::ConstPtr& da
   target_shape_ = data->shape;
 }
 
+void EngineerManual::stoneNumCallback(const std_msgs::String ::ConstPtr& data)
+{
+  if (data->data == "-1")
+    stone_num_ -= 1;
+  else if (data->data == "+1")
+    stone_num_ += 1;
+  else if (data->data == "+3")
+    stone_num_ += 3;
+  if (stone_num_ >= 4)
+    stone_num_ = 3;
+  else if (stone_num_ <= -1)
+    stone_num_ = 0;
+}
 void EngineerManual::gpioStateCallback(const rm_msgs::GpioData ::ConstPtr& data)
 {
   gpio_state_.gpio_state = data->gpio_state;
@@ -199,8 +213,8 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
                                             0.);
   if (is_auxiliary_camera_)
   {
-    chassis_cmd_sender_->getMsg()->follow_source_frame = base_link;
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    //    chassis_cmd_sender_->getMsg()->follow_source_frame = base_link;
+    //    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   }
   else
   {
@@ -221,25 +235,14 @@ void EngineerManual::sendCommand(const ros::Time& time)
     servo_command_sender_->sendCommand(time);
   if (gimbal_mode_ == RATE)
     gimbal_cmd_sender_->sendCommand(time);
-  judgeJoint7(time);
+  // judgeJoint7(time);
 }
 
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   servo_command_sender_->setLinearVel(dbus_data->ch_l_y, -dbus_data->ch_l_x, -dbus_data->wheel);
   servo_command_sender_->setAngularVel(dbus_data->ch_r_x, dbus_data->ch_r_y, angular_z_scale_);
-  z_event_.update(dbus_data->key_z & !dbus_data->key_ctrl & !dbus_data->key_shift);
-  shift_f_event_.update(dbus_data->key_f & !dbus_data->key_ctrl & dbus_data->key_shift);
-  c_event_.update(dbus_data->key_c & !dbus_data->key_ctrl & !dbus_data->key_shift);
-  c_event_.update(dbus_data->key_c & !dbus_data->key_ctrl & !dbus_data->key_shift);
-  ctrl_v_event_.update(dbus_data->key_ctrl & dbus_data->key_v);
-  ctrl_f_event_.update(dbus_data->key_ctrl & dbus_data->key_f);
-  shift_g_event_.update(dbus_data->key_shift & dbus_data->key_g);
-  shift_c_event_.update(dbus_data->key_shift & dbus_data->key_c);
-  shift_x_event_.update(dbus_data->key_shift & dbus_data->key_x);
-  shift_z_event_.update(dbus_data->key_shift & dbus_data->key_z);
-  shift_v_event_.update(dbus_data->key_shift & dbus_data->key_v);
-  ChassisGimbalManual::checkKeyboard(dbus_data);
+  ChassisGimbalManual::updatePc(dbus_data);
 }
 
 void EngineerManual::remoteControlTurnOff()
@@ -257,7 +260,7 @@ void EngineerManual::chassisOutputOn()
 void EngineerManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
-  //  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   servo_mode_ = SERVO;
   gimbal_mode_ = DIRECT;
   servo_reset_caller_->callService();
@@ -332,28 +335,6 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
   ROS_INFO("Done %s", (prefix_ + root_).c_str());
-  if (prefix_ + root_ == "TAKE_WHEN_TWO_STONE00" || prefix_ + root_ == "TAKE_WHEN_ONE_STONE00" ||
-      prefix_ + root_ == "TAKE_WHEN_THREE_STONE00")
-  {
-    if (!stone_num_)
-      stone_num_ = 0;
-    else
-      stone_num_ -= 1;
-  }
-
-  if (prefix_ + root_ == "STORE_WHEN_ZERO_STONE0" || prefix_ + root_ == "STORE_WHEN_ONE_STONE0" ||
-      prefix_ + root_ == "STORE_WHEN_TWO_STONE0" || prefix_ + root_ == "SKY_BIG_ISLAND000" ||
-      prefix_ + root_ == "GROUND_STONE00")
-  {
-    if (stone_num_ == 3)
-      stone_num_ = 3;
-    else
-      stone_num_ += 1;
-  }
-  if (prefix_ + root_ == "THREE_STONE_SMALL_ISLAND00")
-  {
-    stone_num_ = 3;
-  }
   operating_mode_ = MANUAL;
   reversal_motion_ = false;
   change_flag_ = true;
@@ -449,6 +430,7 @@ void EngineerManual::ctrlAPress()
 {
   prefix_ = "";
   root_ = "SMALL_ISLAND";
+  runStepQueue("SMALL_ISLAND");
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -531,8 +513,11 @@ void EngineerManual::ctrlZRelease()
 
 void EngineerManual::ctrlXPress()
 {
-  prefix_ = "THREE_STONE_";
-  root_ = "SMALL_ISLAND";
+  //  prefix_ = "THREE_STONE_";
+  //  root_ = "SMALL_ISLAND";
+  prefix_ = "";
+  root_ = "NEW_THREE_STONE_SMALL_ISLAND";
+  runStepQueue("THREE_STONE_SMALL_ISLAND");
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -715,29 +700,38 @@ void EngineerManual::shiftRelease()
 }
 void EngineerManual::shiftFPress()
 {
-  prefix_ = "";
-  root_ = "EXCHANGE_GIMBAL";
+  //  prefix_ = "";
+  //  root_ = "EXCHANGE_GIMBAL";
   runStepQueue("EXCHANGE_GIMBAL");
   ROS_INFO("enter gimbal EXCHANGE_GIMBAL");
 }
 void EngineerManual::shiftRPress()
 {
-  prefix_ = "";
-  root_ = "SKY_GIMBAL";
-  runStepQueue(prefix_ + root_);
+  //  prefix_ = "";
+  //  root_ = "SKY_GIMBAL";
+  //  runStepQueue(prefix_ + root_);
+  runStepQueue("SKY_GIMBAL");
   ROS_INFO("enter gimbal SKY_GIMBAL");
 }
 void EngineerManual::shiftCPress()
 {
-  prefix_ = "";
-  root_ = "EXCHANGE_CONTINUE";
-  runStepQueue(prefix_ + root_);
+  if (is_joint7_up_)
+  {
+    runStepQueue("JOINT7_DOWN");
+    is_joint7_up_ = false;
+  }
+  else
+  {
+    runStepQueue("JOINT7_UP");
+    is_joint7_up_ = true;
+  }
 }
 void EngineerManual::shiftZPress()
 {
-  prefix_ = "";
-  root_ = "ISLAND_GIMBAL";
-  runStepQueue(prefix_ + root_);
+  //  prefix_ = "";
+  //  root_ = "ISLAND_GIMBAL";
+  //  runStepQueue(prefix_ + root_);
+  runStepQueue("ISLAND_GIMBAL");
   ROS_INFO("enter gimbal REVERSAL_GIMBAL");
 }
 void EngineerManual::shiftVPress()
@@ -758,9 +752,10 @@ void EngineerManual::shiftVRelease()
 
 void EngineerManual::shiftBPress()
 {
-  prefix_ = "";
-  root_ = "SIDE_GIMBAL";
-  runStepQueue(prefix_ + root_);
+  //  prefix_ = "";
+  //  root_ = "SIDE_GIMBAL";
+  //  runStepQueue(prefix_ + root_);
+  runStepQueue("SIDE_GIMBAL");
   ROS_INFO("enter gimbal BACK_GIMBAL");
 }
 

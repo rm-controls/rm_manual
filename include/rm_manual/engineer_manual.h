@@ -120,10 +120,12 @@ private:
   void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data) override;
   void exchangeCallback(const rm_msgs::ExchangerMsg::ConstPtr& data);
   void gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data);
+  void stoneNumCallback(const std_msgs::String ::ConstPtr& data);
   void sendUi();
   void judgeJoint7(const ros::Time& time);
 
-  bool change_flag_{ 1 }, is_exchange_{}, target_shape_{}, reversal_motion_{}, is_auxiliary_camera_{ 0 };
+  bool change_flag_{ true }, is_exchange_{}, target_shape_{}, reversal_motion_{}, is_auxiliary_camera_{ false },
+      is_joint7_up_{ true };
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, max_temperature_{};
   double angular_z_scale_{}, gyro_scale_{}, gyro_low_scale_{};
   std::string prefix_{}, root_{}, drag_state_{ "on" }, max_temperature_joint_{}, joint_temperature_{},
@@ -131,7 +133,7 @@ private:
 
   ros::Time last_time_;
   ros::Publisher engineer_ui_pub_;
-  ros::Subscriber reversal_vision_sub_, exchange_sub_, gripper_state_sub_;
+  ros::Subscriber reversal_vision_sub_, exchange_sub_, gripper_state_sub_, stone_num_sub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 
   rm_msgs::EngineerUi engineer_ui_;
