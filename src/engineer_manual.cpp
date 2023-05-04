@@ -104,7 +104,6 @@ void EngineerManual::run()
 {
   ChassisGimbalManual::run();
   calibration_gather_->update(ros::Time::now());
-  joint5_calibration_->update(ros::Time::now());
   sendUi();
 }
 
@@ -172,6 +171,7 @@ void EngineerManual::exchangeCallback(const rm_msgs::ExchangerMsg ::ConstPtr& da
 
 void EngineerManual::stoneNumCallback(const std_msgs::String ::ConstPtr& data)
 {
+  std::cout << stone_num_ << std::endl;
   if (data->data == "-1")
     stone_num_ -= 1;
   else if (data->data == "+1")
@@ -294,7 +294,7 @@ void EngineerManual::leftSwitchUpRise()
 
 void EngineerManual::leftSwitchDownFall()
 {
-  runStepQueue("HOME_ONE_STONE");
+  //  runStepQueue("HOME_ONE_STONE");
   drag_command_sender_->on();
   drag_state_ = "on";
 }
