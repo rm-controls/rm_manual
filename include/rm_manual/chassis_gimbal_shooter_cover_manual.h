@@ -26,9 +26,9 @@ protected:
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
   void shiftPress() override;
-  void xPress();
-  void zPress();
+  void xPress() override;
   void ctrlZPress();
+  virtual void zPress();
   void ctrlZRelease()
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);

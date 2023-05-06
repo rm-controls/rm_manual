@@ -73,10 +73,12 @@ protected:
   void sRelease() override;
   void dRelease() override;
 
+  virtual void xPress();
   virtual void ePress();
   virtual void cPress();
   virtual void bPress();
   virtual void rPress();
+  virtual void xReleasing();
   virtual void shiftPress();
   virtual void shiftRelease();
   void qPress()
@@ -105,7 +107,7 @@ protected:
 
   geometry_msgs::PointStamped point_out_;
 
-  bool prepare_shoot_ = false, turn_flag_ = false;
+  bool prepare_shoot_ = false, turn_flag_ = false, is_balance_ = false;
   double yaw_current_{};
 };
 }  // namespace rm_manual

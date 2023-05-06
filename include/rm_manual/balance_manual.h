@@ -14,8 +14,9 @@ public:
   BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
 
 protected:
-  void vPress();
   void gPress();
+  void zPress() override;
+  void rPress() override;
   void cPress() override;
   void wPress() override;
   void sPress() override;
@@ -27,9 +28,11 @@ protected:
   void aPressing() override;
   void sPressing() override;
   void dPressing() override;
-
-  void xPress();
-  void zPress();
+  void wRelease() override;
+  void sRelease() override;
+  void aRelease() override;
+  void dRelease() override;
+  void xPress() override;
 
   void sendCommand(const ros::Time& time) override;
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
@@ -51,6 +54,6 @@ private:
   std::string flank_frame_, reverse_frame_;
 
   RampFilter<double>*ramp_x_{}, *ramp_y_{};
-  InputEvent x_event_, z_event_, v_event_, g_event_, ctrl_x_event_, auto_fallen_event_;
+  InputEvent x_event_, z_event_, g_event_, ctrl_x_event_, auto_fallen_event_;
 };
 }  // namespace rm_manual

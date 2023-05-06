@@ -21,7 +21,7 @@ BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   state_sub_ = balance_nh.subscribe<rm_msgs::BalanceState>("/state", 1, &BalanceManual::balanceStateCallback, this);
   z_event_.setRising(boost::bind(&BalanceManual::zPress, this));
   x_event_.setRising(boost::bind(&BalanceManual::xPress, this));
-  v_event_.setRising(boost::bind(&BalanceManual::vPress, this));
+  r_event_.setRising(boost::bind(&BalanceManual::rPress, this));
   g_event_.setRising(boost::bind(&BalanceManual::gPress, this));
   auto_fallen_event_.setActiveHigh(boost::bind(&BalanceManual::modeFallen, this, _1));
   auto_fallen_event_.setDelayTriggered(boost::bind(&BalanceManual::modeNormalize, this), 1.5, true);
@@ -55,7 +55,7 @@ void BalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ChassisGimbalShooterCoverManual::checkKeyboard(dbus_data);
   z_event_.update(dbus_data->key_z);
   x_event_.update(dbus_data->key_x);
-  v_event_.update(dbus_data->key_v);
+  r_event_.update(dbus_data->key_r);
   g_event_.update(dbus_data->key_g);
   ctrl_x_event_.update(dbus_data->key_ctrl && dbus_data->key_x);
 }
@@ -80,7 +80,7 @@ void BalanceManual::xPress()
   chassis_cmd_sender_->updateSafetyPower(100);
 }
 
-void BalanceManual::vPress()
+void BalanceManual::rPress()
 {
   flank_ = !flank_;
   if (reverse_)
@@ -97,11 +97,18 @@ void BalanceManual::gPress()
 void BalanceManual::cPress()
 {
   if (is_gyro_)
-    gyro_scale_ = 1.0;
+  {
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    vel_cmd_sender_->setAngularZVel(0.0);
+    is_gyro_ = false;
+  }
   else
+  {
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
     gyro_scale_ = 0.0;
-  ChassisGimbalShooterCoverManual::cPress();
-  gyro_timer_.start();
+    is_gyro_ = true;
+    gyro_timer_.start();
+  }
 }
 
 void BalanceManual::wPress()
@@ -154,6 +161,26 @@ void BalanceManual::dPressing()
   ramp_y_->input(1.0);
   final_y_scale = -ramp_y_->output();
   vel_cmd_sender_->setLinearYVel(final_y_scale < -1.0 ? -1.0 : final_y_scale);
+}
+
+void BalanceManual::wRelease()
+{
+  vel_cmd_sender_->setLinearXVel(0);
+}
+
+void BalanceManual::sRelease()
+{
+  vel_cmd_sender_->setLinearXVel(0);
+}
+
+void BalanceManual::aRelease()
+{
+  vel_cmd_sender_->setLinearYVel(0);
+}
+
+void BalanceManual::dRelease()
+{
+  vel_cmd_sender_->setLinearYVel(0);
 }
 
 void BalanceManual::ctrlXPress()
