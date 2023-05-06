@@ -38,6 +38,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   x_event_.setRising(boost::bind(&ChassisGimbalShooterManual::xPress, this));
   x_event_.setActiveLow(boost::bind(&ChassisGimbalShooterManual::xReleasing, this));
   r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::rPress, this));
+  g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this));
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
@@ -219,6 +220,8 @@ void ChassisGimbalShooterManual::rightSwitchDownRise()
   ChassisGimbalManual::rightSwitchDownRise();
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+  if (camera_switch_cmd_sender_)
+    camera_switch_cmd_sender_->switchCamera();
 }
 
 void ChassisGimbalShooterManual::rightSwitchMidRise()
@@ -351,6 +354,12 @@ void ChassisGimbalShooterManual::rPress()
 {
   if (camera_switch_cmd_sender_)
     camera_switch_cmd_sender_->switchCamera();
+}
+
+void ChassisGimbalShooterManual::gPress()
+{
+  switch_detection_srv_->switchTargetType();
+  switch_detection_srv_->callService();
 }
 
 void ChassisGimbalShooterManual::wPress()
