@@ -401,8 +401,9 @@ void EngineerManual::mouseRightRelease()
 }
 void EngineerManual::ctrlQPress()
 {
-  prefix_ = "LF_";
+  prefix_ = "NEW_LF_";
   root_ = "SMALL_ISLAND";
+  runStepQueue("NEW_LF_SMALL_ISLAND");
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -415,8 +416,9 @@ void EngineerManual::ctrlWPress()
 
 void EngineerManual::ctrlEPress()
 {
-  prefix_ = "RT_";
+  prefix_ = "NEW_RT_";
   root_ = "SMALL_ISLAND";
+  runStepQueue("NEW_RT_SMALL_ISLAND");
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -434,8 +436,8 @@ void EngineerManual::ctrlRPress()
 void EngineerManual::ctrlAPress()
 {
   prefix_ = "";
-  root_ = "SMALL_ISLAND";
-  runStepQueue("SMALL_ISLAND");
+  root_ = "NEW_SMALL_ISLAND";
+  runStepQueue("NEW_SMALL_ISLAND");
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
