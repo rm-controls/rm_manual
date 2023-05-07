@@ -19,6 +19,10 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
 
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
+  ros::NodeHandle buff_detection_switch_nh(nh, "buff_detection_switch");
+  buff_switch_detection_srv_ = new rm_common::SwitchDetectionCaller(buff_detection_switch_nh);
+  ros::NodeHandle buff_type_detection_switch_nh(nh, "buff_type_detection_switch");
+  buff_type_switch_detection_srv_ = new rm_common::SwitchDetectionCaller(buff_type_detection_switch_nh);
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("shooter_calibration", rpc_value);
   shooter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
@@ -62,7 +66,10 @@ void ChassisGimbalShooterManual::checkReferee()
   manual_to_referee_pub_data_.det_armor_target = switch_detection_srv_->getArmorTarget();
   manual_to_referee_pub_data_.det_color = switch_detection_srv_->getColor();
   manual_to_referee_pub_data_.det_exposure = switch_detection_srv_->getExposureLevel();
-  manual_to_referee_pub_data_.det_target = switch_detection_srv_->getTarget();
+  if (buff_switch_detection_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    manual_to_referee_pub_data_.det_target = buff_type_switch_detection_srv_->getTarget();
+  else
+    manual_to_referee_pub_data_.det_target = buff_switch_detection_srv_->getTarget();
   manual_to_referee_pub_data_.stamp = ros::Time::now();
   ChassisGimbalManual::checkReferee();
 }
@@ -504,6 +511,7 @@ void ChassisGimbalShooterManual::ctrlVPress()
 
 void ChassisGimbalShooterManual::ctrlRPress()
 {
+  ROS_INFO("6");
   if (robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO)
   {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
@@ -513,18 +521,13 @@ void ChassisGimbalShooterManual::ctrlRPress()
   }
   else
   {
+    buff_switch_detection_srv_->switchTargetType();
     switch_detection_srv_->switchTargetType();
+    buff_type_switch_detection_srv_->setTargetType(buff_switch_detection_srv_->getTarget());
+    buff_switch_detection_srv_->callService();
     switch_detection_srv_->callService();
-    if (switch_detection_srv_->getTarget())
-    {
-      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-      is_gyro_ = true;
-    }
-    else
-    {
-      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-      is_gyro_ = false;
-    }
+    buff_type_switch_detection_srv_->callService();
+    ROS_INFO_STREAM("TATGET: " << buff_switch_detection_srv_->getTarget());
   }
 }
 

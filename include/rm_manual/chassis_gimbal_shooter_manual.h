@@ -81,13 +81,7 @@ protected:
   virtual void xReleasing();
   virtual void shiftPress();
   virtual void shiftRelease();
-  void qPress()
-  {
-    if (shooter_cmd_sender_->getShootFrequency() != rm_common::HeatLimit::LOW)
-      shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::LOW);
-    else
-      shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::BURST);
-  }
+  virtual void qPress(){};
   void fPress()
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
@@ -103,6 +97,8 @@ protected:
   rm_common::ShooterCommandSender* shooter_cmd_sender_{};
   rm_common::CameraSwitchCommandSender* camera_switch_cmd_sender_{};
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
+  rm_common::SwitchDetectionCaller* buff_switch_detection_srv_{};
+  rm_common::SwitchDetectionCaller* buff_type_switch_detection_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
 
   geometry_msgs::PointStamped point_out_;
