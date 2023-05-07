@@ -212,15 +212,6 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   if (!reversal_motion_ && servo_mode_ == JOINT)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
-  if (is_auxiliary_camera_)
-  {
-    //    chassis_cmd_sender_->getMsg()->follow_source_frame = base_link;
-    //    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-  }
-  else
-  {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  }
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -240,7 +231,6 @@ void EngineerManual::sendCommand(const ros::Time& time)
   }
   if (gimbal_mode_ == RATE)
     gimbal_cmd_sender_->sendCommand(time);
-  // judgeJoint7(time);
 }
 
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -368,19 +358,6 @@ void EngineerManual::sendUi()
   engineer_ui_.joint_temperature = joint_temperature_;
   engineer_ui_.gripper_state = gripper_state_;
   engineer_ui_pub_.publish(engineer_ui_);
-}
-
-void EngineerManual::judgeJoint7(const ros::Time& time)
-{
-  if (prefix_ + root_ == "GROUND_STONE0" || prefix_ == "EXCHANGE_" || prefix_ + root_ == "GROUND_STONE00")
-  {
-    joint7_command_sender_->off();
-  }
-  else
-  {
-    joint7_command_sender_->on();
-  }
-  joint7_command_sender_->sendCommand(time);
 }
 
 void EngineerManual::mouseLeftRelease()
@@ -520,8 +497,6 @@ void EngineerManual::ctrlZRelease()
 
 void EngineerManual::ctrlXPress()
 {
-  //  prefix_ = "THREE_STONE_";
-  //  root_ = "SMALL_ISLAND";
   prefix_ = "";
   root_ = "NEW_THREE_STONE_SMALL_ISLAND";
   runStepQueue("NEW_THREE_STONE_SMALL_ISLAND");
@@ -705,16 +680,15 @@ void EngineerManual::shiftRelease()
 }
 void EngineerManual::shiftFPress()
 {
-  //  prefix_ = "";
-  //  root_ = "EXCHANGE_GIMBAL";
   runStepQueue("EXCHANGE_GIMBAL");
+  if (servo_mode_ == SERVO)
+    chassis_cmd_sender_->changeCommandSourceFrame("fake_link5");
+  else
+    chassis_cmd_sender_->changeCommandSourceFrame("base_link");
   ROS_INFO("enter gimbal EXCHANGE_GIMBAL");
 }
 void EngineerManual::shiftRPress()
 {
-  //  prefix_ = "";
-  //  root_ = "SKY_GIMBAL";
-  //  runStepQueue(prefix_ + root_);
   runStepQueue("SKY_GIMBAL");
   ROS_INFO("enter gimbal SKY_GIMBAL");
 }
@@ -733,10 +707,8 @@ void EngineerManual::shiftCPress()
 }
 void EngineerManual::shiftZPress()
 {
-  //  prefix_ = "";
-  //  root_ = "ISLAND_GIMBAL";
-  //  runStepQueue(prefix_ + root_);
   runStepQueue("ISLAND_GIMBAL");
+  chassis_cmd_sender_->changeCommandSourceFrame("yaw");
   ROS_INFO("enter gimbal REVERSAL_GIMBAL");
 }
 void EngineerManual::shiftVPress()
@@ -757,10 +729,8 @@ void EngineerManual::shiftVRelease()
 
 void EngineerManual::shiftBPress()
 {
-  //  prefix_ = "";
-  //  root_ = "SIDE_GIMBAL";
-  //  runStepQueue(prefix_ + root_);
   runStepQueue("SIDE_GIMBAL");
+  chassis_cmd_sender_->changeCommandSourceFrame("yaw");
   ROS_INFO("enter gimbal BACK_GIMBAL");
 }
 
@@ -771,6 +741,7 @@ void EngineerManual::shiftBRelease()
 void EngineerManual::shiftXPress()
 {
   runStepQueue("GROUND_GIMBAL");
+  chassis_cmd_sender_->changeCommandSourceFrame("yaw");
   ROS_INFO("enter gimbal GROUND_GIMBAL");
 }
 
