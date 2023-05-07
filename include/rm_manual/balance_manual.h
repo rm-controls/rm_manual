@@ -14,8 +14,9 @@ public:
   BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
 
 protected:
+  void zPress();
   void gPress();
-  void zPress() override;
+  void qPress() override;
   void rPress() override;
   void cPress() override;
   void wPress() override;

@@ -143,19 +143,4 @@ void ChassisGimbalShooterCoverManual::ctrlQPress()
   gimbal_calibration_->reset();
 }
 
-void ChassisGimbalShooterCoverManual::shiftPress()
-{
-  ChassisGimbalShooterManual::shiftPress();
-  chassis_cmd_sender_->updateSafetyPower(60);
-}
-
-void ChassisGimbalShooterCoverManual::zPress()
-{
-  chassis_cmd_sender_->updateSafetyPower(80);
-}
-
-void ChassisGimbalShooterCoverManual::xPress()
-{
-  chassis_cmd_sender_->updateSafetyPower(100);
-}
 }  // namespace rm_manual

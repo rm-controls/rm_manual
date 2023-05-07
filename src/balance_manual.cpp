@@ -53,10 +53,10 @@ void BalanceManual::sendCommand(const ros::Time& time)
 void BalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalShooterCoverManual::checkKeyboard(dbus_data);
-  z_event_.update(dbus_data->key_z);
-  x_event_.update(dbus_data->key_x);
-  r_event_.update(dbus_data->key_r);
-  g_event_.update(dbus_data->key_g);
+  z_event_.update(dbus_data->key_z && !dbus_data->key_ctrl);
+  x_event_.update(dbus_data->key_x && !dbus_data->key_ctrl);
+  r_event_.update(dbus_data->key_r && !dbus_data->key_ctrl);
+  g_event_.update(dbus_data->key_g && !dbus_data->key_ctrl);
   ctrl_x_event_.update(dbus_data->key_ctrl && dbus_data->key_x);
 }
 
@@ -64,9 +64,21 @@ void BalanceManual::shiftRelease()
 {
 }
 
+void BalanceManual::qPress()
+{
+  if (buff_switch_detection_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+  {
+    if (buff_type_switch_detection_srv_->getTarget() == rm_msgs::StatusChangeRequest::SMALL_BUFF)
+      buff_type_switch_detection_srv_->setTargetType(rm_msgs::StatusChangeRequest::BIG_BUFF);
+    else
+      buff_type_switch_detection_srv_->setTargetType(rm_msgs::StatusChangeRequest::SMALL_BUFF);
+    buff_type_switch_detection_srv_->callService();
+  }
+}
+
 void BalanceManual::shiftPress()
 {
-  ChassisGimbalShooterManual::shiftPress();
+  ChassisGimbalShooterCoverManual::shiftPress();
   chassis_cmd_sender_->updateSafetyPower(60);
 }
 
