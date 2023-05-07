@@ -140,7 +140,7 @@ protected:
 
   InputEvent chassis_power_on_event_, gimbal_power_on_event_, shooter_power_on_event_;
   ros::Time chassis_actuator_last_get_stamp_, gimbal_actuator_last_get_stamp_, shooter_actuator_last_get_stamp_;
-  std::vector<std::string> chassis_calibrate_motor_, gimbal_calibrate_motor_, shooter_calibrate_motor_;
+  std::vector<std::string> chassis_mount_motor_, gimbal_mount_motor_, shooter_mount_motor_;
 };
 
 }  // namespace rm_manual
