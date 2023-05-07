@@ -208,6 +208,7 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ChassisGimbalManual::updatePc(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  //  gimbal_cmd_sender_->setRate(-dbus_data->m_x * gimbal_scale_, dbus_data->m_y * gimbal_scale_);
   if (!reversal_motion_ && servo_mode_ == JOINT)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
@@ -232,7 +233,11 @@ void EngineerManual::sendCommand(const ros::Time& time)
     drag_command_sender_->sendCommand(time);
   }
   if (servo_mode_ == SERVO)
+  {
     servo_command_sender_->sendCommand(time);
+    prefix_ = "";
+    root_ = "";
+  }
   if (gimbal_mode_ == RATE)
     gimbal_cmd_sender_->sendCommand(time);
   // judgeJoint7(time);
@@ -294,7 +299,7 @@ void EngineerManual::leftSwitchUpRise()
 
 void EngineerManual::leftSwitchDownFall()
 {
-  //  runStepQueue("HOME_ONE_STONE");
+  runStepQueue("HOME_ZERO_STONE");
   drag_command_sender_->on();
   drag_state_ = "on";
 }
@@ -517,7 +522,7 @@ void EngineerManual::ctrlXPress()
   //  root_ = "SMALL_ISLAND";
   prefix_ = "";
   root_ = "NEW_THREE_STONE_SMALL_ISLAND";
-  runStepQueue("THREE_STONE_SMALL_ISLAND");
+  runStepQueue("NEW_THREE_STONE_SMALL_ISLAND");
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -525,8 +530,6 @@ void EngineerManual::ctrlCPress()
 {
   runStepQueue("DELETE_SCENE");
   action_client_.cancelAllGoals();
-  prefix_ = "";
-  root_ = "CANCEL GOALS";
 }
 
 void EngineerManual::ctrlVPress()
@@ -675,7 +678,7 @@ void EngineerManual::vPressing()
 {
   // Z in
   reversal_motion_ = true;
-  reversal_command_sender_->setGroupValue(0., 0., -1., 0., 0., 0.);
+  reversal_command_sender_->setGroupValue(0., 0., -3., 0., 0., 0.);
   reversal_state_ = "Z IN";
 }
 void EngineerManual::fPress()

@@ -48,6 +48,13 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   mouse_right_event_.setFalling(boost::bind(&ChassisGimbalShooterManual::mouseRightRelease, this));
 }
 
+void ChassisGimbalShooterManual::xPress()
+{
+}
+
+void ChassisGimbalShooterManual::xReleasing()
+{
+}
 void ChassisGimbalShooterManual::run()
 {
   ChassisGimbalManual::run();
