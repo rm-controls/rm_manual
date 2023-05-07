@@ -25,7 +25,6 @@ BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   g_event_.setRising(boost::bind(&BalanceManual::gPress, this));
   auto_fallen_event_.setActiveHigh(boost::bind(&BalanceManual::modeFallen, this, _1));
   auto_fallen_event_.setDelayTriggered(boost::bind(&BalanceManual::modeNormalize, this), 1.5, true);
-  // ctrl_x_event_.setDelayTriggered(boost::bind(&BalanceManual::modeNormalizeDelay, this), 3.0, true);
   ctrl_x_event_.setRising(boost::bind(&BalanceManual::ctrlXPress, this));
 
   ramp_x_ = new RampFilter<double>(0, 0.01);
@@ -209,8 +208,6 @@ void BalanceManual::balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& 
   {
     if (std::abs(msg->theta) > balance_dangerous_angle_)
       chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
-    //    else
-    //      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
     if (msg->mode == rm_msgs::BalanceState::NORMAL)
       auto_fallen_event_.update(std::abs(msg->theta) > 0.42 && std::abs(msg->x_dot) > 1.5);
   }
