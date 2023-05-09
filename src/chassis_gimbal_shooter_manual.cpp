@@ -220,8 +220,6 @@ void ChassisGimbalShooterManual::rightSwitchDownRise()
   ChassisGimbalManual::rightSwitchDownRise();
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
-  if (camera_switch_cmd_sender_)
-    camera_switch_cmd_sender_->switchCamera();
 }
 
 void ChassisGimbalShooterManual::rightSwitchMidRise()
