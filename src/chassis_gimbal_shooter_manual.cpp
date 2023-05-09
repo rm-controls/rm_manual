@@ -19,6 +19,10 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
 
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
+  ros::NodeHandle buff_switch_nh(nh, "buff_switch");
+  switch_buff_srv_ = new rm_common::SwitchDetectionCaller(buff_switch_nh);
+  ros::NodeHandle buff_type_switch_nh(nh, "buff_type_switch");
+  switch_buff_type_srv_ = new rm_common::SwitchDetectionCaller(buff_type_switch_nh);
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("shooter_calibration", rpc_value);
   shooter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
@@ -62,7 +66,10 @@ void ChassisGimbalShooterManual::checkReferee()
   manual_to_referee_pub_data_.det_armor_target = switch_detection_srv_->getArmorTarget();
   manual_to_referee_pub_data_.det_color = switch_detection_srv_->getColor();
   manual_to_referee_pub_data_.det_exposure = switch_detection_srv_->getExposureLevel();
-  manual_to_referee_pub_data_.det_target = switch_detection_srv_->getTarget();
+  if (switch_detection_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    manual_to_referee_pub_data_.det_target = switch_buff_type_srv_->getTarget();
+  else
+    manual_to_referee_pub_data_.det_target = switch_detection_srv_->getTarget();
   manual_to_referee_pub_data_.stamp = ros::Time::now();
   ChassisGimbalManual::checkReferee();
 }
@@ -303,14 +310,13 @@ void ChassisGimbalShooterManual::mouseRightPress()
 
 void ChassisGimbalShooterManual::ePress()
 {
-  if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::TWIST)
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
   {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-  }
-  else
-  {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::TWIST);
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    if (switch_buff_type_srv_->getTarget() == rm_msgs::StatusChangeRequest::SMALL_BUFF)
+      switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::BIG_BUFF);
+    else
+      switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::SMALL_BUFF);
+    switch_buff_type_srv_->callService();
   }
 }
 
@@ -513,18 +519,12 @@ void ChassisGimbalShooterManual::ctrlRPress()
   }
   else
   {
+    switch_buff_srv_->switchTargetType();
     switch_detection_srv_->switchTargetType();
+    switch_buff_type_srv_->setTargetType(switch_buff_srv_->getTarget());
+    switch_buff_srv_->callService();
     switch_detection_srv_->callService();
-    if (switch_detection_srv_->getTarget())
-    {
-      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-      is_gyro_ = true;
-    }
-    else
-    {
-      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-      is_gyro_ = false;
-    }
+    switch_buff_type_srv_->callService();
   }
 }
 
