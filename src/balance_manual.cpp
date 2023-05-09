@@ -63,18 +63,6 @@ void BalanceManual::shiftRelease()
 {
 }
 
-void BalanceManual::qPress()
-{
-  if (buff_switch_detection_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
-  {
-    if (buff_type_switch_detection_srv_->getTarget() == rm_msgs::StatusChangeRequest::SMALL_BUFF)
-      buff_type_switch_detection_srv_->setTargetType(rm_msgs::StatusChangeRequest::BIG_BUFF);
-    else
-      buff_type_switch_detection_srv_->setTargetType(rm_msgs::StatusChangeRequest::SMALL_BUFF);
-    buff_type_switch_detection_srv_->callService();
-  }
-}
-
 void BalanceManual::shiftPress()
 {
   ChassisGimbalShooterCoverManual::shiftPress();
@@ -209,7 +197,9 @@ void BalanceManual::balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& 
     if (std::abs(msg->theta) > balance_dangerous_angle_)
       chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
     if (msg->mode == rm_msgs::BalanceState::NORMAL)
-      auto_fallen_event_.update(std::abs(msg->theta) > 0.42 && std::abs(msg->x_dot) > 1.5);
+      auto_fallen_event_.update(std::abs(msg->theta) > 0.42 && std::abs(msg->x_dot) > 1.5 &&
+                                vel_cmd_sender_->getMsg()->linear.x == 0 && vel_cmd_sender_->getMsg()->linear.y == 0 &&
+                                vel_cmd_sender_->getMsg()->angular.z == 0);
   }
 }
 

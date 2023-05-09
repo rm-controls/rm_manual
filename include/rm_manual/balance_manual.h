@@ -16,7 +16,6 @@ public:
 protected:
   void zPress();
   void gPress();
-  void qPress() override;
   void rPress() override;
   void cPress() override;
   void wPress() override;
