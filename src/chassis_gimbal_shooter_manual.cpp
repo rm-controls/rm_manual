@@ -534,4 +534,8 @@ void ChassisGimbalShooterManual::ctrlBPress()
   switch_detection_srv_->callService();
 }
 
+void ChassisGimbalShooterManual::ctrlQPress()
+{
+  shooter_calibration_->reset();
+}
 }  // namespace rm_manual
