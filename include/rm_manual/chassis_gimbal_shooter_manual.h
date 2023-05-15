@@ -76,7 +76,7 @@ protected:
   void sRelease() override;
   void dRelease() override;
 
-  void ePress();
+  virtual void ePress();
   void cPress();
   void bPress();
   void xPress();
