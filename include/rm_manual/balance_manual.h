@@ -14,8 +14,6 @@ public:
   BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
 
 protected:
-  void zPress();
-  void gPress();
   void rPress() override;
   void cPress() override;
   void wPress() override;
@@ -36,17 +34,18 @@ protected:
 
   void sendCommand(const ros::Time& time) override;
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
+  void zPress();
+  void gPress();
   void ctrlXPress();
-  void balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& msg);
   void modeFallen(ros::Duration duration);
   void modeNormalize();
-  void gyroCPressedCallback();
-
   rm_common::BalanceCommandSender* balance_cmd_sender_{};
 
 private:
-  ros::Subscriber state_sub_;
+  void gyroCPressedCallback();
+  void balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& msg);
 
+  ros::Subscriber state_sub_;
   double gyro_scale_, balance_dangerous_angle_;
   ros::Timer gyro_timer_;
 
