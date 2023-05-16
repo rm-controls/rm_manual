@@ -67,8 +67,8 @@ void ManualBase::run()
 
 void ManualBase::checkReferee()
 {
-  gimbal_power_on_event_.update((ros::Time::now() - gimbal_actuator_last_get_stamp_) < ros::Duration(2.0));
-  shooter_power_on_event_.update((ros::Time::now() - shooter_actuator_last_get_stamp_) < ros::Duration(2.0));
+  gimbal_power_on_event_.update((ros::Time::now() - gimbal_actuator_last_get_stamp_) < ros::Duration(2.5));
+  shooter_power_on_event_.update((ros::Time::now() - shooter_actuator_last_get_stamp_) < ros::Duration(2.5));
   referee_is_online_ = (ros::Time::now() - referee_last_get_stamp_ < ros::Duration(0.3));
   manual_to_referee_pub_.publish(manual_to_referee_pub_data_);
 }
@@ -104,7 +104,7 @@ void ManualBase::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& d
 
 void ManualBase::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
-  if (ros::Time::now() - data->stamp < ros::Duration(0.6))
+  if (ros::Time::now() - data->stamp < ros::Duration(1.0))
   {
     if (!remote_is_open_)
     {
