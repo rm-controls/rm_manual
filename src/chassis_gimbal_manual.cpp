@@ -164,7 +164,7 @@ void ChassisGimbalManual::wPressing()
   double final_x_scale = x_scale_;
   if (speed_change_mode_)
     final_x_scale = x_scale_ * speed_change_scale_;
-  vel_cmd_sender_->setLinearXVel(final_x_scale > 1.0 ? 1.0 : final_x_scale);
+  vel_cmd_sender_->setLinearXVel(is_gyro_ ? final_x_scale * gyro_move_reduction_ : final_x_scale);
 }
 
 void ChassisGimbalManual::aPressing()
@@ -180,7 +180,7 @@ void ChassisGimbalManual::sPressing()
   double final_x_scale = x_scale_;
   if (speed_change_mode_)
     final_x_scale = x_scale_ * speed_change_scale_;
-  vel_cmd_sender_->setLinearXVel(final_x_scale < -1.0 ? -1.0 : final_x_scale);
+  vel_cmd_sender_->setLinearXVel(is_gyro_ ? final_x_scale * gyro_move_reduction_ : final_x_scale);
 }
 
 void ChassisGimbalManual::dPressing()
