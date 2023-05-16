@@ -12,6 +12,10 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   ros::NodeHandle cover_nh(nh, "cover");
   nh.param("supply_frame", supply_frame_, std::string("supply_frame"));
   cover_command_sender_ = new rm_common::JointPositionBinaryCommandSender(cover_nh);
+  ros::NodeHandle buff_switch_nh(nh, "buff_switch");
+  switch_buff_srv_ = new rm_common::SwitchDetectionCaller(buff_switch_nh);
+  ros::NodeHandle buff_type_switch_nh(nh, "buff_type_switch");
+  switch_buff_type_srv_ = new rm_common::SwitchDetectionCaller(buff_type_switch_nh);
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("gimbal_calibration", rpc_value);
   gimbal_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
@@ -36,6 +40,10 @@ void ChassisGimbalShooterCoverManual::updatePc(const rm_msgs::DbusData::ConstPtr
 void ChassisGimbalShooterCoverManual::checkReferee()
 {
   manual_to_referee_pub_data_.cover_state = cover_command_sender_->getState();
+  if (switch_detection_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    manual_to_referee_pub_data_.det_target = switch_buff_type_srv_->getTarget();
+  else
+    manual_to_referee_pub_data_.det_target = switch_detection_srv_->getTarget();
   ChassisGimbalShooterManual::checkReferee();
 }
 void ChassisGimbalShooterCoverManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
