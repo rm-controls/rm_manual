@@ -133,6 +133,28 @@ void ChassisGimbalShooterCoverManual::rightSwitchUpRise()
   supply_ = false;
 }
 
+void ChassisGimbalShooterCoverManual::rPress()
+{
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+  {
+    if (switch_buff_type_srv_->getTarget() == rm_msgs::StatusChangeRequest::SMALL_BUFF)
+      switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::BIG_BUFF);
+    else
+      switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::SMALL_BUFF);
+    switch_buff_type_srv_->callService();
+  }
+}
+
+void ChassisGimbalShooterCoverManual::ePress()
+{
+  switch_buff_srv_->switchTargetType();
+  switch_detection_srv_->switchTargetType();
+  switch_buff_type_srv_->setTargetType(switch_buff_srv_->getTarget());
+  switch_buff_srv_->callService();
+  switch_detection_srv_->callService();
+  switch_buff_type_srv_->callService();
+}
+
 void ChassisGimbalShooterCoverManual::ctrlZPress()
 {
   supply_ = !cover_command_sender_->getState();

@@ -44,7 +44,6 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::rPress, this));
   g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
-  ctrl_r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this));
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
   shift_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::shiftPress, this),
                        boost::bind(&ChassisGimbalShooterManual::shiftRelease, this));
@@ -88,7 +87,6 @@ void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr
   x_event_.update(dbus_data->key_x);
   r_event_.update((!dbus_data->key_ctrl) & dbus_data->key_r);
   ctrl_v_event_.update(dbus_data->key_ctrl & dbus_data->key_v);
-  ctrl_r_event_.update(dbus_data->key_ctrl & dbus_data->key_r);
   ctrl_b_event_.update(dbus_data->key_ctrl & dbus_data->key_b & !dbus_data->key_shift);
   shift_event_.update(dbus_data->key_shift & !dbus_data->key_ctrl);
   ctrl_shift_b_event_.update(dbus_data->key_ctrl & dbus_data->key_shift & dbus_data->key_b);
@@ -328,15 +326,6 @@ void ChassisGimbalShooterManual::ePress()
   switch_armor_target_srv_->switchArmorTargetType();
   switch_armor_target_srv_->callService();
   shooter_cmd_sender_->setArmorType(switch_armor_target_srv_->getArmorTarget());
-
-  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
-  {
-    if (switch_buff_type_srv_->getTarget() == rm_msgs::StatusChangeRequest::SMALL_BUFF)
-      switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::BIG_BUFF);
-    else
-      switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::SMALL_BUFF);
-    switch_buff_type_srv_->callService();
-  }
 }
 
 void ChassisGimbalShooterManual::cPress()
@@ -372,7 +361,7 @@ void ChassisGimbalShooterManual::rPress()
 
 void ChassisGimbalShooterManual::gPress()
 {
-  switch_detection_srv_->switchTargetType();
+  switch_detection_srv_->setArmorTargetType(rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE);
   switch_detection_srv_->callService();
 }
 
@@ -525,26 +514,6 @@ void ChassisGimbalShooterManual::ctrlVPress()
     shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::LOW);
   else
     shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::HIGH);
-}
-
-void ChassisGimbalShooterManual::ctrlRPress()
-{
-  if (robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO)
-  {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-    is_gyro_ = true;
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
-    gimbal_cmd_sender_->setEject(true);
-  }
-  else
-  {
-    switch_buff_srv_->switchTargetType();
-    switch_detection_srv_->switchTargetType();
-    switch_buff_type_srv_->setTargetType(switch_buff_srv_->getTarget());
-    switch_buff_srv_->callService();
-    switch_detection_srv_->callService();
-    switch_buff_type_srv_->callService();
-  }
 }
 
 void ChassisGimbalShooterManual::ctrlBPress()
