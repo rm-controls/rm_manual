@@ -107,6 +107,8 @@ protected:
   rm_common::CameraSwitchCommandSender* camera_switch_cmd_sender_{};
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::SwitchDetectionCaller* switch_armor_target_srv_{};
+  rm_common::SwitchDetectionCaller* switch_buff_srv_{};
+  rm_common::SwitchDetectionCaller* switch_buff_type_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
 
   geometry_msgs::PointStamped point_out_;
