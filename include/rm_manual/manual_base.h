@@ -124,6 +124,7 @@ protected:
       suggest_fire_sub_;
 
   sensor_msgs::JointState joint_state_;
+  rm_msgs::CapacityData capacity_data_;
   rm_msgs::TrackData track_data_;
   rm_msgs::ManualToReferee manual_to_referee_pub_data_;
 
@@ -135,9 +136,9 @@ protected:
   ros::NodeHandle nh_;
 
   ros::Time referee_last_get_stamp_;
-  bool remote_is_open_{}, referee_is_online_ = false;
+  bool remote_is_open_{}, referee_is_online_ = false, capacity_is_online_ = false;
   int state_ = PASSIVE;
-  int robot_id_, chassis_power_;
+  int robot_id_;
   InputEvent robot_hp_event_, right_switch_down_event_, right_switch_mid_event_, right_switch_up_event_,
       left_switch_down_event_, left_switch_mid_event_, left_switch_up_event_;
 };

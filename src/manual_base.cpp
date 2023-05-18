@@ -49,6 +49,7 @@ void ManualBase::run()
 {
   checkReferee();
   controller_manager_.update();
+  capacity_is_online_ = ros::Time::now() - capacity_data_.stamp < ros::Duration(0.3);
 }
 
 void ManualBase::checkReferee()
@@ -112,7 +113,7 @@ void ManualBase::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& d
 
 void ManualBase::capacityDataCallback(const rm_msgs::CapacityData::ConstPtr& data)
 {
-  chassis_power_ = data->chassis_power;
+  capacity_data_ = *data;
 }
 
 void ManualBase::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
