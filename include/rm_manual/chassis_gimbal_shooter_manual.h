@@ -80,6 +80,7 @@ protected:
   virtual void rPress();
   void cPress();
   void bPress();
+  void bRelease();
   void xPress();
   void xReleasing();
   void gPress();
