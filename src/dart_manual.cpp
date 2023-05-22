@@ -43,8 +43,6 @@ void DartManual::run()
 void DartManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
 {
   ManualBase::gameRobotStatusCallback(data);
-  chassis_power_on_event_.update(data->mains_power_chassis_output);
-  gimbal_power_on_event_.update(data->mains_power_gimbal_output);
 }
 
 void DartManual::sendCommand(const ros::Time& time)
