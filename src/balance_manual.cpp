@@ -21,7 +21,6 @@ BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   state_sub_ = balance_nh.subscribe<rm_msgs::BalanceState>("/state", 1, &BalanceManual::balanceStateCallback, this);
   z_event_.setRising(boost::bind(&BalanceManual::zPress, this));
   x_event_.setRising(boost::bind(&BalanceManual::xPress, this));
-  r_event_.setRising(boost::bind(&BalanceManual::rPress, this));
   g_event_.setRising(boost::bind(&BalanceManual::gPress, this));
   auto_fallen_event_.setActiveHigh(boost::bind(&BalanceManual::modeFallen, this, _1));
   auto_fallen_event_.setDelayTriggered(boost::bind(&BalanceManual::modeNormalize, this), 1.5, true);
@@ -104,13 +103,6 @@ void BalanceManual::xPress()
   chassis_cmd_sender_->updateSafetyPower(100);
 }
 
-void BalanceManual::rPress()
-{
-  flank_ = !flank_;
-  if (reverse_)
-    reverse_ = false;
-}
-
 void BalanceManual::gPress()
 {
   reverse_ = !reverse_;
@@ -137,11 +129,15 @@ void BalanceManual::cPress()
 
 void BalanceManual::wPress()
 {
+  if (flank_)
+    flank_ = !flank_;
   ramp_x_->clear();
 }
 
 void BalanceManual::wPressing()
 {
+  if (flank_)
+    flank_ = !flank_;
   double final_x_scale;
   ramp_x_->input(1.0);
   final_x_scale = ramp_x_->output();
@@ -150,11 +146,15 @@ void BalanceManual::wPressing()
 
 void BalanceManual::sPress()
 {
+  if (flank_)
+    flank_ = !flank_;
   ramp_x_->clear();
 }
 
 void BalanceManual::sPressing()
 {
+  if (flank_)
+    flank_ = !flank_;
   double final_x_scale;
   ramp_x_->input(1.0);
   final_x_scale = -ramp_x_->output();
@@ -163,11 +163,15 @@ void BalanceManual::sPressing()
 
 void BalanceManual::aPress()
 {
+  if (!flank_)
+    flank_ = !flank_;
   ramp_y_->clear();
 }
 
 void BalanceManual::aPressing()
 {
+  if (!flank_)
+    flank_ = !flank_;
   double final_y_scale;
   ramp_y_->input(1.0);
   final_y_scale = ramp_y_->output();
@@ -176,11 +180,15 @@ void BalanceManual::aPressing()
 
 void BalanceManual::dPress()
 {
+  if (!flank_)
+    flank_ = !flank_;
   ramp_y_->clear();
 }
 
 void BalanceManual::dPressing()
 {
+  if (!flank_)
+    flank_ = !flank_;
   double final_y_scale;
   ramp_y_->input(1.0);
   final_y_scale = -ramp_y_->output();
