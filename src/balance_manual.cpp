@@ -105,9 +105,6 @@ void BalanceManual::xPress()
 
 void BalanceManual::gPress()
 {
-  reverse_ = !reverse_;
-  if (flank_)
-    flank_ = false;
 }
 
 void BalanceManual::cPress()

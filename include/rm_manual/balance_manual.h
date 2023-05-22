@@ -14,7 +14,6 @@ public:
   BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
 
 protected:
-  void rPress() override;
   void cPress() override;
   void wPress() override;
   void sPress() override;
@@ -31,11 +30,11 @@ protected:
   void aRelease() override;
   void dRelease() override;
   void xPress() override;
+  void gPress() override;
 
   void sendCommand(const ros::Time& time) override;
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void zPress();
-  void gPress();
   void ctrlXPress();
   void modeFallen(ros::Duration duration);
   void modeNormalize();
