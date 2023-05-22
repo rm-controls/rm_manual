@@ -25,7 +25,7 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   game_status_sub_ =
       nh_referee.subscribe<rm_msgs::GameStatus>("game_status", 10, &ManualBase::gameStatusCallback, this);
   capacity_sub_ =
-      nh_referee.subscribe<rm_msgs::CapacityData>("capacity_data", 10, &ManualBase::capacityDataCallback, this);
+      nh_referee.subscribe<rm_msgs::PowerManagementSampleAndStatusData>("power_management/sample_and_status", 10, &ManualBase::capacityDataCallback, this);
   power_heat_data_sub_ =
       nh_referee.subscribe<rm_msgs::PowerHeatData>("power_heat_data", 10, &ManualBase::powerHeatDataCallback, this);
   suggest_fire_sub_ =
@@ -153,7 +153,7 @@ void ManualBase::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& d
   referee_last_get_stamp_ = data->stamp;
 }
 
-void ManualBase::capacityDataCallback(const rm_msgs::CapacityData::ConstPtr& data)
+void ManualBase::capacityDataCallback(const rm_msgs::PowerManagementSampleAndStatusData ::ConstPtr& data)
 {
   chassis_power_ = data->chassis_power;
 }

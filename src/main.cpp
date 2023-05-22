@@ -6,7 +6,6 @@
 #include "rm_manual/chassis_gimbal_shooter_cover_manual.h"
 #include "rm_manual/engineer_manual.h"
 #include "rm_manual/dart_manual.h"
-#include "rm_manual/balance_manual.h"
 
 int main(int argc, char** argv)
 {
@@ -24,8 +23,6 @@ int main(int argc, char** argv)
     manual_control = new rm_manual::EngineerManual(nh, nh_referee);
   else if (robot == "dart")
     manual_control = new rm_manual::DartManual(nh, nh_referee);
-  else if (robot == "balance")
-    manual_control = new rm_manual::BalanceManual(nh, nh_referee);
   else
   {
     ROS_ERROR("no robot type ");

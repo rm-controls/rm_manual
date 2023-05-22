@@ -105,7 +105,7 @@ void ChassisGimbalManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& da
   chassis_cmd_sender_->updateRefereeStatus(referee_is_online_);
 }
 
-void ChassisGimbalManual::capacityDataCallback(const rm_msgs::CapacityData::ConstPtr& data)
+void ChassisGimbalManual::capacityDataCallback(const rm_msgs::PowerManagementSampleAndStatusData ::ConstPtr& data)
 {
   ManualBase::capacityDataCallback(data);
   chassis_cmd_sender_->updateCapacityData(*data);

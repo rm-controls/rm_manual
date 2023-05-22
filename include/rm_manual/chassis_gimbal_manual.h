@@ -29,7 +29,7 @@ protected:
   void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
   void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data) override;
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override;
-  void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data) override;
+  void capacityDataCallback(const rm_msgs::PowerManagementSampleAndStatusData ::ConstPtr& data) override;
   void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override;
   virtual void wPress()
   {
