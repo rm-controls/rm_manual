@@ -24,8 +24,8 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
       nh_referee.subscribe<rm_msgs::GameRobotHp>("game_robot_hp", 10, &ManualBase::gameRobotHpCallback, this);
   game_status_sub_ =
       nh_referee.subscribe<rm_msgs::GameStatus>("game_status", 10, &ManualBase::gameStatusCallback, this);
-  capacity_sub_ =
-      nh_referee.subscribe<rm_msgs::PowerManagementSampleAndStatusData>("power_management/sample_and_status", 10, &ManualBase::capacityDataCallback, this);
+  capacity_sub_ = nh_referee.subscribe<rm_msgs::PowerManagementSampleAndStatusData>(
+      "power_management/sample_and_status", 10, &ManualBase::capacityDataCallback, this);
   power_heat_data_sub_ =
       nh_referee.subscribe<rm_msgs::PowerHeatData>("power_heat_data", 10, &ManualBase::powerHeatDataCallback, this);
   suggest_fire_sub_ =
@@ -66,7 +66,6 @@ void ManualBase::run()
 {
   checkReferee();
   controller_manager_.update();
-  capacity_is_online_ = ros::Time::now() - capacity_data_.stamp < ros::Duration(0.3);
 }
 
 void ManualBase::checkReferee()
@@ -152,11 +151,6 @@ void ManualBase::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPt
 void ManualBase::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
 {
   referee_last_get_stamp_ = data->stamp;
-}
-
-void ManualBase::capacityDataCallback(const rm_msgs::PowerManagementSampleAndStatusData ::ConstPtr& data)
-{
-  capacity_data_ = *data;
 }
 
 void ManualBase::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)

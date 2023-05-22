@@ -85,7 +85,6 @@ protected:
   virtual void xReleasing();
   virtual void shiftPress();
   virtual void shiftRelease();
-  void bRelease();
   void qPress()
   {
     if (shooter_cmd_sender_->getShootFrequency() != rm_common::HeatLimit::LOW)
