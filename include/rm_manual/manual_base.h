@@ -65,7 +65,7 @@ protected:
   virtual void trackCallback(const rm_msgs::TrackData::ConstPtr& data);
   virtual void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data);
   virtual void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data);
-  virtual void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data);
+  virtual void capacityDataCallback(const rm_msgs::PowerManagementSampleAndStatusData ::ConstPtr& data);
   virtual void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
   {
   }
