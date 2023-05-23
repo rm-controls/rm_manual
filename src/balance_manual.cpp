@@ -100,6 +100,7 @@ void BalanceManual::zPress()
 
 void BalanceManual::xPress()
 {
+  ChassisGimbalShooterCoverManual::xPress();
   chassis_cmd_sender_->updateSafetyPower(100);
 }
 
