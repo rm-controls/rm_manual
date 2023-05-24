@@ -498,9 +498,8 @@ void ChassisGimbalShooterManual::shiftPress()
 void ChassisGimbalShooterManual::shiftRelease()
 {
   if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW ||
-      (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW &&
-       std::sqrt(std::pow(vel_cmd_sender_->getMsg()->linear.x, 2) + std::pow(vel_cmd_sender_->getMsg()->linear.y, 2)) >
-           0.0))
+      std::sqrt(std::pow(vel_cmd_sender_->getMsg()->linear.x, 2) + std::pow(vel_cmd_sender_->getMsg()->linear.y, 2)) >
+          0.0)
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   else
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
