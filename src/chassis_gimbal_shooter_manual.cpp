@@ -70,20 +70,20 @@ void ChassisGimbalShooterManual::checkReferee()
 void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::checkKeyboard(dbus_data);
-  e_event_.update(dbus_data->key_e);
+  e_event_.update(dbus_data->key_e & !dbus_data->key_ctrl);
   c_event_.update((!dbus_data->key_ctrl) & dbus_data->key_c);
-  g_event_.update(dbus_data->key_g);
+  g_event_.update(dbus_data->key_g & !dbus_data->key_ctrl);
   q_event_.update((!dbus_data->key_ctrl) & dbus_data->key_q);
-  f_event_.update(dbus_data->key_f);
+  f_event_.update(dbus_data->key_f & !dbus_data->key_ctrl);
   b_event_.update((!dbus_data->key_ctrl && !dbus_data->key_shift) & dbus_data->key_b);
-  x_event_.update(dbus_data->key_x);
+  x_event_.update(dbus_data->key_x & !dbus_data->key_ctrl);
   r_event_.update((!dbus_data->key_ctrl) & dbus_data->key_r);
   ctrl_v_event_.update(dbus_data->key_ctrl & dbus_data->key_v);
   ctrl_b_event_.update(dbus_data->key_ctrl & dbus_data->key_b & !dbus_data->key_shift);
   shift_event_.update(dbus_data->key_shift & !dbus_data->key_ctrl);
   ctrl_shift_b_event_.update(dbus_data->key_ctrl & dbus_data->key_shift & dbus_data->key_b);
-  mouse_left_event_.update(dbus_data->p_l);
-  mouse_right_event_.update(dbus_data->p_r);
+  mouse_left_event_.update(dbus_data->p_l & !dbus_data->key_ctrl);
+  mouse_right_event_.update(dbus_data->p_r & !dbus_data->key_ctrl);
 }
 
 void ChassisGimbalShooterManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
