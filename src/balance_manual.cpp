@@ -77,10 +77,31 @@ void BalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalShooterCoverManual::checkKeyboard(dbus_data);
   z_event_.update(dbus_data->key_z && !dbus_data->key_ctrl);
-  x_event_.update(dbus_data->key_x && !dbus_data->key_ctrl);
   r_event_.update(dbus_data->key_r && !dbus_data->key_ctrl);
   g_event_.update(dbus_data->key_g && !dbus_data->key_ctrl);
   ctrl_x_event_.update(dbus_data->key_ctrl && dbus_data->key_x);
+}
+
+void BalanceManual::rightSwitchDownRise()
+{
+  ChassisGimbalShooterCoverManual::rightSwitchDownRise();
+  state_ = RC;
+  balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
+}
+
+void BalanceManual::rightSwitchMidRise()
+{
+  ChassisGimbalShooterCoverManual::rightSwitchMidRise();
+  balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
+}
+
+void BalanceManual::ctrlZPress()
+{
+  ChassisGimbalShooterCoverManual::ctrlZPress();
+  if (supply_)
+    balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
+  else
+    balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
 }
 
 void BalanceManual::shiftRelease()
