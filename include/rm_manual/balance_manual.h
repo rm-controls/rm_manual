@@ -14,6 +14,7 @@ public:
   BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
 
 protected:
+  void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void cPress() override;
   void wPress() override;
   void sPress() override;

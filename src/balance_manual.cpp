@@ -82,6 +82,15 @@ void BalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ctrl_x_event_.update(dbus_data->key_ctrl && dbus_data->key_x);
 }
 
+void BalanceManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
+{
+  ChassisGimbalShooterCoverManual::updateRc(dbus_data);
+  if (std::abs(dbus_data->ch_r_x) > 0.5 && std::abs(dbus_data->ch_r_x) > std::abs(dbus_data->ch_r_y))
+    flank_ = true;
+  else if (std::abs(dbus_data->ch_r_y) > 0.5 && std::abs(dbus_data->ch_r_y) > std::abs(dbus_data->ch_r_x))
+    flank_ = false;
+}
+
 void BalanceManual::rightSwitchDownRise()
 {
   ChassisGimbalShooterCoverManual::rightSwitchDownRise();
