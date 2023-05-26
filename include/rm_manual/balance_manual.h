@@ -40,17 +40,14 @@ protected:
   rm_common::BalanceCommandSender* balance_cmd_sender_{};
 
 private:
-  void gyroCPressedCallback();
   void balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& msg);
 
   ros::Subscriber state_sub_;
   double gyro_scale_, balance_dangerous_angle_;
-  ros::Timer gyro_timer_;
 
   bool flank_ = false, reverse_ = false;
   std::string flank_frame_, reverse_frame_;
 
-  RampFilter<double>*ramp_x_{}, *ramp_y_{};
   InputEvent z_event_, g_event_, ctrl_x_event_, auto_fallen_event_;
 };
 }  // namespace rm_manual
