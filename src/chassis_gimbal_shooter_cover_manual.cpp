@@ -168,7 +168,7 @@ void ChassisGimbalShooterCoverManual::ePress()
 
 void ChassisGimbalShooterCoverManual::zPressing()
 {
-  shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::BUFF);
+  shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::MINIMAL);
 }
 
 void ChassisGimbalShooterCoverManual::zRelease()
