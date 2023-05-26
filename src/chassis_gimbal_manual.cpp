@@ -47,7 +47,6 @@ void ChassisGimbalManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ManualBase::updateRc(dbus_data);
   gimbal_cmd_sender_->setRate(-dbus_data->ch_l_x, -dbus_data->ch_l_y);
 }
-
 void ChassisGimbalManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ManualBase::updatePc(dbus_data);
@@ -92,8 +91,6 @@ void ChassisGimbalManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus
 {
   ManualBase::gameRobotStatusCallback(data);
   chassis_cmd_sender_->updateGameRobotStatus(*data);
-  chassis_power_on_event_.update(data->mains_power_chassis_output);
-  gimbal_power_on_event_.update(data->mains_power_gimbal_output);
 }
 
 void ChassisGimbalManual::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)

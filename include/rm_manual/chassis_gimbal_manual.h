@@ -69,6 +69,6 @@ protected:
   double gyro_rotate_reduction_{ 1. };
   double finish_turning_threshold_{};
 
-  InputEvent chassis_power_on_event_, gimbal_power_on_event_, w_event_, s_event_, a_event_, d_event_;
+  InputEvent w_event_, s_event_, a_event_, d_event_;
 };
 }  // namespace rm_manual

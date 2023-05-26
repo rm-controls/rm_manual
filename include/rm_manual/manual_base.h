@@ -21,11 +21,13 @@
 #include <rm_common/ros_utilities.h>
 #include <rm_common/decision/command_sender.h>
 #include <rm_common/decision/controller_manager.h>
+#include <rm_common/decision/calibration_queue.h>
 
 #include <rm_msgs/DbusData.h>
 #include <rm_msgs/TrackData.h>
 #include <rm_msgs/GameStatus.h>
 #include <rm_msgs/GameRobotHp.h>
+#include <rm_msgs/BalanceState.h>
 #include <rm_msgs/CapacityData.h>
 #include <rm_msgs/PowerHeatData.h>
 #include <rm_msgs/ActuatorState.h>
@@ -55,6 +57,8 @@ protected:
   virtual void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data);
   virtual void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data);
   virtual void sendCommand(const ros::Time& time) = 0;
+  virtual void updateActuatorStamp(const rm_msgs::ActuatorState::ConstPtr& data, std::vector<std::string> act_vector,
+                                   ros::Time& last_get_stamp);
 
   virtual void jointStateCallback(const sensor_msgs::JointState::ConstPtr& data);
   virtual void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data);
@@ -68,9 +72,7 @@ protected:
   virtual void odomCallback(const nav_msgs::Odometry::ConstPtr& data)
   {
   }
-  virtual void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
-  {
-  }
+  virtual void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data);
   virtual void gameRobotHpCallback(const rm_msgs::GameRobotHp::ConstPtr& data)
   {
   }
@@ -135,11 +137,15 @@ protected:
   ros::NodeHandle nh_;
 
   ros::Time referee_last_get_stamp_;
-  bool remote_is_open_{}, referee_is_online_ = false;
+  bool remote_is_open_ = false, referee_is_online_ = false;
   int state_ = PASSIVE;
   int robot_id_, chassis_power_;
   InputEvent robot_hp_event_, right_switch_down_event_, right_switch_mid_event_, right_switch_up_event_,
       left_switch_down_event_, left_switch_mid_event_, left_switch_up_event_;
+
+  InputEvent chassis_power_on_event_, gimbal_power_on_event_, shooter_power_on_event_;
+  ros::Time chassis_actuator_last_get_stamp_, gimbal_actuator_last_get_stamp_, shooter_actuator_last_get_stamp_;
+  std::vector<std::string> chassis_mount_motor_, gimbal_mount_motor_, shooter_mount_motor_;
 };
 
 }  // namespace rm_manual

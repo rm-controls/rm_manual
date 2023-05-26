@@ -43,6 +43,23 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   left_switch_mid_event_.setEdge(boost::bind(&ManualBase::leftSwitchMidRise, this),
                                  boost::bind(&ManualBase::leftSwitchMidFall, this));
   robot_hp_event_.setEdge(boost::bind(&ManualBase::robotRevive, this), boost::bind(&ManualBase::robotDie, this));
+
+  XmlRpc::XmlRpcValue xml;
+  if (!nh.getParam("chassis_calibrate_motor", xml))
+    ROS_ERROR("chassis_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
+  else
+    for (int i = 0; i < xml.size(); i++)
+      chassis_mount_motor_.push_back(xml[i]);
+  if (!nh.getParam("gimbal_calibrate_motor", xml))
+    ROS_ERROR("gimbal_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
+  else
+    for (int i = 0; i < xml.size(); i++)
+      gimbal_mount_motor_.push_back(xml[i]);
+  if (!nh.getParam("shooter_calibrate_motor", xml))
+    ROS_ERROR("shooter_calibrate_motor no defined (namespace: %s)", nh.getNamespace().c_str());
+  else
+    for (int i = 0; i < xml.size(); i++)
+      shooter_mount_motor_.push_back(xml[i]);
 }
 
 void ManualBase::run()
@@ -53,8 +70,28 @@ void ManualBase::run()
 
 void ManualBase::checkReferee()
 {
+  gimbal_power_on_event_.update((ros::Time::now() - gimbal_actuator_last_get_stamp_) < ros::Duration(2.5));
+  shooter_power_on_event_.update((ros::Time::now() - shooter_actuator_last_get_stamp_) < ros::Duration(2.5));
   referee_is_online_ = (ros::Time::now() - referee_last_get_stamp_ < ros::Duration(0.3));
   manual_to_referee_pub_.publish(manual_to_referee_pub_data_);
+}
+
+void ManualBase::updateActuatorStamp(const rm_msgs::ActuatorState::ConstPtr& data, std::vector<std::string> act_vector,
+                                     ros::Time& last_get_stamp)
+{
+  int dis;
+  for (long unsigned int i = 0; i < act_vector.size(); i++)
+  {
+    auto it = std::find(data->name.begin(), data->name.end(), act_vector.at(i));
+    if (it == data->name.end())
+    {
+      ROS_WARN("can't find actuator named \"%s\" in ActuatorStateData", act_vector.at(i).c_str());
+      continue;
+    }
+    dis = std::distance(data->name.begin(), it);
+    if (data->stamp.at(dis) > last_get_stamp)
+      last_get_stamp = data->stamp.at(dis);
+  }
 }
 
 void ManualBase::jointStateCallback(const sensor_msgs::JointState::ConstPtr& data)
@@ -62,9 +99,15 @@ void ManualBase::jointStateCallback(const sensor_msgs::JointState::ConstPtr& dat
   joint_state_ = *data;
 }
 
+void ManualBase::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
+{
+  updateActuatorStamp(data, gimbal_mount_motor_, gimbal_actuator_last_get_stamp_);
+  updateActuatorStamp(data, shooter_mount_motor_, shooter_actuator_last_get_stamp_);
+}
+
 void ManualBase::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
-  if (ros::Time::now() - data->stamp < ros::Duration(0.2))
+  if (ros::Time::now() - data->stamp < ros::Duration(1.0))
   {
     if (!remote_is_open_)
     {

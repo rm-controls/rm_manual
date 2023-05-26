@@ -184,4 +184,5 @@ void ChassisGimbalShooterCoverManual::ctrlQPress()
   ChassisGimbalShooterManual::ctrlQPress();
   gimbal_calibration_->reset();
 }
+
 }  // namespace rm_manual

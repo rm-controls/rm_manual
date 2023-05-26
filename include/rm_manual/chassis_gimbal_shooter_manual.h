@@ -76,13 +76,15 @@ protected:
   void sRelease() override;
   void dRelease() override;
 
+  virtual void gPress();
+  virtual void xPress();
   virtual void ePress();
+  virtual void cPress();
+  virtual void bPress();
   virtual void rPress();
-  void cPress();
-  void bPress();
-  void xPress();
-  void xReleasing();
-  void gPress();
+  virtual void xReleasing();
+  virtual void shiftPress();
+  virtual void shiftRelease();
   void qPress()
   {
     if (shooter_cmd_sender_->getShootFrequency() != rm_common::HeatLimit::LOW)
@@ -94,8 +96,6 @@ protected:
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   }
-  void shiftPress();
-  void shiftRelease();
   void ctrlVPress();
   void ctrlBPress();
   virtual void ctrlQPress();
@@ -111,7 +111,7 @@ protected:
 
   geometry_msgs::PointStamped point_out_;
 
-  bool prepare_shoot_ = false, turn_flag_ = false;
+  bool prepare_shoot_ = false, turn_flag_ = false, is_balance_ = false;
   double yaw_current_{};
 };
 }  // namespace rm_manual
