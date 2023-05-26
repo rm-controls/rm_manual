@@ -25,14 +25,6 @@ BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   auto_fallen_event_.setActiveHigh(boost::bind(&BalanceManual::modeFallen, this, _1));
   auto_fallen_event_.setDelayTriggered(boost::bind(&BalanceManual::modeNormalize, this), 1.5, true);
   ctrl_x_event_.setRising(boost::bind(&BalanceManual::ctrlXPress, this));
-
-  ramp_x_ = new RampFilter<double>(0, 0.01);
-  ramp_x_->setAcc(10);
-  ramp_y_ = new RampFilter<double>(0, 0.01);
-  ramp_y_->setAcc(10);
-
-  gyro_timer_ =
-      nh.createTimer(ros::Duration(0.03), std::bind(&BalanceManual::gyroCPressedCallback, this), false, false);
 }
 
 void BalanceManual::sendCommand(const ros::Time& time)
@@ -138,109 +130,60 @@ void BalanceManual::gPress()
 {
 }
 
-void BalanceManual::cPress()
-{
-  if (is_gyro_)
-  {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    vel_cmd_sender_->setAngularZVel(0.0);
-    is_gyro_ = false;
-  }
-  else
-  {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-    gyro_scale_ = 0.0;
-    is_gyro_ = true;
-    gyro_timer_.start();
-  }
-}
-
 void BalanceManual::wPress()
 {
   if (flank_)
     flank_ = !flank_;
-  ramp_x_->clear();
+  ChassisGimbalShooterCoverManual::wPress();
 }
 
 void BalanceManual::wPressing()
 {
   if (flank_)
     flank_ = !flank_;
-  double final_x_scale;
-  ramp_x_->input(1.0);
-  final_x_scale = ramp_x_->output();
-  vel_cmd_sender_->setLinearXVel(final_x_scale > 1.0 ? 1.0 : final_x_scale);
+  ChassisGimbalShooterCoverManual::wPressing();
 }
 
 void BalanceManual::sPress()
 {
   if (flank_)
     flank_ = !flank_;
-  ramp_x_->clear();
+  ChassisGimbalShooterCoverManual::sPress();
 }
 
 void BalanceManual::sPressing()
 {
   if (flank_)
     flank_ = !flank_;
-  double final_x_scale;
-  ramp_x_->input(1.0);
-  final_x_scale = -ramp_x_->output();
-  vel_cmd_sender_->setLinearXVel(final_x_scale < -1.0 ? -1.0 : final_x_scale);
+  ChassisGimbalShooterCoverManual::sPressing();
 }
 
 void BalanceManual::aPress()
 {
   if (!flank_)
     flank_ = !flank_;
-  ramp_y_->clear();
+  ChassisGimbalShooterCoverManual::aPress();
 }
 
 void BalanceManual::aPressing()
 {
   if (!flank_)
     flank_ = !flank_;
-  double final_y_scale;
-  ramp_y_->input(1.0);
-  final_y_scale = ramp_y_->output();
-  vel_cmd_sender_->setLinearYVel(final_y_scale > 1.0 ? 1.0 : final_y_scale);
+  ChassisGimbalShooterCoverManual::aPressing();
 }
 
 void BalanceManual::dPress()
 {
   if (!flank_)
     flank_ = !flank_;
-  ramp_y_->clear();
+  ChassisGimbalShooterCoverManual::dPress();
 }
 
 void BalanceManual::dPressing()
 {
   if (!flank_)
     flank_ = !flank_;
-  double final_y_scale;
-  ramp_y_->input(1.0);
-  final_y_scale = -ramp_y_->output();
-  vel_cmd_sender_->setLinearYVel(final_y_scale < -1.0 ? -1.0 : final_y_scale);
-}
-
-void BalanceManual::wRelease()
-{
-  vel_cmd_sender_->setLinearXVel(0);
-}
-
-void BalanceManual::sRelease()
-{
-  vel_cmd_sender_->setLinearXVel(0);
-}
-
-void BalanceManual::aRelease()
-{
-  vel_cmd_sender_->setLinearYVel(0);
-}
-
-void BalanceManual::dRelease()
-{
-  vel_cmd_sender_->setLinearYVel(0);
+  ChassisGimbalShooterCoverManual::dPressing();
 }
 
 void BalanceManual::ctrlXPress()
@@ -262,21 +205,6 @@ void BalanceManual::balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& 
                                 vel_cmd_sender_->getMsg()->linear.x == 0 && vel_cmd_sender_->getMsg()->linear.y == 0 &&
                                 vel_cmd_sender_->getMsg()->angular.z == 0);
   }
-}
-
-void BalanceManual::gyroCPressedCallback()
-{
-  if ((gyro_scale_ >= 1.0 && is_gyro_) || (gyro_scale_ <= 0 && !is_gyro_))
-  {
-    gyro_timer_.stop();
-    return;
-  }
-
-  if (is_gyro_)
-    gyro_scale_ = gyro_scale_ + 10 * 0.01 > 1.0 ? 1.0 : gyro_scale_ + 10 * 0.01;
-  else
-    gyro_scale_ = gyro_scale_ - 10 * 0.01 < 0 ? 0 : gyro_scale_ - 10 * 0.01;
-  vel_cmd_sender_->setAngularZVel(gyro_scale_);
 }
 
 void BalanceManual::modeNormalize()

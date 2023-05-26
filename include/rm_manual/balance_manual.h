@@ -15,7 +15,6 @@ public:
 
 protected:
   void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
-  void cPress() override;
   void wPress() override;
   void sPress() override;
   void aPress() override;
@@ -26,10 +25,6 @@ protected:
   void aPressing() override;
   void sPressing() override;
   void dPressing() override;
-  void wRelease() override;
-  void sRelease() override;
-  void aRelease() override;
-  void dRelease() override;
   void xPress() override;
   void gPress() override;
   void ctrlZPress() override;
