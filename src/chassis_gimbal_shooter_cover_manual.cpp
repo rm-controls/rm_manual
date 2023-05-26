@@ -21,6 +21,8 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   gimbal_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   ctrl_z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this),
                         boost::bind(&ChassisGimbalShooterCoverManual::ctrlZRelease, this));
+  z_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterCoverManual::zPressing, this));
+  z_event_.setFalling(boost::bind(&ChassisGimbalShooterCoverManual::zRelease, this));
 }
 
 void ChassisGimbalShooterCoverManual::run()
@@ -49,6 +51,7 @@ void ChassisGimbalShooterCoverManual::checkKeyboard(const rm_msgs::DbusData::Con
 {
   ChassisGimbalShooterManual::checkKeyboard(dbus_data);
   ctrl_z_event_.update(dbus_data->key_ctrl & dbus_data->key_z);
+  z_event_.update((!dbus_data->key_ctrl) & dbus_data->key_z);
 }
 
 void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
@@ -159,6 +162,16 @@ void ChassisGimbalShooterCoverManual::ePress()
   switch_buff_srv_->callService();
   switch_detection_srv_->callService();
   switch_buff_type_srv_->callService();
+}
+
+void ChassisGimbalShooterCoverManual::zPressing()
+{
+  shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::MINIMAL);
+}
+
+void ChassisGimbalShooterCoverManual::zRelease()
+{
+  shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::LOW);
 }
 
 void ChassisGimbalShooterCoverManual::ctrlZPress()
