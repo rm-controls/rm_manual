@@ -41,6 +41,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
+  ctrl_q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlQPress, this));
   shift_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::shiftPress, this),
                        boost::bind(&ChassisGimbalShooterManual::shiftRelease, this));
   mouse_left_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseLeftPress, this));
@@ -80,6 +81,7 @@ void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr
   r_event_.update((!dbus_data->key_ctrl) & dbus_data->key_r);
   ctrl_v_event_.update(dbus_data->key_ctrl & dbus_data->key_v);
   ctrl_b_event_.update(dbus_data->key_ctrl & dbus_data->key_b & !dbus_data->key_shift);
+  ctrl_q_event_.update(dbus_data->key_ctrl & dbus_data->key_q);
   shift_event_.update(dbus_data->key_shift & !dbus_data->key_ctrl);
   ctrl_shift_b_event_.update(dbus_data->key_ctrl & dbus_data->key_shift & dbus_data->key_b);
   mouse_left_event_.update(dbus_data->p_l & !dbus_data->key_ctrl);
@@ -519,4 +521,8 @@ void ChassisGimbalShooterManual::ctrlBPress()
   switch_detection_srv_->callService();
 }
 
+void ChassisGimbalShooterManual::ctrlQPress()
+{
+  shooter_calibration_->reset();
+}
 }  // namespace rm_manual
