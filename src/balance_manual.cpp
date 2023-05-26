@@ -19,7 +19,6 @@ BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 
   is_balance_ = true;
   state_sub_ = balance_nh.subscribe<rm_msgs::BalanceState>("/state", 1, &BalanceManual::balanceStateCallback, this);
-  z_event_.setRising(boost::bind(&BalanceManual::zPress, this));
   x_event_.setRising(boost::bind(&BalanceManual::xPress, this));
   g_event_.setRising(boost::bind(&BalanceManual::gPress, this));
   auto_fallen_event_.setActiveHigh(boost::bind(&BalanceManual::modeFallen, this, _1));
@@ -115,7 +114,7 @@ void BalanceManual::shiftPress()
   chassis_cmd_sender_->updateSafetyPower(60);
 }
 
-void BalanceManual::zPress()
+void BalanceManual::gPress()
 {
   chassis_cmd_sender_->updateSafetyPower(80);
 }
@@ -124,10 +123,6 @@ void BalanceManual::xPress()
 {
   ChassisGimbalShooterCoverManual::xPress();
   chassis_cmd_sender_->updateSafetyPower(100);
-}
-
-void BalanceManual::gPress()
-{
 }
 
 void BalanceManual::wPress()

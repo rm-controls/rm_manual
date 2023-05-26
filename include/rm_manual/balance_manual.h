@@ -33,7 +33,6 @@ protected:
 
   void sendCommand(const ros::Time& time) override;
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
-  void zPress();
   void ctrlXPress();
   void modeFallen(ros::Duration duration);
   void modeNormalize();
@@ -43,7 +42,7 @@ private:
   void balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& msg);
 
   ros::Subscriber state_sub_;
-  double gyro_scale_, balance_dangerous_angle_;
+  double balance_dangerous_angle_;
 
   bool flank_ = false, reverse_ = false;
   std::string flank_frame_, reverse_frame_;
