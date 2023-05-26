@@ -34,12 +34,12 @@ protected:
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   };
-  void ctrlQPress();
+  void ctrlQPress() override;
   rm_common::SwitchDetectionCaller* switch_buff_srv_{};
   rm_common::SwitchDetectionCaller* switch_buff_type_srv_{};
   rm_common::JointPositionBinaryCommandSender* cover_command_sender_{};
   rm_common::CalibrationQueue* gimbal_calibration_;
-  InputEvent ctrl_z_event_, ctrl_q_event_, z_event_;
+  InputEvent ctrl_z_event_, z_event_;
   std::string supply_frame_;
   bool supply_ = false;
   bool cover_close_ = true;

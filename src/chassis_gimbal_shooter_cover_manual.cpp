@@ -21,7 +21,6 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   gimbal_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   ctrl_z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this),
                         boost::bind(&ChassisGimbalShooterCoverManual::ctrlZRelease, this));
-  ctrl_q_event_.setRising(boost::bind(&ChassisGimbalShooterCoverManual::ctrlQPress, this));
   z_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterCoverManual::zPressing, this));
   z_event_.setFalling(boost::bind(&ChassisGimbalShooterCoverManual::zRelease, this));
 }
@@ -52,7 +51,6 @@ void ChassisGimbalShooterCoverManual::checkKeyboard(const rm_msgs::DbusData::Con
 {
   ChassisGimbalShooterManual::checkKeyboard(dbus_data);
   ctrl_z_event_.update(dbus_data->key_ctrl & dbus_data->key_z);
-  ctrl_q_event_.update(dbus_data->key_ctrl & dbus_data->key_q);
   z_event_.update((!dbus_data->key_ctrl) & dbus_data->key_z);
 }
 
@@ -183,6 +181,7 @@ void ChassisGimbalShooterCoverManual::ctrlZPress()
 
 void ChassisGimbalShooterCoverManual::ctrlQPress()
 {
+  ChassisGimbalShooterManual::ctrlQPress();
   gimbal_calibration_->reset();
 }
 }  // namespace rm_manual
