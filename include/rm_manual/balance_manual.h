@@ -25,32 +25,28 @@ protected:
   void aPressing() override;
   void sPressing() override;
   void dPressing() override;
-  void xPress() override;
-  void gPress() override;
+  void bPress() override;
   void ctrlZPress() override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
 
   void sendCommand(const ros::Time& time) override;
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
-  void zPress();
+  void vPress();
   void ctrlXPress();
   void modeFallen(ros::Duration duration);
   void modeNormalize();
   rm_common::BalanceCommandSender* balance_cmd_sender_{};
 
 private:
-  void gyroCPressedCallback();
   void balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& msg);
 
   ros::Subscriber state_sub_;
-  double gyro_scale_, balance_dangerous_angle_;
-  ros::Timer gyro_timer_;
+  double balance_dangerous_angle_;
 
   bool flank_ = false, reverse_ = false;
   std::string flank_frame_, reverse_frame_;
 
-  RampFilter<double>*ramp_x_{}, *ramp_y_{};
-  InputEvent z_event_, g_event_, ctrl_x_event_, auto_fallen_event_;
+  InputEvent v_event_, ctrl_x_event_, auto_fallen_event_;
 };
 }  // namespace rm_manual

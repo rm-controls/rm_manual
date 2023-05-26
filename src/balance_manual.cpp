@@ -19,9 +19,9 @@ BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 
   is_balance_ = true;
   state_sub_ = balance_nh.subscribe<rm_msgs::BalanceState>("/state", 1, &BalanceManual::balanceStateCallback, this);
-  z_event_.setRising(boost::bind(&BalanceManual::zPress, this));
   x_event_.setRising(boost::bind(&BalanceManual::xPress, this));
   g_event_.setRising(boost::bind(&BalanceManual::gPress, this));
+  v_event_.setRising(boost::bind(&BalanceManual::vPress, this));
   auto_fallen_event_.setActiveHigh(boost::bind(&BalanceManual::modeFallen, this, _1));
   auto_fallen_event_.setDelayTriggered(boost::bind(&BalanceManual::modeNormalize, this), 1.5, true);
   ctrl_x_event_.setRising(boost::bind(&BalanceManual::ctrlXPress, this));
@@ -68,9 +68,7 @@ void BalanceManual::sendCommand(const ros::Time& time)
 void BalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalShooterCoverManual::checkKeyboard(dbus_data);
-  z_event_.update(dbus_data->key_z && !dbus_data->key_ctrl);
-  r_event_.update(dbus_data->key_r && !dbus_data->key_ctrl);
-  g_event_.update(dbus_data->key_g && !dbus_data->key_ctrl);
+  v_event_.update(dbus_data->key_v && !dbus_data->key_ctrl);
   ctrl_x_event_.update(dbus_data->key_ctrl && dbus_data->key_x);
 }
 
@@ -115,19 +113,15 @@ void BalanceManual::shiftPress()
   chassis_cmd_sender_->updateSafetyPower(60);
 }
 
-void BalanceManual::zPress()
+void BalanceManual::vPress()
 {
   chassis_cmd_sender_->updateSafetyPower(80);
 }
 
-void BalanceManual::xPress()
+void BalanceManual::bPress()
 {
-  ChassisGimbalShooterCoverManual::xPress();
+  ChassisGimbalShooterCoverManual::bPress();
   chassis_cmd_sender_->updateSafetyPower(100);
-}
-
-void BalanceManual::gPress()
-{
 }
 
 void BalanceManual::wPress()
