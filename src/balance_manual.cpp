@@ -43,21 +43,8 @@ void BalanceManual::sendCommand(const ros::Time& time)
   }
   else
   {
+    cover_close_ = true;
     cover_command_sender_->off();
-    if (!cover_close_)
-    {
-      try
-      {
-        double roll, pitch, yaw;
-        quatToRPY(tf_buffer_.lookupTransform("base_link", "cover", ros::Time(0)).transform.rotation, roll, pitch, yaw);
-        if (yaw - cover_command_sender_->getMsg()->data < 0.05)
-          cover_close_ = true;
-      }
-      catch (tf2::TransformException& ex)
-      {
-        ROS_WARN("%s", ex.what());
-      }
-    }
   }
 
   ChassisGimbalShooterManual::sendCommand(time);
