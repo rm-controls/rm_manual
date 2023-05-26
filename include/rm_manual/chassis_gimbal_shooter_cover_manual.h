@@ -27,6 +27,8 @@ protected:
   void rightSwitchUpRise() override;
   void rPress() override;
   void ePress() override;
+  void zPressing();
+  void zRelease();
   virtual void ctrlZPress();
   virtual void ctrlZRelease()
   {
