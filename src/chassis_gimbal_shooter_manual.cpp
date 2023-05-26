@@ -81,6 +81,7 @@ void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr
   r_event_.update((!dbus_data->key_ctrl) & dbus_data->key_r);
   ctrl_v_event_.update(dbus_data->key_ctrl & dbus_data->key_v);
   ctrl_b_event_.update(dbus_data->key_ctrl & dbus_data->key_b & !dbus_data->key_shift);
+  ctrl_q_event_.update(dbus_data->key_ctrl & dbus_data->key_q);
   shift_event_.update(dbus_data->key_shift & !dbus_data->key_ctrl);
   ctrl_shift_b_event_.update(dbus_data->key_ctrl & dbus_data->key_shift & dbus_data->key_b);
   mouse_left_event_.update(dbus_data->p_l);

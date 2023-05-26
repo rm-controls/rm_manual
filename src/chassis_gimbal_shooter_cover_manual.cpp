@@ -49,7 +49,6 @@ void ChassisGimbalShooterCoverManual::checkKeyboard(const rm_msgs::DbusData::Con
 {
   ChassisGimbalShooterManual::checkKeyboard(dbus_data);
   ctrl_z_event_.update(dbus_data->key_ctrl & dbus_data->key_z);
-  ctrl_q_event_.update(dbus_data->key_ctrl & dbus_data->key_q);
 }
 
 void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
