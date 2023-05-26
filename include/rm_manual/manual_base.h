@@ -34,6 +34,7 @@
 #include <rm_msgs/GimbalDesError.h>
 #include <rm_msgs/GameRobotStatus.h>
 #include <rm_msgs/ManualToReferee.h>
+#include <rm_msgs/PowerManagementSampleAndStatusData.h>
 #include "rm_manual/input_event.h"
 
 namespace rm_manual
@@ -65,7 +66,9 @@ protected:
   virtual void trackCallback(const rm_msgs::TrackData::ConstPtr& data);
   virtual void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data);
   virtual void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data);
-  virtual void capacityDataCallback(const rm_msgs::CapacityData ::ConstPtr& data);
+  virtual void capacityDataCallback(const rm_msgs::PowerManagementSampleAndStatusData::ConstPtr& data)
+  {
+  }
   virtual void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
   {
   }
@@ -137,7 +140,7 @@ protected:
   ros::NodeHandle nh_;
 
   ros::Time referee_last_get_stamp_;
-  bool remote_is_open_ = false, referee_is_online_ = false;
+  bool remote_is_open_{}, referee_is_online_ = false;
   int state_ = PASSIVE;
   int robot_id_, chassis_power_;
   InputEvent robot_hp_event_, right_switch_down_event_, right_switch_mid_event_, right_switch_up_event_,

@@ -146,12 +146,15 @@ void ChassisGimbalShooterCoverManual::rPress()
 {
   if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
   {
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
     if (switch_buff_type_srv_->getTarget() == rm_msgs::StatusChangeRequest::SMALL_BUFF)
       switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::BIG_BUFF);
     else
       switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::SMALL_BUFF);
     switch_buff_type_srv_->callService();
   }
+  else
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
 }
 
 void ChassisGimbalShooterCoverManual::ePress()
@@ -176,6 +179,10 @@ void ChassisGimbalShooterCoverManual::zRelease()
 
 void ChassisGimbalShooterCoverManual::ctrlZPress()
 {
+  if (!cover_command_sender_->getState())
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
+  else
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   supply_ = !cover_command_sender_->getState();
 }
 
