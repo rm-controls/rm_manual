@@ -77,10 +77,40 @@ void BalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalShooterCoverManual::checkKeyboard(dbus_data);
   z_event_.update(dbus_data->key_z && !dbus_data->key_ctrl);
-  x_event_.update(dbus_data->key_x && !dbus_data->key_ctrl);
   r_event_.update(dbus_data->key_r && !dbus_data->key_ctrl);
   g_event_.update(dbus_data->key_g && !dbus_data->key_ctrl);
   ctrl_x_event_.update(dbus_data->key_ctrl && dbus_data->key_x);
+}
+
+void BalanceManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
+{
+  ChassisGimbalShooterCoverManual::updateRc(dbus_data);
+  if (std::abs(dbus_data->ch_r_x) > 0.5 && std::abs(dbus_data->ch_r_x) > std::abs(dbus_data->ch_r_y))
+    flank_ = true;
+  else if (std::abs(dbus_data->ch_r_y) > 0.5 && std::abs(dbus_data->ch_r_y) > std::abs(dbus_data->ch_r_x))
+    flank_ = false;
+}
+
+void BalanceManual::rightSwitchDownRise()
+{
+  ChassisGimbalShooterCoverManual::rightSwitchDownRise();
+  state_ = RC;
+  balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
+}
+
+void BalanceManual::rightSwitchMidRise()
+{
+  ChassisGimbalShooterCoverManual::rightSwitchMidRise();
+  balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
+}
+
+void BalanceManual::ctrlZPress()
+{
+  ChassisGimbalShooterCoverManual::ctrlZPress();
+  if (supply_)
+    balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
+  else
+    balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
 }
 
 void BalanceManual::shiftRelease()
@@ -100,6 +130,7 @@ void BalanceManual::zPress()
 
 void BalanceManual::xPress()
 {
+  ChassisGimbalShooterCoverManual::xPress();
   chassis_cmd_sender_->updateSafetyPower(100);
 }
 
