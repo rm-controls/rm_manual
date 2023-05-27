@@ -60,7 +60,6 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
   scale_micro_ = getParam(nh_left_pitch, "scale_micro", 0.);
   upward_vel_ = getParam(nh_trigger, "upward_vel", 0.);
   trigger_sender_ = new rm_common::JointPointCommandSender(nh_trigger, joint_state_);
-
   friction_left_sender_ = new rm_common::JointPointCommandSender(nh_friction_left, joint_state_);
   friction_right_sender_ = new rm_common::JointPointCommandSender(nh_friction_right, joint_state_);
   XmlRpc::XmlRpcValue trigger_rpc_value, gimbal_rpc_value;
@@ -97,11 +96,13 @@ void DartManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPt
   ManualBase::gameRobotStatusCallback(data);
   game_robot_status_ = *data;
 }
+
 void DartManual::gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data)
 {
   ManualBase::gameStatusCallback(data);
   game_status_ = *data;
 }
+
 void DartManual::sendCommand(const ros::Time& time)
 {
   friction_left_sender_->sendCommand(time);
@@ -335,10 +336,12 @@ void DartManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
   wheel_anticlockwise_event_.update(data->wheel == -1.0);
   dbus_data_ = *data;
 }
+
 void DartManual::dartClientCmdCallback(const rm_msgs::DartClientCmd::ConstPtr& data)
 {
   dart_client_cmd_ = *data;
 }
+
 void DartManual::gameRobotHpCallback(const rm_msgs::GameRobotHp::ConstPtr& data)
 {
   switch (game_robot_status_.robot_id)
@@ -355,6 +358,7 @@ void DartManual::gameRobotHpCallback(const rm_msgs::GameRobotHp::ConstPtr& data)
   else
     auto_state_ = BASE;
 }
+
 void DartManual::wheelClockwise()
 {
   switch (move_state_)
@@ -371,6 +375,7 @@ void DartManual::wheelClockwise()
       break;
   }
 }
+
 void DartManual::wheelAntiClockwise()
 {
   switch (manual_state_)
