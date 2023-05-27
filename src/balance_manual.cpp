@@ -77,11 +77,11 @@ void BalanceManual::sendCommand(const ros::Time& time)
   {
     switch (control_method_)
     {
-      case ControlMethod::LQR:
+      case rm_msgs::ManualToReferee::LQR:
         controller_manager_.startControllers(lqr_controllers_);
         controller_manager_.stopControllers(mpc_controllers_);
         break;
-      case ControlMethod::MPC:
+      case rm_msgs::ManualToReferee::MPC:
         controller_manager_.startControllers(mpc_controllers_);
         controller_manager_.stopControllers(lqr_controllers_);
         break;
@@ -91,7 +91,7 @@ void BalanceManual::sendCommand(const ros::Time& time)
   cover_command_sender_->sendCommand(time);
   balance_cmd_sender_->sendCommand(time);
 
-  if (control_method_ == ControlMethod::MPC)
+  if (control_method_ == rm_msgs::ManualToReferee::MPC)
   {
     left_momentum_block_cmd_sender_->getMsg()->data = 0;
     right_momentum_block_cmd_sender_->getMsg()->data = 0;
@@ -106,11 +106,11 @@ void BalanceManual::remoteControlTurnOn()
   ChassisGimbalShooterCoverManual::remoteControlTurnOn();
   switch (control_method_)
   {
-    case ControlMethod::LQR:
+    case rm_msgs::ManualToReferee::LQR:
       controller_manager_.startControllers(lqr_controllers_);
       controller_manager_.stopControllers(mpc_controllers_);
       break;
-    case ControlMethod::MPC:
+    case rm_msgs::ManualToReferee::MPC:
       controller_manager_.startControllers(mpc_controllers_);
       controller_manager_.stopControllers(lqr_controllers_);
       break;
@@ -129,6 +129,12 @@ void BalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ChassisGimbalShooterCoverManual::checkKeyboard(dbus_data);
   v_event_.update(dbus_data->key_v && !dbus_data->key_ctrl);
   ctrl_x_event_.update(dbus_data->key_ctrl && dbus_data->key_x);
+}
+
+void BalanceManual::checkReferee()
+{
+  manual_to_referee_pub_data_.balance_control_method = control_method_;
+  ChassisGimbalShooterCoverManual::checkReferee();
 }
 
 void BalanceManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -164,13 +170,13 @@ void BalanceManual::ctrlZPress()
 
 void BalanceManual::shiftRelease()
 {
-  control_method_ = ControlMethod::MPC;
+  control_method_ = rm_msgs::ManualToReferee::MPC;
   control_method_change_ = true;
 }
 
 void BalanceManual::shiftPress()
 {
-  control_method_ = ControlMethod::LQR;
+  control_method_ = rm_msgs::ManualToReferee::LQR;
   control_method_change_ = true;
   ChassisGimbalShooterCoverManual::shiftPress();
   chassis_cmd_sender_->updateSafetyPower(60);
