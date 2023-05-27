@@ -13,9 +13,35 @@ BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   balance_cmd_sender_ = new rm_common::BalanceCommandSender(balance_nh);
   balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
 
+  ros::NodeHandle left_block_nh(nh, "left_momentum_block");
+  left_momentum_block_cmd_sender_ = new rm_common::JointPointCommandSender(left_block_nh, joint_state_);
+  ros::NodeHandle right_block_nh(nh, "right_momentum_block");
+  right_momentum_block_cmd_sender_ = new rm_common::JointPointCommandSender(right_block_nh, joint_state_);
+
   nh.param("flank_frame", flank_frame_, std::string("flank_frame"));
   nh.param("reverse_frame", reverse_frame_, std::string("yaw_reverse_frame"));
   nh.param("balance_dangerous_angle", balance_dangerous_angle_, 0.3);
+
+  XmlRpc::XmlRpcValue rpc_value;
+  nh.getParam("shooter_calibration", rpc_value);
+
+  XmlRpc::XmlRpcValue controllers;
+  if (nh.getParam("lqr_controllers", controllers))
+    for (int i = 0; i < controllers.size(); ++i)
+    {
+      lqr_controllers_.push_back(controllers[i]);
+      controller_manager_.loadController(lqr_controllers_.back());
+    }
+  else
+    ROS_ERROR("can't get lqr_controllers in ns: %s", nh.getNamespace().c_str());
+  if (nh.getParam("mpc_controllers", controllers))
+    for (int i = 0; i < controllers.size(); ++i)
+    {
+      mpc_controllers_.push_back(controllers[i]);
+      controller_manager_.loadController(mpc_controllers_.back());
+    }
+  else
+    ROS_ERROR("can't get mpc_controllers in ns: %s", nh.getNamespace().c_str());
 
   is_balance_ = true;
   state_sub_ = balance_nh.subscribe<rm_msgs::BalanceState>("/state", 1, &BalanceManual::balanceStateCallback, this);
@@ -47,9 +73,55 @@ void BalanceManual::sendCommand(const ros::Time& time)
     cover_command_sender_->off();
   }
 
-  ChassisGimbalShooterManual::sendCommand(time);
+  if (control_method_change_)
+  {
+    switch (control_method_)
+    {
+      case ControlMethod::LQR:
+        controller_manager_.startControllers(lqr_controllers_);
+        controller_manager_.stopControllers(mpc_controllers_);
+        break;
+      case ControlMethod::MPC:
+        controller_manager_.startControllers(mpc_controllers_);
+        controller_manager_.stopControllers(lqr_controllers_);
+        break;
+    }
+    control_method_change_ = false;
+  }
   cover_command_sender_->sendCommand(time);
   balance_cmd_sender_->sendCommand(time);
+
+  if (control_method_ == ControlMethod::MPC)
+  {
+    left_momentum_block_cmd_sender_->getMsg()->data = 0;
+    right_momentum_block_cmd_sender_->getMsg()->data = 0;
+    left_momentum_block_cmd_sender_->sendCommand(time);
+    right_momentum_block_cmd_sender_->sendCommand(time);
+  }
+  ChassisGimbalShooterManual::sendCommand(time);
+}
+
+void BalanceManual::remoteControlTurnOn()
+{
+  ChassisGimbalShooterCoverManual::remoteControlTurnOn();
+  switch (control_method_)
+  {
+    case ControlMethod::LQR:
+      controller_manager_.startControllers(lqr_controllers_);
+      controller_manager_.stopControllers(mpc_controllers_);
+      break;
+    case ControlMethod::MPC:
+      controller_manager_.startControllers(mpc_controllers_);
+      controller_manager_.stopControllers(lqr_controllers_);
+      break;
+  }
+}
+
+void BalanceManual::remoteControlTurnOff()
+{
+  ChassisGimbalShooterCoverManual::remoteControlTurnOff();
+  controller_manager_.stopControllers(mpc_controllers_);
+  controller_manager_.stopControllers(lqr_controllers_);
 }
 
 void BalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -92,10 +164,14 @@ void BalanceManual::ctrlZPress()
 
 void BalanceManual::shiftRelease()
 {
+  control_method_ = ControlMethod::MPC;
+  control_method_change_ = true;
 }
 
 void BalanceManual::shiftPress()
 {
+  control_method_ = ControlMethod::LQR;
+  control_method_change_ = true;
   ChassisGimbalShooterCoverManual::shiftPress();
   chassis_cmd_sender_->updateSafetyPower(60);
 }

@@ -12,6 +12,11 @@ class BalanceManual : public ChassisGimbalShooterCoverManual
 {
 public:
   BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
+  enum ControlMethod
+  {
+    LQR,
+    MPC
+  };
 
 protected:
   void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
@@ -29,6 +34,8 @@ protected:
   void ctrlZPress() override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
+  void remoteControlTurnOn() override;
+  void remoteControlTurnOff() override;
 
   void sendCommand(const ros::Time& time) override;
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
@@ -42,7 +49,11 @@ private:
   void balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& msg);
 
   ros::Subscriber state_sub_;
+  bool control_method_change_ = false;
+  int control_method_ = ControlMethod::MPC;
   double balance_dangerous_angle_;
+  std::vector<std::string> mpc_controllers_, lqr_controllers_;
+  rm_common::JointPointCommandSender *left_momentum_block_cmd_sender_{}, *right_momentum_block_cmd_sender_{};
 
   bool flank_ = false, reverse_ = false;
   std::string flank_frame_, reverse_frame_;
