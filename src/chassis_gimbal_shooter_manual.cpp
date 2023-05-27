@@ -217,7 +217,7 @@ void ChassisGimbalShooterManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbu
 void ChassisGimbalShooterManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
 }
 

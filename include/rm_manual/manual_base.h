@@ -28,7 +28,6 @@
 #include <rm_msgs/GameStatus.h>
 #include <rm_msgs/GameRobotHp.h>
 #include <rm_msgs/BalanceState.h>
-#include <rm_msgs/CapacityData.h>
 #include <rm_msgs/PowerHeatData.h>
 #include <rm_msgs/ActuatorState.h>
 #include <rm_msgs/GimbalDesError.h>
