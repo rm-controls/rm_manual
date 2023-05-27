@@ -170,13 +170,14 @@ void BalanceManual::ctrlZPress()
 
 void BalanceManual::shiftRelease()
 {
-  control_method_ = rm_msgs::ManualToReferee::MPC;
-  control_method_change_ = true;
 }
 
 void BalanceManual::shiftPress()
 {
-  control_method_ = rm_msgs::ManualToReferee::LQR;
+  if (control_method_ == rm_msgs::ManualToReferee::LQR)
+    control_method_ = rm_msgs::ManualToReferee::MPC;
+  else if (control_method_ == rm_msgs::ManualToReferee::MPC)
+    control_method_ = rm_msgs::ManualToReferee::LQR;
   control_method_change_ = true;
   ChassisGimbalShooterCoverManual::shiftPress();
   chassis_cmd_sender_->updateSafetyPower(60);
