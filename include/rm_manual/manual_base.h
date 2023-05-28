@@ -111,19 +111,11 @@ protected:
   virtual void leftSwitchMidOn(){};
   virtual void leftSwitchUpRise(){};
   virtual void leftSwitchUpOn(){};
-  virtual void rightSwitchDownOn()
+  virtual void rightSwitchDownRise()
   {
     state_ = IDLE;
-  };
-  virtual void rightSwitchMidOn()
-  {
-    state_ = RC;
-  };
-  virtual void rightSwitchUpOn()
-  {
-    state_ = PC;
-  };
-  virtual void rightSwitchDownRise()
+  }
+  virtual void rightSwitchDownOn()
   {
     state_ = IDLE;
   }
@@ -131,7 +123,15 @@ protected:
   {
     state_ = RC;
   }
+  virtual void rightSwitchMidOn()
+  {
+    state_ = RC;
+  }
   virtual void rightSwitchUpRise()
+  {
+    state_ = PC;
+  }
+  virtual void rightSwitchUpOn()
   {
     state_ = PC;
   }
