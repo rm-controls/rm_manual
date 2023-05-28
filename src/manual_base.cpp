@@ -153,6 +153,7 @@ void ManualBase::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPt
 
 void ManualBase::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
 {
+  chassis_power_ = data->chassis_power;
   referee_last_get_stamp_ = data->stamp;
 }
 
