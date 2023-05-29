@@ -60,7 +60,6 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
   {
     chassis_cmd_sender_->getMsg()->follow_source_frame = supply_frame_;
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
     cover_close_ = false;
     try
     {
@@ -88,7 +87,6 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
         {
           chassis_cmd_sender_->getMsg()->follow_source_frame = supply_frame_;
           chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-          chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
         }
         else
         {
