@@ -129,12 +129,12 @@ void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     {
       case OUTPOST:
         pitch_sender_->setPoint(pitch_outpost_);
-        yaw_sender_->setPoint(yaw_outpost_ + yaw_offset_base_[dart_fired_num_]);
+        yaw_sender_->setPoint(yaw_outpost_ + yaw_offset_[dart_fired_num_]);
         qd_ = qd_outpost_[dart_fired_num_];
         break;
       case BASE:
         pitch_sender_->setPoint(pitch_base_);
-        yaw_sender_->setPoint(yaw_base_ + yaw_offset_[dart_fired_num_]);
+        yaw_sender_->setPoint(yaw_base_ + yaw_offset_base_[dart_fired_num_]);
         qd_ = qd_base_[dart_fired_num_];
         break;
     }
@@ -259,6 +259,8 @@ void DartManual::rightSwitchMidRise()
 void DartManual::rightSwitchUpRise()
 {
   ManualBase::rightSwitchUpRise();
+  pitch_sender_->setPoint(pitch_outpost_);
+  yaw_sender_->setPoint(yaw_outpost_);
 }
 
 void DartManual::move(rm_common::JointPointCommandSender* joint, double ch)
@@ -331,7 +333,8 @@ void DartManual::recordPosition(const rm_msgs::DbusData dbus_data)
 void DartManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
   ManualBase::dbusDataCallback(data);
-  trigger_position_ = std::abs(joint_state_.position[trigger_sender_->getIndex()]);
+  if (remote_is_open_)
+    trigger_position_ = std::abs(joint_state_.position[trigger_sender_->getIndex()]);
   wheel_clockwise_event_.update(data->wheel == 1.0);
   wheel_anticlockwise_event_.update(data->wheel == -1.0);
   dbus_data_ = *data;
