@@ -111,6 +111,8 @@ protected:
 
   geometry_msgs::PointStamped point_out_;
 
+  uint8_t last_det_color_{};
+
   bool prepare_shoot_ = false, turn_flag_ = false, is_balance_ = false;
   double yaw_current_{};
 };

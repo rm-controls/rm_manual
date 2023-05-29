@@ -61,7 +61,7 @@ void ChassisGimbalShooterManual::checkReferee()
   manual_to_referee_pub_data_.power_limit_state = chassis_cmd_sender_->power_limit_->getState();
   manual_to_referee_pub_data_.shoot_frequency = shooter_cmd_sender_->getShootFrequency();
   manual_to_referee_pub_data_.gimbal_eject = gimbal_cmd_sender_->getEject();
-  manual_to_referee_pub_data_.det_armor_target = switch_detection_srv_->getArmorTarget();
+  manual_to_referee_pub_data_.det_armor_target = switch_armor_target_srv_->getArmorTarget();
   manual_to_referee_pub_data_.det_color = switch_detection_srv_->getColor();
   manual_to_referee_pub_data_.det_exposure = switch_detection_srv_->getExposureLevel();
   manual_to_referee_pub_data_.stamp = ros::Time::now();
@@ -355,7 +355,13 @@ void ChassisGimbalShooterManual::rPress()
 
 void ChassisGimbalShooterManual::gPress()
 {
-  switch_detection_srv_->setArmorTargetType(rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE);
+  if (switch_detection_srv_->getColor() != rm_msgs::StatusChangeRequest::PURPLE)
+  {
+    last_det_color_ = switch_detection_srv_->getColor();
+    switch_detection_srv_->setColor(rm_msgs::StatusChangeRequest::PURPLE);
+  }
+  else
+    switch_detection_srv_->setColor(last_det_color_);
   switch_detection_srv_->callService();
 }
 
