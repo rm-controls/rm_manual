@@ -18,10 +18,10 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ros::NodeHandle vel_nh(nh, "vel");
   if (!vel_nh.getParam("gyro_scale", gyro_scale_))
     gyro_scale_ = 0.5;
+  if (!vel_nh.getParam("gyro_normal_scale", gyro_normal_scale_))
+    gyro_normal_scale_ = 0.15;
   if (!vel_nh.getParam("gyro_low_scale", gyro_low_scale_))
-    gyro_low_scale_ = 0.15;
-  if (!vel_nh.getParam("gyro_low_low_scale", gyro_low_low_scale_))
-    gyro_low_low_scale_ = 0.05;
+    gyro_low_scale_ = 0.05;
   if (!vel_nh.getParam("exchange_speed_scale", exchange_speed_scale_))
     exchange_speed_scale_ = 0.12;
   // Ui
@@ -526,13 +526,8 @@ void EngineerManual::autoPreAdjustChassis()
     double roll, pitch, yaw_error;
     exchange2base = tf_buffer_.lookupTransform("base_link", "exchanger", ros::Time(0));
     quatToRPY(exchange2base.transform.rotation, roll, pitch, yaw_error);
-    // Set x offset
     double goal_x = exchange2base.transform.translation.x - x_start_value_;
-    // double goal_y = exchange2base_.transform.translation.y;
     double goal_yaw = pre_yaw_scales_ * yaw_error;
-    //      ROS_INFO_STREAM(exchange2base_);
-    //      ROS_INFO_STREAM(goal_x);
-    //      ROS_INFO_STREAM(goal_yaw);
     setChassisTarget(goal_x, 0., goal_yaw);
     set_once_flag_ = true;
   }
@@ -638,8 +633,6 @@ void EngineerManual::remoteControlTurnOff()
 
 void EngineerManual::chassisOutputOn()
 {
-  //  if (operating_mode_ == MIDDLEWARE)
-  //    action_client_.cancelAllGoals();
 }
 
 void EngineerManual::rightSwitchDownRise()
@@ -941,9 +934,9 @@ void EngineerManual::ctrlBPress()
 void EngineerManual::qPressing()
 {
   if (speed_mode_ == NORMAL)
-    vel_cmd_sender_->setAngularZVel(gyro_low_scale_);
+    vel_cmd_sender_->setAngularZVel(gyro_normal_scale_);
   else if (speed_mode_ == LOW)
-    vel_cmd_sender_->setAngularZVel(gyro_low_low_scale_);
+    vel_cmd_sender_->setAngularZVel(gyro_low_scale_);
   else if (speed_mode_ == FAST)
     vel_cmd_sender_->setAngularZVel(gyro_scale_);
   else if (speed_mode_ == EXCHANGE)
@@ -958,9 +951,9 @@ void EngineerManual::qRelease()
 void EngineerManual::ePressing()
 {
   if (speed_mode_ == NORMAL)
-    vel_cmd_sender_->setAngularZVel(-gyro_low_scale_);
+    vel_cmd_sender_->setAngularZVel(-gyro_normal_scale_);
   else if (speed_mode_ == LOW)
-    vel_cmd_sender_->setAngularZVel(-gyro_low_low_scale_);
+    vel_cmd_sender_->setAngularZVel(-gyro_low_scale_);
   else if (speed_mode_ == FAST)
     vel_cmd_sender_->setAngularZVel(-gyro_scale_);
   else if (speed_mode_ == EXCHANGE)
