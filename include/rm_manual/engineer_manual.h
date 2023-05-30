@@ -42,7 +42,7 @@ public:
     DIRECT
   };
 
-  enum AutoProcess
+  enum AutoExchangeProcess
   {
     FIND,
     PRE_ADJUST,
@@ -157,8 +157,8 @@ private:
       is_enter_auto_{ false }, is_search_finish_{ false }, is_pre_adjust_finish_{ false },
       is_post_adjust_finish_{ false }, is_move_finish_{ false }, is_need_post_adjust_{ false }, is_recorded_{ false },
       move_finish_{ false }, set_once_flag_{ false }, is_move_start_{ false }, pre_arm_start_{ false };
-  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, max_temperature_{}, auto_process_{ 0 };
-  double angular_z_scale_{}, gyro_scale_{}, gyro_low_scale_{}, gyro_low_low_scale_{}, exchange_speed_scale_{},
+  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, max_temperature_{}, auto_exchange_process_{ 0 };
+  double angular_z_scale_{}, gyro_scale_{}, gyro_low_scale_{}, gyro_normal_scale_{}, exchange_speed_scale_{},
       pitch_min_{}, pitch_max_{}, yaw_min_{}, yaw_max_{}, yaw_direct_{ 1. }, pitch_direct_{ 1. }, search_angle_{},
       chassis_search_vel_{}, gimbal_search_vel_{}, store_chassis_search_vel_{}, store_gimbal_search_vel_{},
       move_times_{}, lock_time_{}, chassis_pos_tolerance_{}, chassis_angular_tolerance_, x_start_value_{},

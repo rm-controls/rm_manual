@@ -231,7 +231,7 @@ void EngineerManual::shiftRPressing()
 
 void EngineerManual::autoExchange()
 {
-  switch (auto_process_)
+  switch (auto_exchange_process_)
   {
     case FIND:
       find();
@@ -253,7 +253,7 @@ void EngineerManual::autoExchange()
 
 void EngineerManual::shiftRRelease()
 {
-  auto_process_ = FIND;
+  auto_exchange_process_ = FIND;
   chassis_error_pos_ = 1e10;
   chassis_error_yaw_ = 1e10;
   move_times_ = 0;
@@ -280,7 +280,7 @@ void EngineerManual::find()
     {
       // runStepQueue("SIDE_GIMBAL");
       ROS_INFO("ready to switch state");
-      auto_process_ = PRE_ADJUST;
+      auto_exchange_process_ = PRE_ADJUST;
     }
   }
 }
@@ -316,7 +316,7 @@ void EngineerManual::preAdjust()
     {
       pre_arm_start_ = false;
       move_finish_ = false;
-      auto_process_ = MOVE;
+      auto_exchange_process_ = MOVE;
     }
   }
 }
@@ -335,10 +335,10 @@ void EngineerManual::move()
       isArmFinish();
     }
     if (is_need_post_adjust_)
-      auto_process_ = POST_ADJUST;
+      auto_exchange_process_ = POST_ADJUST;
   }
   else
-    auto_process_ = FINISH;
+    auto_exchange_process_ = FINISH;
 }
 
 void EngineerManual::postAdjust()
@@ -350,7 +350,7 @@ void EngineerManual::postAdjust()
   }
   else
   {
-    auto_process_ = MOVE;
+    auto_exchange_process_ = MOVE;
   }
 }
 
@@ -437,7 +437,7 @@ void EngineerManual::autoMove()
   {
     prefix_ = "ISLAND_GIMBAL";
     root_ = "";
-    auto_process_ = FINISH;
+    auto_exchange_process_ = FINISH;
   }
   is_move_start_ = true;
   runStepQueue(prefix_ + root_);
