@@ -92,7 +92,6 @@ void ChassisGimbalShooterManual::gameRobotStatusCallback(const rm_msgs::GameRobo
 {
   ChassisGimbalManual::gameRobotStatusCallback(data);
   shooter_cmd_sender_->updateGameRobotStatus(*data);
-  shooter_power_on_event_.update(data->mains_power_shooter_output);
 }
 
 void ChassisGimbalShooterManual::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
