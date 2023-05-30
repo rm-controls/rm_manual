@@ -11,7 +11,13 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& n
   ros::NodeHandle chassis_nh(nh, "chassis");
   chassis_cmd_sender_ = new rm_common::ChassisCommandSender(chassis_nh);
   if (!chassis_nh.getParam("speed_change_scale", speed_change_scale_))
-    speed_change_scale_ = 1.;
+    speed_change_scale_ = 1;
+  if (!chassis_nh.getParam("low_speed_change_scale", low_speed_change_scale_))
+    low_speed_change_scale_ = 0.5;
+  if (!chassis_nh.getParam("low_low_speed_change_scale", low_low_speed_change_scale_))
+    low_low_speed_change_scale_ = 0.30;
+  if (!chassis_nh.getParam("gyro_exchange_speed_scale", exchange_speed_scale_))
+    exchange_speed_scale_ = 0.30;
   ros::NodeHandle vel_nh(nh, "vel");
   vel_cmd_sender_ = new rm_common::Vel2DCommandSender(vel_nh);
   if (!vel_nh.getParam("gyro_move_reduction", gyro_move_reduction_))
@@ -47,6 +53,7 @@ void ChassisGimbalManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ManualBase::updateRc(dbus_data);
   gimbal_cmd_sender_->setRate(-dbus_data->ch_l_x, -dbus_data->ch_l_y);
 }
+
 void ChassisGimbalManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ManualBase::updatePc(dbus_data);
@@ -63,10 +70,10 @@ void ChassisGimbalManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_
   ManualBase::checkKeyboard(dbus_data);
   if (robot_id_ == rm_msgs::GameRobotStatus::RED_ENGINEER || robot_id_ == rm_msgs::GameRobotStatus::BLUE_ENGINEER)
   {
-    w_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_w);
-    s_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_s);
-    a_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_a);
-    d_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_d);
+    w_event_.update((!dbus_data->key_ctrl) && dbus_data->key_w);
+    s_event_.update((!dbus_data->key_ctrl) && dbus_data->key_s);
+    a_event_.update((!dbus_data->key_ctrl) && dbus_data->key_a);
+    d_event_.update((!dbus_data->key_ctrl) && dbus_data->key_d);
   }
   else
   {
@@ -91,6 +98,8 @@ void ChassisGimbalManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus
 {
   ManualBase::gameRobotStatusCallback(data);
   chassis_cmd_sender_->updateGameRobotStatus(*data);
+  chassis_power_on_event_.update(data->mains_power_chassis_output);
+  gimbal_power_on_event_.update(data->mains_power_gimbal_output);
 }
 
 void ChassisGimbalManual::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
@@ -162,32 +171,56 @@ void ChassisGimbalManual::leftSwitchDownRise()
 void ChassisGimbalManual::wPressing()
 {
   double final_x_scale = x_scale_;
-  if (speed_change_mode_)
+  if (speed_mode_ == NORMAL)
+    final_x_scale = x_scale_ * low_speed_change_scale_;
+  else if (speed_mode_ == LOW)
+    final_x_scale = x_scale_ * low_low_speed_change_scale_;
+  else if (speed_mode_ == FAST)
     final_x_scale = x_scale_ * speed_change_scale_;
+  else if (speed_mode_ == EXCHANGE)
+    final_x_scale = x_scale_ * exchange_speed_scale_;
   vel_cmd_sender_->setLinearXVel(is_gyro_ ? final_x_scale * gyro_move_reduction_ : final_x_scale);
 }
 
 void ChassisGimbalManual::aPressing()
 {
   double final_y_scale = y_scale_;
-  if (speed_change_mode_)
+  if (speed_mode_ == NORMAL)
+    final_y_scale = y_scale_ * low_speed_change_scale_;
+  else if (speed_mode_ == LOW)
+    final_y_scale = y_scale_ * low_low_speed_change_scale_;
+  else if (speed_mode_ == FAST)
     final_y_scale = y_scale_ * speed_change_scale_;
+  else if (speed_mode_ == EXCHANGE)
+    final_y_scale = y_scale_ * exchange_speed_scale_;
   vel_cmd_sender_->setLinearYVel(is_gyro_ ? final_y_scale * gyro_move_reduction_ : final_y_scale);
 }
 
 void ChassisGimbalManual::sPressing()
 {
   double final_x_scale = x_scale_;
-  if (speed_change_mode_)
+  if (speed_mode_ == NORMAL)
+    final_x_scale = x_scale_ * low_speed_change_scale_;
+  else if (speed_mode_ == LOW)
+    final_x_scale = x_scale_ * low_low_speed_change_scale_;
+  else if (speed_mode_ == FAST)
     final_x_scale = x_scale_ * speed_change_scale_;
+  else if (speed_mode_ == EXCHANGE)
+    final_x_scale = x_scale_ * exchange_speed_scale_;
   vel_cmd_sender_->setLinearXVel(is_gyro_ ? final_x_scale * gyro_move_reduction_ : final_x_scale);
 }
 
 void ChassisGimbalManual::dPressing()
 {
   double final_y_scale = y_scale_;
-  if (speed_change_mode_)
+  if (speed_mode_ == NORMAL)
+    final_y_scale = y_scale_ * low_speed_change_scale_;
+  else if (speed_mode_ == LOW)
+    final_y_scale = y_scale_ * low_low_speed_change_scale_;
+  else if (speed_mode_ == LOW)
     final_y_scale = y_scale_ * speed_change_scale_;
+  else if (speed_mode_ == EXCHANGE)
+    final_y_scale = y_scale_ * exchange_speed_scale_;
   vel_cmd_sender_->setLinearYVel(is_gyro_ ? final_y_scale * gyro_move_reduction_ : final_y_scale);
 }
 
