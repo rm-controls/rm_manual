@@ -16,7 +16,7 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& n
     normal_speed_change_scale_ = 0.5;
   if (!chassis_nh.getParam("low_speed_change_scale", low_speed_change_scale_))
     low_speed_change_scale_ = 0.30;
-  if (!chassis_nh.getParam("gyro_exchange_speed_scale", exchange_speed_scale_))
+  if (!chassis_nh.getParam("exchange_speed_scale", exchange_speed_scale_))
     exchange_speed_scale_ = 0.30;
   ros::NodeHandle vel_nh(nh, "vel");
   vel_cmd_sender_ = new rm_common::Vel2DCommandSender(vel_nh);
