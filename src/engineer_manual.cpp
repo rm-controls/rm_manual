@@ -22,8 +22,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
     gyro_normal_scale_ = 0.15;
   if (!vel_nh.getParam("gyro_low_scale", gyro_low_scale_))
     gyro_low_scale_ = 0.05;
-  if (!vel_nh.getParam("exchange_speed_scale", exchange_speed_scale_))
-    exchange_speed_scale_ = 0.12;
+  if (!vel_nh.getParam("gyro_exchange_scale", gyro_exchange_scale_))
+    gyro_exchange_scale_ = 0.12;
   // Ui
   exchange_sub_ = nh.subscribe<rm_msgs::ExchangerMsg>("/pnp_publisher", 1, &EngineerManual::exchangeCallback, this);
   engineer_ui_pub_ = nh.advertise<rm_msgs::EngineerUi>("/engineer_ui", 10);
@@ -278,7 +278,6 @@ void EngineerManual::find()
     }
     else
     {
-      // runStepQueue("SIDE_GIMBAL");
       ROS_INFO("ready to switch state");
       auto_exchange_process_ = PRE_ADJUST;
     }
@@ -940,7 +939,7 @@ void EngineerManual::qPressing()
   else if (speed_mode_ == FAST)
     vel_cmd_sender_->setAngularZVel(gyro_scale_);
   else if (speed_mode_ == EXCHANGE)
-    vel_cmd_sender_->setAngularZVel(exchange_speed_scale_);
+    vel_cmd_sender_->setAngularZVel(gyro_exchange_scale_);
 }
 
 void EngineerManual::qRelease()
@@ -957,7 +956,7 @@ void EngineerManual::ePressing()
   else if (speed_mode_ == FAST)
     vel_cmd_sender_->setAngularZVel(-gyro_scale_);
   else if (speed_mode_ == EXCHANGE)
-    vel_cmd_sender_->setAngularZVel(exchange_speed_scale_);
+    vel_cmd_sender_->setAngularZVel(gyro_exchange_scale_);
 }
 
 void EngineerManual::eRelease()

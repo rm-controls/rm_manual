@@ -159,10 +159,10 @@ private:
       move_finish_{ false }, set_once_flag_{ false }, is_move_start_{ false }, pre_arm_start_{ false };
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, max_temperature_{}, auto_exchange_process_{ 0 };
   double angular_z_scale_{}, gyro_scale_{}, gyro_low_scale_{}, gyro_normal_scale_{}, exchange_speed_scale_{},
-      pitch_min_{}, pitch_max_{}, yaw_min_{}, yaw_max_{}, yaw_direct_{ 1. }, pitch_direct_{ 1. }, search_angle_{},
-      chassis_search_vel_{}, gimbal_search_vel_{}, store_chassis_search_vel_{}, store_gimbal_search_vel_{},
-      move_times_{}, lock_time_{}, chassis_pos_tolerance_{}, chassis_angular_tolerance_, x_start_value_{},
-      chassis_error_pos_{}, chassis_error_yaw_{}, pre_yaw_scales_{};
+      gyro_exchange_scale_{}, pitch_min_{}, pitch_max_{}, yaw_min_{}, yaw_max_{}, yaw_direct_{ 1. },
+      pitch_direct_{ 1. }, search_angle_{}, chassis_search_vel_{}, gimbal_search_vel_{}, store_chassis_search_vel_{},
+      store_gimbal_search_vel_{}, move_times_{}, lock_time_{}, chassis_pos_tolerance_{}, chassis_angular_tolerance_,
+      x_start_value_{}, chassis_error_pos_{}, chassis_error_yaw_{}, pre_yaw_scales_{};
   std::string prefix_{}, root_{}, drag_state_{ "on" }, max_temperature_joint_{}, joint_temperature_{},
       reversal_state_{}, gripper_state_{};
   geometry_msgs::TransformStamped base2yaw_{}, yaw2pitch_{}, exchange2base_{}, link22base_{}, link32base_{},

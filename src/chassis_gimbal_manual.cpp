@@ -98,8 +98,6 @@ void ChassisGimbalManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus
 {
   ManualBase::gameRobotStatusCallback(data);
   chassis_cmd_sender_->updateGameRobotStatus(*data);
-  chassis_power_on_event_.update(data->mains_power_chassis_output);
-  gimbal_power_on_event_.update(data->mains_power_gimbal_output);
 }
 
 void ChassisGimbalManual::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
