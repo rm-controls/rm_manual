@@ -17,6 +17,11 @@ BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   nh.param("reverse_frame", reverse_frame_, std::string("yaw_reverse_frame"));
   nh.param("balance_dangerous_angle", balance_dangerous_angle_, 0.3);
 
+  ros::NodeHandle left_block_nh(nh, "left_momentum_block");
+  left_momentum_block_cmd_sender_ = new rm_common::JointPointCommandSender(left_block_nh, joint_state_);
+  ros::NodeHandle right_block_nh(nh, "right_momentum_block");
+  right_momentum_block_cmd_sender_ = new rm_common::JointPointCommandSender(right_block_nh, joint_state_);
+
   is_balance_ = true;
   state_sub_ = balance_nh.subscribe<rm_msgs::BalanceState>("/state", 1, &BalanceManual::balanceStateCallback, this);
   x_event_.setRising(boost::bind(&BalanceManual::xPress, this));
@@ -46,6 +51,11 @@ void BalanceManual::sendCommand(const ros::Time& time)
     cover_close_ = true;
     cover_command_sender_->off();
   }
+
+  left_momentum_block_cmd_sender_->getMsg()->data = 0;
+  right_momentum_block_cmd_sender_->getMsg()->data = 0;
+  left_momentum_block_cmd_sender_->sendCommand(time);
+  right_momentum_block_cmd_sender_->sendCommand(time);
 
   ChassisGimbalShooterManual::sendCommand(time);
   cover_command_sender_->sendCommand(time);
@@ -92,11 +102,13 @@ void BalanceManual::ctrlZPress()
 
 void BalanceManual::shiftRelease()
 {
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
 }
 
 void BalanceManual::shiftPress()
 {
   ChassisGimbalShooterCoverManual::shiftPress();
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::UP_SLOPE);
   chassis_cmd_sender_->updateSafetyPower(60);
 }
 
