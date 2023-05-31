@@ -115,11 +115,23 @@ protected:
   {
     state_ = IDLE;
   }
+  virtual void rightSwitchDownOn()
+  {
+    state_ = IDLE;
+  }
   virtual void rightSwitchMidRise()
   {
     state_ = RC;
   }
+  virtual void rightSwitchMidOn()
+  {
+    state_ = RC;
+  }
   virtual void rightSwitchUpRise()
+  {
+    state_ = PC;
+  }
+  virtual void rightSwitchUpOn()
   {
     state_ = PC;
   }
