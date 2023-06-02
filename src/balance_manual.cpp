@@ -127,6 +127,7 @@ void BalanceManual::wPress()
 {
   if (flank_)
     flank_ = !flank_;
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
   ChassisGimbalShooterCoverManual::wPress();
 }
 
@@ -141,6 +142,7 @@ void BalanceManual::sPress()
 {
   if (flank_)
     flank_ = !flank_;
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
   ChassisGimbalShooterCoverManual::sPress();
 }
 
