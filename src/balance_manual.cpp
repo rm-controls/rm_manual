@@ -95,9 +95,15 @@ void BalanceManual::ctrlZPress()
 {
   ChassisGimbalShooterCoverManual::ctrlZPress();
   if (supply_)
+  {
     balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FALLEN);
+  }
   else
+  {
     balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+  }
 }
 
 void BalanceManual::shiftRelease()
