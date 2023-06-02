@@ -83,12 +83,16 @@ void BalanceManual::rightSwitchDownRise()
   ChassisGimbalShooterCoverManual::rightSwitchDownRise();
   state_ = RC;
   balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FALLEN);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
 }
 
 void BalanceManual::rightSwitchMidRise()
 {
   ChassisGimbalShooterCoverManual::rightSwitchMidRise();
   balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
 }
 
 void BalanceManual::ctrlZPress()
@@ -98,11 +102,13 @@ void BalanceManual::ctrlZPress()
   {
     balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FALLEN);
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
   }
   else
   {
     balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
   }
 }
 
@@ -133,7 +139,8 @@ void BalanceManual::wPress()
 {
   if (flank_)
     flank_ = !flank_;
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
+  if (!supply_)
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
   ChassisGimbalShooterCoverManual::wPress();
 }
 
@@ -142,13 +149,16 @@ void BalanceManual::wPressing()
   if (flank_)
     flank_ = !flank_;
   ChassisGimbalShooterCoverManual::wPressing();
+  if (supply_)
+    vel_cmd_sender_->setLinearXVel(x_scale_ * 0.2);
 }
 
 void BalanceManual::sPress()
 {
   if (flank_)
     flank_ = !flank_;
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
+  if (!supply_)
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
   ChassisGimbalShooterCoverManual::sPress();
 }
 
@@ -157,6 +167,8 @@ void BalanceManual::sPressing()
   if (flank_)
     flank_ = !flank_;
   ChassisGimbalShooterCoverManual::sPressing();
+  if (supply_)
+    vel_cmd_sender_->setLinearXVel(x_scale_ * 0.2);
 }
 
 void BalanceManual::aPress()
@@ -171,6 +183,8 @@ void BalanceManual::aPressing()
   if (!flank_)
     flank_ = !flank_;
   ChassisGimbalShooterCoverManual::aPressing();
+  if (supply_)
+    vel_cmd_sender_->setLinearXVel(y_scale_ * 0.2);
 }
 
 void BalanceManual::dPress()
@@ -185,6 +199,8 @@ void BalanceManual::dPressing()
   if (!flank_)
     flank_ = !flank_;
   ChassisGimbalShooterCoverManual::dPressing();
+  if (supply_)
+    vel_cmd_sender_->setLinearXVel(y_scale_ * 0.2);
 }
 
 void BalanceManual::cPress()
