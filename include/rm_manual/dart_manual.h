@@ -32,9 +32,9 @@ protected:
   void run() override;
   void checkReferee() override;
   void remoteControlTurnOn() override;
-  void leftSwitchMidOn() override;
-  void leftSwitchDownOn() override;
-  void leftSwitchUpOn() override;
+  void leftSwitchMidOn();
+  void leftSwitchDownOn();
+  void leftSwitchUpOn();
   void rightSwitchDownOn();
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;

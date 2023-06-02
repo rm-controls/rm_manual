@@ -86,9 +86,9 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
 
 void DartManual::run()
 {
-  ManualBase::run();
   trigger_calibration_->update(ros::Time::now());
   gimbal_calibration_->update(ros::Time::now());
+  ManualBase::run();
 }
 
 void DartManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
@@ -182,6 +182,8 @@ void DartManual::checkReferee()
 void DartManual::remoteControlTurnOn()
 {
   ManualBase::remoteControlTurnOn();
+  gimbal_calibration_->stopController();
+  trigger_calibration_->stopController();
   gimbal_calibration_->reset();
   trigger_calibration_->reset();
 }
@@ -333,8 +335,10 @@ void DartManual::recordPosition(const rm_msgs::DbusData dbus_data)
 void DartManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
   ManualBase::dbusDataCallback(data);
-  if (remote_is_open_)
+  if (!joint_state_.name.empty())
+  {
     trigger_position_ = std::abs(joint_state_.position[trigger_sender_->getIndex()]);
+  }
   wheel_clockwise_event_.update(data->wheel == 1.0);
   wheel_anticlockwise_event_.update(data->wheel == -1.0);
   dbus_data_ = *data;

@@ -106,12 +106,9 @@ protected:
   virtual void remoteControlTurnOff();
   virtual void remoteControlTurnOn();
   virtual void leftSwitchDownRise(){};
-  virtual void leftSwitchDownOn(){};
   virtual void leftSwitchMidRise(){};
   virtual void leftSwitchMidFall(){};
-  virtual void leftSwitchMidOn(){};
   virtual void leftSwitchUpRise(){};
-  virtual void leftSwitchUpOn(){};
   virtual void rightSwitchDownRise()
   {
     state_ = IDLE;
