@@ -190,7 +190,6 @@ void DartManual::remoteControlTurnOn()
 
 void DartManual::leftSwitchDownOn()
 {
-  ManualBase::leftSwitchDownOn();
   friction_right_sender_->setPoint(0.);
   friction_left_sender_->setPoint(0.);
   trigger_sender_->setPoint(-upward_vel_);
@@ -199,7 +198,6 @@ void DartManual::leftSwitchDownOn()
 
 void DartManual::leftSwitchMidOn()
 {
-  ManualBase::leftSwitchMidOn();
   dart_fired_num_ = 0;
   friction_right_sender_->setPoint(qd_);
   friction_left_sender_->setPoint(qd_);
@@ -209,7 +207,6 @@ void DartManual::leftSwitchMidOn()
 
 void DartManual::leftSwitchUpOn()
 {
-  ManualBase::leftSwitchUpOn();
   getDartFiredNum();
   launchTwoDart();
   switch (manual_state_)
