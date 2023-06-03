@@ -122,6 +122,11 @@ void DartManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ManualBase::updatePc(dbus_data);
+  double velocity_threshold = 0.001;
+  if (pitch_velocity_ < velocity_threshold && yaw_velocity_ < velocity_threshold)
+    move_state_ = STOP;
+  else
+    move_state_ = MOVING;
   getDartFiredNum();
   if (game_status_.game_progress == rm_msgs::GameStatus::IN_BATTLE)
   {
@@ -143,29 +148,56 @@ void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     if (last_dart_door_status_ - dart_client_cmd_.dart_launch_opening_status ==
         rm_msgs::DartClientCmd::OPENING_OR_CLOSING - rm_msgs::DartClientCmd::OPENED)
       dart_door_open_times_++;
-    if (dart_client_cmd_.dart_launch_opening_status == rm_msgs::DartClientCmd::OPENED)
+    if (move_state_ == STOP)
     {
       if (auto_state_ == OUTPOST && dart_fired_num_ <= 2)
-      {
-        ROS_INFO_STREAM("Shoot outpost first time.");
-        launch_rest_flag_ = 0;
-        launchTwoDart();
-      }
+        launch_state_ = FIRST_OUTPOST;
       if (auto_state_ == OUTPOST && dart_fired_num_ >= 2 && dart_door_open_times_ > 1)
-      {
-        ROS_INFO_STREAM("Shoot outpost second time");
-        launch_rest_flag_ = 1;
-        launchTwoDart();
-      }
+        launch_state_ = SECOND_OUTPOST;
       if (auto_state_ == BASE)
+        launch_state_ = ALL_BASE;
+    }
+    else
+      launch_state_ = NONE;
+    ROS_INFO_STREAM("launch_state_:" << launch_state_);
+    if (dart_client_cmd_.dart_launch_opening_status == rm_msgs::DartClientCmd::OPENED)
+    {
+      if (last_launch_state_ - launch_state_ == FIRST_OUTPOST - NONE)
+        has_launched_ = 1;
+      switch (launch_state_)
       {
-        ROS_INFO_STREAM("Shoot base.");
-        trigger_sender_->setPoint(upward_vel_);
-        if (trigger_position_ >= 0.0183)
+        case FIRST_OUTPOST:
+          ROS_INFO_STREAM("Shoot outpost first time.");
+          launch_rest_flag_ = 0;
+          launchTwoDart();
+          break;
+        case SECOND_OUTPOST:
+          ROS_INFO_STREAM("Shoot outpost second time");
+          launch_rest_flag_ = 1;
+          launchTwoDart();
+          break;
+        case ALL_BASE:
+          if (!has_launched_)
+          {
+            ROS_INFO_STREAM("Shoot base.");
+            trigger_sender_->setPoint(upward_vel_);
+            if (trigger_position_ >= 0.0183)
+              trigger_sender_->setPoint(0.);
+          }
+          break;
+        case NONE:
+          ROS_INFO_STREAM("No shooting.");
           trigger_sender_->setPoint(0.);
+          break;
       }
     }
+    else
+    {
+      trigger_sender_->setPoint(0.);
+      has_launched_ = 0;
+    }
     last_dart_door_status_ = dart_client_cmd_.dart_launch_opening_status;
+    last_launch_state_ = launch_state_;
   }
   else
   {
@@ -253,6 +285,7 @@ void DartManual::rightSwitchMidRise()
 {
   ManualBase::rightSwitchMidRise();
   dart_door_open_times_ = 0;
+  move_state_ = NORMAL;
 }
 
 void DartManual::rightSwitchUpRise()
@@ -335,6 +368,8 @@ void DartManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
   if (!joint_state_.name.empty())
   {
     trigger_position_ = std::abs(joint_state_.position[trigger_sender_->getIndex()]);
+    pitch_velocity_ = std::abs(joint_state_.velocity[pitch_sender_->getIndex()]);
+    yaw_velocity_ = std::abs(joint_state_.velocity[yaw_sender_->getIndex()]);
   }
   wheel_clockwise_event_.update(data->wheel == 1.0);
   wheel_anticlockwise_event_.update(data->wheel == -1.0);
