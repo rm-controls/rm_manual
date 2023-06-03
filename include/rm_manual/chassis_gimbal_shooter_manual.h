@@ -75,10 +75,11 @@ protected:
   void aRelease() override;
   void sRelease() override;
   void dRelease() override;
-
-  virtual void gPress();
+  void gPress();
+  void gRelease();
   virtual void xPress();
   virtual void ePress();
+  virtual void eRelease();
   virtual void cPress();
   virtual void bPress();
   virtual void rPress();
@@ -87,10 +88,11 @@ protected:
   virtual void shiftRelease();
   void qPress()
   {
-    if (shooter_cmd_sender_->getShootFrequency() != rm_common::HeatLimit::LOW)
-      shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::LOW);
-    else
-      shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::BURST);
+    shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::BURST);
+  }
+  void qRelease()
+  {
+    shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::LOW);
   }
   void fPress()
   {

@@ -30,15 +30,18 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   game_start_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gameStart, this));
   left_switch_up_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::leftSwitchUpOn, this, _1));
   left_switch_mid_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::leftSwitchMidOn, this, _1));
-  e_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ePress, this));
+  e_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::ePress, this),
+                   boost::bind(&ChassisGimbalShooterManual::eRelease, this));
   c_event_.setRising(boost::bind(&ChassisGimbalShooterManual::cPress, this));
-  q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::qPress, this));
+  q_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::qPress, this),
+                   boost::bind(&ChassisGimbalShooterManual::qRelease, this));
   f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::fPress, this));
   b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::bPress, this));
   x_event_.setRising(boost::bind(&ChassisGimbalShooterManual::xPress, this));
   x_event_.setActiveLow(boost::bind(&ChassisGimbalShooterManual::xReleasing, this));
   r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::rPress, this));
-  g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
+  g_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::gPress, this),
+                   boost::bind(&ChassisGimbalShooterManual::gRelease, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
   ctrl_q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlQPress, this));
@@ -316,7 +319,14 @@ void ChassisGimbalShooterManual::mouseRightPress()
 
 void ChassisGimbalShooterManual::ePress()
 {
-  switch_armor_target_srv_->switchArmorTargetType();
+  switch_armor_target_srv_->setArmorTargetType(rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE);
+  switch_armor_target_srv_->callService();
+  shooter_cmd_sender_->setArmorType(switch_armor_target_srv_->getArmorTarget());
+}
+
+void ChassisGimbalShooterManual::eRelease()
+{
+  switch_armor_target_srv_->setArmorTargetType(rm_msgs::StatusChangeRequest::ARMOR_ALL);
   switch_armor_target_srv_->callService();
   shooter_cmd_sender_->setArmorType(switch_armor_target_srv_->getArmorTarget());
 }
@@ -354,13 +364,14 @@ void ChassisGimbalShooterManual::rPress()
 
 void ChassisGimbalShooterManual::gPress()
 {
-  if (switch_detection_srv_->getColor() != rm_msgs::StatusChangeRequest::PURPLE)
-  {
-    last_det_color_ = switch_detection_srv_->getColor();
-    switch_detection_srv_->setColor(rm_msgs::StatusChangeRequest::PURPLE);
-  }
-  else
-    switch_detection_srv_->setColor(last_det_color_);
+  last_det_color_ = switch_detection_srv_->getColor();
+  switch_detection_srv_->setColor(rm_msgs::StatusChangeRequest::PURPLE);
+  switch_detection_srv_->callService();
+}
+
+void ChassisGimbalShooterManual::gRelease()
+{
+  switch_detection_srv_->setColor(last_det_color_);
   switch_detection_srv_->callService();
 }
 
