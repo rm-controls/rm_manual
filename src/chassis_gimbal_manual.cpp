@@ -221,6 +221,30 @@ void ChassisGimbalManual::dPressing()
   vel_cmd_sender_->setLinearYVel(is_gyro_ ? final_y_scale * gyro_move_reduction_ : final_y_scale);
 }
 
+void ChassisGimbalManual::wRelease()
+{
+  x_scale_ = x_scale_ <= -1.0 ? -1.0 : x_scale_ - 1.0;
+  vel_cmd_sender_->setLinearXVel(x_scale_);
+}
+
+void ChassisGimbalManual::sRelease()
+{
+  x_scale_ = x_scale_ >= 1.0 ? 1.0 : x_scale_ + 1.0;
+  vel_cmd_sender_->setLinearXVel(x_scale_);
+}
+
+void ChassisGimbalManual::aRelease()
+{
+  y_scale_ = y_scale_ <= -1.0 ? -1.0 : y_scale_ - 1.0;
+  vel_cmd_sender_->setLinearYVel(y_scale_);
+}
+
+void ChassisGimbalManual::dRelease()
+{
+  y_scale_ = y_scale_ >= 1.0 ? 1.0 : y_scale_ + 1.0;
+  vel_cmd_sender_->setLinearYVel(y_scale_);
+}
+
 void ChassisGimbalManual::mouseMidRise(int m_z)
 {
   if (gimbal_scale_ >= 0. && gimbal_scale_ <= 3.)
