@@ -93,7 +93,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   mouse_right_event_.setFalling(boost::bind(&EngineerManual::mouseRightRelease, this));
 }
 
-void EngineerManual::checkVelMode()
+void EngineerManual::checkSpeedMode()
 {
   speed_change_mode_ = true;
   if (speed_mode_ == LOW)
@@ -120,7 +120,7 @@ void EngineerManual::checkVelMode()
 void EngineerManual::run()
 {
   ChassisGimbalManual::run();
-  checkVelMode();
+  checkSpeedMode();
   power_on_calibration_->update(ros::Time::now(), state_ != PASSIVE);
   arm_calibration_->update(ros::Time::now());
   engineer_ui_pub_.publish(engineer_ui_);

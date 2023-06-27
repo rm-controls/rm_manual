@@ -50,7 +50,7 @@ public:
   void run() override;
 
 private:
-  void checkVelMode();
+  void checkSpeedMode();
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
