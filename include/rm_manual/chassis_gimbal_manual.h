@@ -11,13 +11,6 @@ namespace rm_manual
 class ChassisGimbalManual : public ManualBase
 {
 public:
-  enum SpeedMode
-  {
-    FAST,
-    NORMAL,
-    LOW,
-    EXCHANGE
-  };
   ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
 
 protected:
@@ -69,10 +62,9 @@ protected:
   rm_common::ChassisCommandSender* chassis_cmd_sender_{};
 
   double x_scale_{}, y_scale_{};
+  bool speed_change_mode_{ 0 }, is_gyro_{ 0 };
+  double speed_change_scale_{ 1. };
   double gimbal_scale_{ 1. };
-  int speed_mode_{ NORMAL };
-  bool is_gyro_{ 0 };
-  double fast_speed_scale_{ 1. }, low_speed_scale_{ 1. }, normal_speed_scale_{ 1. }, exchange_speed_scale_{ 1. };
   double gyro_move_reduction_{ 1. };
   double gyro_rotate_reduction_{ 1. };
   double finish_turning_threshold_{};

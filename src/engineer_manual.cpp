@@ -85,9 +85,34 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   mouse_right_event_.setFalling(boost::bind(&EngineerManual::mouseRightRelease, this));
 }
 
+void EngineerManual::checkVelMode()
+{
+  speed_change_mode_ = true;
+  if (speed_mode_ == LOW)
+  {
+    speed_change_scale_ = low_speed_scale_;
+    gyro_speed_ = gyro_low_scale_;
+  }
+  else if (speed_mode_ == NORMAL)
+  {
+    speed_change_scale_ = normal_speed_scale_;
+    gyro_speed_ = gyro_normal_scale_;
+  }
+  else if (speed_mode_ == FAST)
+  {
+    speed_change_scale_ = fast_speed_scale_;
+    gyro_speed_ = gyro_fast_scale_;
+  }
+  else if (speed_mode_ == EXCHANGE)
+  {
+    speed_change_scale_ = exchange_speed_scale_;
+    gyro_speed_ = gyro_exchange_scale_;
+  }
+}
 void EngineerManual::run()
 {
   ChassisGimbalManual::run();
+  checkVelMode();
   power_on_calibration_->update(ros::Time::now(), state_ != PASSIVE);
   arm_calibration_->update(ros::Time::now());
   engineer_ui_pub_.publish(engineer_ui_);
@@ -427,14 +452,7 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::qPressing()
 {
-  if (speed_mode_ == NORMAL)
-    vel_cmd_sender_->setAngularZVel(gyro_normal_scale_);
-  else if (speed_mode_ == LOW)
-    vel_cmd_sender_->setAngularZVel(gyro_low_scale_);
-  else if (speed_mode_ == FAST)
-    vel_cmd_sender_->setAngularZVel(gyro_fast_scale_);
-  else if (speed_mode_ == EXCHANGE)
-    vel_cmd_sender_->setAngularZVel(gyro_exchange_scale_);
+  vel_cmd_sender_->setAngularZVel(gyro_speed_);
 }
 
 void EngineerManual::qRelease()
@@ -444,14 +462,7 @@ void EngineerManual::qRelease()
 
 void EngineerManual::ePressing()
 {
-  if (speed_mode_ == NORMAL)
-    vel_cmd_sender_->setAngularZVel(-gyro_normal_scale_);
-  else if (speed_mode_ == LOW)
-    vel_cmd_sender_->setAngularZVel(-gyro_low_scale_);
-  else if (speed_mode_ == FAST)
-    vel_cmd_sender_->setAngularZVel(-gyro_fast_scale_);
-  else if (speed_mode_ == EXCHANGE)
-    vel_cmd_sender_->setAngularZVel(-gyro_exchange_scale_);
+  vel_cmd_sender_->setAngularZVel(-gyro_speed_);
 }
 
 void EngineerManual::eRelease()
