@@ -20,14 +20,22 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
   servo_reset_caller_ = new rm_common::ServiceCallerBase<std_srvs::Empty>(nh_servo, "/servo_server/reset_servo_status");
   // Vel
-  ros::NodeHandle vel_nh(nh, "vel");
-  if (!vel_nh.getParam("gyro_fast_scale", gyro_fast_scale_))
+  ros::NodeHandle chassis_nh(nh, "chassis");
+  if (!chassis_nh.getParam("fast_speed_scale", fast_speed_scale_))
+    fast_speed_scale_ = 1;
+  if (!chassis_nh.getParam("normal_speed_scale", normal_speed_scale_))
+    normal_speed_scale_ = 0.5;
+  if (!chassis_nh.getParam("low_speed_scale", low_speed_scale_))
+    low_speed_scale_ = 0.30;
+  if (!chassis_nh.getParam("exchange_speed_scale", exchange_speed_scale_))
+    exchange_speed_scale_ = 0.30;
+  if (!chassis_nh.getParam("gyro_fast_scale", gyro_fast_scale_))
     gyro_fast_scale_ = 0.5;
-  if (!vel_nh.getParam("gyro_normal_scale", gyro_normal_scale_))
+  if (!chassis_nh.getParam("gyro_normal_scale", gyro_normal_scale_))
     gyro_normal_scale_ = 0.15;
-  if (!vel_nh.getParam("gyro_low_scale", gyro_low_scale_))
+  if (!chassis_nh.getParam("gyro_low_scale", gyro_low_scale_))
     gyro_low_scale_ = 0.05;
-  if (!vel_nh.getParam("exchange_speed_scale", gyro_exchange_scale_))
+  if (!chassis_nh.getParam("exchange_speed_scale", gyro_exchange_scale_))
     gyro_exchange_scale_ = 0.12;
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
