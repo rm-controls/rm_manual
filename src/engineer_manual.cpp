@@ -29,14 +29,14 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
     low_speed_scale_ = 0.30;
   if (!chassis_nh.getParam("exchange_speed_scale", exchange_speed_scale_))
     exchange_speed_scale_ = 0.30;
-  if (!chassis_nh.getParam("gyro_fast_scale", gyro_fast_scale_))
-    gyro_fast_scale_ = 0.5;
-  if (!chassis_nh.getParam("gyro_normal_scale", gyro_normal_scale_))
-    gyro_normal_scale_ = 0.15;
-  if (!chassis_nh.getParam("gyro_low_scale", gyro_low_scale_))
-    gyro_low_scale_ = 0.05;
-  if (!chassis_nh.getParam("exchange_speed_scale", gyro_exchange_scale_))
-    gyro_exchange_scale_ = 0.12;
+  if (!chassis_nh.getParam("fast_gyro_scale", fast_gyro_scale_))
+    fast_gyro_scale_ = 0.5;
+  if (!chassis_nh.getParam("normal_gyro_scale", normal_gyro_scale_))
+    normal_gyro_scale_ = 0.15;
+  if (!chassis_nh.getParam("low_gyro_scale", low_gyro_scale_))
+    low_gyro_scale_ = 0.05;
+  if (!chassis_nh.getParam("exchange_speed_scale", exchange_gyro_scale_))
+    exchange_gyro_scale_ = 0.12;
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("power_on_calibration", rpc_value);
@@ -95,26 +95,25 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 
 void EngineerManual::checkSpeedMode()
 {
-  speed_change_mode_ = true;
   if (speed_mode_ == LOW)
   {
-    speed_change_scale_ = low_speed_scale_;
-    gyro_speed_ = gyro_low_scale_;
+    speed_scale_ = low_speed_scale_;
+    gyro_speed_ = low_gyro_scale_;
   }
   else if (speed_mode_ == NORMAL)
   {
-    speed_change_scale_ = normal_speed_scale_;
-    gyro_speed_ = gyro_normal_scale_;
+    speed_scale_ = normal_speed_scale_;
+    gyro_speed_ = normal_gyro_scale_;
   }
   else if (speed_mode_ == FAST)
   {
-    speed_change_scale_ = fast_speed_scale_;
-    gyro_speed_ = gyro_fast_scale_;
+    speed_scale_ = fast_speed_scale_;
+    gyro_speed_ = fast_gyro_scale_;
   }
   else if (speed_mode_ == EXCHANGE)
   {
-    speed_change_scale_ = exchange_speed_scale_;
-    gyro_speed_ = gyro_exchange_scale_;
+    speed_scale_ = exchange_speed_scale_;
+    gyro_speed_ = exchange_gyro_scale_;
   }
 }
 void EngineerManual::run()

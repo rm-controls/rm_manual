@@ -125,8 +125,8 @@ private:
   int state_;
   SpeedMode speed_mode_;
   rm_msgs::EngineerUi engineer_ui_;
-  double angular_z_scale_{}, gyro_speed_{}, gyro_fast_scale_{}, gyro_low_scale_{}, gyro_normal_scale_{},
-      gyro_exchange_scale_{}, fast_speed_scale_{ 1. }, low_speed_scale_{ 1. }, normal_speed_scale_{ 1. },
+  double angular_z_scale_{}, gyro_speed_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
+      exchange_gyro_scale_{}, fast_speed_scale_{ 1. }, low_speed_scale_{ 1. }, normal_speed_scale_{ 1. },
       exchange_speed_scale_{ 1. };
   ;
   std::string prefix_, root_, reversal_state_;
