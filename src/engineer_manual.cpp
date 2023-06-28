@@ -35,7 +35,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
     normal_gyro_scale_ = 0.15;
   if (!chassis_nh.getParam("low_gyro_scale", low_gyro_scale_))
     low_gyro_scale_ = 0.05;
-  if (!chassis_nh.getParam("exchange_speed_scale", exchange_gyro_scale_))
+  if (!chassis_nh.getParam("exchange_gyro_scale", exchange_gyro_scale_))
     exchange_gyro_scale_ = 0.12;
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
