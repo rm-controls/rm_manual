@@ -29,14 +29,14 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
     low_speed_scale_ = 0.30;
   if (!chassis_nh.getParam("exchange_speed_scale", exchange_speed_scale_))
     exchange_speed_scale_ = 0.30;
-  if (!chassis_nh.getParam("fast_gyro_scale", fast_gyro_scale_))
-    fast_gyro_scale_ = 0.5;
-  if (!chassis_nh.getParam("normal_gyro_scale", normal_gyro_scale_))
-    normal_gyro_scale_ = 0.15;
-  if (!chassis_nh.getParam("low_gyro_scale", low_gyro_scale_))
-    low_gyro_scale_ = 0.05;
-  if (!chassis_nh.getParam("exchange_gyro_scale", exchange_gyro_scale_))
-    exchange_gyro_scale_ = 0.12;
+  if (!chassis_nh.getParam("fast_gyro_speed", fast_gyro_speed_))
+    fast_gyro_speed_ = 0.5;
+  if (!chassis_nh.getParam("normal_gyro_speed", normal_gyro_speed_))
+    normal_gyro_speed_ = 0.15;
+  if (!chassis_nh.getParam("low_gyro_speed", low_gyro_speed_))
+    low_gyro_speed_ = 0.05;
+  if (!chassis_nh.getParam("exchange_gyro_speed", exchange_gyro_speed_))
+    exchange_gyro_speed_ = 0.12;
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("power_on_calibration", rpc_value);
@@ -93,33 +93,32 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   mouse_right_event_.setFalling(boost::bind(&EngineerManual::mouseRightRelease, this));
 }
 
-void EngineerManual::checkSpeedMode()
+void EngineerManual::setSpeedMode(std::string speed_mode)
 {
-  if (speed_mode_ == LOW)
+  if (speed_mode == "LOW")
   {
     speed_scale_ = low_speed_scale_;
-    gyro_speed_ = low_gyro_scale_;
+    gyro_speed_ = low_gyro_speed_;
   }
-  else if (speed_mode_ == NORMAL)
+  else if (speed_mode == "NORMAL")
   {
     speed_scale_ = normal_speed_scale_;
-    gyro_speed_ = normal_gyro_scale_;
+    gyro_speed_ = normal_gyro_speed_;
   }
-  else if (speed_mode_ == FAST)
+  else if (speed_mode == "FAST")
   {
     speed_scale_ = fast_speed_scale_;
-    gyro_speed_ = fast_gyro_scale_;
+    gyro_speed_ = fast_gyro_speed_;
   }
-  else if (speed_mode_ == EXCHANGE)
+  else if (speed_mode == "EXCHANGE")
   {
     speed_scale_ = exchange_speed_scale_;
-    gyro_speed_ = exchange_gyro_scale_;
+    gyro_speed_ = exchange_gyro_speed_;
   }
 }
 void EngineerManual::run()
 {
   ChassisGimbalManual::run();
-  checkSpeedMode();
   power_on_calibration_->update(ros::Time::now(), state_ != PASSIVE);
   arm_calibration_->update(ros::Time::now());
   engineer_ui_pub_.publish(engineer_ui_);
@@ -531,11 +530,11 @@ void EngineerManual::fRelease()
 }
 void EngineerManual::shiftPressing()
 {
-  speed_mode_ = FAST;
+  setSpeedMode("FAST");
 }
 void EngineerManual::shiftRelease()
 {
-  speed_mode_ = NORMAL;
+  setSpeedMode("NORMAL");
 }
 void EngineerManual::shiftRPress()
 {

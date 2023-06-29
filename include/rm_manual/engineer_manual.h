@@ -38,19 +38,11 @@ public:
     DIRECT
   };
 
-  enum SpeedMode
-  {
-    LOW,
-    NORMAL,
-    FAST,
-    EXCHANGE
-  };
-
   EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
 private:
-  void checkSpeedMode();
+  void setSpeedMode(std::string speed_mode);
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
@@ -123,10 +115,9 @@ private:
   void mouseRightRelease();
 
   int state_;
-  SpeedMode speed_mode_;
   rm_msgs::EngineerUi engineer_ui_;
-  double angular_z_scale_{}, gyro_speed_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
-      exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
+  double angular_z_scale_{}, gyro_speed_{}, fast_gyro_speed_{}, low_gyro_speed_{}, normal_gyro_speed_{},
+      exchange_gyro_speed_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
   ;
   std::string prefix_, root_, reversal_state_;
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{};
