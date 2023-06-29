@@ -21,8 +21,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
   ros::NodeHandle armor_target_switch_nh(nh, "armor_target_switch");
   switch_armor_target_srv_ = new rm_common::SwitchDetectionCaller(armor_target_switch_nh);
-  ros::NodeHandle shooter_speed_nh(nh, "shooter_speed");
-  shooter_speed_srv_ = new rm_common::ShooterSpeedCaller(shooter_speed_nh);
+  ros::NodeHandle extra_friction_wheel_speed_nh(nh, "extra_friction_wheel_speed");
+  extra_friction_wheel_speed_srv_ = new rm_common::ExtraFrictionWheelSpeedCaller(extra_friction_wheel_speed_nh);
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("shooter_calibration", rpc_value);
   shooter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
@@ -516,8 +516,8 @@ void ChassisGimbalShooterManual::xReleasing()
 
 void ChassisGimbalShooterManual::vPress()
 {
-  shooter_speed_srv_->RaiseSpeed();
-  shooter_speed_srv_->callService();
+  extra_friction_wheel_speed_srv_->RaiseSpeed();
+  extra_friction_wheel_speed_srv_->callService();
 }
 
 void ChassisGimbalShooterManual::shiftPress()
@@ -537,8 +537,8 @@ void ChassisGimbalShooterManual::shiftRelease()
 
 void ChassisGimbalShooterManual::ctrlFPress()
 {
-  shooter_speed_srv_->DropSpeed();
-  shooter_speed_srv_->callService();
+  extra_friction_wheel_speed_srv_->DropSpeed();
+  extra_friction_wheel_speed_srv_->callService();
 }
 
 void ChassisGimbalShooterManual::ctrlVPress()
