@@ -26,13 +26,13 @@ protected:
   void sPressing() override;
   void dPressing() override;
   void bPress() override;
+  void vPress() override;
   void ctrlZPress() override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
 
   void sendCommand(const ros::Time& time) override;
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
-  void vPress();
   void ctrlXPress();
   void modeFallen(ros::Duration duration);
   void modeNormalize();
