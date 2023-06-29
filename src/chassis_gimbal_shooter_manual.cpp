@@ -16,6 +16,16 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
     ros::NodeHandle camera_nh(nh, "camera");
     camera_switch_cmd_sender_ = new rm_common::CameraSwitchCommandSender(camera_nh);
   }
+  if (nh.hasParam("scope"))
+  {
+    ros::NodeHandle scope_nh(nh, "scope");
+    scope_cmd_sender_ = new rm_common::JointPositionBinaryCommandSender(scope_nh);
+  }
+  if (nh.hasParam("image_transmission"))
+  {
+    ros::NodeHandle image_transmission_nh(nh, "image_transmission");
+    image_transmission_cmd_sender_ = new rm_common::JointPositionBinaryCommandSender(image_transmission_nh);
+  }
 
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
@@ -138,6 +148,30 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
   shooter_cmd_sender_->sendCommand(time);
   if (camera_switch_cmd_sender_)
     camera_switch_cmd_sender_->sendCommand(time);
+  if (scope_cmd_sender_)
+    scope_cmd_sender_->sendCommand(time);
+  if (image_transmission_cmd_sender_)
+  {
+    if (lob_)
+    {
+      try
+      {
+        double roll, pitch, yaw;
+        quatToRPY(tf_buffer_.lookupTransform("base_link", "pitch", ros::Time(0)).transform.rotation, roll, pitch, yaw);
+        if (pitch > 0.)
+          image_transmission_cmd_sender_->setPos(-pitch);
+        else
+          image_transmission_cmd_sender_->off();
+      }
+      catch (tf2::TransformException& ex)
+      {
+        ROS_WARN("%s", ex.what());
+      }
+    }
+    else
+      image_transmission_cmd_sender_->off();
+    image_transmission_cmd_sender_->sendCommand(time);
+  }
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOff()
@@ -348,8 +382,20 @@ void ChassisGimbalShooterManual::bPress()
 
 void ChassisGimbalShooterManual::rPress()
 {
-  if (camera_switch_cmd_sender_)
-    camera_switch_cmd_sender_->switchCamera();
+  if (!lob_)
+  {
+    lob_ = true;
+    if (camera_switch_cmd_sender_)
+      camera_switch_cmd_sender_->switchCamera();
+    if (scope_cmd_sender_)
+      scope_cmd_sender_->on();
+  }
+  else
+  {
+    lob_ = false;
+    if (scope_cmd_sender_)
+      scope_cmd_sender_->off();
+  }
 }
 
 void ChassisGimbalShooterManual::gPress()
