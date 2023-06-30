@@ -23,8 +23,11 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   }
   if (nh.hasParam("image_transmission"))
   {
+    double image_transmission_num{};
     ros::NodeHandle image_transmission_nh(nh, "image_transmission");
+    image_transmission_num = getParam(image_transmission_nh, "image_transmission_num", 10.);
     image_transmission_cmd_sender_ = new rm_common::JointPositionBinaryCommandSender(image_transmission_nh);
+    average_image_transmission_des_ = new MovingAverageFilter<double>(image_transmission_num);
   }
 
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
@@ -158,8 +161,13 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
       {
         double roll, pitch, yaw;
         quatToRPY(tf_buffer_.lookupTransform("base_link", "pitch", ros::Time(0)).transform.rotation, roll, pitch, yaw);
-        if (pitch > 0.)
-          image_transmission_cmd_sender_->setPos(-pitch);
+        ROS_INFO_STREAM("pitch is" << pitch);
+        if (pitch < 0.)
+        {
+          average_image_transmission_des_->input(image_transmission_cmd_sender_->getOffPos() + pitch);
+          image_transmission_cmd_sender_->setPos(average_image_transmission_des_->output());
+          image_transmission_cmd_sender_->on();
+        }
         else
           image_transmission_cmd_sender_->off();
       }
