@@ -93,24 +93,24 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   mouse_right_event_.setFalling(boost::bind(&EngineerManual::mouseRightRelease, this));
 }
 
-void EngineerManual::setSpeedMode(std::string speed_mode)
+void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
 {
-  if (speed_mode == "LOW")
+  if (speed_mode == LOW)
   {
     speed_scale_ = low_speed_scale_;
     gyro_speed_ = low_gyro_speed_;
   }
-  else if (speed_mode == "NORMAL")
+  else if (speed_mode == NORMAL)
   {
     speed_scale_ = normal_speed_scale_;
     gyro_speed_ = normal_gyro_speed_;
   }
-  else if (speed_mode == "FAST")
+  else if (speed_mode == FAST)
   {
     speed_scale_ = fast_speed_scale_;
     gyro_speed_ = fast_gyro_speed_;
   }
-  else if (speed_mode == "EXCHANGE")
+  else if (speed_mode == EXCHANGE)
   {
     speed_scale_ = exchange_speed_scale_;
     gyro_speed_ = exchange_gyro_speed_;
@@ -530,11 +530,11 @@ void EngineerManual::fRelease()
 }
 void EngineerManual::shiftPressing()
 {
-  setSpeedMode("FAST");
+  changeSpeedMode(FAST);
 }
 void EngineerManual::shiftRelease()
 {
-  setSpeedMode("NORMAL");
+  changeSpeedMode(NORMAL);
 }
 void EngineerManual::shiftRPress()
 {

@@ -38,11 +38,19 @@ public:
     DIRECT
   };
 
+  enum SpeedMode
+  {
+    LOW,
+    NORMAL,
+    FAST,
+    EXCHANGE
+  };
+
   EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
 private:
-  void setSpeedMode(std::string speed_mode);
+  void changeSpeedMode(SpeedMode speed_mode);
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
