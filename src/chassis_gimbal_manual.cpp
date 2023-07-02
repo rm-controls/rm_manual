@@ -10,8 +10,8 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& n
 {
   ros::NodeHandle chassis_nh(nh, "chassis");
   chassis_cmd_sender_ = new rm_common::ChassisCommandSender(chassis_nh);
-  if (!chassis_nh.getParam("speed_scale", speed_scale_))
-    speed_scale_ = 1.;
+  if (!chassis_nh.getParam("speed_change_scale", speed_change_scale_))
+    speed_change_scale_ = 1.;
   ros::NodeHandle vel_nh(nh, "vel");
   vel_cmd_sender_ = new rm_common::Vel2DCommandSender(vel_nh);
   if (!vel_nh.getParam("gyro_move_reduction", gyro_move_reduction_))
@@ -161,25 +161,25 @@ void ChassisGimbalManual::leftSwitchDownRise()
 
 void ChassisGimbalManual::wPressing()
 {
-  double final_x_scale = x_scale_ * speed_scale_;
+  double final_x_scale = x_scale_ * speed_change_scale_;
   vel_cmd_sender_->setLinearXVel(is_gyro_ ? final_x_scale * gyro_move_reduction_ : final_x_scale);
 }
 
 void ChassisGimbalManual::aPressing()
 {
-  double final_y_scale = y_scale_ * speed_scale_;
+  double final_y_scale = y_scale_ * speed_change_scale_;
   vel_cmd_sender_->setLinearYVel(is_gyro_ ? final_y_scale * gyro_move_reduction_ : final_y_scale);
 }
 
 void ChassisGimbalManual::sPressing()
 {
-  double final_x_scale = x_scale_ * speed_scale_;
+  double final_x_scale = x_scale_ * speed_change_scale_;
   vel_cmd_sender_->setLinearXVel(is_gyro_ ? final_x_scale * gyro_move_reduction_ : final_x_scale);
 }
 
 void ChassisGimbalManual::dPressing()
 {
-  double final_y_scale = y_scale_ * speed_scale_;
+  double final_y_scale = y_scale_ * speed_change_scale_;
   vel_cmd_sender_->setLinearYVel(is_gyro_ ? final_y_scale * gyro_move_reduction_ : final_y_scale);
 }
 
