@@ -21,9 +21,12 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   switch_detection_srv_ = new rm_common::SwitchDetectionCaller(detection_switch_nh);
   ros::NodeHandle armor_target_switch_nh(nh, "armor_target_switch");
   switch_armor_target_srv_ = new rm_common::SwitchDetectionCaller(armor_target_switch_nh);
-  XmlRpc::XmlRpcValue rpc_value;
-  nh.getParam("shooter_calibration", rpc_value);
-  shooter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  XmlRpc::XmlRpcValue rpc_value1;
+  nh.getParam("shooter_calibration", rpc_value1);
+  shooter_calibration_ = new rm_common::CalibrationQueue(rpc_value1, nh, controller_manager_);
+  XmlRpc::XmlRpcValue rpc_value2;
+  nh.getParam("gimbal_calibration", rpc_value2);
+  gimbal_calibration_ = new rm_common::CalibrationQueue(rpc_value2, nh, controller_manager_);
 
   shooter_power_on_event_.setRising(boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
   self_inspection_event_.setRising(boost::bind(&ChassisGimbalShooterManual::selfInspectionStart, this));
@@ -54,6 +57,7 @@ void ChassisGimbalShooterManual::run()
 {
   ChassisGimbalManual::run();
   shooter_calibration_->update(ros::Time::now());
+  gimbal_calibration_->update(ros::Time::now());
 }
 
 void ChassisGimbalShooterManual::checkReferee()
@@ -145,6 +149,7 @@ void ChassisGimbalShooterManual::remoteControlTurnOff()
   ChassisGimbalManual::remoteControlTurnOff();
   shooter_cmd_sender_->setZero();
   shooter_calibration_->stop();
+  gimbal_calibration_->stop();
   turn_flag_ = false;
 }
 
@@ -152,6 +157,7 @@ void ChassisGimbalShooterManual::remoteControlTurnOn()
 {
   ChassisGimbalManual::remoteControlTurnOn();
   shooter_calibration_->stopController();
+  gimbal_calibration_->stopController();
   std::string robot_color = robot_id_ >= 100 ? "blue" : "red";
   switch_detection_srv_->setEnemyColor(robot_id_, robot_color);
 }
@@ -167,6 +173,7 @@ void ChassisGimbalShooterManual::chassisOutputOn()
 {
   ChassisGimbalManual::chassisOutputOn();
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
+  gimbal_calibration_->reset();
 }
 
 void ChassisGimbalShooterManual::shooterOutputOn()
@@ -529,5 +536,6 @@ void ChassisGimbalShooterManual::ctrlBPress()
 void ChassisGimbalShooterManual::ctrlQPress()
 {
   shooter_calibration_->reset();
+  gimbal_calibration_->reset();
 }
 }  // namespace rm_manual
