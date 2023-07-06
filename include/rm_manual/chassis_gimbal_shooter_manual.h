@@ -76,7 +76,6 @@ protected:
   void sRelease() override;
   void dRelease() override;
   void gPress();
-  void gRelease();
   virtual void vPress();
   virtual void xPress();
   virtual void ePress();
@@ -101,7 +100,6 @@ protected:
   }
   void ctrlVPress();
   void ctrlBPress();
-  void ctrlFPress();
   virtual void ctrlQPress();
 
   InputEvent self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_, f_event_, b_event_,
@@ -115,8 +113,6 @@ protected:
   rm_common::CalibrationQueue* shooter_calibration_;
 
   geometry_msgs::PointStamped point_out_;
-
-  uint8_t last_det_color_{};
 
   bool prepare_shoot_ = false, turn_flag_ = false, is_balance_ = false;
   double yaw_current_{};

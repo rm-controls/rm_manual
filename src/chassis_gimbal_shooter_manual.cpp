@@ -42,13 +42,11 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   x_event_.setRising(boost::bind(&ChassisGimbalShooterManual::xPress, this));
   x_event_.setActiveLow(boost::bind(&ChassisGimbalShooterManual::xReleasing, this));
   r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::rPress, this));
-  g_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::gPress, this),
-                   boost::bind(&ChassisGimbalShooterManual::gRelease, this));
+  g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
   v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::vPress, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
   ctrl_q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlQPress, this));
-  ctrl_f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlFPress, this));
   shift_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::shiftPress, this),
                        boost::bind(&ChassisGimbalShooterManual::shiftRelease, this));
   mouse_left_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseLeftPress, this));
@@ -370,15 +368,8 @@ void ChassisGimbalShooterManual::rPress()
 
 void ChassisGimbalShooterManual::gPress()
 {
-  last_det_color_ = switch_detection_srv_->getColor();
-  switch_detection_srv_->setColor(rm_msgs::StatusChangeRequest::PURPLE);
-  switch_detection_srv_->callService();
-}
-
-void ChassisGimbalShooterManual::gRelease()
-{
-  switch_detection_srv_->setColor(last_det_color_);
-  switch_detection_srv_->callService();
+  extra_friction_wheel_speed_srv_->DropSpeed();
+  extra_friction_wheel_speed_srv_->callService();
 }
 
 void ChassisGimbalShooterManual::wPress()
@@ -533,12 +524,6 @@ void ChassisGimbalShooterManual::shiftRelease()
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   else
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
-}
-
-void ChassisGimbalShooterManual::ctrlFPress()
-{
-  extra_friction_wheel_speed_srv_->DropSpeed();
-  extra_friction_wheel_speed_srv_->callService();
 }
 
 void ChassisGimbalShooterManual::ctrlVPress()
