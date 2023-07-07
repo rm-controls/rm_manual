@@ -177,8 +177,6 @@ void ChassisGimbalShooterManual::chassisOutputOn()
 {
   ChassisGimbalManual::chassisOutputOn();
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
-  if (gimbal_calibration_)
-    gimbal_calibration_->reset();
 }
 
 void ChassisGimbalShooterManual::shooterOutputOn()
@@ -186,6 +184,13 @@ void ChassisGimbalShooterManual::shooterOutputOn()
   ChassisGimbalManual::shooterOutputOn();
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   shooter_calibration_->reset();
+}
+
+void ChassisGimbalShooterManual::gimbalOutputOn()
+{
+  ChassisGimbalManual::gimbalOutputOn();
+  if (gimbal_calibration_)
+    gimbal_calibration_->reset();
 }
 
 void ChassisGimbalShooterManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)

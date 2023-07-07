@@ -18,8 +18,6 @@ protected:
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void checkReferee() override;
   void sendCommand(const ros::Time& time) override;
-  void gimbalOutputOn() override;
-  void chassisOutputOn() override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;

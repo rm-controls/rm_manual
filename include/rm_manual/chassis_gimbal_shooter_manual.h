@@ -24,6 +24,7 @@ protected:
   void sendCommand(const ros::Time& time) override;
   void chassisOutputOn() override;
   void shooterOutputOn() override;
+  void gimbalOutputOn() override;
   void selfInspectionStart()
   {
     shooter_calibration_->reset();

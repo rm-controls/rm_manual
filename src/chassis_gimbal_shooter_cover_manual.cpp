@@ -96,18 +96,6 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
   cover_command_sender_->sendCommand(time);
 }
 
-void ChassisGimbalShooterCoverManual::gimbalOutputOn()
-{
-  ChassisGimbalShooterManual::gimbalOutputOn();
-  gimbal_calibration_->reset();
-}
-
-void ChassisGimbalShooterCoverManual::chassisOutputOn()
-{
-  ChassisGimbalManual::chassisOutputOn();
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
-}
-
 void ChassisGimbalShooterCoverManual::rightSwitchDownRise()
 {
   ChassisGimbalShooterManual::rightSwitchDownRise();
