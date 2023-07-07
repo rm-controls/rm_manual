@@ -724,6 +724,14 @@ void EngineerManual::shiftBRelease()
 {
 }
 
+void EngineerManual::shiftRRelease()
+{
+}
+
+void EngineerManual::shiftRPressing()
+{
+}
+
 void EngineerManual::shiftXPress()
 {
   runStepQueue("GROUND_GIMBAL");
