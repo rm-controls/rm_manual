@@ -111,6 +111,30 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   mouse_right_event_.setFalling(boost::bind(&EngineerManual::mouseRightRelease, this));
 }
 
+void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
+{
+  if (speed_mode == LOW)
+  {
+    speed_change_scale_ = low_speed_scale_;
+    gyro_scale_ = low_gyro_scale_;
+  }
+  else if (speed_mode == NORMAL)
+  {
+    speed_change_scale_ = normal_speed_scale_;
+    gyro_scale_ = normal_gyro_scale_;
+  }
+  else if (speed_mode == FAST)
+  {
+    speed_change_scale_ = fast_speed_scale_;
+    gyro_scale_ = fast_gyro_scale_;
+  }
+  else if (speed_mode == EXCHANGE)
+  {
+    speed_change_scale_ = exchange_speed_scale_;
+    gyro_scale_ = exchange_gyro_scale_;
+  }
+}
+
 void EngineerManual::run()
 {
   ChassisGimbalManual::run();
@@ -197,30 +221,6 @@ void EngineerManual::gpioStateCallback(const rm_msgs::GpioData ::ConstPtr& data)
     gripper_state_ = "close";
 }
 
-void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
-{
-  if (speed_mode == LOW)
-  {
-    speed_change_scale_ = low_speed_scale_;
-    gyro_scale_ = low_gyro_scale_;
-  }
-  else if (speed_mode == NORMAL)
-  {
-    speed_change_scale_ = normal_speed_scale_;
-    gyro_scale_ = normal_gyro_scale_;
-  }
-  else if (speed_mode == FAST)
-  {
-    speed_change_scale_ = fast_speed_scale_;
-    gyro_scale_ = fast_gyro_scale_;
-  }
-  else if (speed_mode == EXCHANGE)
-  {
-    speed_change_scale_ = exchange_speed_scale_;
-    gyro_scale_ = exchange_gyro_scale_;
-  }
-}
-
 void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updatePc(dbus_data);
@@ -264,8 +264,8 @@ void EngineerManual::remoteControlTurnOff()
 
 void EngineerManual::chassisOutputOn()
 {
-  //  if (operating_mode_ == MIDDLEWARE)
-  //    action_client_.cancelAllGoals();
+  if (operating_mode_ == MIDDLEWARE)
+    action_client_.cancelAllGoals();
 }
 
 void EngineerManual::rightSwitchDownRise()
