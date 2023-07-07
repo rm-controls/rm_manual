@@ -13,8 +13,6 @@
 #include <std_msgs/Float64.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <rm_msgs/EngineerAction.h>
-#include <rm_msgs/EngineerUi.h>
-#include <rm_msgs/ExchangerMsg.h>
 #include <rm_msgs/MultiDofCmd.h>
 #include <rm_msgs/GpioData.h>
 #include <angles/angles.h>
