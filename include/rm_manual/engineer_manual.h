@@ -48,6 +48,15 @@ public:
     EXCHANGE
   };
 
+  enum ExchangeProcess
+  {
+    XYZ_ROLL,
+    YAW,
+    XYZ,
+    PITCH,
+    FINISH,
+  };
+
   EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
@@ -57,7 +66,6 @@ private:
   void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void sendCommand(const ros::Time& time) override;
-  void updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data);
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override;
   void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback);
   void actionDoneCallback(const actionlib::SimpleClientGoalState& state, const rm_msgs::EngineerResultConstPtr& result);
@@ -130,11 +138,18 @@ private:
   void gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data);
   void stoneNumCallback(const std_msgs::String ::ConstPtr& data);
 
-  bool reversal_motion_{}, change_flag_{};
-  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{};
+  void computeServoScale();
+  void updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data);
+  void servoAutoExchange();
+  void manageExchangeProcess();
+
+  bool reversal_motion_{}, change_flag_{}, enter_auto_exchange_{}, finish_exchange_{};
+  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, exchange_process_{};
   double angular_z_scale_{};
   double fast_speed_scale_{}, normal_speed_scale_{}, low_speed_scale_{}, exchange_speed_scale_{};
   double gyro_scale_{}, fast_gyro_scale_{}, normal_gyro_scale_{}, low_gyro_scale_{}, exchange_gyro_scale_{};
+  double exchange_x_offset_{}, exchange_y_offset_{}, exchange_z_offset_{};
+  std::vector<double> servo_scales_{}, servo_p_{}, servo_errors_{}, servo_error_tolerance{};
   std::string prefix_{}, root_{}, drag_state_{ "on" }, max_temperature_joint_{}, joint_temperature_{},
       reversal_state_{}, gripper_state_{};
 

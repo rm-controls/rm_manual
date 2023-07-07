@@ -111,6 +111,101 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   mouse_right_event_.setFalling(boost::bind(&EngineerManual::mouseRightRelease, this));
 }
 
+void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
+{
+  if (enter_auto_exchange_ != true)
+  {
+    servo_command_sender_->setLinearVel(dbus_data->ch_l_y, -dbus_data->ch_l_x, -dbus_data->wheel);
+    servo_command_sender_->setAngularVel(dbus_data->ch_r_x, dbus_data->ch_r_y, angular_z_scale_);
+  }
+  else
+  {
+    servo_command_sender_->setLinearVel(servo_scales_[0], servo_scales_[1], servo_scales_[2]);
+    servo_command_sender_->setAngularVel(servo_scales_[3], servo_scales_[4], servo_scales_[5]);
+  }
+  ChassisGimbalManual::updatePc(dbus_data);
+}
+
+void EngineerManual::computeServoScale()
+{
+  double roll, pitch, yaw;
+  std::vector<double> errors;
+  geometry_msgs::TransformStamped tools2exchange;
+  try
+  {
+    tools2exchange = tf_buffer_.lookupTransform("tools_link", "exchange", ros::Time(0));
+    quatToRPY(tools2exchange.transform.rotation, roll, pitch, yaw);
+  }
+  catch (tf2::TransformException& ex)
+  {
+    ROS_WARN("%s", ex.what());
+  }
+  servo_errors_[0] = tools2exchange.transform.translation.x - exchange_x_offset_;
+  servo_errors_[1] = tools2exchange.transform.translation.y - exchange_y_offset_;
+  servo_errors_[2] = tools2exchange.transform.translation.z - exchange_y_offset_;
+  servo_errors_[3] = roll;
+  servo_errors_[4] = pitch;
+  servo_errors_[5] = yaw;
+  for (int i = 0; i < (int)errors.size(); ++i)
+    servo_scales_[i] = 0;
+  switch (exchange_process_)
+  {
+    case XYZ_ROLL:
+    {
+      for (int i = 0; i < 4; ++i)
+      {
+        servo_scales_[i] = servo_errors_[i] * servo_p_[i];
+      }
+    }
+    break;
+    case YAW:
+      servo_scales_[4] = servo_errors_[4] * servo_p_[4];
+      break;
+    case XYZ:
+    {
+      for (int i = 0; i < 3; ++i)
+      {
+        servo_scales_[i] = servo_errors_[i] * servo_p_[i];
+      }
+    }
+    break;
+    case PITCH:
+      servo_scales_[4] = servo_errors_[4] * servo_p_[4];
+      break;
+  }
+}
+
+void EngineerManual::servoAutoExchange()
+{
+  if (servo_mode_ != SERVO)
+    servo_mode_ = SERVO;
+  if (!enter_auto_exchange_)
+    enter_auto_exchange_ = true;
+  computeServoScale();
+  manageExchangeProcess();
+}
+
+void EngineerManual::manageExchangeProcess()
+{
+  int move_joint_num, arrived_joint_num;
+  for (int i = 0; i < (int)servo_scales_.size(); ++i)
+  {
+    if (servo_scales_[i] != 0)
+    {
+      move_joint_num++;
+      if (abs(servo_errors_[i]) <= servo_error_tolerance[i])
+        arrived_joint_num++;
+    }
+  }
+  if (arrived_joint_num == move_joint_num)
+  {
+    if (exchange_process_ != FINISH)
+      exchange_process_++;
+    else
+      finish_exchange_ = true;
+  }
+}
+
 void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
 {
   if (speed_mode == LOW)
@@ -247,13 +342,6 @@ void EngineerManual::sendCommand(const ros::Time& time)
   }
   if (gimbal_mode_ == RATE)
     gimbal_cmd_sender_->sendCommand(time);
-}
-
-void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
-{
-  servo_command_sender_->setLinearVel(dbus_data->ch_l_y, -dbus_data->ch_l_x, -dbus_data->wheel);
-  servo_command_sender_->setAngularVel(dbus_data->ch_r_x, dbus_data->ch_r_y, angular_z_scale_);
-  ChassisGimbalManual::updatePc(dbus_data);
 }
 
 void EngineerManual::remoteControlTurnOff()
@@ -711,6 +799,14 @@ void EngineerManual::shiftBPress()
 }
 
 void EngineerManual::shiftBRelease()
+{
+}
+
+void EngineerManual::shiftRRelease()
+{
+}
+
+void EngineerManual::shiftRPressing()
 {
 }
 
