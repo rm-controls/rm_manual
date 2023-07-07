@@ -6,7 +6,6 @@
 
 #include "rm_manual/chassis_gimbal_manual.h"
 #include <rm_common/decision/calibration_queue.h>
-#include <rm_common/filters/filters.h>
 #include <angles/angles.h>
 
 namespace rm_manual
@@ -111,7 +110,6 @@ protected:
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::SwitchDetectionCaller* switch_armor_target_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
-  MovingAverageFilter<double>* average_image_transmission_des_{};
 
   geometry_msgs::PointStamped point_out_;
 
