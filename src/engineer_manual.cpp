@@ -11,10 +11,13 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   , operating_mode_(MANUAL)
   , action_client_("/engineer_middleware/move_steps", true)
 {
-  engineer_ui_pub_ = nh.advertise<rm_msgs::EngineerUi>("/engineer_ui", 10);
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
+  // Sub
+  stone_num_sub_ = nh.subscribe<std_msgs::String>("/stone_num", 10, &EngineerManual::stoneNumCallback, this);
+  gripper_state_sub_ = nh.subscribe<rm_msgs::GpioData>("/controllers/gpio_controller/gpio_states", 10,
+                                                       &EngineerManual::gpioStateCallback, this);
   // Servo
   ros::NodeHandle nh_servo(nh, "servo");
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
@@ -37,6 +40,15 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
     low_gyro_scale_ = 0.05;
   if (!chassis_nh.getParam("exchange_gyro_scale", exchange_gyro_scale_))
     exchange_gyro_scale_ = 0.12;
+  // Drag
+  ros::NodeHandle nh_drag(nh, "drag");
+  drag_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_drag);
+  // Joint7
+  ros::NodeHandle nh_joint7(nh, "joint7");
+  joint7_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_joint7);
+  // Reversal
+  ros::NodeHandle nh_reversal(nh, "reversal");
+  reversal_command_sender_ = new rm_common::MultiDofCommandSender(nh_reversal);
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("calibration_gather", rpc_value);
@@ -160,6 +172,29 @@ void EngineerManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
   chassis_cmd_sender_->updateRefereeStatus(referee_is_online_);
   if (servo_mode_ == SERVO)
     updateServo(data);
+}
+
+void EngineerManual::stoneNumCallback(const std_msgs::String ::ConstPtr& data)
+{
+  std::cout << stone_num_ << std::endl;
+  if (data->data == "-1")
+    stone_num_ -= 1;
+  else if (data->data == "+1")
+    stone_num_ += 1;
+  else if (data->data == "+3")
+    stone_num_ += 3;
+  if (stone_num_ >= 4)
+    stone_num_ = 3;
+  else if (stone_num_ <= -1)
+    stone_num_ = 0;
+}
+void EngineerManual::gpioStateCallback(const rm_msgs::GpioData ::ConstPtr& data)
+{
+  gpio_state_.gpio_state = data->gpio_state;
+  if (!gpio_state_.gpio_state[0])
+    gripper_state_ = "open";
+  else
+    gripper_state_ = "close";
 }
 
 void EngineerManual::changeSpeedMode(SpeedMode speed_mode)

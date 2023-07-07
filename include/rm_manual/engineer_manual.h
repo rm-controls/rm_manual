@@ -129,7 +129,6 @@ private:
 
   void mouseLeftRelease();
   void mouseRightRelease();
-  void exchangeCallback(const rm_msgs::ExchangerMsg::ConstPtr& data);
   void gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data);
   void stoneNumCallback(const std_msgs::String ::ConstPtr& data);
 
@@ -140,12 +139,8 @@ private:
   double gyro_scale_{}, fast_gyro_scale_{}, normal_gyro_scale_{}, low_gyro_scale_{}, exchange_gyro_scale_{};
   std::string prefix_{}, root_{}, drag_state_{ "on" }, max_temperature_joint_{}, joint_temperature_{},
       reversal_state_{}, gripper_state_{};
-  geometry_msgs::TransformStamped base2yaw_{}, yaw2pitch_{}, exchange2base_{}, link22base_{}, link32base_{},
-      exchange2stone_{};
-  geometry_msgs::PoseStamped chassis_target_{}, chassis_original_target_{};
 
-  ros::Publisher engineer_ui_pub_;
-  ros::Subscriber exchange_sub_, gripper_state_sub_, stone_num_sub_;
+  ros::Subscriber gripper_state_sub_, stone_num_sub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 
   rm_msgs::EngineerUi engineer_ui_;
