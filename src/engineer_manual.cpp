@@ -39,16 +39,19 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
     exchange_gyro_scale_ = 0.12;
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
-  nh.getParam("power_on_calibration", rpc_value);
-  power_on_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  nh.getParam("arm_calibration", rpc_value);
-  arm_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  nh.getParam("calibration_gather", rpc_value);
+  calibration_gather_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  nh.getParam("joint5_calibration", rpc_value);
+  joint5_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_up_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpRise, this));
   left_switch_down_event_.setFalling(boost::bind(&EngineerManual::leftSwitchDownFall, this));
   ctrl_q_event_.setRising(boost::bind(&EngineerManual::ctrlQPress, this));
   ctrl_a_event_.setRising(boost::bind(&EngineerManual::ctrlAPress, this));
   ctrl_z_event_.setRising(boost::bind(&EngineerManual::ctrlZPress, this));
+  ctrl_z_event_.setActiveHigh(boost::bind(&EngineerManual::ctrlZPressing, this));
+  ctrl_z_event_.setFalling(boost::bind(&EngineerManual::ctrlZRelease, this));
   ctrl_w_event_.setRising(boost::bind(&EngineerManual::ctrlWPress, this));
   ctrl_s_event_.setRising(boost::bind(&EngineerManual::ctrlSPress, this));
   ctrl_x_event_.setRising(boost::bind(&EngineerManual::ctrlXPress, this));
@@ -66,17 +69,18 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   e_event_.setFalling(boost::bind(&EngineerManual::eRelease, this));
   q_event_.setFalling(boost::bind(&EngineerManual::qRelease, this));
   z_event_.setActiveHigh(boost::bind(&EngineerManual::zPressing, this));
+  x_event_.setRising(boost::bind(&EngineerManual::xPress, this));
   z_event_.setFalling(boost::bind(&EngineerManual::zRelease, this));
   c_event_.setActiveHigh(boost::bind(&EngineerManual::cPressing, this));
   c_event_.setFalling(boost::bind(&EngineerManual::cRelease, this));
   r_event_.setRising(boost::bind(&EngineerManual::rPress, this));
   v_event_.setActiveHigh(boost::bind(&EngineerManual::vPressing, this));
   v_event_.setFalling(boost::bind(&EngineerManual::vRelease, this));
-  g_event_.setActiveHigh(boost::bind(&EngineerManual::gPressing, this));
+  g_event_.setRising(boost::bind(&EngineerManual::gPress, this));
   g_event_.setFalling(boost::bind(&EngineerManual::gRelease, this));
   b_event_.setActiveHigh(boost::bind(&EngineerManual::bPressing, this));
   b_event_.setFalling(boost::bind(&EngineerManual::bRelease, this));
-  f_event_.setActiveHigh(boost::bind(&EngineerManual::fPressing, this));
+  f_event_.setRising(boost::bind(&EngineerManual::fPress, this));
   f_event_.setFalling(boost::bind(&EngineerManual::fRelease, this));
   shift_z_event_.setRising(boost::bind(&EngineerManual::shiftZPress, this));
   shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
@@ -86,42 +90,19 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   shift_b_event_.setFalling(boost::bind(&EngineerManual::shiftBRelease, this));
   shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
   shift_g_event_.setRising(boost::bind(&EngineerManual::shiftGPress, this));
-  shift_r_event_.setRising(boost::bind(&EngineerManual::shiftRPress, this));
+  shift_f_event_.setRising(boost::bind(&EngineerManual::shiftFPress, this));
+  shift_r_event_.setActiveHigh(boost::bind(&EngineerManual::shiftRPressing, this));
+  shift_r_event_.setFalling(boost::bind(&EngineerManual::shiftRRelease, this));
   shift_event_.setActiveHigh(boost::bind(&EngineerManual::shiftPressing, this));
   shift_event_.setFalling(boost::bind(&EngineerManual::shiftRelease, this));
   mouse_left_event_.setFalling(boost::bind(&EngineerManual::mouseLeftRelease, this));
   mouse_right_event_.setFalling(boost::bind(&EngineerManual::mouseRightRelease, this));
 }
 
-void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
-{
-  if (speed_mode == LOW)
-  {
-    speed_change_scale_ = low_speed_scale_;
-    gyro_scale_ = low_gyro_scale_;
-  }
-  else if (speed_mode == NORMAL)
-  {
-    speed_change_scale_ = normal_speed_scale_;
-    gyro_scale_ = normal_gyro_scale_;
-  }
-  else if (speed_mode == FAST)
-  {
-    speed_change_scale_ = fast_speed_scale_;
-    gyro_scale_ = fast_gyro_scale_;
-  }
-  else if (speed_mode == EXCHANGE)
-  {
-    speed_change_scale_ = exchange_speed_scale_;
-    gyro_scale_ = exchange_gyro_scale_;
-  }
-}
 void EngineerManual::run()
 {
   ChassisGimbalManual::run();
-  power_on_calibration_->update(ros::Time::now(), state_ != PASSIVE);
-  arm_calibration_->update(ros::Time::now());
-  engineer_ui_pub_.publish(engineer_ui_);
+  calibration_gather_->update(ros::Time::now());
 }
 
 void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -155,7 +136,7 @@ void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
   e_event_.update(dbus_data->key_e & !dbus_data->key_ctrl);
 
   shift_z_event_.update(dbus_data->key_shift & dbus_data->key_z);
-  shift_x_event_.update(dbus_data->key_shift & dbus_data->key_x);
+  shift_x_event_.update(dbus_data->key_shift & dbus_data->key_x & !dbus_data->key_ctrl);
   shift_c_event_.update(dbus_data->key_shift & dbus_data->key_c);
   shift_v_event_.update(dbus_data->key_shift & dbus_data->key_v);
   shift_b_event_.update(dbus_data->key_shift & dbus_data->key_b);
@@ -164,6 +145,7 @@ void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
   shift_r_event_.update(dbus_data->key_shift & dbus_data->key_r);
   shift_g_event_.update(dbus_data->key_shift & dbus_data->key_g);
   shift_x_event_.update(dbus_data->key_shift & dbus_data->key_x);
+  shift_f_event_.update(dbus_data->key_shift & dbus_data->key_f);
   shift_event_.update(dbus_data->key_shift & !dbus_data->key_ctrl);
 
   mouse_left_event_.update(dbus_data->p_l);
@@ -176,19 +158,32 @@ void EngineerManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
   ManualBase::dbusDataCallback(data);
   chassis_cmd_sender_->updateRefereeStatus(referee_is_online_);
-  updateServo(data);
+  if (servo_mode_ == SERVO)
+    updateServo(data);
 }
 
-void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
+void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
 {
-  ChassisGimbalManual::updateRc(dbus_data);
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  vel_cmd_sender_->setAngularZVel(dbus_data->wheel);
-  vel_cmd_sender_->setLinearXVel(dbus_data->ch_r_y);
-  vel_cmd_sender_->setLinearYVel(-dbus_data->ch_r_x);
-
-  left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
-  left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
+  if (speed_mode == LOW)
+  {
+    speed_change_scale_ = low_speed_scale_;
+    gyro_scale_ = low_gyro_scale_;
+  }
+  else if (speed_mode == NORMAL)
+  {
+    speed_change_scale_ = normal_speed_scale_;
+    gyro_scale_ = normal_gyro_scale_;
+  }
+  else if (speed_mode == FAST)
+  {
+    speed_change_scale_ = fast_speed_scale_;
+    gyro_scale_ = fast_gyro_scale_;
+  }
+  else if (speed_mode == EXCHANGE)
+  {
+    speed_change_scale_ = exchange_speed_scale_;
+    gyro_scale_ = exchange_gyro_scale_;
+  }
 }
 
 void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -196,6 +191,9 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ChassisGimbalManual::updatePc(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  if (!reversal_motion_ && servo_mode_ == JOINT)
+    reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
+                                            0.);
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -204,9 +202,14 @@ void EngineerManual::sendCommand(const ros::Time& time)
   {
     chassis_cmd_sender_->sendChassisCommand(time, false);
     vel_cmd_sender_->sendCommand(time);
+    reversal_command_sender_->sendCommand(time);
+    drag_command_sender_->sendCommand(time);
   }
   if (servo_mode_ == SERVO)
+  {
+    changeSpeedMode(EXCHANGE);
     servo_command_sender_->sendCommand(time);
+  }
   if (gimbal_mode_ == RATE)
     gimbal_cmd_sender_->sendCommand(time);
 }
@@ -215,6 +218,7 @@ void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   servo_command_sender_->setLinearVel(dbus_data->ch_l_y, -dbus_data->ch_l_x, -dbus_data->wheel);
   servo_command_sender_->setAngularVel(dbus_data->ch_r_x, dbus_data->ch_r_y, angular_z_scale_);
+  ChassisGimbalManual::updatePc(dbus_data);
 }
 
 void EngineerManual::remoteControlTurnOff()
@@ -225,19 +229,12 @@ void EngineerManual::remoteControlTurnOff()
 
 void EngineerManual::chassisOutputOn()
 {
-  power_on_calibration_->reset();
-  if (MIDDLEWARE)
-    action_client_.cancelAllGoals();
+  //  if (operating_mode_ == MIDDLEWARE)
+  //    action_client_.cancelAllGoals();
 }
 
 void EngineerManual::rightSwitchDownRise()
 {
-  ChassisGimbalManual::rightSwitchDownRise();
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  servo_mode_ = SERVO;
-  gimbal_mode_ = DIRECT;
-  servo_reset_caller_->callService();
-  action_client_.cancelAllGoals();
 }
 
 void EngineerManual::rightSwitchMidRise()
@@ -252,29 +249,38 @@ void EngineerManual::rightSwitchUpRise()
 {
   ChassisGimbalManual::rightSwitchUpRise();
   gimbal_mode_ = DIRECT;
+  servo_mode_ = JOINT;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
 void EngineerManual::leftSwitchUpRise()
 {
-  arm_calibration_->reset();
-  power_on_calibration_->reset();
-  runStepQueue("OPEN_GRIPPER");
+  prefix_ = "";
+  root_ = "CALIBRATION";
+  calibration_gather_->reset();
+  EngineerManual::ctrlVPress();
+  ROS_INFO_STREAM("START CALIBRATE");
 }
 
 void EngineerManual::leftSwitchDownFall()
 {
-  runStepQueue("HOME1");
-  runStepQueue("OPEN_GRIPPER");
-  engineer_ui_.step_queue_name = "HOME1";
+  runStepQueue("HOME_ZERO_STONE");
+  drag_command_sender_->on();
+  drag_state_ = "on";
 }
 
 void EngineerManual::leftSwitchUpFall()
+{
+  joint5_calibration_->reset();
+}
+
+void EngineerManual::leftSwitchDownRise()
 {
 }
 
 void EngineerManual::runStepQueue(const std::string& step_queue_name)
 {
+  reversal_motion_ = true;
   rm_msgs::EngineerGoal goal;
   goal.step_queue_name = step_queue_name;
   if (action_client_.isServerConnected())
@@ -291,8 +297,6 @@ void EngineerManual::runStepQueue(const std::string& step_queue_name)
 
 void EngineerManual::actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback)
 {
-  engineer_ui_.current_step_name = feedback->current_step;
-  engineer_ui_.total_steps = feedback->total_steps;
 }
 
 void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& state,
@@ -301,59 +305,74 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
   ROS_INFO("Done %s", (prefix_ + root_).c_str());
-  engineer_ui_.step_queue_name += " done!";
+  reversal_motion_ = false;
+  change_flag_ = true;
+  if (prefix_ + root_ == "TWO_STONE_SMALL_ISLAND0")
+    changeSpeedMode(LOW);
+  ROS_INFO("%i", result->finish);
   operating_mode_ = MANUAL;
 }
+
 void EngineerManual::mouseLeftRelease()
 {
-  root_ += "0";
-  engineer_ui_.step_queue_name = prefix_ + root_;
-  runStepQueue(prefix_ + root_);
-  ROS_INFO("Finished %s", (prefix_ + root_).c_str());
+  if (change_flag_)
+  {
+    root_ += "0";
+    change_flag_ = false;
+    runStepQueue(prefix_ + root_);
+    ROS_INFO("Finished %s", (prefix_ + root_).c_str());
+  }
 }
 
 void EngineerManual::mouseRightRelease()
 {
-  engineer_ui_.step_queue_name = prefix_ + root_;
   runStepQueue(prefix_ + root_);
   ROS_INFO("Finished %s", (prefix_ + root_).c_str());
 }
-void EngineerManual::ctrlQPress()
+void EngineerManual::ctrlXPress()
 {
-  prefix_ = "LF_";
+  prefix_ = "NEW_LF_";
   root_ = "SMALL_ISLAND";
-  engineer_ui_.step_queue_name = prefix_ + root_;
-  ROS_INFO("%s", (prefix_ + root_).c_str());
-}
-
-void EngineerManual::ctrlWPress()
-{
-  prefix_ = "SKY_";
-  root_ = "BIG_ISLAND";
-  engineer_ui_.step_queue_name = prefix_ + root_;
+  changeSpeedMode(LOW);
+  runStepQueue("NEW_LF_SMALL_ISLAND");
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlEPress()
 {
-  prefix_ = "RT_";
-  root_ = "SMALL_ISLAND";
-  engineer_ui_.step_queue_name = prefix_ + root_;
+  prefix_ = "NEW_";
+  root_ = "RT_SMALL_ISLAND";
+  changeSpeedMode(LOW);
+  runStepQueue(prefix_ + root_);
+  ROS_INFO("%s", (prefix_ + root_).c_str());
+}
+
+void EngineerManual::ctrlWPress()
+{
+  prefix_ = "ARM_ADJUST";
+  root_ = "";
+  changeSpeedMode(EXCHANGE);
+  runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlRPress()
 {
-  arm_calibration_->reset();
-  engineer_ui_.step_queue_name = "calibration";
-  ROS_INFO("Calibrated");
+  prefix_ = "";
+  root_ = "CALIBRATION";
+  servo_mode_ = JOINT;
+  calibration_gather_->reset();
+  joint5_calibration_->reset();
+  runStepQueue("CLOSE_GRIPPER");
+  ROS_INFO_STREAM("START CALIBRATE");
 }
 
 void EngineerManual::ctrlAPress()
 {
   prefix_ = "";
-  root_ = "SMALL_ISLAND";
-  engineer_ui_.step_queue_name = prefix_ + root_;
+  root_ = "NEW_SMALL_ISLAND";
+  changeSpeedMode(LOW);
+  runStepQueue("NEW_SMALL_ISLAND");
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -361,25 +380,26 @@ void EngineerManual::ctrlSPress()
 {
   prefix_ = "";
   root_ = "BIG_ISLAND";
-  engineer_ui_.step_queue_name = prefix_ + root_;
+  changeSpeedMode(LOW);
+  runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlDPress()
 {
-  prefix_ = "";
-  root_ = "GROUND_STONE";
-  runStepQueue(root_);
-  engineer_ui_.step_queue_name = prefix_ + root_;
+  prefix_ = "GROUND_";
+  root_ = "STONE0";
+  changeSpeedMode(LOW);
+  runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlFPress()
 {
-  prefix_ = "";
-  root_ = "EXCHANGE_WAIT";
-  runStepQueue(root_);
-  engineer_ui_.step_queue_name = prefix_ + root_;
+  prefix_ = "EXCHANGE_";
+  root_ = "WAIT";
+  changeSpeedMode(LOW);
+  runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -388,17 +408,21 @@ void EngineerManual::ctrlGPress()
   switch (stone_num_)
   {
     case 0:
-      root_ = "STORE_STONE0";
-      stone_num_ = 1;
+      root_ = "STORE_WHEN_ZERO_STONE0";
       break;
     case 1:
-      root_ = "STORE_STONE1";
-      stone_num_ = 2;
+      root_ = "STORE_WHEN_ONE_STONE0";
+      break;
+    case 2:
+      root_ = "STORE_WHEN_TWO_STONE0";
+      break;
+    case 3:
+      root_ = "STORE_WHEN_TWO_STONE0";
       break;
   }
-  runStepQueue(root_);
   prefix_ = "";
-  engineer_ui_.step_queue_name = prefix_ + root_;
+  changeSpeedMode(LOW);
+  runStepQueue(prefix_ + root_);
   ROS_INFO("STORE_STONE");
 }
 
@@ -406,54 +430,63 @@ void EngineerManual::ctrlZPress()
 {
 }
 
-void EngineerManual::ctrlXPress()
+void EngineerManual::ctrlZPressing()
 {
+}
+
+void EngineerManual::ctrlZRelease()
+{
+}
+
+void EngineerManual::ctrlQPress()
+{
+  prefix_ = "";
+  root_ = "TWO_STONE_SMALL_ISLAND";
+  runStepQueue(prefix_ + root_);
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlCPress()
 {
+  runStepQueue("DELETE_SCENE");
   action_client_.cancelAllGoals();
-  engineer_ui_.step_queue_name = "cancel";
 }
 
-void EngineerManual::ctrlVPress()
+void EngineerManual::shiftVPress()
 {
-  if (state_)
-  {
+  if (gripper_state_ == "open")
     runStepQueue("CLOSE_GRIPPER");
-    engineer_ui_.step_queue_name = "CLOSE_GRIPPER";
-    state_ = false;
-  }
-  else if (!state_)
+  else
   {
     runStepQueue("OPEN_GRIPPER");
-    engineer_ui_.step_queue_name = "OPEN_GRIPPER";
-    state_ = true;
   }
 }
 
-void EngineerManual::ctrlVRelease()
+void EngineerManual::shiftVRelease()
 {
 }
 
 void EngineerManual::ctrlBPress()
 {
+  initMode();
   switch (stone_num_)
   {
     case 0:
-      root_ = "HOME0";
+      root_ = "HOME_ZERO_STONE";
       break;
     case 1:
-      root_ = "HOME1";
+      root_ = "HOME_ONE_STONE";
       break;
     case 2:
-      root_ = "HOME2";
+      root_ = "HOME_TWO_STONE";
+      break;
+    case 3:
+      root_ = "HOME_THREE_STONE";
       break;
   }
   ROS_INFO("RUN_HOME");
-  engineer_ui_.step_queue_name = prefix_ + root_;
   prefix_ = "";
-  runStepQueue(root_);
+  runStepQueue(prefix_ + root_);
 }
 
 void EngineerManual::qPressing()
@@ -478,7 +511,7 @@ void EngineerManual::eRelease()
 
 void EngineerManual::zPressing()
 {
-  angular_z_scale_ = 0.1;
+  angular_z_scale_ = 0.3;
 }
 
 void EngineerManual::zRelease()
@@ -488,7 +521,7 @@ void EngineerManual::zRelease()
 
 void EngineerManual::cPressing()
 {
-  angular_z_scale_ = -0.1;
+  angular_z_scale_ = -0.3;
 }
 
 void EngineerManual::cRelease()
@@ -498,35 +531,85 @@ void EngineerManual::cRelease()
 
 void EngineerManual::rPress()
 {
+  if (stone_num_ != 3)
+    stone_num_++;
+  else
+    stone_num_ = 0;
 }
 
-void EngineerManual::vPressing()
+void EngineerManual::xPress()
 {
-}
-
-void EngineerManual::vRelease()
-{
+  prefix_ = "ENGINEER_";
+  root_ = "DRAG_CAR";
+  runStepQueue(prefix_ + root_);
+  if (drag_state_ == "on")
+  {
+    drag_command_sender_->off();
+    drag_state_ = "off";
+  }
+  else
+  {
+    drag_command_sender_->on();
+    drag_state_ = "on";
+  }
 }
 
 void EngineerManual::bPressing()
 {
+  // ROLL
+  reversal_motion_ = true;
+  reversal_command_sender_->setGroupValue(0., 0., 0., 1., 0., 0.);
+  reversal_state_ = "ROLL";
 }
 
-void EngineerManual::bRelease()
+void EngineerManual::vRelease()
 {
+  // stop
+  reversal_motion_ = false;
+  reversal_command_sender_->setZero();
+  reversal_state_ = "STOP";
 }
 
-void EngineerManual::gPressing()
+void EngineerManual::gPress()
 {
+  // PITCH
+  runStepQueue("PITCH_PI_2");
+  // reversal_command_sender_->setGroupVel(0., 0., -0.3, 0., 1.5, 0.);
+  reversal_state_ = "PITCH";
 }
+
 void EngineerManual::gRelease()
 {
+  // stop
+  runStepQueue("POSITION_STOP");
+  reversal_state_ = "STOP";
 }
-void EngineerManual::fPressing()
+void EngineerManual::bRelease()
 {
+  // stop
+  reversal_motion_ = false;
+  reversal_command_sender_->setZero();
+  reversal_state_ = "STOP";
+}
+
+void EngineerManual::vPressing()
+{
+  // Z in
+  reversal_motion_ = true;
+  reversal_command_sender_->setGroupValue(0., 0., -3., 0., 0., 0.);
+  reversal_state_ = "Z IN";
+}
+void EngineerManual::fPress()
+{
+  // Z out
+  runStepQueue("Z_REVERSAL_OUT");
+  reversal_state_ = "Z OUT";
 }
 void EngineerManual::fRelease()
 {
+  // stop
+  runStepQueue("POSITION_STOP");
+  reversal_state_ = "STOP";
 }
 void EngineerManual::shiftPressing()
 {
@@ -536,69 +619,71 @@ void EngineerManual::shiftRelease()
 {
   changeSpeedMode(NORMAL);
 }
-void EngineerManual::shiftRPress()
+void EngineerManual::shiftFPress()
 {
-  runStepQueue("SKY_GIMBAL");
-  engineer_ui_.step_queue_name = "gimbal SKY_GIMBAL";
-  ROS_INFO("enter gimbal SKY_GIMBAL");
+  runStepQueue("EXCHANGE_GIMBAL");
+  ROS_INFO("enter gimbal EXCHANGE_GIMBAL");
 }
+
 void EngineerManual::shiftCPress()
 {
-  if (servo_mode_)
+  if (servo_mode_ == SERVO)
   {
-    servo_mode_ = false;
-    engineer_ui_.step_queue_name = "ENTER servo";
-
-    ROS_INFO("EXIT SERVO");
+    initMode();
   }
   else
   {
-    servo_mode_ = true;
-    engineer_ui_.step_queue_name = "exit SERVO";
-
-    ROS_INFO("ENTER SERVO");
+    servo_mode_ = SERVO;
+    gimbal_mode_ = DIRECT;
+    changeSpeedMode(EXCHANGE);
+    servo_reset_caller_->callService();
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+    action_client_.cancelAllGoals();
+    chassis_cmd_sender_->getMsg()->command_source_frame = "fake_link5";
   }
-  ROS_INFO("cancel all goal");
+}
+
+void EngineerManual::initMode()
+{
+  servo_mode_ = JOINT;
+  gimbal_mode_ = DIRECT;
+  changeSpeedMode(NORMAL);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
 }
 void EngineerManual::shiftZPress()
 {
-  runStepQueue("REVERSAL_GIMBAL");
+  runStepQueue("ISLAND_GIMBAL");
+  chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
   ROS_INFO("enter gimbal REVERSAL_GIMBAL");
-  engineer_ui_.step_queue_name = "gimbal REVERSAL_GIMBAL";
 }
-void EngineerManual::shiftVPress()
+void EngineerManual::ctrlVPress()
 {
-  // gimbal
-  gimbal_mode_ = RATE;
-  ROS_INFO("MANUAL_VIEW");
-  engineer_ui_.step_queue_name = "gimbal MANUAL_VIEW";
+  prefix_ = "TAKE_BLOCK";
+  root_ = "";
+  runStepQueue(prefix_ + root_);
 }
 
-void EngineerManual::shiftVRelease()
+void EngineerManual::ctrlVRelease()
 {
-  // gimbal
-  gimbal_mode_ = DIRECT;
-  ROS_INFO("DIRECT");
-  engineer_ui_.step_queue_name = "gimbal DIRECT";
 }
 
 void EngineerManual::shiftBPress()
 {
-  runStepQueue("TEMP_GIMBAL");
+  runStepQueue("SIDE_GIMBAL");
+  chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
   ROS_INFO("enter gimbal BACK_GIMBAL");
-  engineer_ui_.step_queue_name = "gimbal BACK_GIMBAL";
 }
 
 void EngineerManual::shiftBRelease()
 {
-  runStepQueue("BACK_GIMBAL");
 }
 
 void EngineerManual::shiftXPress()
 {
   runStepQueue("GROUND_GIMBAL");
+  chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
   ROS_INFO("enter gimbal GROUND_GIMBAL");
-  engineer_ui_.step_queue_name = "gimbal GROUND_GIMBAL";
 }
 
 void EngineerManual::shiftGPress()
@@ -606,23 +691,20 @@ void EngineerManual::shiftGPress()
   switch (stone_num_)
   {
     case 0:
-      root_ = "NO!!";
-      stone_num_ = 0;
+      root_ = "NO STONE!!";
       break;
     case 1:
-      root_ = "TAKE_STONE0";
-      stone_num_ = 0;
+      root_ = "TAKE_WHEN_ONE_STONE0";
       break;
     case 2:
-      root_ = "TAKE_STONE1";
-      stone_num_ = 1;
+      root_ = "TAKE_WHEN_TWO_STONE0";
+      break;
+    case 3:
+      root_ = "TAKE_WHEN_THREE_STONE0";
       break;
   }
-  runStepQueue(root_);
   prefix_ = "";
-  engineer_ui_.step_queue_name = "TAKE_STONE";
-
-  ROS_INFO("TAKE_STONE");
+  changeSpeedMode(LOW);
+  runStepQueue(prefix_ + root_);
 }
-
 }  // namespace rm_manual
