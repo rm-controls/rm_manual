@@ -316,6 +316,16 @@ void EngineerManual::gpioStateCallback(const rm_msgs::GpioData ::ConstPtr& data)
     gripper_state_ = "close";
 }
 
+void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
+{
+  ChassisGimbalManual::updateRc(dbus_data);
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->getMsg()->command_source_frame = "base_link";
+  vel_cmd_sender_->setAngularZVel(dbus_data->wheel);
+  left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
+  left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
+}
+
 void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updatePc(dbus_data);
