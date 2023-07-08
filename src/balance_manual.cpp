@@ -150,7 +150,7 @@ void BalanceManual::wPressing()
     flank_ = !flank_;
   ChassisGimbalShooterCoverManual::wPressing();
   if (supply_)
-    vel_cmd_sender_->setLinearXVel(x_scale_ * 0.2);
+    vel_cmd_sender_->setLinearXVel(x_scale_ * 0.4);
 }
 
 void BalanceManual::sPress()
@@ -168,7 +168,7 @@ void BalanceManual::sPressing()
     flank_ = !flank_;
   ChassisGimbalShooterCoverManual::sPressing();
   if (supply_)
-    vel_cmd_sender_->setLinearXVel(x_scale_ * 0.2);
+    vel_cmd_sender_->setLinearXVel(x_scale_ * 0.4);
 }
 
 void BalanceManual::aPress()
@@ -184,7 +184,7 @@ void BalanceManual::aPressing()
     flank_ = !flank_;
   ChassisGimbalShooterCoverManual::aPressing();
   if (supply_)
-    vel_cmd_sender_->setLinearXVel(y_scale_ * 0.2);
+    vel_cmd_sender_->setLinearYVel(y_scale_ * 0.4);
 }
 
 void BalanceManual::dPress()
@@ -200,7 +200,7 @@ void BalanceManual::dPressing()
     flank_ = !flank_;
   ChassisGimbalShooterCoverManual::dPressing();
   if (supply_)
-    vel_cmd_sender_->setLinearXVel(y_scale_ * 0.2);
+    vel_cmd_sender_->setLinearYVel(y_scale_ * 0.4);
 }
 
 void BalanceManual::cPress()
