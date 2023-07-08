@@ -24,6 +24,9 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
     exchange_z_offset_ = 0.;
   if (!nh_exchange.getParam("link7_length", link7_length_))
     link7_length_ = 0.;
+  ROS_INFO_STREAM(exchange_x_offset_);
+  ROS_INFO_STREAM(exchange_y_offset_);
+  ROS_INFO_STREAM(exchange_z_offset_);
 
   servo_p_.clear();
   double servo_p_temp;
