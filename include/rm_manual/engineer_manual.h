@@ -15,7 +15,6 @@
 #include <rm_msgs/EngineerAction.h>
 #include <rm_msgs/MultiDofCmd.h>
 #include <rm_msgs/GpioData.h>
-#include <angles/angles.h>
 
 namespace rm_manual
 {
@@ -130,13 +129,12 @@ private:
   void gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data);
   void stoneNumCallback(const std_msgs::String ::ConstPtr& data);
 
-  bool reversal_motion_{}, motion_change_flag_{};
+  bool motion_change_flag_{};
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{};
-  double angular_z_scale_{};
-  double fast_speed_scale_{}, normal_speed_scale_{}, low_speed_scale_{}, exchange_speed_scale_{};
-  double gyro_scale_{}, fast_gyro_scale_{}, normal_gyro_scale_{}, low_gyro_scale_{}, exchange_gyro_scale_{};
-  std::string prefix_{}, root_{}, drag_state_{ "on" }, max_temperature_joint_{}, joint_temperature_{},
-      reversal_state_{}, gripper_state_{};
+  double angular_z_scale_{}, angular_z_max_scale_{}, fast_speed_scale_{}, normal_speed_scale_{}, low_speed_scale_{},
+      exchange_speed_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, normal_gyro_scale_{}, low_gyro_scale_{},
+      exchange_gyro_scale_{};
+  std::string prefix_{}, root_{}, drag_state_{ "on" }, reversal_state_{}, gripper_state_{};
 
   ros::Subscriber gripper_state_sub_, stone_num_sub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
