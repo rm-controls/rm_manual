@@ -15,6 +15,7 @@
 #include <rm_msgs/EngineerAction.h>
 #include <rm_msgs/MultiDofCmd.h>
 #include <rm_msgs/GpioData.h>
+#include <angles/angles.h>
 
 namespace rm_manual
 {

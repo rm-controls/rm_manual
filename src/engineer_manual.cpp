@@ -613,7 +613,6 @@ void EngineerManual::gPress()
 {
   // PITCH
   runStepQueue("PITCH_PI_2");
-  // reversal_command_sender_->setGroupVel(0., 0., -0.3, 0., 1.5, 0.);
   reversal_state_ = "PITCH";
 }
 
