@@ -148,7 +148,7 @@ private:
   double angular_z_scale_{};
   double fast_speed_scale_{}, normal_speed_scale_{}, low_speed_scale_{}, exchange_speed_scale_{};
   double gyro_scale_{}, fast_gyro_scale_{}, normal_gyro_scale_{}, low_gyro_scale_{}, exchange_gyro_scale_{};
-  double exchange_x_offset_{}, exchange_y_offset_{}, exchange_z_offset_{};
+  double exchange_x_offset_{}, exchange_y_offset_{}, exchange_z_offset_{}, link7_length_{};
   std::vector<double> servo_scales_{}, servo_p_{}, servo_errors_{}, servo_error_tolerance{};
   std::string prefix_{}, root_{}, drag_state_{ "on" }, max_temperature_joint_{}, joint_temperature_{},
       reversal_state_{}, gripper_state_{};

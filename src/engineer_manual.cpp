@@ -14,6 +14,51 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
+  // Auto Exchange
+  ros::NodeHandle nh_exchange(nh, "exchange");
+  if (!nh_exchange.getParam("exchange_x_offset", exchange_x_offset_))
+    exchange_x_offset_ = 0.;
+  if (!nh_exchange.getParam("exchange_y_offset", exchange_y_offset_))
+    exchange_y_offset_ = 0.;
+  if (!nh_exchange.getParam("exchange_z_offset", exchange_z_offset_))
+    exchange_z_offset_ = 0.;
+  if (!nh_exchange.getParam("link7_length", link7_length_))
+    link7_length_ = 0.;
+
+  servo_p_.clear();
+  double servo_p_temp;
+  if (nh_exchange.getParam("servo_p_x", servo_p_temp))
+    servo_p_.push_back(servo_p_temp);
+  if (nh_exchange.getParam("servo_p_y", servo_p_temp))
+    servo_p_.push_back(servo_p_temp);
+  if (nh_exchange.getParam("servo_p_z", servo_p_temp))
+    servo_p_.push_back(servo_p_temp);
+  if (nh_exchange.getParam("servo_p_roll", servo_p_temp))
+    servo_p_.push_back(servo_p_temp);
+  if (nh_exchange.getParam("servo_p_pitch", servo_p_temp))
+    servo_p_.push_back(servo_p_temp);
+  if (nh_exchange.getParam("servo_p_yaw", servo_p_temp))
+    servo_p_.push_back(servo_p_temp);
+  for (int i = 0; i < (int)servo_p_.size(); ++i)
+    ROS_INFO_STREAM(servo_p_[i]);
+
+  servo_error_tolerance.clear();
+  double servo_error_tolerance_temp;
+  if (nh_exchange.getParam("servo_error_tolerance_x", servo_error_tolerance_temp))
+    servo_error_tolerance.push_back(servo_error_tolerance_temp);
+  if (nh_exchange.getParam("servo_error_tolerance_y", servo_error_tolerance_temp))
+    servo_error_tolerance.push_back(servo_error_tolerance_temp);
+  if (nh_exchange.getParam("servo_error_tolerance_z", servo_error_tolerance_temp))
+    servo_error_tolerance.push_back(servo_error_tolerance_temp);
+  if (nh_exchange.getParam("servo_error_tolerance_roll", servo_error_tolerance_temp))
+    servo_error_tolerance.push_back(servo_error_tolerance_temp);
+  if (nh_exchange.getParam("servo_error_tolerance_pitch", servo_error_tolerance_temp))
+    servo_error_tolerance.push_back(servo_error_tolerance_temp);
+  if (nh_exchange.getParam("servo_error_tolerance_yaw", servo_error_tolerance_temp))
+    servo_error_tolerance.push_back(servo_error_tolerance_temp);
+  for (int i = 0; i < (int)servo_error_tolerance.size(); ++i)
+    ROS_INFO_STREAM(servo_error_tolerance[i]);
+
   // Sub
   stone_num_sub_ = nh.subscribe<std_msgs::String>("/stone_num", 10, &EngineerManual::stoneNumCallback, this);
   gripper_state_sub_ = nh.subscribe<rm_msgs::GpioData>("/controllers/gpio_controller/gpio_states", 10,
