@@ -195,7 +195,10 @@ void EngineerManual::computeServoScale()
   servo_errors_[4] = pitch;
   servo_errors_[5] = yaw;
   for (int i = 0; i < (int)errors.size(); ++i)
+  {
     servo_scales_[i] = 0;
+    ROS_INFO_STREAM("BEFORE" << servo_errors_[i]);
+  }
   switch (exchange_process_)
   {
     case XYZ_ROLL:
@@ -212,25 +215,34 @@ void EngineerManual::computeServoScale()
     case XYZ:
     {
       for (int i = 0; i < 3; ++i)
-      {
         servo_scales_[i] = servo_errors_[i] * servo_p_[i];
-      }
     }
     break;
     case PITCH:
-      servo_scales_[4] = servo_errors_[4] * servo_p_[4];
-      break;
+    {
+      servo_scales_[4] = servo_errors_[4];
+      joint7_command_sender_->getMsg()->data = servo_scales_[4];
+    }
+    break;
+  }
+  for (int i = 0; i < (int)errors.size(); ++i)
+  {
+    ROS_INFO_STREAM("AFTER" << servo_errors_[i]);
   }
 }
 
 void EngineerManual::servoAutoExchange()
 {
+  ROS_INFO_STREAM("PROCESS" << exchange_process_);
   if (servo_mode_ != SERVO)
     servo_mode_ = SERVO;
   if (!enter_auto_exchange_)
     enter_auto_exchange_ = true;
-  computeServoScale();
-  manageExchangeProcess();
+  if (!finish_exchange_)
+  {
+    computeServoScale();
+    manageExchangeProcess();
+  }
 }
 
 void EngineerManual::manageExchangeProcess()
@@ -243,6 +255,7 @@ void EngineerManual::manageExchangeProcess()
       move_joint_num++;
       if (abs(servo_errors_[i]) <= servo_error_tolerance[i])
         arrived_joint_num++;
+      ROS_INFO_STREAM("ARRIVED JOINTS NUM" << arrived_joint_num);
     }
   }
   if (arrived_joint_num == move_joint_num)
@@ -397,6 +410,7 @@ void EngineerManual::sendCommand(const ros::Time& time)
   {
     changeSpeedMode(EXCHANGE);
     servo_command_sender_->sendCommand(time);
+    joint7_command_sender_->sendCommand(time);
   }
   if (gimbal_mode_ == RATE)
     gimbal_cmd_sender_->sendCommand(time);
@@ -862,10 +876,13 @@ void EngineerManual::shiftBRelease()
 
 void EngineerManual::shiftRRelease()
 {
+  finish_exchange_ = false;
+  exchange_process_ = XYZ_ROLL;
 }
 
 void EngineerManual::shiftRPressing()
 {
+  servoAutoExchange();
 }
 
 void EngineerManual::shiftXPress()
