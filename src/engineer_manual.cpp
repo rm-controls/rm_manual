@@ -53,8 +53,6 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("calibration_gather", rpc_value);
   calibration_gather_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  nh.getParam("joint5_calibration", rpc_value);
-  joint5_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
 
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_up_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpRise, this));
@@ -316,7 +314,6 @@ void EngineerManual::leftSwitchDownFall()
 
 void EngineerManual::leftSwitchUpFall()
 {
-  joint5_calibration_->reset();
 }
 
 void EngineerManual::leftSwitchDownRise()
@@ -351,7 +348,7 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   ROS_INFO("Result: %i", result->finish);
   ROS_INFO("Done %s", (prefix_ + root_).c_str());
   reversal_motion_ = false;
-  change_flag_ = true;
+  motion_change_flag_ = true;
   if (prefix_ + root_ == "TWO_STONE_SMALL_ISLAND0")
     changeSpeedMode(LOW);
   ROS_INFO("%i", result->finish);
@@ -360,10 +357,10 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
 
 void EngineerManual::mouseLeftRelease()
 {
-  if (change_flag_)
+  if (motion_change_flag_)
   {
     root_ += "0";
-    change_flag_ = false;
+    motion_change_flag_ = false;
     runStepQueue(prefix_ + root_);
     ROS_INFO("Finished %s", (prefix_ + root_).c_str());
   }
@@ -407,7 +404,6 @@ void EngineerManual::ctrlRPress()
   root_ = "CALIBRATION";
   servo_mode_ = JOINT;
   calibration_gather_->reset();
-  joint5_calibration_->reset();
   runStepQueue("CLOSE_GRIPPER");
   ROS_INFO_STREAM("START CALIBRATE");
 }
