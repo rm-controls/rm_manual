@@ -30,6 +30,15 @@ protected:
   void ctrlQPress() override;
   void zPressing();
   void zRelease();
+  void wPress() override;
+  void aPress() override;
+  void sPress() override;
+  void dPress() override;
+  void wPressing() override;
+  void aPressing() override;
+  void sPressing() override;
+  void dPressing() override;
+
   virtual void ctrlZPress();
   virtual void ctrlZRelease()
   {
@@ -41,7 +50,9 @@ protected:
   rm_common::CalibrationQueue* gimbal_calibration_;
   InputEvent ctrl_z_event_, ctrl_q_event_, x_event_, z_event_;
   std::string supply_frame_;
+  ros::Time last_switch_time_;
   bool supply_ = false;
   bool cover_close_ = true;
+  bool switch_target_ = false;
 };
 }  // namespace rm_manual
