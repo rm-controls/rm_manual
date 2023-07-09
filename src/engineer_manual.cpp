@@ -258,13 +258,13 @@ void EngineerManual::manageExchangeProcess()
       ROS_INFO_STREAM("ARRIVED JOINTS NUM" << arrived_joint_num);
     }
   }
-  if (arrived_joint_num == move_joint_num)
-  {
-    if (exchange_process_ != FINISH)
-      exchange_process_++;
-    else
-      finish_exchange_ = true;
-  }
+  //  if (arrived_joint_num == move_joint_num)
+  //  {
+  //    if (exchange_process_ != FINISH)
+  //      exchange_process_++;
+  //    else
+  //      finish_exchange_ = true;
+  //  }
 }
 
 void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
@@ -430,6 +430,9 @@ void EngineerManual::chassisOutputOn()
 
 void EngineerManual::rightSwitchDownRise()
 {
+  ChassisGimbalManual::rightSwitchDownRise();
+  servo_mode_ = SERVO;
+  ROS_INFO_STREAM(servo_mode_);
 }
 
 void EngineerManual::rightSwitchMidRise()
