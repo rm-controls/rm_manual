@@ -53,6 +53,5 @@ protected:
   ros::Time last_switch_time_;
   bool supply_ = false;
   bool cover_close_ = true;
-  bool switch_target_ = false;
 };
 }  // namespace rm_manual
