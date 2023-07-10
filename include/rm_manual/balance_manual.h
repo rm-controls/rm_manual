@@ -48,7 +48,6 @@ private:
   bool flank_ = false, reverse_ = false;
   std::string flank_frame_, reverse_frame_;
 
-  rm_common::JointPointCommandSender *left_momentum_block_cmd_sender_{}, *right_momentum_block_cmd_sender_{};
   InputEvent v_event_, ctrl_x_event_, auto_fallen_event_;
 };
 }  // namespace rm_manual
