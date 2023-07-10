@@ -168,8 +168,13 @@ void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
   }
   else
   {
-    servo_command_sender_->setLinearVel(servo_scales_[0], servo_scales_[1], servo_scales_[2]);
-    servo_command_sender_->setAngularVel(servo_scales_[3], servo_scales_[4], servo_scales_[5]);
+    if (!finish_exchange_)
+    {
+      servo_command_sender_->setLinearVel(servo_scales_[0], servo_scales_[1], servo_scales_[2]);
+      servo_command_sender_->setAngularVel(servo_scales_[3], servo_scales_[4], servo_scales_[5]);
+    }
+    else
+      servo_command_sender_->setZero();
   }
   ChassisGimbalManual::updatePc(dbus_data);
 }
@@ -203,9 +208,9 @@ void EngineerManual::computeServoScale()
   }
   switch (exchange_process_)
   {
-    case XYZ:
+    case YZ:
     {
-      for (int i = 0; i < 3; ++i)
+      for (int i = 1; i < 3; ++i)
       {
         servo_scales_[i] = servo_errors_[i] * servo_p_[i];
       }
@@ -213,11 +218,11 @@ void EngineerManual::computeServoScale()
     break;
     case ROLL_YAW:
     {
-      servo_scales_[4] = servo_errors_[4] * servo_p_[4];
       servo_scales_[3] = servo_errors_[3] * servo_p_[3];
+      servo_scales_[5] = servo_errors_[5] * servo_p_[5];
     }
     break;
-    case RE_XYZ:
+    case XYZ:
     {
       for (int i = 0; i < 3; ++i)
         servo_scales_[i] = servo_errors_[i] * servo_p_[i];
@@ -225,15 +230,14 @@ void EngineerManual::computeServoScale()
     break;
     case PITCH:
     {
-      servo_scales_[4] = servo_errors_[4];
-      joint7_command_sender_->getMsg()->data = servo_scales_[4];
+      joint7_command_sender_->getMsg()->data = pitch;
     }
     break;
   }
   for (int i = 0; i < (int)servo_errors_.size(); ++i)
   {
     ROS_INFO_STREAM("-------------------------");
-    ROS_INFO_STREAM("AFTER" << servo_errors_[i]);
+    ROS_INFO_STREAM("AFTER" << servo_scales_[i]);
     ROS_INFO_STREAM("-------------------------");
   }
 }
@@ -264,14 +268,13 @@ void EngineerManual::manageExchangeProcess()
   }
   if (arrived_joint_num == move_joint_num)
   {
-    if (exchange_process_ != ROLL_YAW)
+    if (exchange_process_ != FINISH)
       exchange_process_++;
     else
     {
       finish_exchange_ = true;
       for (int i = 0; i < (int)servo_scales_.size(); ++i)
         servo_scales_[i] = 0;
-      servo_command_sender_->setZero();
       ROS_INFO_STREAM("FINISH");
     }
   }
@@ -410,7 +413,7 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   }
   else
   {
-    exchange_process_ = XYZ;
+    exchange_process_ = YZ;
     servo_mode_ = JOINT;
     enter_auto_exchange_ = false;
     finish_exchange_ = false;
@@ -903,7 +906,7 @@ void EngineerManual::shiftRRelease()
 {
   finish_exchange_ = false;
   enter_auto_exchange_ = false;
-  exchange_process_ = XYZ;
+  exchange_process_ = YZ;
 }
 
 void EngineerManual::shiftRPressing()

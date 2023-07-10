@@ -50,9 +50,9 @@ public:
 
   enum ExchangeProcess
   {
-    XYZ,
+    YZ,
     ROLL_YAW,
-    RE_XYZ,
+    XYZ,
     PITCH,
     FINISH,
   };
@@ -144,7 +144,7 @@ private:
   void manageExchangeProcess();
 
   bool reversal_motion_{}, change_flag_{}, enter_auto_exchange_{ false }, finish_exchange_{ false };
-  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, exchange_process_{ XYZ };
+  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, exchange_process_{ YZ };
   double angular_z_scale_{};
   double fast_speed_scale_{}, normal_speed_scale_{}, low_speed_scale_{}, exchange_speed_scale_{};
   double gyro_scale_{}, fast_gyro_scale_{}, normal_gyro_scale_{}, low_gyro_scale_{}, exchange_gyro_scale_{};
