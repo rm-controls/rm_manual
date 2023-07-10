@@ -62,6 +62,31 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   for (int i = 0; i < (int)servo_error_tolerance.size(); ++i)
     ROS_INFO_STREAM(servo_error_tolerance[i]);
 
+  // Joint Limit
+  ros::NodeHandle nh_joint_limit(nh, "joint_limit");
+  XmlRpc::XmlRpcValue temp;
+  nh_joint_limit.getParam("joint1", temp);
+  joint1_.min_position = (double)(temp[0]);
+  joint1_.max_position = (double)(temp[1]);
+  nh_joint_limit.getParam("joint2", temp);
+  joint2_.min_position = (double)(temp[0]);
+  joint1_.max_position = (double)(temp[1]);
+  nh_joint_limit.getParam("joint3", temp);
+  joint3_.min_position = (double)(temp[0]);
+  joint3_.max_position = (double)(temp[1]);
+  nh_joint_limit.getParam("joint4", temp);
+  joint4_.min_position = (double)(temp[0]);
+  joint4_.max_position = (double)(temp[1]);
+  nh_joint_limit.getParam("joint5", temp);
+  joint5_.min_position = (double)(temp[0]);
+  joint5_.max_position = (double)(temp[1]);
+  nh_joint_limit.getParam("joint6", temp);
+  joint6_.min_position = (double)(temp[0]);
+  joint6_.max_position = (double)(temp[1]);
+  nh_joint_limit.getParam("joint7", temp);
+  joint7_.min_position = (double)(temp[0]);
+  joint7_.max_position = (double)(temp[1]);
+
   // Sub
   stone_num_sub_ = nh.subscribe<std_msgs::String>("/stone_num", 10, &EngineerManual::stoneNumCallback, this);
   gripper_state_sub_ = nh.subscribe<rm_msgs::GpioData>("/controllers/gpio_controller/gpio_states", 10,
@@ -278,6 +303,16 @@ void EngineerManual::manageExchangeProcess()
       ROS_INFO_STREAM("FINISH");
     }
   }
+}
+
+void EngineerManual::checkJointLimit()
+{
+  joint1_.current_position = tf_buffer_.lookupTransform("base_link", "link1", ros::Time(0)).transform.translation.z;
+  joint2_.current_position = tf_buffer_.lookupTransform("link1", "link2", ros::Time(0)).transform.translation.x;
+  joint3_.current_position = tf_buffer_.lookupTransform("link2", "link3", ros::Time(0)).transform.translation.y;
+  //    joint4_.current_position = tf_buffer_.lookupTransform("link3", "link4", ros::Time(0)).transform.translation.z;
+  //    joint5_.current_position = tf_buffer_.lookupTransform("link4", "link5", ros::Time(0)).transform.translation.z;
+  //    joint6_.current_position = tf_buffer_.lookupTransform("link5", "link6", ros::Time(0)).transform.translation.z;
 }
 
 void EngineerManual::changeSpeedMode(SpeedMode speed_mode)

@@ -57,6 +57,12 @@ public:
     FINISH,
   };
 
+  struct JointInfo
+  {
+    double max_position;
+    double min_position;
+    double current_position;
+  };
   EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
@@ -143,12 +149,15 @@ private:
   void servoAutoExchange();
   void manageExchangeProcess();
 
+  void checkJointLimit();
+
   bool reversal_motion_{}, change_flag_{}, enter_auto_exchange_{ false }, finish_exchange_{ false };
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, exchange_process_{ YZ };
   double angular_z_scale_{};
   double fast_speed_scale_{}, normal_speed_scale_{}, low_speed_scale_{}, exchange_speed_scale_{};
   double gyro_scale_{}, fast_gyro_scale_{}, normal_gyro_scale_{}, low_gyro_scale_{}, exchange_gyro_scale_{};
   double exchange_x_offset_{}, exchange_y_offset_{}, exchange_z_offset_{}, link7_length_{};
+  JointInfo joint1_{}, joint2_{}, joint3_{}, joint4_{}, joint5_{}, joint6_{};
   std::vector<double> servo_scales_{ 0, 0, 0, 0, 0, 0 }, servo_p_{}, servo_errors_{ 0, 0, 0, 0, 0, 0 },
       servo_error_tolerance{};
   std::string prefix_{}, root_{}, drag_state_{ "on" }, max_temperature_joint_{}, joint_temperature_{},
