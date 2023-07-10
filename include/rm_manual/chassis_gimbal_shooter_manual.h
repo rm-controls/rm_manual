@@ -24,6 +24,7 @@ protected:
   void sendCommand(const ros::Time& time) override;
   void chassisOutputOn() override;
   void shooterOutputOn() override;
+  void gimbalOutputOn() override;
   void selfInspectionStart()
   {
     shooter_calibration_->reset();
@@ -108,6 +109,7 @@ protected:
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::SwitchDetectionCaller* switch_armor_target_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
+  rm_common::CalibrationQueue* gimbal_calibration_;
 
   geometry_msgs::PointStamped point_out_;
 

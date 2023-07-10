@@ -16,19 +16,11 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   switch_buff_srv_ = new rm_common::SwitchDetectionCaller(buff_switch_nh);
   ros::NodeHandle buff_type_switch_nh(nh, "buff_type_switch");
   switch_buff_type_srv_ = new rm_common::SwitchDetectionCaller(buff_type_switch_nh);
-  XmlRpc::XmlRpcValue rpc_value;
-  nh.getParam("gimbal_calibration", rpc_value);
-  gimbal_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+
   ctrl_z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this),
                         boost::bind(&ChassisGimbalShooterCoverManual::ctrlZRelease, this));
   z_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterCoverManual::zPressing, this));
   z_event_.setFalling(boost::bind(&ChassisGimbalShooterCoverManual::zRelease, this));
-}
-
-void ChassisGimbalShooterCoverManual::run()
-{
-  ChassisGimbalShooterManual::run();
-  gimbal_calibration_->update(ros::Time::now());
 }
 
 void ChassisGimbalShooterCoverManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -104,24 +96,6 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
   cover_command_sender_->sendCommand(time);
 }
 
-void ChassisGimbalShooterCoverManual::gimbalOutputOn()
-{
-  ChassisGimbalShooterManual::gimbalOutputOn();
-  gimbal_calibration_->reset();
-}
-
-void ChassisGimbalShooterCoverManual::remoteControlTurnOff()
-{
-  ChassisGimbalShooterManual::remoteControlTurnOff();
-  gimbal_calibration_->stop();
-}
-
-void ChassisGimbalShooterCoverManual::remoteControlTurnOn()
-{
-  ChassisGimbalShooterManual::remoteControlTurnOn();
-  gimbal_calibration_->stopController();
-}
-
 void ChassisGimbalShooterCoverManual::rightSwitchDownRise()
 {
   ChassisGimbalShooterManual::rightSwitchDownRise();
@@ -182,12 +156,6 @@ void ChassisGimbalShooterCoverManual::ctrlZPress()
   else
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   supply_ = !cover_command_sender_->getState();
-}
-
-void ChassisGimbalShooterCoverManual::ctrlQPress()
-{
-  ChassisGimbalShooterManual::ctrlQPress();
-  gimbal_calibration_->reset();
 }
 
 }  // namespace rm_manual
