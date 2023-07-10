@@ -178,41 +178,46 @@ void EngineerManual::computeServoScale()
 {
   double roll, pitch, yaw;
   std::vector<double> errors;
-  geometry_msgs::TransformStamped tools2exchange;
+  geometry_msgs::TransformStamped tools2exchanger;
   try
   {
-    tools2exchange = tf_buffer_.lookupTransform("tools_link", "exchange", ros::Time(0));
-    quatToRPY(tools2exchange.transform.rotation, roll, pitch, yaw);
+    tools2exchanger = tf_buffer_.lookupTransform("tools_link", "exchanger", ros::Time(0));
+    quatToRPY(tools2exchanger.transform.rotation, roll, pitch, yaw);
   }
   catch (tf2::TransformException& ex)
   {
     ROS_WARN("%s", ex.what());
   }
-  servo_errors_[0] = tools2exchange.transform.translation.x - exchange_x_offset_;
-  servo_errors_[1] = tools2exchange.transform.translation.y - exchange_y_offset_;
-  servo_errors_[2] = tools2exchange.transform.translation.z - exchange_y_offset_;
+  servo_errors_[0] = tools2exchanger.transform.translation.x - exchange_x_offset_;
+  servo_errors_[1] = tools2exchanger.transform.translation.y - exchange_y_offset_;
+  servo_errors_[2] = tools2exchanger.transform.translation.z - exchange_y_offset_;
   servo_errors_[3] = roll;
   servo_errors_[4] = pitch;
   servo_errors_[5] = yaw;
-  for (int i = 0; i < (int)errors.size(); ++i)
+  for (int i = 0; i < (int)servo_errors_.size(); ++i)
   {
     servo_scales_[i] = 0;
+    ROS_INFO_STREAM("-------------------------");
     ROS_INFO_STREAM("BEFORE" << servo_errors_[i]);
+    ROS_INFO_STREAM("-------------------------");
   }
   switch (exchange_process_)
   {
-    case XYZ_ROLL:
+    case XYZ:
     {
-      for (int i = 0; i < 4; ++i)
+      for (int i = 0; i < 3; ++i)
       {
         servo_scales_[i] = servo_errors_[i] * servo_p_[i];
       }
     }
     break;
-    case YAW:
+    case ROLL_YAW:
+    {
       servo_scales_[4] = servo_errors_[4] * servo_p_[4];
-      break;
-    case XYZ:
+      servo_scales_[3] = servo_errors_[3] * servo_p_[3];
+    }
+    break;
+    case RE_XYZ:
     {
       for (int i = 0; i < 3; ++i)
         servo_scales_[i] = servo_errors_[i] * servo_p_[i];
@@ -225,21 +230,20 @@ void EngineerManual::computeServoScale()
     }
     break;
   }
-  for (int i = 0; i < (int)errors.size(); ++i)
+  for (int i = 0; i < (int)servo_errors_.size(); ++i)
   {
+    ROS_INFO_STREAM("-------------------------");
     ROS_INFO_STREAM("AFTER" << servo_errors_[i]);
+    ROS_INFO_STREAM("-------------------------");
   }
 }
 
 void EngineerManual::servoAutoExchange()
 {
-  ROS_INFO_STREAM("PROCESS" << exchange_process_);
-  if (servo_mode_ != SERVO)
-    servo_mode_ = SERVO;
-  if (!enter_auto_exchange_)
-    enter_auto_exchange_ = true;
+  enter_auto_exchange_ = true;
   if (!finish_exchange_)
   {
+    servo_mode_ = SERVO;
     computeServoScale();
     manageExchangeProcess();
   }
@@ -247,7 +251,7 @@ void EngineerManual::servoAutoExchange()
 
 void EngineerManual::manageExchangeProcess()
 {
-  int move_joint_num, arrived_joint_num;
+  int move_joint_num = 0, arrived_joint_num = 0;
   for (int i = 0; i < (int)servo_scales_.size(); ++i)
   {
     if (servo_scales_[i] != 0)
@@ -255,16 +259,22 @@ void EngineerManual::manageExchangeProcess()
       move_joint_num++;
       if (abs(servo_errors_[i]) <= servo_error_tolerance[i])
         arrived_joint_num++;
-      ROS_INFO_STREAM("ARRIVED JOINTS NUM" << arrived_joint_num);
+      ROS_INFO_STREAM("ARRIVED" << arrived_joint_num);
     }
   }
-  //  if (arrived_joint_num == move_joint_num)
-  //  {
-  //    if (exchange_process_ != FINISH)
-  //      exchange_process_++;
-  //    else
-  //      finish_exchange_ = true;
-  //  }
+  if (arrived_joint_num == move_joint_num)
+  {
+    if (exchange_process_ != ROLL_YAW)
+      exchange_process_++;
+    else
+    {
+      finish_exchange_ = true;
+      for (int i = 0; i < (int)servo_scales_.size(); ++i)
+        servo_scales_[i] = 0;
+      servo_command_sender_->setZero();
+      ROS_INFO_STREAM("FINISH");
+    }
+  }
 }
 
 void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
@@ -383,6 +393,8 @@ void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   chassis_cmd_sender_->getMsg()->command_source_frame = "base_link";
   vel_cmd_sender_->setAngularZVel(dbus_data->wheel);
+  vel_cmd_sender_->setLinearXVel(dbus_data->ch_r_y);
+  vel_cmd_sender_->setLinearYVel(-dbus_data->ch_r_x);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
 }
@@ -392,6 +404,17 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ChassisGimbalManual::updatePc(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  if (dbus_data->wheel == 1)
+  {
+    servoAutoExchange();
+  }
+  else
+  {
+    exchange_process_ = XYZ;
+    servo_mode_ = JOINT;
+    enter_auto_exchange_ = false;
+    finish_exchange_ = false;
+  }
   if (!reversal_motion_ && servo_mode_ == JOINT)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
@@ -456,7 +479,6 @@ void EngineerManual::leftSwitchUpRise()
   prefix_ = "";
   root_ = "CALIBRATION";
   calibration_gather_->reset();
-  EngineerManual::ctrlVPress();
   ROS_INFO_STREAM("START CALIBRATE");
 }
 
@@ -880,7 +902,8 @@ void EngineerManual::shiftBRelease()
 void EngineerManual::shiftRRelease()
 {
   finish_exchange_ = false;
-  exchange_process_ = XYZ_ROLL;
+  enter_auto_exchange_ = false;
+  exchange_process_ = XYZ;
 }
 
 void EngineerManual::shiftRPressing()
