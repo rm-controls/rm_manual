@@ -38,10 +38,19 @@ public:
     DIRECT
   };
 
+  enum SpeedMode
+  {
+    LOW,
+    NORMAL,
+    FAST,
+    EXCHANGE
+  };
+
   EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
 private:
+  void changeSpeedMode(SpeedMode speed_mode);
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
@@ -115,7 +124,9 @@ private:
 
   int state_;
   rm_msgs::EngineerUi engineer_ui_;
-  double angular_z_scale_{}, gyro_scale_{}, gyro_low_scale_{};
+  double angular_z_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
+      exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
+  ;
   std::string prefix_, root_, reversal_state_;
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, gripper_state_{}, drag_state_{};
   std::map<std::string, int> prefix_list_, root_list_;
