@@ -151,31 +151,7 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
   if (scope_cmd_sender_)
     scope_cmd_sender_->sendCommand(time);
   if (image_transmission_cmd_sender_)
-  {
-    if (lob_)
-    {
-      gimbal_cmd_sender_->setEject(true);
-      try
-      {
-        double roll, pitch, yaw;
-        quatToRPY(tf_buffer_.lookupTransform("base_link", "pitch", ros::Time(0)).transform.rotation, roll, pitch, yaw);
-        if (pitch < 0.)
-        {
-          image_transmission_cmd_sender_->setPos(image_transmission_cmd_sender_->getOffPos() + pitch);
-          image_transmission_cmd_sender_->on();
-        }
-        else
-          image_transmission_cmd_sender_->off();
-      }
-      catch (tf2::TransformException& ex)
-      {
-        ROS_WARN("%s", ex.what());
-      }
-    }
-    else
-      image_transmission_cmd_sender_->off();
     image_transmission_cmd_sender_->sendCommand(time);
-  }
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOff()
@@ -393,12 +369,16 @@ void ChassisGimbalShooterManual::rPress()
       camera_switch_cmd_sender_->switchCamera();
     if (scope_cmd_sender_)
       scope_cmd_sender_->on();
+    if (image_transmission_cmd_sender_)
+      image_transmission_cmd_sender_->on();
   }
   else
   {
     lob_ = false;
     if (scope_cmd_sender_)
       scope_cmd_sender_->off();
+    if (image_transmission_cmd_sender_)
+      image_transmission_cmd_sender_->off();
   }
 }
 
