@@ -20,11 +20,23 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
   servo_reset_caller_ = new rm_common::ServiceCallerBase<std_srvs::Empty>(nh_servo, "/servo_server/reset_servo_status");
   // Vel
-  ros::NodeHandle vel_nh(nh, "vel");
-  if (!vel_nh.getParam("gyro_scale", gyro_scale_))
-    gyro_scale_ = 0.2;
-  if (!vel_nh.getParam("gyro_low_scale", gyro_low_scale_))
-    gyro_low_scale_ = 0.3;
+  ros::NodeHandle chassis_nh(nh, "chassis");
+  if (!chassis_nh.getParam("fast_speed_scale", fast_speed_scale_))
+    fast_speed_scale_ = 1;
+  if (!chassis_nh.getParam("normal_speed_scale", normal_speed_scale_))
+    normal_speed_scale_ = 0.5;
+  if (!chassis_nh.getParam("low_speed_scale", low_speed_scale_))
+    low_speed_scale_ = 0.30;
+  if (!chassis_nh.getParam("exchange_speed_scale", exchange_speed_scale_))
+    exchange_speed_scale_ = 0.30;
+  if (!chassis_nh.getParam("fast_gyro_scale", fast_gyro_scale_))
+    fast_gyro_scale_ = 0.5;
+  if (!chassis_nh.getParam("normal_gyro_scale", normal_gyro_scale_))
+    normal_gyro_scale_ = 0.15;
+  if (!chassis_nh.getParam("low_gyro_scale", low_gyro_scale_))
+    low_gyro_scale_ = 0.05;
+  if (!chassis_nh.getParam("exchange_gyro_scale", exchange_gyro_scale_))
+    exchange_gyro_scale_ = 0.12;
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("power_on_calibration", rpc_value);
@@ -81,6 +93,29 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   mouse_right_event_.setFalling(boost::bind(&EngineerManual::mouseRightRelease, this));
 }
 
+void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
+{
+  if (speed_mode == LOW)
+  {
+    speed_change_scale_ = low_speed_scale_;
+    gyro_scale_ = low_gyro_scale_;
+  }
+  else if (speed_mode == NORMAL)
+  {
+    speed_change_scale_ = normal_speed_scale_;
+    gyro_scale_ = normal_gyro_scale_;
+  }
+  else if (speed_mode == FAST)
+  {
+    speed_change_scale_ = fast_speed_scale_;
+    gyro_scale_ = fast_gyro_scale_;
+  }
+  else if (speed_mode == EXCHANGE)
+  {
+    speed_change_scale_ = exchange_speed_scale_;
+    gyro_scale_ = exchange_gyro_scale_;
+  }
+}
 void EngineerManual::run()
 {
   ChassisGimbalManual::run();
@@ -423,7 +458,7 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::qPressing()
 {
-  vel_cmd_sender_->setAngularZVel(speed_change_mode_ ? gyro_low_scale_ : gyro_scale_);
+  vel_cmd_sender_->setAngularZVel(gyro_scale_);
 }
 
 void EngineerManual::qRelease()
@@ -433,7 +468,7 @@ void EngineerManual::qRelease()
 
 void EngineerManual::ePressing()
 {
-  vel_cmd_sender_->setAngularZVel(speed_change_mode_ ? -gyro_low_scale_ : -gyro_scale_);
+  vel_cmd_sender_->setAngularZVel(-gyro_scale_);
 }
 
 void EngineerManual::eRelease()
@@ -495,11 +530,11 @@ void EngineerManual::fRelease()
 }
 void EngineerManual::shiftPressing()
 {
-  speed_change_mode_ = true;
+  changeSpeedMode(FAST);
 }
 void EngineerManual::shiftRelease()
 {
-  speed_change_mode_ = false;
+  changeSpeedMode(NORMAL);
 }
 void EngineerManual::shiftRPress()
 {
