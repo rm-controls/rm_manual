@@ -18,29 +18,29 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
   XmlRpc::XmlRpcValue qd_outpost, qd_base, yaw_offset, yaw_offset_base;
   nh_friction_left.getParam("qd_outpost", qd_outpost);
   ROS_ASSERT(qd_outpost.getType() == XmlRpc::XmlRpcValue::TypeArray);
-  ROS_ASSERT(qd_outpost.size() == 4);
+  ROS_ASSERT(qd_outpost.size() == 5);
   for (int i = 0; i < qd_outpost.size(); ++i)
     ROS_ASSERT(qd_outpost[i].getType() == XmlRpc::XmlRpcValue::TypeDouble);
 
   nh_friction_left.getParam("qd_base", qd_base);
   ROS_ASSERT(qd_base.getType() == XmlRpc::XmlRpcValue::TypeArray);
-  ROS_ASSERT(qd_base.size() == 4);
+  ROS_ASSERT(qd_base.size() == 5);
   for (int i = 0; i < qd_outpost.size(); ++i)
     ROS_ASSERT(qd_base[i].getType() == XmlRpc::XmlRpcValue::TypeDouble);
 
   nh_yaw.getParam("yaw_offset", yaw_offset);
   ROS_ASSERT(yaw_offset.getType() == XmlRpc::XmlRpcValue::TypeArray);
-  ROS_ASSERT(yaw_offset.size() == 4);
+  ROS_ASSERT(yaw_offset.size() == 5);
   for (int i = 0; i < yaw_offset.size(); ++i)
     ROS_ASSERT(yaw_offset[i].getType() == XmlRpc::XmlRpcValue::TypeDouble);
 
   nh_yaw.getParam("yaw_offset_base", yaw_offset_base);
   ROS_ASSERT(yaw_offset_base.getType() == XmlRpc::XmlRpcValue::TypeArray);
-  ROS_ASSERT(yaw_offset_base.size() == 4);
+  ROS_ASSERT(yaw_offset_base.size() == 5);
   for (int i = 0; i < yaw_offset_base.size(); ++i)
     ROS_ASSERT(yaw_offset_base[i].getType() == XmlRpc::XmlRpcValue::TypeDouble);
 
-  for (int i = 0; i < 4; i++)
+  for (int i = 0; i < 5; i++)
   {
     qd_outpost_.push_back(qd_outpost[i]);
     qd_base_.push_back(qd_base[i]);
@@ -52,6 +52,7 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
   launch_position_1_ = getParam(nh_trigger, "launch_position_1", 0.003251);
   launch_position_2_ = getParam(nh_trigger, "launch_position_2", 0.008298);
   launch_position_3_ = getParam(nh_trigger, "launch_position_3", 0.014457);
+  launch_position_4_ = getParam(nh_trigger, "launch_position_4", 0.018);
   pitch_position_outpost_ = getParam(nh_left_pitch, "pitch_position_outpost", 0.);
   pitch_position_base_ = getParam(nh_left_pitch, "pitch_position_base", 0.);
   yaw_position_outpost_ = getParam(nh_yaw, "yaw_position_outpost", 0.);
@@ -147,57 +148,37 @@ void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     friction_left_sender_->setPoint(qd_);
     if (last_dart_door_status_ - dart_client_cmd_.dart_launch_opening_status ==
         rm_msgs::DartClientCmd::OPENING_OR_CLOSING - rm_msgs::DartClientCmd::OPENED)
+    {
       dart_door_open_times_++;
+      initial_dart_fired_num_ = dart_fired_num_;
+    }
     if (move_state_ == STOP)
     {
-      if (auto_state_ == OUTPOST && dart_fired_num_ <= 2)
-        launch_state_ = FIRST_OUTPOST;
-      if (auto_state_ == OUTPOST && dart_fired_num_ >= 2 && dart_door_open_times_ > 1)
-        launch_state_ = SECOND_OUTPOST;
-      if (auto_state_ == BASE)
-        launch_state_ = ALL_BASE;
+      launch_state_ = AIMED;
     }
     else
       launch_state_ = NONE;
     ROS_INFO_STREAM("launch_state_:" << launch_state_);
     if (dart_client_cmd_.dart_launch_opening_status == rm_msgs::DartClientCmd::OPENED)
     {
-      if (last_launch_state_ - launch_state_ == FIRST_OUTPOST - NONE)
-        has_launched_ = 1;
       switch (launch_state_)
       {
-        case FIRST_OUTPOST:
-          ROS_INFO_STREAM("Shoot outpost first time.");
-          launch_rest_flag_ = 0;
-          launchTwoDart();
-          break;
-        case SECOND_OUTPOST:
-          ROS_INFO_STREAM("Shoot outpost second time");
-          launch_rest_flag_ = 1;
-          launchTwoDart();
-          break;
-        case ALL_BASE:
-          if (!has_launched_)
-          {
-            ROS_INFO_STREAM("Shoot base.");
-            trigger_sender_->setPoint(upward_vel_);
-            if (trigger_position_ >= 0.0183)
-              trigger_sender_->setPoint(0.);
-          }
-          break;
         case NONE:
           ROS_INFO_STREAM("No shooting.");
           trigger_sender_->setPoint(0.);
+          break;
+        case AIMED:
+          ROS_INFO_STREAM("Launching.");
+          launchTwoDart();
           break;
       }
     }
     else
     {
       trigger_sender_->setPoint(0.);
-      has_launched_ = 0;
     }
     last_dart_door_status_ = dart_client_cmd_.dart_launch_opening_status;
-    last_launch_state_ = launch_state_;
+    //    last_launch_state_ = launch_state_;
   }
   else
   {
@@ -230,16 +211,18 @@ void DartManual::leftSwitchDownOn()
 
 void DartManual::leftSwitchMidOn()
 {
-  dart_fired_num_ = 0;
+  getDartFiredNum();
+  initial_dart_fired_num_ = dart_fired_num_;
+  ROS_INFO_STREAM("initial_dart_fired_num:" << initial_dart_fired_num_);
   friction_right_sender_->setPoint(qd_);
   friction_left_sender_->setPoint(qd_);
-  launch_rest_flag_ = 1;
   trigger_sender_->setPoint(0.);
 }
 
 void DartManual::leftSwitchUpOn()
 {
   getDartFiredNum();
+  ROS_INFO_STREAM("dart_fired_num:" << dart_fired_num_);
   launchTwoDart();
   switch (manual_state_)
   {
@@ -285,6 +268,7 @@ void DartManual::rightSwitchMidRise()
 {
   ManualBase::rightSwitchMidRise();
   dart_door_open_times_ = 0;
+  initial_dart_fired_num_ = 0;
   move_state_ = NORMAL;
 }
 
@@ -321,18 +305,20 @@ void DartManual::triggerComeBackProtect()
 
 void DartManual::launchTwoDart()
 {
-  if (dart_fired_num_ < 2)
+  if (dart_fired_num_ < 4)
   {
-    launch_rest_flag_ = 0;
-    trigger_sender_->setPoint(upward_vel_);
-  }
-  if (dart_fired_num_ == 2 && launch_rest_flag_ == 0)
-    trigger_sender_->setPoint(0.);
-  if (dart_fired_num_ >= 2 && launch_rest_flag_ == 1)
-  {
-    trigger_sender_->setPoint(upward_vel_);
-    if (trigger_position_ >= 0.0183)
+    if (dart_fired_num_ - initial_dart_fired_num_ < 2)
+    {
+      trigger_sender_->setPoint(upward_vel_);
+    }
+    else
+    {
       trigger_sender_->setPoint(0.);
+    }
+  }
+  else
+  {
+    trigger_sender_->setPoint(0.);
   }
 }
 
@@ -346,6 +332,8 @@ void DartManual::getDartFiredNum()
     dart_fired_num_ = 2;
   if (trigger_position_ > launch_position_3_)
     dart_fired_num_ = 3;
+  if (trigger_position_ > launch_position_4_)
+    dart_fired_num_ = 4;
 }
 void DartManual::recordPosition(const rm_msgs::DbusData dbus_data)
 {
