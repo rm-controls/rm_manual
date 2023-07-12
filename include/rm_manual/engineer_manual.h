@@ -62,6 +62,11 @@ public:
     double max_position;
     double min_position;
     double current_position;
+    bool judgeJointPosition()
+    {
+      return (abs(current_position - min_position) <= 0.05 || abs(max_position - current_position) <= 0.05) ? true :
+                                                                                                              false;
+    }
   };
   EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
@@ -149,15 +154,18 @@ private:
   void servoAutoExchange();
   void manageExchangeProcess();
 
-  void checkJointLimit();
+  int checkJointsLimit();
+  bool checkTimeOut();
 
-  bool reversal_motion_{}, change_flag_{}, enter_auto_exchange_{ false }, finish_exchange_{ false };
+  bool reversal_motion_{}, change_flag_{}, enter_auto_exchange_{ false }, finish_exchange_{ false },
+      recorded_time_{ false };
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, exchange_process_{ YZ };
   double angular_z_scale_{};
   double fast_speed_scale_{}, normal_speed_scale_{}, low_speed_scale_{}, exchange_speed_scale_{};
   double gyro_scale_{}, fast_gyro_scale_{}, normal_gyro_scale_{}, low_gyro_scale_{}, exchange_gyro_scale_{};
-  double exchange_x_offset_{}, exchange_y_offset_{}, exchange_z_offset_{}, link7_length_{};
-  JointInfo joint1_{}, joint2_{}, joint3_{}, joint4_{}, joint5_{}, joint6_{};
+  double exchange_x_offset_{}, exchange_y_offset_{}, exchange_z_offset_{}, link7_length_{}, max_process_time_{};
+  JointInfo joint1_{}, joint2_{}, joint3_{};
+  std::vector<JointInfo> joints_{};
   std::vector<double> servo_scales_{ 0, 0, 0, 0, 0, 0 }, servo_p_{}, servo_errors_{ 0, 0, 0, 0, 0, 0 },
       servo_error_tolerance{};
   std::string prefix_{}, root_{}, drag_state_{ "on" }, max_temperature_joint_{}, joint_temperature_{},
@@ -171,7 +179,7 @@ private:
   rm_common::MultiDofCommandSender* reversal_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
   rm_common::JointPositionBinaryCommandSender *drag_command_sender_, *joint7_command_sender_;
-  rm_common::CalibrationQueue *calibration_gather_{}, *joint5_calibration_{};
+  rm_common::CalibrationQueue* calibration_gather_{};
   InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_q_event_, ctrl_a_event_, ctrl_z_event_, ctrl_w_event_,
       ctrl_s_event_, ctrl_x_event_, ctrl_e_event_, ctrl_d_event_, ctrl_c_event_, ctrl_b_event_, ctrl_v_event_, z_event_,
       q_event_, e_event_, x_event_, c_event_, v_event_, b_event_, f_event_, shift_z_event_, shift_x_event_,

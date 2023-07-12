@@ -24,6 +24,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
     exchange_z_offset_ = 0.;
   if (!nh_exchange.getParam("link7_length", link7_length_))
     link7_length_ = 0.;
+  if (!nh_exchange.getParam("max_process_time", max_process_time_))
+    max_process_time_ = 3.;
   ROS_INFO_STREAM(exchange_x_offset_);
   ROS_INFO_STREAM(exchange_y_offset_);
   ROS_INFO_STREAM(exchange_z_offset_);
@@ -68,24 +70,15 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   nh_joint_limit.getParam("joint1", temp);
   joint1_.min_position = (double)(temp[0]);
   joint1_.max_position = (double)(temp[1]);
+  joints_.push_back(joint1_);
   nh_joint_limit.getParam("joint2", temp);
   joint2_.min_position = (double)(temp[0]);
   joint1_.max_position = (double)(temp[1]);
+  joints_.push_back(joint2_);
   nh_joint_limit.getParam("joint3", temp);
   joint3_.min_position = (double)(temp[0]);
   joint3_.max_position = (double)(temp[1]);
-  nh_joint_limit.getParam("joint4", temp);
-  joint4_.min_position = (double)(temp[0]);
-  joint4_.max_position = (double)(temp[1]);
-  nh_joint_limit.getParam("joint5", temp);
-  joint5_.min_position = (double)(temp[0]);
-  joint5_.max_position = (double)(temp[1]);
-  nh_joint_limit.getParam("joint6", temp);
-  joint6_.min_position = (double)(temp[0]);
-  joint6_.max_position = (double)(temp[1]);
-  nh_joint_limit.getParam("joint7", temp);
-  joint7_.min_position = (double)(temp[0]);
-  joint7_.max_position = (double)(temp[1]);
+  joints_.push_back(joint3_);
 
   // Sub
   stone_num_sub_ = nh.subscribe<std_msgs::String>("/stone_num", 10, &EngineerManual::stoneNumCallback, this);
@@ -127,7 +120,6 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   nh.getParam("calibration_gather", rpc_value);
   calibration_gather_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   nh.getParam("joint5_calibration", rpc_value);
-  joint5_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
 
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_up_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpRise, this));
@@ -288,7 +280,8 @@ void EngineerManual::manageExchangeProcess()
       move_joint_num++;
       if (abs(servo_errors_[i]) <= servo_error_tolerance[i])
         arrived_joint_num++;
-      ROS_INFO_STREAM("ARRIVED" << arrived_joint_num);
+      else
+        ROS_INFO_STREAM("ARRIVED" << arrived_joint_num);
     }
   }
   if (arrived_joint_num == move_joint_num)
@@ -303,16 +296,54 @@ void EngineerManual::manageExchangeProcess()
       ROS_INFO_STREAM("FINISH");
     }
   }
+  else if (checkTimeOut())
+  {
+    switch (checkJointsLimit())
+    {
+      case 1:
+        ROS_INFO_STREAM("JOINT1 CLOSE LIMIT");
+        break;
+      case 2:
+      {
+        //              set_chassis_goal(joint2_.current_position/2);
+        ROS_INFO_STREAM("JOINT2 CLOSE LIMIT");
+        break;
+      }
+      case 3:
+      {
+        //              set_chassis_goal(joint3_.current_position/2);
+        ROS_INFO_STREAM("JOINT3 CLOSE LIMIT");
+        break;
+      }
+    }
+    exchange_process_++;
+    recorded_time_ = false;
+    ROS_INFO_STREAM("TIME OUT");
+  }
 }
 
-void EngineerManual::checkJointLimit()
+int EngineerManual::checkJointsLimit()
 {
   joint1_.current_position = tf_buffer_.lookupTransform("base_link", "link1", ros::Time(0)).transform.translation.z;
   joint2_.current_position = tf_buffer_.lookupTransform("link1", "link2", ros::Time(0)).transform.translation.x;
   joint3_.current_position = tf_buffer_.lookupTransform("link2", "link3", ros::Time(0)).transform.translation.y;
-  //    joint4_.current_position = tf_buffer_.lookupTransform("link3", "link4", ros::Time(0)).transform.translation.z;
-  //    joint5_.current_position = tf_buffer_.lookupTransform("link4", "link5", ros::Time(0)).transform.translation.z;
-  //    joint6_.current_position = tf_buffer_.lookupTransform("link5", "link6", ros::Time(0)).transform.translation.z;
+  for (int i = 0; i < (int)joints_.size(); ++i)
+  {
+    if (joints_[i].judgeJointPosition())
+      return (i + 1);
+  }
+  return 0;
+}
+
+bool EngineerManual::checkTimeOut()
+{
+  static ros::Time start_time;
+  if (!recorded_time_)
+  {
+    start_time = ros::Time::now();
+    recorded_time_ = true;
+  }
+  return ((ros::Time::now() - start_time).toSec() >= max_process_time_) ? true : false;
 }
 
 void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
@@ -529,7 +560,6 @@ void EngineerManual::leftSwitchDownFall()
 
 void EngineerManual::leftSwitchUpFall()
 {
-  joint5_calibration_->reset();
 }
 
 void EngineerManual::leftSwitchDownRise()
@@ -620,7 +650,6 @@ void EngineerManual::ctrlRPress()
   root_ = "CALIBRATION";
   servo_mode_ = JOINT;
   calibration_gather_->reset();
-  joint5_calibration_->reset();
   runStepQueue("CLOSE_GRIPPER");
   ROS_INFO_STREAM("START CALIBRATE");
 }
