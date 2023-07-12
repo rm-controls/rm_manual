@@ -32,9 +32,6 @@ public:
   {
     NONE,
     AIMED
-    //    FIRST_OUTPOST,
-    //    SECOND_OUTPOST,
-    //    ALL_BASE
   };
 
 protected:
@@ -68,19 +65,17 @@ protected:
   double pitch_outpost_{}, pitch_base_{}, yaw_outpost_{}, yaw_base_{};
   double pitch_position_outpost_{}, yaw_position_outpost_{}, pitch_position_base_{}, yaw_position_base_{};
   double qd_, upward_vel_;
-  std::vector<double> qd_outpost_, qd_base_, yaw_offset_, yaw_offset_base_;
+  std::vector<double> qd_outpost_, qd_base_, yaw_offset_, yaw_offset_base_, launch_position_;
+  std::vector<double> aim_vector_;
   double scale_{ 0.04 }, scale_micro_{ 0.01 };
   bool if_stop_{ true };
 
-  //  bool launch_rest_flag_ = 0, has_launched_ = 0;
   rm_msgs::DbusData dbus_data_;
   rm_msgs::DartClientCmd dart_client_cmd_;
   rm_msgs::GameRobotStatus game_robot_status_;
   rm_msgs::GameStatus game_status_;
 
   int dart_fired_num_ = 0, initial_dart_fired_num_ = 0;
-  double launch_position_1_ = 0.003251, launch_position_2_ = 0.008298, launch_position_3_ = 0.014457,
-         launch_position_4_ = 0.018;
   double trigger_position_ = 0., pitch_velocity_ = 0., yaw_velocity_ = 0.;
   InputEvent wheel_clockwise_event_, wheel_anticlockwise_event_;
 
@@ -89,6 +84,5 @@ protected:
   int outpost_hp_;
   int dart_door_open_times_ = 0, last_dart_door_status_ = 1;
   int auto_state_ = OUTPOST, manual_state_ = OUTPOST, move_state_ = NORMAL, launch_state_ = NONE;
-  //      last_launch_state_ = FIRST_OUTPOST;
 };
 }  // namespace rm_manual

@@ -8,6 +8,51 @@ namespace rm_manual
 {
 DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : ManualBase(nh, nh_referee)
 {
+  ros::NodeHandle auto_nh(nh, "auto");
+  XmlRpc::XmlRpcValue aim_list, position;
+  auto_nh.getParam("aim_list", aim_list);
+  auto_nh.getParam("position", position);
+  for (int i = 0; i < aim_list.size(); ++i)
+  {
+    ROS_ASSERT(aim_list[i].getType() == XmlRpc::XmlRpcValue::TypeArray);
+
+    ROS_ASSERT(aim_list[i][0].getType() == XmlRpc::XmlRpcValue::TypeDouble and
+               aim_list[i][1].getType() == XmlRpc::XmlRpcValue::TypeDouble and
+               aim_list[i][2].getType() == XmlRpc::XmlRpcValue::TypeDouble and
+               aim_list[i][3].getType() == XmlRpc::XmlRpcValue::TypeDouble and
+               aim_list[i][4].getType() == XmlRpc::XmlRpcValue::TypeDouble);
+    for (int j = 0; j < 5; ++j)
+    {
+      if (i == 0)
+        yaw_offset_.push_back(aim_list[i][j]);
+      if (i == 1)
+        qd_outpost_.push_back(aim_list[i][j]);
+      if (i == 2)
+        yaw_offset_base_.push_back(aim_list[i][j]);
+      if (i == 3)
+        qd_base_.push_back(aim_list[i][j]);
+      if (i == 4)
+        launch_position_.push_back(aim_list[i][j]);
+    }
+  }
+  qd_ = qd_outpost_[0];
+  for (int i = 0; i < position.size(); ++i)
+  {
+    ROS_ASSERT(position[i].getType() == XmlRpc::XmlRpcValue::TypeArray);
+
+    ROS_ASSERT(position[i][0].getType() == XmlRpc::XmlRpcValue::TypeDouble and
+               position[i][1].getType() == XmlRpc::XmlRpcValue::TypeDouble);
+    if (i == 0)
+    {
+      yaw_position_outpost_ = static_cast<double>(position[i][0]);
+      pitch_position_outpost_ = static_cast<double>(position[i][1]);
+    }
+    if (i == 1)
+    {
+      yaw_position_base_ = static_cast<double>(position[i][0]);
+      pitch_position_base_ = static_cast<double>(position[i][1]);
+    }
+  }
   ros::NodeHandle nh_yaw = ros::NodeHandle(nh, "yaw");
   ros::NodeHandle nh_left_pitch = ros::NodeHandle(nh, "left_pitch");
   yaw_sender_ = new rm_common::JointPointCommandSender(nh_yaw, joint_state_);
@@ -15,48 +60,6 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
   ros::NodeHandle nh_trigger = ros::NodeHandle(nh, "trigger");
   ros::NodeHandle nh_friction_left = ros::NodeHandle(nh, "friction_left");
   ros::NodeHandle nh_friction_right = ros::NodeHandle(nh, "friction_right");
-  XmlRpc::XmlRpcValue qd_outpost, qd_base, yaw_offset, yaw_offset_base;
-  nh_friction_left.getParam("qd_outpost", qd_outpost);
-  ROS_ASSERT(qd_outpost.getType() == XmlRpc::XmlRpcValue::TypeArray);
-  ROS_ASSERT(qd_outpost.size() == 5);
-  for (int i = 0; i < qd_outpost.size(); ++i)
-    ROS_ASSERT(qd_outpost[i].getType() == XmlRpc::XmlRpcValue::TypeDouble);
-
-  nh_friction_left.getParam("qd_base", qd_base);
-  ROS_ASSERT(qd_base.getType() == XmlRpc::XmlRpcValue::TypeArray);
-  ROS_ASSERT(qd_base.size() == 5);
-  for (int i = 0; i < qd_outpost.size(); ++i)
-    ROS_ASSERT(qd_base[i].getType() == XmlRpc::XmlRpcValue::TypeDouble);
-
-  nh_yaw.getParam("yaw_offset", yaw_offset);
-  ROS_ASSERT(yaw_offset.getType() == XmlRpc::XmlRpcValue::TypeArray);
-  ROS_ASSERT(yaw_offset.size() == 5);
-  for (int i = 0; i < yaw_offset.size(); ++i)
-    ROS_ASSERT(yaw_offset[i].getType() == XmlRpc::XmlRpcValue::TypeDouble);
-
-  nh_yaw.getParam("yaw_offset_base", yaw_offset_base);
-  ROS_ASSERT(yaw_offset_base.getType() == XmlRpc::XmlRpcValue::TypeArray);
-  ROS_ASSERT(yaw_offset_base.size() == 5);
-  for (int i = 0; i < yaw_offset_base.size(); ++i)
-    ROS_ASSERT(yaw_offset_base[i].getType() == XmlRpc::XmlRpcValue::TypeDouble);
-
-  for (int i = 0; i < 5; i++)
-  {
-    qd_outpost_.push_back(qd_outpost[i]);
-    qd_base_.push_back(qd_base[i]);
-    yaw_offset_.push_back(yaw_offset[i]);
-    yaw_offset_base_.push_back(yaw_offset_base[i]);
-  }
-  qd_ = qd_outpost_[0];
-
-  launch_position_1_ = getParam(nh_trigger, "launch_position_1", 0.003251);
-  launch_position_2_ = getParam(nh_trigger, "launch_position_2", 0.008298);
-  launch_position_3_ = getParam(nh_trigger, "launch_position_3", 0.014457);
-  launch_position_4_ = getParam(nh_trigger, "launch_position_4", 0.018);
-  pitch_position_outpost_ = getParam(nh_left_pitch, "pitch_position_outpost", 0.);
-  pitch_position_base_ = getParam(nh_left_pitch, "pitch_position_base", 0.);
-  yaw_position_outpost_ = getParam(nh_yaw, "yaw_position_outpost", 0.);
-  yaw_position_base_ = getParam(nh_yaw, "yaw_position_base", 0.);
   scale_ = getParam(nh_left_pitch, "scale", 0.);
   scale_micro_ = getParam(nh_left_pitch, "scale_micro", 0.);
   upward_vel_ = getParam(nh_trigger, "upward_vel", 0.);
@@ -324,15 +327,15 @@ void DartManual::launchTwoDart()
 
 void DartManual::getDartFiredNum()
 {
-  if (trigger_position_ < launch_position_1_)
+  if (trigger_position_ < launch_position_[1])
     dart_fired_num_ = 0;
-  if (trigger_position_ > launch_position_1_)
+  if (trigger_position_ > launch_position_[1])
     dart_fired_num_ = 1;
-  if (trigger_position_ > launch_position_2_)
+  if (trigger_position_ > launch_position_[2])
     dart_fired_num_ = 2;
-  if (trigger_position_ > launch_position_3_)
+  if (trigger_position_ > launch_position_[3])
     dart_fired_num_ = 3;
-  if (trigger_position_ > launch_position_4_)
+  if (trigger_position_ > launch_position_[4])
     dart_fired_num_ = 4;
 }
 void DartManual::recordPosition(const rm_msgs::DbusData dbus_data)
