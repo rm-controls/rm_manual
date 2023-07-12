@@ -374,6 +374,7 @@ void ChassisGimbalShooterManual::rPress()
 {
   if (!lob_)
   {
+    gimbal_cmd_sender_->setEject(true);
     lob_ = true;
     if (camera_switch_cmd_sender_)
       camera_switch_cmd_sender_->switchCamera();
@@ -384,6 +385,7 @@ void ChassisGimbalShooterManual::rPress()
   }
   else
   {
+    gimbal_cmd_sender_->setEject(false);
     lob_ = false;
     if (scope_cmd_sender_)
       scope_cmd_sender_->off();
