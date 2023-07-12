@@ -154,11 +154,10 @@ void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     {
       dart_door_open_times_++;
       initial_dart_fired_num_ = dart_fired_num_;
+      has_stopped = false;
     }
     if (move_state_ == STOP)
-    {
       launch_state_ = AIMED;
-    }
     else
       launch_state_ = NONE;
     ROS_INFO_STREAM("launch_state_:" << launch_state_);
@@ -181,7 +180,6 @@ void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
       trigger_sender_->setPoint(0.);
     }
     last_dart_door_status_ = dart_client_cmd_.dart_launch_opening_status;
-    //    last_launch_state_ = launch_state_;
   }
   else
   {
@@ -216,7 +214,7 @@ void DartManual::leftSwitchMidOn()
 {
   getDartFiredNum();
   initial_dart_fired_num_ = dart_fired_num_;
-  ROS_INFO_STREAM("initial_dart_fired_num:" << initial_dart_fired_num_);
+  has_stopped = false;
   friction_right_sender_->setPoint(qd_);
   friction_left_sender_->setPoint(qd_);
   trigger_sender_->setPoint(0.);
@@ -225,7 +223,6 @@ void DartManual::leftSwitchMidOn()
 void DartManual::leftSwitchUpOn()
 {
   getDartFiredNum();
-  ROS_INFO_STREAM("dart_fired_num:" << dart_fired_num_);
   launchTwoDart();
   switch (manual_state_)
   {
@@ -306,13 +303,35 @@ void DartManual::triggerComeBackProtect()
     trigger_sender_->setPoint(0.);
 }
 
+void DartManual::waitAfterLaunch(double time)
+{
+  if (!has_stopped)
+  {
+    stop_time_ = ros::Time::now();
+  }
+  if (ros::Time::now() - stop_time_ < ros::Duration(time))
+  {
+    trigger_sender_->setPoint(0.);
+    has_stopped = true;
+  }
+  else
+  {
+    trigger_sender_->setPoint(upward_vel_);
+  }
+}
+
 void DartManual::launchTwoDart()
 {
   if (dart_fired_num_ < 4)
   {
     if (dart_fired_num_ - initial_dart_fired_num_ < 2)
     {
-      trigger_sender_->setPoint(upward_vel_);
+      if (dart_fired_num_ - initial_dart_fired_num_ == 1)
+      {
+        waitAfterLaunch(2.0);
+      }
+      else
+        trigger_sender_->setPoint(upward_vel_);
     }
     else
     {

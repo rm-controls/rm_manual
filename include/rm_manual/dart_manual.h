@@ -49,6 +49,7 @@ protected:
   void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void move(rm_common::JointPointCommandSender* joint, double ch);
   void recordPosition(const rm_msgs::DbusData dbus_data);
+  void waitAfterLaunch(const double time);
   void launchTwoDart();
   void getDartFiredNum();
   void triggerComeBackProtect();
@@ -66,9 +67,8 @@ protected:
   double pitch_position_outpost_{}, yaw_position_outpost_{}, pitch_position_base_{}, yaw_position_base_{};
   double qd_, upward_vel_;
   std::vector<double> qd_outpost_, qd_base_, yaw_offset_, yaw_offset_base_, launch_position_;
-  std::vector<double> aim_vector_;
   double scale_{ 0.04 }, scale_micro_{ 0.01 };
-  bool if_stop_{ true };
+  bool if_stop_{ true }, has_stopped{ false };
 
   rm_msgs::DbusData dbus_data_;
   rm_msgs::DartClientCmd dart_client_cmd_;
@@ -78,7 +78,7 @@ protected:
   int dart_fired_num_ = 0, initial_dart_fired_num_ = 0;
   double trigger_position_ = 0., pitch_velocity_ = 0., yaw_velocity_ = 0.;
   InputEvent wheel_clockwise_event_, wheel_anticlockwise_event_;
-
+  ros::Time stop_time_;
   ros::Subscriber dart_client_cmd_sub_;
   InputEvent dart_client_cmd_event_;
   int outpost_hp_;
