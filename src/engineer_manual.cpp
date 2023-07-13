@@ -523,7 +523,11 @@ void EngineerManual::chassisOutputOn()
 void EngineerManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   servo_mode_ = SERVO;
+  gimbal_mode_ = RATE;
+  servo_reset_caller_->callService();
+  action_client_.cancelAllGoals();
   ROS_INFO_STREAM(servo_mode_);
 }
 
@@ -532,6 +536,7 @@ void EngineerManual::rightSwitchMidRise()
   ChassisGimbalManual::rightSwitchMidRise();
   servo_mode_ = JOINT;
   gimbal_mode_ = RATE;
+  gimbal_cmd_sender_->setZero();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
 
@@ -553,13 +558,16 @@ void EngineerManual::leftSwitchUpRise()
 
 void EngineerManual::leftSwitchDownFall()
 {
-  runStepQueue("HOME_ZERO_STONE");
+  runStepQueue("EXCHANGE_WAIT");
   drag_command_sender_->on();
   drag_state_ = "on";
 }
 
 void EngineerManual::leftSwitchUpFall()
 {
+  runStepQueue("HOME_ZERO_STONE");
+  drag_command_sender_->on();
+  drag_state_ = "on";
 }
 
 void EngineerManual::leftSwitchDownRise()
