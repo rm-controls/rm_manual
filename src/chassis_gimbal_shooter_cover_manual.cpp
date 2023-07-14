@@ -178,25 +178,41 @@ void ChassisGimbalShooterCoverManual::zRelease()
 void ChassisGimbalShooterCoverManual::wPress()
 {
   ChassisGimbalShooterManual::wPress();
-  last_switch_time_ = ros::Time::now();
+  if (!switch_aiming_mode_)
+  {
+    switch_aiming_mode_ = true;
+    last_switch_time_ = ros::Time::now();
+  }
 }
 
 void ChassisGimbalShooterCoverManual::aPress()
 {
   ChassisGimbalShooterManual::aPress();
-  last_switch_time_ = ros::Time::now();
+  if (!switch_aiming_mode_)
+  {
+    switch_aiming_mode_ = true;
+    last_switch_time_ = ros::Time::now();
+  }
 }
 
 void ChassisGimbalShooterCoverManual::sPress()
 {
   ChassisGimbalShooterManual::sPress();
-  last_switch_time_ = ros::Time::now();
+  if (!switch_aiming_mode_)
+  {
+    switch_aiming_mode_ = true;
+    last_switch_time_ = ros::Time::now();
+  }
 }
 
 void ChassisGimbalShooterCoverManual::dPress()
 {
   ChassisGimbalShooterManual::dPress();
-  last_switch_time_ = ros::Time::now();
+  if (!switch_aiming_mode_)
+  {
+    switch_aiming_mode_ = true;
+    last_switch_time_ = ros::Time::now();
+  }
 }
 
 void ChassisGimbalShooterCoverManual::wPressing()
@@ -257,6 +273,34 @@ void ChassisGimbalShooterCoverManual::dPressing()
     switch_detection_srv_->callService();
     switch_buff_type_srv_->callService();
   }
+}
+
+void ChassisGimbalShooterCoverManual::wRelease()
+{
+  if ((ros::Time::now() - last_switch_time_).toSec() > 1.0 &&
+      switch_buff_srv_->getTarget() == rm_msgs::StatusChangeRequest::ARMOR)
+    switch_aiming_mode_ = false;
+}
+
+void ChassisGimbalShooterCoverManual::aRelease()
+{
+  if ((ros::Time::now() - last_switch_time_).toSec() > 1.0 &&
+      switch_buff_srv_->getTarget() == rm_msgs::StatusChangeRequest::ARMOR)
+    switch_aiming_mode_ = false;
+}
+
+void ChassisGimbalShooterCoverManual::sRelease()
+{
+  if ((ros::Time::now() - last_switch_time_).toSec() > 1.0 &&
+      switch_buff_srv_->getTarget() == rm_msgs::StatusChangeRequest::ARMOR)
+    switch_aiming_mode_ = false;
+}
+
+void ChassisGimbalShooterCoverManual::dRelease()
+{
+  if ((ros::Time::now() - last_switch_time_).toSec() > 1.0 &&
+      switch_buff_srv_->getTarget() == rm_msgs::StatusChangeRequest::ARMOR)
+    switch_aiming_mode_ = false;
 }
 
 void ChassisGimbalShooterCoverManual::ctrlZPress()
