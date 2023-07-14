@@ -48,14 +48,23 @@ public:
     EXCHANGE
   };
 
-  enum ExchangeProcess
+  enum MoveProcess
   {
     YZ,
     ROLL_YAW,
     XYZ,
     PITCH,
     PUSH,
-    FINISH,
+    DONE
+  };
+
+  enum ExchangeProcess
+  {
+    FIND,
+    PRE_ADJUST,
+    MOVE,
+    POST_ADJUST,
+    FINISH
   };
 
   struct JointInfo
@@ -73,11 +82,11 @@ public:
     }
   };
 
-  struct ExchangeInfo
+  struct ServoMoveInfo
   {
-    int process{ YZ };
-    ros::Time process_start_time{};
-    bool finish_exchange{ false }, recorded_time{ false };
+    int servo_move_process{ YZ };
+    ros::Time servo_process_start_time{};
+    bool finish_servo_move{ false }, recorded_time{ false };
     std_msgs::Bool enter_auto_exchange{};
     double single_process_max_time{}, link7_length{};
     std::vector<double> xyz_offset{ 0, 0, 0 };
@@ -95,40 +104,40 @@ public:
     }
     void nextProcess()
     {
-      if (process != FINISH)
+      if (servo_move_process != DONE)
       {
-        process++;
-        process_start_time = ros::Time::now();
+        servo_move_process++;
+        servo_process_start_time = ros::Time::now();
         recorded_time = false;
       }
       else
       {
-        finish_exchange = true;
+        finish_servo_move = true;
         recorded_time = false;
-        process_start_time = ros::Time::now();
-        ROS_INFO_STREAM("FINISH");
+        servo_process_start_time = ros::Time::now();
+        ROS_INFO_STREAM("DONE");
       }
     }
     bool checkTimeOut()
     {
-      ROS_INFO_STREAM((ros::Time::now() - process_start_time).toSec());
+      ROS_INFO_STREAM((ros::Time::now() - servo_process_start_time).toSec());
       if (!recorded_time)
       {
-        process_start_time = ros::Time::now();
+        servo_process_start_time = ros::Time::now();
         recorded_time = true;
       }
-      return ((ros::Time::now() - process_start_time).toSec() >= single_process_max_time) ? true : false;
+      return ((ros::Time::now() - servo_process_start_time).toSec() >= single_process_max_time) ? true : false;
     }
     void quitExchange()
     {
-      process = YZ;
+      servo_move_process = YZ;
       recorded_time = false;
       enter_auto_exchange.data = false;
-      finish_exchange = false;
+      finish_servo_move = false;
     }
     void printProcess()
     {
-      switch (process)
+      switch (servo_move_process)
       {
         case YZ:
           ROS_INFO_STREAM("YZ");
@@ -231,12 +240,12 @@ private:
   void stoneNumCallback(const std_msgs::String ::ConstPtr& data);
 
   void updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data);
-  void servoAutoExchange();
-  void enterAutoExchange();
-  void quitAutoExchange();
-  void computeServoError();
-  void computeServoScale();
-  void manageExchangeProcess();
+  void servoAutoMove();
+  void enterServoAutoMove();
+  void quitServoAutoMove();
+  void computeServoMoveError();
+  void computeServoMoveScale();
+  void manageServoMoveProcess();
 
   int checkJointsLimit();
 
@@ -249,7 +258,7 @@ private:
       reversal_state_{}, gripper_state_{};
   JointInfo joint1_{}, joint2_{}, joint3_{};
   std::vector<JointInfo> joints_{};
-  ExchangeInfo exchange_info_{};
+  ServoMoveInfo servo_move_info_{};
 
   ros::Publisher exchanger_update_pub_;
   ros::Subscriber gripper_state_sub_, stone_num_sub_;

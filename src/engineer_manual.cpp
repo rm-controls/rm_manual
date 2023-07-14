@@ -15,46 +15,46 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
   // Auto Exchange
-  ros::NodeHandle nh_exchange(nh, "exchange");
+  ros::NodeHandle nh_servo_move(nh, "servo_move");
 
-  if (!nh_exchange.getParam("link7_length", exchange_info_.link7_length))
-    exchange_info_.link7_length = 0.;
+  if (!nh_servo_move.getParam("link7_length", servo_move_info_.link7_length))
+    servo_move_info_.link7_length = 0.;
 
   XmlRpc::XmlRpcValue config_value;
-  if (nh_exchange.getParam("xyz_offset", config_value))
+  if (nh_servo_move.getParam("xyz_offset", config_value))
   {
-    for (int i = 0; i < (int)exchange_info_.xyz_offset.size(); ++i)
+    for (int i = 0; i < (int)servo_move_info_.xyz_offset.size(); ++i)
     {
-      exchange_info_.xyz_offset[i] = (double)config_value[i];
-      ROS_INFO_STREAM(exchange_info_.xyz_offset[i]);
+      servo_move_info_.xyz_offset[i] = (double)config_value[i];
+      ROS_INFO_STREAM(servo_move_info_.xyz_offset[i]);
     }
   }
-  if (nh_exchange.getParam("servo_p", config_value))
+  if (nh_servo_move.getParam("servo_p", config_value))
   {
-    for (int i = 0; i < (int)exchange_info_.servo_p.size(); ++i)
+    for (int i = 0; i < (int)servo_move_info_.servo_p.size(); ++i)
     {
-      exchange_info_.servo_p[i] = (double)config_value[i];
-      ROS_INFO_STREAM(exchange_info_.servo_p[i]);
+      servo_move_info_.servo_p[i] = (double)config_value[i];
+      ROS_INFO_STREAM(servo_move_info_.servo_p[i]);
     }
   }
-  if (nh_exchange.getParam("servo_error_tolerance", config_value))
+  if (nh_servo_move.getParam("servo_error_tolerance", config_value))
   {
-    for (int i = 0; i < (int)exchange_info_.servo_error_tolerance.size(); ++i)
+    for (int i = 0; i < (int)servo_move_info_.servo_error_tolerance.size(); ++i)
     {
-      exchange_info_.servo_error_tolerance[i] = (double)config_value[i];
-      ROS_INFO_STREAM(exchange_info_.servo_error_tolerance[i]);
+      servo_move_info_.servo_error_tolerance[i] = (double)config_value[i];
+      ROS_INFO_STREAM(servo_move_info_.servo_error_tolerance[i]);
     }
   }
-  if (nh_exchange.getParam("servo_error_tolerance", config_value))
+  if (nh_servo_move.getParam("servo_error_tolerance", config_value))
   {
-    for (int i = 0; i < (int)exchange_info_.servo_error_tolerance.size(); ++i)
+    for (int i = 0; i < (int)servo_move_info_.servo_error_tolerance.size(); ++i)
     {
-      exchange_info_.servo_error_tolerance[i] = (double)config_value[i];
-      ROS_INFO_STREAM(exchange_info_.servo_error_tolerance[i]);
+      servo_move_info_.servo_error_tolerance[i] = (double)config_value[i];
+      ROS_INFO_STREAM(servo_move_info_.servo_error_tolerance[i]);
     }
   }
-  if (!nh_exchange.getParam("max_process_time", exchange_info_.single_process_max_time))
-    exchange_info_.single_process_max_time = 3.;
+  if (!nh_servo_move.getParam("max_process_time", servo_move_info_.single_process_max_time))
+    servo_move_info_.single_process_max_time = 3.;
 
   // Joint Limit
   ros::NodeHandle nh_joint_limit(nh, "joint_limit");
@@ -177,18 +177,18 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  if (exchange_info_.enter_auto_exchange.data != true)
+  if (servo_move_info_.enter_auto_exchange.data != true)
   {
     servo_command_sender_->setLinearVel(dbus_data->ch_l_y, -dbus_data->ch_l_x, -dbus_data->wheel);
     servo_command_sender_->setAngularVel(dbus_data->ch_r_x, dbus_data->ch_r_y, angular_z_scale_);
   }
   else
   {
-    if (!exchange_info_.finish_exchange)
+    if (!servo_move_info_.finish_servo_move)
     {
-      servo_command_sender_->setLinearVel(exchange_info_.servo_scales[0], exchange_info_.servo_scales[1],
-                                          exchange_info_.servo_scales[2]);
-      servo_command_sender_->setAngularVel(exchange_info_.servo_scales[3], 0., exchange_info_.servo_scales[5]);
+      servo_command_sender_->setLinearVel(servo_move_info_.servo_scales[0], servo_move_info_.servo_scales[1],
+                                          servo_move_info_.servo_scales[2]);
+      servo_command_sender_->setAngularVel(servo_move_info_.servo_scales[3], 0., servo_move_info_.servo_scales[5]);
     }
     else
       servo_command_sender_->setZero();
@@ -196,20 +196,20 @@ void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ChassisGimbalManual::updatePc(dbus_data);
 }
 
-void EngineerManual::enterAutoExchange()
+void EngineerManual::enterServoAutoMove()
 {
-  servoAutoExchange();
-  exchange_info_.enter_auto_exchange.data = true;
+  servoAutoMove();
+  servo_move_info_.enter_auto_exchange.data = true;
 }
 
-void EngineerManual::quitAutoExchange()
+void EngineerManual::quitServoAutoMove()
 {
   servo_mode_ = JOINT;
-  exchange_info_.quitExchange();
-  exchanger_update_pub_.publish(exchange_info_.enter_auto_exchange);
+  servo_move_info_.quitExchange();
+  exchanger_update_pub_.publish(servo_move_info_.enter_auto_exchange);
 }
 
-void EngineerManual::computeServoError()
+void EngineerManual::computeServoMoveError()
 {
   double roll, pitch, yaw;
   std::vector<double> errors;
@@ -223,78 +223,78 @@ void EngineerManual::computeServoError()
   {
     ROS_WARN("%s", ex.what());
   }
-  exchange_info_.initComputerValue();
-  exchange_info_.servo_errors[0] =
-      (exchange_info_.process == PUSH ? (tools2exchanger.transform.translation.x) :
-                                        (tools2exchanger.transform.translation.x - exchange_info_.xyz_offset[0]));
-  exchange_info_.servo_errors[1] = tools2exchanger.transform.translation.y - exchange_info_.xyz_offset[1];
-  exchange_info_.servo_errors[2] = tools2exchanger.transform.translation.z - exchange_info_.xyz_offset[2];
-  exchange_info_.servo_errors[3] = roll;
-  exchange_info_.servo_errors[4] = pitch;
-  exchange_info_.servo_errors[5] = yaw;
+  servo_move_info_.initComputerValue();
+  servo_move_info_.servo_errors[0] = (servo_move_info_.servo_move_process == PUSH ?
+                                          (tools2exchanger.transform.translation.x) :
+                                          (tools2exchanger.transform.translation.x - servo_move_info_.xyz_offset[0]));
+  servo_move_info_.servo_errors[1] = tools2exchanger.transform.translation.y - servo_move_info_.xyz_offset[1];
+  servo_move_info_.servo_errors[2] = tools2exchanger.transform.translation.z - servo_move_info_.xyz_offset[2];
+  servo_move_info_.servo_errors[3] = roll;
+  servo_move_info_.servo_errors[4] = pitch;
+  servo_move_info_.servo_errors[5] = yaw;
 }
-void EngineerManual::computeServoScale()
+void EngineerManual::computeServoMoveScale()
 {
-  computeServoError();
-  switch (exchange_info_.process)
+  computeServoMoveError();
+  switch (servo_move_info_.servo_move_process)
   {
     case YZ:
     {
       for (int i = 1; i < 3; ++i)
       {
-        exchange_info_.servo_scales[i] = exchange_info_.servo_errors[i] * exchange_info_.servo_p[i];
+        servo_move_info_.servo_scales[i] = servo_move_info_.servo_errors[i] * servo_move_info_.servo_p[i];
       }
     }
     break;
     case ROLL_YAW:
     {
-      exchange_info_.servo_scales[3] = exchange_info_.servo_errors[3] * exchange_info_.servo_p[3];
-      exchange_info_.servo_scales[5] = exchange_info_.servo_errors[5] * exchange_info_.servo_p[5];
+      servo_move_info_.servo_scales[3] = servo_move_info_.servo_errors[3] * servo_move_info_.servo_p[3];
+      servo_move_info_.servo_scales[5] = servo_move_info_.servo_errors[5] * servo_move_info_.servo_p[5];
     }
     break;
     case XYZ:
     {
       for (int i = 0; i < 3; ++i)
-        exchange_info_.servo_scales[i] = exchange_info_.servo_errors[i] * exchange_info_.servo_p[i];
+        servo_move_info_.servo_scales[i] = servo_move_info_.servo_errors[i] * servo_move_info_.servo_p[i];
     }
     break;
     case PITCH:
     {
-      joint7_command_sender_->getMsg()->data = exchange_info_.servo_errors[4];
+      joint7_command_sender_->getMsg()->data = servo_move_info_.servo_errors[4];
     }
     break;
     case PUSH:
     {
-      exchange_info_.servo_scales[0] = exchange_info_.servo_errors[0] * exchange_info_.servo_p[0];
+      servo_move_info_.servo_scales[0] = servo_move_info_.servo_errors[0] * servo_move_info_.servo_p[0];
     }
     break;
   }
 }
 
-void EngineerManual::servoAutoExchange()
+void EngineerManual::servoAutoMove()
 {
-  if (!exchange_info_.finish_exchange)
+  if (!servo_move_info_.finish_servo_move)
   {
-    exchange_info_.printProcess();
+    servo_move_info_.printProcess();
     servo_mode_ = SERVO;
-    computeServoScale();
-    manageExchangeProcess();
+    computeServoMoveScale();
+    manageServoMoveProcess();
   }
 }
 
-void EngineerManual::manageExchangeProcess()
+void EngineerManual::manageServoMoveProcess()
 {
   int move_joint_num = 0, arrived_joint_num = 0;
-  for (int i = 0; i < (int)exchange_info_.servo_scales.size(); ++i)
+  for (int i = 0; i < (int)servo_move_info_.servo_scales.size(); ++i)
   {
-    if (exchange_info_.servo_scales[i] != 0)
+    if (servo_move_info_.servo_scales[i] != 0)
     {
       move_joint_num++;
-      if (abs(exchange_info_.servo_errors[i]) <= exchange_info_.servo_error_tolerance[i])
+      if (abs(servo_move_info_.servo_errors[i]) <= servo_move_info_.servo_error_tolerance[i])
         arrived_joint_num++;
     }
   }
-  if (exchange_info_.checkTimeOut())
+  if (servo_move_info_.checkTimeOut())
   {
     switch (checkJointsLimit())
     {
@@ -317,11 +317,11 @@ void EngineerManual::manageExchangeProcess()
         break;
       }
     }
-    exchange_info_.nextProcess();
+    servo_move_info_.nextProcess();
     ROS_INFO_STREAM("TIME OUT");
   }
   else if (arrived_joint_num == move_joint_num)
-    exchange_info_.nextProcess();
+    servo_move_info_.nextProcess();
 }
 
 int EngineerManual::checkJointsLimit()
@@ -465,9 +465,9 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   if (dbus_data->wheel == 1)
-    enterAutoExchange();
+    enterServoAutoMove();
   else
-    quitAutoExchange();
+    quitServoAutoMove();
   if (!reversal_motion_ && servo_mode_ == JOINT)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
@@ -961,12 +961,12 @@ void EngineerManual::shiftBRelease()
 
 void EngineerManual::shiftRRelease()
 {
-  exchange_info_.quitExchange();
+  servo_move_info_.quitExchange();
 }
 
 void EngineerManual::shiftRPressing()
 {
-  servoAutoExchange();
+  enterServoAutoMove();
 }
 
 void EngineerManual::shiftXPress()
