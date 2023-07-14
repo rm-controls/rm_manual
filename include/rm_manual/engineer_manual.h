@@ -69,10 +69,8 @@ public:
 
   struct JointInfo
   {
-    double offset;
-    double max_position;
-    double min_position;
-    double current_position;
+    int move_direct;
+    double offset, max_position, min_position, current_position, max_vel;
     bool judgeJointPosition()
     {
       return (abs(current_position - offset - min_position) <= 0.01 ||
@@ -84,11 +82,15 @@ public:
 
   struct FindInfo
   {
-    geometry_msgs::TransformStamped base2yaw_{}, yaw2pitch_{};
+    bool is_search_finish_{ false };
+    JointInfo yaw{}, pitch{};
+    double search_angle{}, confirm_lock_time{};
   };
+
   struct ExchangeInfo
   {
   };
+
   struct ServoMoveInfo
   {
     int servo_move_process{ YZ };
