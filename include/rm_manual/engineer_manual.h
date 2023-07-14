@@ -54,20 +54,100 @@ public:
     ROLL_YAW,
     XYZ,
     PITCH,
+    PUSH,
     FINISH,
   };
 
   struct JointInfo
   {
+    double offset;
     double max_position;
     double min_position;
     double current_position;
     bool judgeJointPosition()
     {
-      return (abs(current_position - min_position) <= 0.05 || abs(max_position - current_position) <= 0.05) ? true :
-                                                                                                              false;
+      return (abs(current_position - offset - min_position) <= 0.01 ||
+              abs(max_position + offset - current_position) <= 0.01) ?
+                 true :
+                 false;
     }
   };
+
+  struct ExchangeInfo
+  {
+    int process{ YZ };
+    ros::Time process_start_time{};
+    bool enter_auto_exchange{ false }, finish_exchange{ false }, recorded_time{ false };
+    double single_process_max_time{}, link7_length{};
+    std::vector<double> xyz_offset{ 0, 0, 0 };
+    std::vector<double> servo_scales{ 0, 0, 0, 0, 0, 0 };
+    std::vector<double> servo_p{ 0, 0, 0, 0, 0, 0 };
+    std::vector<double> servo_errors{ 0, 0, 0, 0, 0, 0 };
+    std::vector<double> servo_error_tolerance{ 0, 0, 0, 0, 0, 0 };
+    void initComputerValue()
+    {
+      for (int i = 0; i < (int)servo_scales.size(); ++i)
+      {
+        servo_errors[i] = 0;
+        servo_scales[i] = 0;
+      }
+    }
+    void nextProcess()
+    {
+      if (process != FINISH)
+      {
+        process++;
+        process_start_time = ros::Time::now();
+        recorded_time = false;
+      }
+      else
+      {
+        finish_exchange = true;
+        recorded_time = false;
+        process_start_time = ros::Time::now();
+        ROS_INFO_STREAM("FINISH");
+      }
+    }
+    bool checkTimeOut()
+    {
+      ROS_INFO_STREAM((ros::Time::now() - process_start_time).toSec());
+      if (!recorded_time)
+      {
+        process_start_time = ros::Time::now();
+        recorded_time = true;
+      }
+      return ((ros::Time::now() - process_start_time).toSec() >= single_process_max_time) ? true : false;
+    }
+    void quitExchange()
+    {
+      process = YZ;
+      recorded_time = false;
+      enter_auto_exchange = false;
+      finish_exchange = false;
+    }
+    void printProcess()
+    {
+      switch (process)
+      {
+        case YZ:
+          ROS_INFO_STREAM("YZ");
+          break;
+        case ROLL_YAW:
+          ROS_INFO_STREAM("ROLL_YAW");
+          break;
+        case XYZ:
+          ROS_INFO_STREAM("XYZ");
+          break;
+        case PITCH:
+          ROS_INFO_STREAM("PITCH");
+          break;
+        case PUSH:
+          ROS_INFO_STREAM("PUSH");
+          break;
+      }
+    }
+  };
+
   EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
@@ -149,27 +229,25 @@ private:
   void gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data);
   void stoneNumCallback(const std_msgs::String ::ConstPtr& data);
 
-  void computeServoScale();
   void updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data);
   void servoAutoExchange();
+  void quitAutoExchange();
+  void computeServoError();
+  void computeServoScale();
   void manageExchangeProcess();
 
   int checkJointsLimit();
-  bool checkTimeOut();
 
-  bool reversal_motion_{}, change_flag_{}, enter_auto_exchange_{ false }, finish_exchange_{ false },
-      recorded_time_{ false };
-  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{}, exchange_process_{ YZ };
+  bool reversal_motion_{}, change_flag_{};
+  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{};
   double angular_z_scale_{};
   double fast_speed_scale_{}, normal_speed_scale_{}, low_speed_scale_{}, exchange_speed_scale_{};
   double gyro_scale_{}, fast_gyro_scale_{}, normal_gyro_scale_{}, low_gyro_scale_{}, exchange_gyro_scale_{};
-  double exchange_x_offset_{}, exchange_y_offset_{}, exchange_z_offset_{}, link7_length_{}, max_process_time_{};
-  JointInfo joint1_{}, joint2_{}, joint3_{};
-  std::vector<JointInfo> joints_{};
-  std::vector<double> servo_scales_{ 0, 0, 0, 0, 0, 0 }, servo_p_{}, servo_errors_{ 0, 0, 0, 0, 0, 0 },
-      servo_error_tolerance{};
   std::string prefix_{}, root_{}, drag_state_{ "on" }, max_temperature_joint_{}, joint_temperature_{},
       reversal_state_{}, gripper_state_{};
+  JointInfo joint1_{}, joint2_{}, joint3_{};
+  std::vector<JointInfo> joints_{};
+  ExchangeInfo exchange_info_{};
 
   ros::Subscriber gripper_state_sub_, stone_num_sub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;

@@ -16,53 +16,45 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ROS_INFO("Middleware started.");
   // Auto Exchange
   ros::NodeHandle nh_exchange(nh, "exchange");
-  if (!nh_exchange.getParam("exchange_x_offset", exchange_x_offset_))
-    exchange_x_offset_ = 0.;
-  if (!nh_exchange.getParam("exchange_y_offset", exchange_y_offset_))
-    exchange_y_offset_ = 0.;
-  if (!nh_exchange.getParam("exchange_z_offset", exchange_z_offset_))
-    exchange_z_offset_ = 0.;
-  if (!nh_exchange.getParam("link7_length", link7_length_))
-    link7_length_ = 0.;
-  if (!nh_exchange.getParam("max_process_time", max_process_time_))
-    max_process_time_ = 3.;
-  ROS_INFO_STREAM(exchange_x_offset_);
-  ROS_INFO_STREAM(exchange_y_offset_);
-  ROS_INFO_STREAM(exchange_z_offset_);
 
-  servo_p_.clear();
-  double servo_p_temp;
-  if (nh_exchange.getParam("servo_p_x", servo_p_temp))
-    servo_p_.push_back(servo_p_temp);
-  if (nh_exchange.getParam("servo_p_y", servo_p_temp))
-    servo_p_.push_back(servo_p_temp);
-  if (nh_exchange.getParam("servo_p_z", servo_p_temp))
-    servo_p_.push_back(servo_p_temp);
-  if (nh_exchange.getParam("servo_p_roll", servo_p_temp))
-    servo_p_.push_back(servo_p_temp);
-  if (nh_exchange.getParam("servo_p_pitch", servo_p_temp))
-    servo_p_.push_back(servo_p_temp);
-  if (nh_exchange.getParam("servo_p_yaw", servo_p_temp))
-    servo_p_.push_back(servo_p_temp);
-  for (int i = 0; i < (int)servo_p_.size(); ++i)
-    ROS_INFO_STREAM(servo_p_[i]);
+  if (!nh_exchange.getParam("link7_length", exchange_info_.link7_length))
+    exchange_info_.link7_length = 0.;
 
-  servo_error_tolerance.clear();
-  double servo_error_tolerance_temp;
-  if (nh_exchange.getParam("servo_error_tolerance_x", servo_error_tolerance_temp))
-    servo_error_tolerance.push_back(servo_error_tolerance_temp);
-  if (nh_exchange.getParam("servo_error_tolerance_y", servo_error_tolerance_temp))
-    servo_error_tolerance.push_back(servo_error_tolerance_temp);
-  if (nh_exchange.getParam("servo_error_tolerance_z", servo_error_tolerance_temp))
-    servo_error_tolerance.push_back(servo_error_tolerance_temp);
-  if (nh_exchange.getParam("servo_error_tolerance_roll", servo_error_tolerance_temp))
-    servo_error_tolerance.push_back(servo_error_tolerance_temp);
-  if (nh_exchange.getParam("servo_error_tolerance_pitch", servo_error_tolerance_temp))
-    servo_error_tolerance.push_back(servo_error_tolerance_temp);
-  if (nh_exchange.getParam("servo_error_tolerance_yaw", servo_error_tolerance_temp))
-    servo_error_tolerance.push_back(servo_error_tolerance_temp);
-  for (int i = 0; i < (int)servo_error_tolerance.size(); ++i)
-    ROS_INFO_STREAM(servo_error_tolerance[i]);
+  XmlRpc::XmlRpcValue config_value;
+  if (nh_exchange.getParam("xyz_offset", config_value))
+  {
+    for (int i = 0; i < (int)exchange_info_.xyz_offset.size(); ++i)
+    {
+      exchange_info_.xyz_offset[i] = (double)config_value[i];
+      ROS_INFO_STREAM(exchange_info_.xyz_offset[i]);
+    }
+  }
+  if (nh_exchange.getParam("servo_p", config_value))
+  {
+    for (int i = 0; i < (int)exchange_info_.servo_p.size(); ++i)
+    {
+      exchange_info_.servo_p[i] = (double)config_value[i];
+      ROS_INFO_STREAM(exchange_info_.servo_p[i]);
+    }
+  }
+  if (nh_exchange.getParam("servo_error_tolerance", config_value))
+  {
+    for (int i = 0; i < (int)exchange_info_.servo_error_tolerance.size(); ++i)
+    {
+      exchange_info_.servo_error_tolerance[i] = (double)config_value[i];
+      ROS_INFO_STREAM(exchange_info_.servo_error_tolerance[i]);
+    }
+  }
+  if (nh_exchange.getParam("servo_error_tolerance", config_value))
+  {
+    for (int i = 0; i < (int)exchange_info_.servo_error_tolerance.size(); ++i)
+    {
+      exchange_info_.servo_error_tolerance[i] = (double)config_value[i];
+      ROS_INFO_STREAM(exchange_info_.servo_error_tolerance[i]);
+    }
+  }
+  if (!nh_exchange.getParam("max_process_time", exchange_info_.single_process_max_time))
+    exchange_info_.single_process_max_time = 3.;
 
   // Joint Limit
   ros::NodeHandle nh_joint_limit(nh, "joint_limit");
@@ -79,6 +71,12 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   joint3_.min_position = (double)(temp[0]);
   joint3_.max_position = (double)(temp[1]);
   joints_.push_back(joint3_);
+  if (nh_joint_limit.getParam("joint_offset", config_value))
+  {
+    joint1_.offset = (double)(config_value[0]);
+    joint2_.offset = (double)(config_value[1]);
+    joint3_.offset = (double)(config_value[2]);
+  }
 
   // Sub
   stone_num_sub_ = nh.subscribe<std_msgs::String>("/stone_num", 10, &EngineerManual::stoneNumCallback, this);
@@ -178,17 +176,18 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  if (enter_auto_exchange_ != true)
+  if (exchange_info_.enter_auto_exchange != true)
   {
     servo_command_sender_->setLinearVel(dbus_data->ch_l_y, -dbus_data->ch_l_x, -dbus_data->wheel);
     servo_command_sender_->setAngularVel(dbus_data->ch_r_x, dbus_data->ch_r_y, angular_z_scale_);
   }
   else
   {
-    if (!finish_exchange_)
+    if (!exchange_info_.finish_exchange)
     {
-      servo_command_sender_->setLinearVel(servo_scales_[0], servo_scales_[1], servo_scales_[2]);
-      servo_command_sender_->setAngularVel(servo_scales_[3], servo_scales_[4], servo_scales_[5]);
+      servo_command_sender_->setLinearVel(exchange_info_.servo_scales[0], exchange_info_.servo_scales[1],
+                                          exchange_info_.servo_scales[2]);
+      servo_command_sender_->setAngularVel(exchange_info_.servo_scales[3], 0., exchange_info_.servo_scales[5]);
     }
     else
       servo_command_sender_->setZero();
@@ -196,7 +195,13 @@ void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ChassisGimbalManual::updatePc(dbus_data);
 }
 
-void EngineerManual::computeServoScale()
+void EngineerManual::quitAutoExchange()
+{
+  exchange_info_.quitExchange();
+  servo_mode_ = JOINT;
+}
+
+void EngineerManual::computeServoError()
 {
   double roll, pitch, yaw;
   std::vector<double> errors;
@@ -210,60 +215,60 @@ void EngineerManual::computeServoScale()
   {
     ROS_WARN("%s", ex.what());
   }
-  servo_errors_[0] = tools2exchanger.transform.translation.x - exchange_x_offset_;
-  servo_errors_[1] = tools2exchanger.transform.translation.y - exchange_y_offset_;
-  servo_errors_[2] = tools2exchanger.transform.translation.z - exchange_y_offset_;
-  servo_errors_[3] = roll;
-  servo_errors_[4] = pitch;
-  servo_errors_[5] = yaw;
-  for (int i = 0; i < (int)servo_errors_.size(); ++i)
-  {
-    servo_scales_[i] = 0;
-    ROS_INFO_STREAM("-------------------------");
-    ROS_INFO_STREAM("BEFORE" << servo_errors_[i]);
-    ROS_INFO_STREAM("-------------------------");
-  }
-  switch (exchange_process_)
+  exchange_info_.initComputerValue();
+  exchange_info_.servo_errors[0] =
+      (exchange_info_.process == PUSH ? (tools2exchanger.transform.translation.x) :
+                                        (tools2exchanger.transform.translation.x - exchange_info_.xyz_offset[0]));
+  exchange_info_.servo_errors[1] = tools2exchanger.transform.translation.y - exchange_info_.xyz_offset[1];
+  exchange_info_.servo_errors[2] = tools2exchanger.transform.translation.z - exchange_info_.xyz_offset[2];
+  exchange_info_.servo_errors[3] = roll;
+  exchange_info_.servo_errors[4] = pitch;
+  exchange_info_.servo_errors[5] = yaw;
+}
+void EngineerManual::computeServoScale()
+{
+  computeServoError();
+  switch (exchange_info_.process)
   {
     case YZ:
     {
       for (int i = 1; i < 3; ++i)
       {
-        servo_scales_[i] = servo_errors_[i] * servo_p_[i];
+        exchange_info_.servo_scales[i] = exchange_info_.servo_errors[i] * exchange_info_.servo_p[i];
       }
     }
     break;
     case ROLL_YAW:
     {
-      servo_scales_[3] = servo_errors_[3] * servo_p_[3];
-      servo_scales_[5] = servo_errors_[5] * servo_p_[5];
+      exchange_info_.servo_scales[3] = exchange_info_.servo_errors[3] * exchange_info_.servo_p[3];
+      exchange_info_.servo_scales[5] = exchange_info_.servo_errors[5] * exchange_info_.servo_p[5];
     }
     break;
     case XYZ:
     {
       for (int i = 0; i < 3; ++i)
-        servo_scales_[i] = servo_errors_[i] * servo_p_[i];
+        exchange_info_.servo_scales[i] = exchange_info_.servo_errors[i] * exchange_info_.servo_p[i];
     }
     break;
     case PITCH:
     {
-      joint7_command_sender_->getMsg()->data = pitch;
+      joint7_command_sender_->getMsg()->data = exchange_info_.servo_errors[4];
     }
     break;
-  }
-  for (int i = 0; i < (int)servo_errors_.size(); ++i)
-  {
-    ROS_INFO_STREAM("-------------------------");
-    ROS_INFO_STREAM("AFTER" << servo_scales_[i]);
-    ROS_INFO_STREAM("-------------------------");
+    case PUSH:
+    {
+      exchange_info_.servo_scales[0] = exchange_info_.servo_errors[0] * exchange_info_.servo_p[0];
+    }
+    break;
   }
 }
 
 void EngineerManual::servoAutoExchange()
 {
-  enter_auto_exchange_ = true;
-  if (!finish_exchange_)
+  exchange_info_.enter_auto_exchange = true;
+  if (!exchange_info_.finish_exchange)
   {
+    exchange_info_.printProcess();
     servo_mode_ = SERVO;
     computeServoScale();
     manageExchangeProcess();
@@ -273,33 +278,22 @@ void EngineerManual::servoAutoExchange()
 void EngineerManual::manageExchangeProcess()
 {
   int move_joint_num = 0, arrived_joint_num = 0;
-  for (int i = 0; i < (int)servo_scales_.size(); ++i)
+  for (int i = 0; i < (int)exchange_info_.servo_scales.size(); ++i)
   {
-    if (servo_scales_[i] != 0)
+    if (exchange_info_.servo_scales[i] != 0)
     {
       move_joint_num++;
-      if (abs(servo_errors_[i]) <= servo_error_tolerance[i])
+      if (abs(exchange_info_.servo_errors[i]) <= exchange_info_.servo_error_tolerance[i])
         arrived_joint_num++;
-      else
-        ROS_INFO_STREAM("ARRIVED" << arrived_joint_num);
     }
   }
-  if (arrived_joint_num == move_joint_num)
-  {
-    if (exchange_process_ != FINISH)
-      exchange_process_++;
-    else
-    {
-      finish_exchange_ = true;
-      for (int i = 0; i < (int)servo_scales_.size(); ++i)
-        servo_scales_[i] = 0;
-      ROS_INFO_STREAM("FINISH");
-    }
-  }
-  else if (checkTimeOut())
+  if (exchange_info_.checkTimeOut())
   {
     switch (checkJointsLimit())
     {
+      case 0:
+        ROS_INFO_STREAM("VELOCITY LOW");
+        break;
       case 1:
         ROS_INFO_STREAM("JOINT1 CLOSE LIMIT");
         break;
@@ -316,10 +310,11 @@ void EngineerManual::manageExchangeProcess()
         break;
       }
     }
-    exchange_process_++;
-    recorded_time_ = false;
+    exchange_info_.nextProcess();
     ROS_INFO_STREAM("TIME OUT");
   }
+  else if (arrived_joint_num == move_joint_num)
+    exchange_info_.nextProcess();
 }
 
 int EngineerManual::checkJointsLimit()
@@ -333,17 +328,6 @@ int EngineerManual::checkJointsLimit()
       return (i + 1);
   }
   return 0;
-}
-
-bool EngineerManual::checkTimeOut()
-{
-  static ros::Time start_time;
-  if (!recorded_time_)
-  {
-    start_time = ros::Time::now();
-    recorded_time_ = true;
-  }
-  return ((ros::Time::now() - start_time).toSec() >= max_process_time_) ? true : false;
 }
 
 void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
@@ -474,16 +458,9 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   if (dbus_data->wheel == 1)
-  {
     servoAutoExchange();
-  }
   else
-  {
-    exchange_process_ = YZ;
-    servo_mode_ = JOINT;
-    enter_auto_exchange_ = false;
-    finish_exchange_ = false;
-  }
+    quitAutoExchange();
   if (!reversal_motion_ && servo_mode_ == JOINT)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
@@ -522,6 +499,7 @@ void EngineerManual::chassisOutputOn()
 
 void EngineerManual::rightSwitchDownRise()
 {
+  shiftVPress();
   ChassisGimbalManual::rightSwitchDownRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   servo_mode_ = SERVO;
@@ -976,9 +954,7 @@ void EngineerManual::shiftBRelease()
 
 void EngineerManual::shiftRRelease()
 {
-  finish_exchange_ = false;
-  enter_auto_exchange_ = false;
-  exchange_process_ = YZ;
+  exchange_info_.quitExchange();
 }
 
 void EngineerManual::shiftRPressing()
