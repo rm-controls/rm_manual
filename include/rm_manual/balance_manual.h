@@ -19,6 +19,7 @@ protected:
   void sPress() override;
   void aPress() override;
   void dPress() override;
+  void cPress() override;
   void shiftPress() override;
   void shiftRelease() override;
   void wPressing() override;
