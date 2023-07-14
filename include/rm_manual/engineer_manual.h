@@ -82,6 +82,13 @@ public:
     }
   };
 
+  struct FindInfo
+  {
+    geometry_msgs::TransformStamped base2yaw_{}, yaw2pitch_{};
+  };
+  struct ExchangeInfo
+  {
+  };
   struct ServoMoveInfo
   {
     int servo_move_process{ YZ };
@@ -239,6 +246,7 @@ private:
   void gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data);
   void stoneNumCallback(const std_msgs::String ::ConstPtr& data);
 
+  // Servo
   void updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data);
   void servoAutoMove();
   void enterServoAutoMove();
@@ -246,6 +254,25 @@ private:
   void computeServoMoveError();
   void computeServoMoveScale();
   void manageServoMoveProcess();
+
+  // Exchange
+  void autoExchange();
+  void find();
+  void preAdjust();
+  void move();
+  void postAdjust();
+  void finish();
+  void autoSearch(bool enable_chassis, bool enable_gimbal);
+  void autoPreAdjust();
+  void autoPostAdjust();
+  void autoMove();
+  void isArmFinish();
+  void autoGimbalSearch();
+  void autoPreAdjustChassis();
+  void autoPostAdjustChassis();
+  bool isChassisFinish();
+  void moveChassis();
+  void setChassisTarget(double goal_x, double goal_y, double goal_yaw);
 
   int checkJointsLimit();
 
