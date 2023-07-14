@@ -77,7 +77,8 @@ public:
   {
     int process{ YZ };
     ros::Time process_start_time{};
-    bool enter_auto_exchange{ false }, finish_exchange{ false }, recorded_time{ false };
+    bool finish_exchange{ false }, recorded_time{ false };
+    std_msgs::Bool enter_auto_exchange{};
     double single_process_max_time{}, link7_length{};
     std::vector<double> xyz_offset{ 0, 0, 0 };
     std::vector<double> servo_scales{ 0, 0, 0, 0, 0, 0 };
@@ -122,7 +123,7 @@ public:
     {
       process = YZ;
       recorded_time = false;
-      enter_auto_exchange = false;
+      enter_auto_exchange.data = false;
       finish_exchange = false;
     }
     void printProcess()
@@ -231,6 +232,7 @@ private:
 
   void updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data);
   void servoAutoExchange();
+  void enterAutoExchange();
   void quitAutoExchange();
   void computeServoError();
   void computeServoScale();
@@ -249,6 +251,7 @@ private:
   std::vector<JointInfo> joints_{};
   ExchangeInfo exchange_info_{};
 
+  ros::Publisher exchanger_update_pub_;
   ros::Subscriber gripper_state_sub_, stone_num_sub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 

@@ -77,7 +77,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
     joint2_.offset = (double)(config_value[1]);
     joint3_.offset = (double)(config_value[2]);
   }
-
+  // Pub
+  exchanger_update_pub_ = nh.advertise<std_msgs::Bool>("/is_update_exchanger", 1);
   // Sub
   stone_num_sub_ = nh.subscribe<std_msgs::String>("/stone_num", 10, &EngineerManual::stoneNumCallback, this);
   gripper_state_sub_ = nh.subscribe<rm_msgs::GpioData>("/controllers/gpio_controller/gpio_states", 10,
@@ -176,7 +177,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  if (exchange_info_.enter_auto_exchange != true)
+  if (exchange_info_.enter_auto_exchange.data != true)
   {
     servo_command_sender_->setLinearVel(dbus_data->ch_l_y, -dbus_data->ch_l_x, -dbus_data->wheel);
     servo_command_sender_->setAngularVel(dbus_data->ch_r_x, dbus_data->ch_r_y, angular_z_scale_);
@@ -195,10 +196,17 @@ void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ChassisGimbalManual::updatePc(dbus_data);
 }
 
+void EngineerManual::enterAutoExchange()
+{
+  servoAutoExchange();
+  exchange_info_.enter_auto_exchange.data = true;
+}
+
 void EngineerManual::quitAutoExchange()
 {
-  exchange_info_.quitExchange();
   servo_mode_ = JOINT;
+  exchange_info_.quitExchange();
+  exchanger_update_pub_.publish(exchange_info_.enter_auto_exchange);
 }
 
 void EngineerManual::computeServoError()
@@ -265,7 +273,6 @@ void EngineerManual::computeServoScale()
 
 void EngineerManual::servoAutoExchange()
 {
-  exchange_info_.enter_auto_exchange = true;
   if (!exchange_info_.finish_exchange)
   {
     exchange_info_.printProcess();
@@ -458,7 +465,7 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   if (dbus_data->wheel == 1)
-    servoAutoExchange();
+    enterAutoExchange();
   else
     quitAutoExchange();
   if (!reversal_motion_ && servo_mode_ == JOINT)
