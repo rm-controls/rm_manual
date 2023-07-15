@@ -16,6 +16,7 @@
 #include <rm_msgs/MultiDofCmd.h>
 #include <rm_msgs/GpioData.h>
 #include <angles/angles.h>
+#include <engineer_middleware/auto_exchange.h>
 
 namespace rm_manual
 {
@@ -46,125 +47,6 @@ public:
     NORMAL,
     FAST,
     EXCHANGE
-  };
-
-  enum MoveProcess
-  {
-    YZ,
-    ROLL_YAW,
-    XYZ,
-    PITCH,
-    PUSH,
-    DONE
-  };
-
-  enum ExchangeProcess
-  {
-    FIND,
-    PRE_ADJUST,
-    MOVE,
-    POST_ADJUST,
-    FINISH
-  };
-
-  struct JointInfo
-  {
-    int move_direct;
-    double offset, max_position, min_position, current_position, max_vel;
-    bool judgeJointPosition()
-    {
-      return (abs(current_position - offset - min_position) <= 0.01 ||
-              abs(max_position + offset - current_position) <= 0.01) ?
-                 true :
-                 false;
-    }
-  };
-
-  struct FindInfo
-  {
-    bool is_search_finish_{ false };
-    JointInfo yaw{}, pitch{};
-    double search_angle{}, confirm_lock_time{};
-  };
-
-  struct ExchangeInfo
-  {
-  };
-
-  struct ServoMoveInfo
-  {
-    int servo_move_process{ YZ };
-    ros::Time servo_process_start_time{};
-    bool finish_servo_move{ false }, recorded_time{ false };
-    std_msgs::Bool enter_auto_exchange{};
-    double single_process_max_time{}, link7_length{};
-    std::vector<double> xyz_offset{ 0, 0, 0 };
-    std::vector<double> servo_scales{ 0, 0, 0, 0, 0, 0 };
-    std::vector<double> servo_p{ 0, 0, 0, 0, 0, 0 };
-    std::vector<double> servo_errors{ 0, 0, 0, 0, 0, 0 };
-    std::vector<double> servo_error_tolerance{ 0, 0, 0, 0, 0, 0 };
-    void initComputerValue()
-    {
-      for (int i = 0; i < (int)servo_scales.size(); ++i)
-      {
-        servo_errors[i] = 0;
-        servo_scales[i] = 0;
-      }
-    }
-    void nextProcess()
-    {
-      if (servo_move_process != DONE)
-      {
-        servo_move_process++;
-        servo_process_start_time = ros::Time::now();
-        recorded_time = false;
-      }
-      else
-      {
-        finish_servo_move = true;
-        recorded_time = false;
-        servo_process_start_time = ros::Time::now();
-        ROS_INFO_STREAM("DONE");
-      }
-    }
-    bool checkTimeOut()
-    {
-      ROS_INFO_STREAM((ros::Time::now() - servo_process_start_time).toSec());
-      if (!recorded_time)
-      {
-        servo_process_start_time = ros::Time::now();
-        recorded_time = true;
-      }
-      return ((ros::Time::now() - servo_process_start_time).toSec() >= single_process_max_time) ? true : false;
-    }
-    void quitExchange()
-    {
-      servo_move_process = YZ;
-      recorded_time = false;
-      enter_auto_exchange.data = false;
-      finish_servo_move = false;
-    }
-    void printProcess()
-    {
-      switch (servo_move_process)
-      {
-        case YZ:
-          ROS_INFO_STREAM("YZ");
-          break;
-        case ROLL_YAW:
-          ROS_INFO_STREAM("ROLL_YAW");
-          break;
-        case XYZ:
-          ROS_INFO_STREAM("XYZ");
-          break;
-        case PITCH:
-          ROS_INFO_STREAM("PITCH");
-          break;
-        case PUSH:
-          ROS_INFO_STREAM("PUSH");
-          break;
-      }
-    }
   };
 
   EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
@@ -250,31 +132,6 @@ private:
 
   // Servo
   void updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data);
-  void servoAutoMove();
-  void enterServoAutoMove();
-  void quitServoAutoMove();
-  void computeServoMoveError();
-  void computeServoMoveScale();
-  void manageServoMoveProcess();
-
-  // Exchange
-  void autoExchange();
-  void find();
-  void preAdjust();
-  void move();
-  void postAdjust();
-  void finish();
-  void autoSearch(bool enable_chassis, bool enable_gimbal);
-  void autoPreAdjust();
-  void autoPostAdjust();
-  void autoMove();
-  void isArmFinish();
-  void autoGimbalSearch();
-  void autoPreAdjustChassis();
-  void autoPostAdjustChassis();
-  bool isChassisFinish();
-  void moveChassis();
-  void setChassisTarget(double goal_x, double goal_y, double goal_yaw);
 
   int checkJointsLimit();
 
@@ -285,14 +142,12 @@ private:
   double gyro_scale_{}, fast_gyro_scale_{}, normal_gyro_scale_{}, low_gyro_scale_{}, exchange_gyro_scale_{};
   std::string prefix_{}, root_{}, drag_state_{ "on" }, max_temperature_joint_{}, joint_temperature_{},
       reversal_state_{}, gripper_state_{};
-  JointInfo joint1_{}, joint2_{}, joint3_{};
-  std::vector<JointInfo> joints_{};
-  ServoMoveInfo servo_move_info_{};
 
   ros::Publisher exchanger_update_pub_;
   ros::Subscriber gripper_state_sub_, stone_num_sub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 
+  auto_exchange::AutoServoMove* auto_servo_move_;
   rm_msgs::GpioData gpio_state_;
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::MultiDofCommandSender* reversal_command_sender_;
