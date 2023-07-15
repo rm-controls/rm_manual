@@ -200,12 +200,14 @@ void EngineerManual::enterServoAutoMove()
 {
   servoAutoMove();
   servo_move_info_.enter_auto_exchange.data = true;
+  exchanger_update_pub_.publish(servo_move_info_.enter_auto_exchange);
 }
 
 void EngineerManual::quitServoAutoMove()
 {
   servo_mode_ = JOINT;
   servo_move_info_.quitExchange();
+  servo_move_info_.enter_auto_exchange.data = false;
   exchanger_update_pub_.publish(servo_move_info_.enter_auto_exchange);
 }
 
@@ -227,11 +229,20 @@ void EngineerManual::computeServoMoveError()
   servo_move_info_.servo_errors[0] = (servo_move_info_.servo_move_process == PUSH ?
                                           (tools2exchanger.transform.translation.x) :
                                           (tools2exchanger.transform.translation.x - servo_move_info_.xyz_offset[0]));
-  servo_move_info_.servo_errors[1] = tools2exchanger.transform.translation.y - servo_move_info_.xyz_offset[1];
+  servo_move_info_.servo_errors[1] =
+      tools2exchanger.transform.translation.y - servo_move_info_.xyz_offset[1] + 0.06 * sin(roll + M_PI_2);
   servo_move_info_.servo_errors[2] = tools2exchanger.transform.translation.z - servo_move_info_.xyz_offset[2];
   servo_move_info_.servo_errors[3] = roll;
   servo_move_info_.servo_errors[4] = pitch;
   servo_move_info_.servo_errors[5] = yaw;
+  //    ROS_INFO_STREAM("--------------");
+  //    ROS_INFO_STREAM("X:     " <<  servo_move_info_.servo_errors[0]);
+  //    ROS_INFO_STREAM("Y:     " <<  servo_move_info_.servo_errors[1]);
+  //    ROS_INFO_STREAM("Z:     " <<  servo_move_info_.servo_errors[2]);
+  //    ROS_INFO_STREAM("ROLL:  " <<  servo_move_info_.servo_errors[3]);
+  //    ROS_INFO_STREAM("PITCH: " <<  servo_move_info_.servo_errors[4]);
+  //    ROS_INFO_STREAM("YAW:   " <<  servo_move_info_.servo_errors[5]);
+  //    ROS_INFO_STREAM("--------------");
 }
 void EngineerManual::computeServoMoveScale()
 {
@@ -364,6 +375,7 @@ void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
 void EngineerManual::run()
 {
   ChassisGimbalManual::run();
+  computeServoMoveError();
   calibration_gather_->update(ros::Time::now());
 }
 
