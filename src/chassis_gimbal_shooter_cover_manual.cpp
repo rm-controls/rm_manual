@@ -171,7 +171,14 @@ void ChassisGimbalShooterCoverManual::ctrlZPress()
   else
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   supply_ = !cover_command_sender_->getState();
-  (supply_) ? changeSpeedMode(LOW) : changeSpeedMode(NORMAL);
+  if (supply_)
+  {
+    changeSpeedMode(LOW);
+  }
+  else
+  {
+    changeSpeedMode(NORMAL);
+  }
 }
 
 }  // namespace rm_manual
