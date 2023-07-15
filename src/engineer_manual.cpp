@@ -15,7 +15,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
   // Auto Exchange
-  ros::NodeHandle nh_servo_move(nh, "servo_move");
+  ros::NodeHandle nh_servo_move(nh, "auto_servo_move");
   XmlRpc::XmlRpcValue auto_servo_move;
   nh.getParam("auto_servo_move", auto_servo_move);
   auto_servo_move_ = new auto_exchange::AutoServoMove(auto_servo_move, nh, tf_buffer_);
