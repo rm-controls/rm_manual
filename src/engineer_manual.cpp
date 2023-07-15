@@ -284,6 +284,7 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   if (dbus_data->wheel == 1)
   {
     servo_mode_ = SERVO;
+    joint7_command_sender_->getMsg()->data = auto_servo_move_->getJoint7Msg();
     auto_servo_move_->run();
   }
   else
