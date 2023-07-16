@@ -177,6 +177,8 @@ void ChassisGimbalShooterManual::remoteControlTurnOff()
   shooter_calibration_->stop();
   gimbal_calibration_->stop();
   turn_flag_ = false;
+  use_scope_ = false;
+  adjust_image_transmission_ = false;
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOn()
@@ -193,6 +195,8 @@ void ChassisGimbalShooterManual::robotDie()
   ManualBase::robotDie();
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   turn_flag_ = false;
+  use_scope_ = false;
+  adjust_image_transmission_ = false;
 }
 
 void ChassisGimbalShooterManual::chassisOutputOn()
