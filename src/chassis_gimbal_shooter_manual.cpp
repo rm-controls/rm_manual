@@ -398,7 +398,10 @@ void ChassisGimbalShooterManual::rPress()
     if (use_scope_)
       gimbal_cmd_sender_->setEject(true);
     else
+    {
       gimbal_cmd_sender_->setEject(false);
+      adjust_image_transmission_ = false;
+    }
   }
 }
 
