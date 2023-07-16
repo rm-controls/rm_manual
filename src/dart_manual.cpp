@@ -98,13 +98,13 @@ void DartManual::run()
 void DartManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
 {
   ManualBase::gameRobotStatusCallback(data);
-  game_robot_status_ = *data;
+  robot_id_ = data->robot_id;
 }
 
 void DartManual::gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data)
 {
   ManualBase::gameStatusCallback(data);
-  game_status_ = *data;
+  game_progress_ = data->game_progress;
 }
 
 void DartManual::sendCommand(const ros::Time& time)
@@ -132,7 +132,7 @@ void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   else
     move_state_ = MOVING;
   getDartFiredNum();
-  if (game_status_.game_progress == rm_msgs::GameStatus::IN_BATTLE)
+  if (game_progress_ == rm_msgs::GameStatus::IN_BATTLE)
   {
     switch (auto_state_)
     {
@@ -140,16 +140,18 @@ void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
         pitch_sender_->setPoint(pitch_outpost_);
         yaw_sender_->setPoint(yaw_outpost_ + yaw_offset_[dart_fired_num_]);
         qd_ = qd_outpost_[dart_fired_num_];
+        ROS_INFO_STREAM("qd_outpost:" << qd_);
         break;
       case BASE:
         pitch_sender_->setPoint(pitch_base_);
         yaw_sender_->setPoint(yaw_base_ + yaw_offset_base_[dart_fired_num_]);
         qd_ = qd_base_[dart_fired_num_];
+        ROS_INFO_STREAM("qd_base:" << qd_);
         break;
     }
     friction_right_sender_->setPoint(qd_);
     friction_left_sender_->setPoint(qd_);
-    if (last_dart_door_status_ - dart_client_cmd_.dart_launch_opening_status ==
+    if (last_dart_door_status_ - dart_launch_opening_status_ ==
         rm_msgs::DartClientCmd::OPENING_OR_CLOSING - rm_msgs::DartClientCmd::OPENED)
     {
       dart_door_open_times_++;
@@ -161,7 +163,7 @@ void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     else
       launch_state_ = NONE;
     ROS_INFO_STREAM("launch_state_:" << launch_state_);
-    if (dart_client_cmd_.dart_launch_opening_status == rm_msgs::DartClientCmd::OPENED)
+    if (dart_launch_opening_status_ == rm_msgs::DartClientCmd::OPENED)
     {
       switch (launch_state_)
       {
@@ -176,10 +178,8 @@ void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
       }
     }
     else
-    {
       trigger_sender_->setPoint(0.);
-    }
-    last_dart_door_status_ = dart_client_cmd_.dart_launch_opening_status;
+    last_dart_door_status_ = dart_launch_opening_status_;
   }
   else
   {
@@ -306,18 +306,14 @@ void DartManual::triggerComeBackProtect()
 void DartManual::waitAfterLaunch(double time)
 {
   if (!has_stopped)
-  {
     stop_time_ = ros::Time::now();
-  }
   if (ros::Time::now() - stop_time_ < ros::Duration(time))
   {
     trigger_sender_->setPoint(0.);
     has_stopped = true;
   }
   else
-  {
     trigger_sender_->setPoint(upward_vel_);
-  }
 }
 
 void DartManual::launchTwoDart()
@@ -327,21 +323,15 @@ void DartManual::launchTwoDart()
     if (dart_fired_num_ - initial_dart_fired_num_ < 2)
     {
       if (dart_fired_num_ - initial_dart_fired_num_ == 1)
-      {
         waitAfterLaunch(2.0);
-      }
       else
         trigger_sender_->setPoint(upward_vel_);
     }
     else
-    {
       trigger_sender_->setPoint(0.);
-    }
   }
   else
-  {
     trigger_sender_->setPoint(0.);
-  }
 }
 
 void DartManual::getDartFiredNum()
@@ -388,12 +378,12 @@ void DartManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 
 void DartManual::dartClientCmdCallback(const rm_msgs::DartClientCmd::ConstPtr& data)
 {
-  dart_client_cmd_ = *data;
+  dart_launch_opening_status_ = data->dart_launch_opening_status;
 }
 
 void DartManual::gameRobotHpCallback(const rm_msgs::GameRobotHp::ConstPtr& data)
 {
-  switch (game_robot_status_.robot_id)
+  switch (robot_id_)
   {
     case rm_msgs::GameRobotStatus::RED_DART:
       outpost_hp_ = data->blue_outpost_hp;

@@ -71,9 +71,7 @@ protected:
   bool if_stop_{ true }, has_stopped{ false };
 
   rm_msgs::DbusData dbus_data_;
-  rm_msgs::DartClientCmd dart_client_cmd_;
-  rm_msgs::GameRobotStatus game_robot_status_;
-  rm_msgs::GameStatus game_status_;
+  uint8_t robot_id_, game_progress_, dart_launch_opening_status_;
 
   int dart_fired_num_ = 0, initial_dart_fired_num_ = 0;
   double trigger_position_ = 0., pitch_velocity_ = 0., yaw_velocity_ = 0.;
