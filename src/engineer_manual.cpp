@@ -303,7 +303,7 @@ void EngineerManual::sendCommand(const ros::Time& time)
   {
     chassis_cmd_sender_->sendChassisCommand(time, false);
     vel_cmd_sender_->sendCommand(time);
-    reversal_command_sender_->sendCommand(time);
+    // reversal_command_sender_->sendCommand(time);
     drag_command_sender_->sendCommand(time);
   }
   if (servo_mode_ == SERVO)

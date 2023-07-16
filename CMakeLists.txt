@@ -15,6 +15,7 @@ find_package(serial REQUIRED)
 find_package(catkin REQUIRED
         COMPONENTS
         roscpp
+        engineer_middleware
         sensor_msgs
         rm_msgs
         rm_common
@@ -43,6 +44,7 @@ catkin_package(
         LIBRARIES
         CATKIN_DEPENDS
         roscpp
+        engineer_middleware
         sensor_msgs
         rm_msgs
         rm_common

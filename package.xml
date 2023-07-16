@@ -12,6 +12,7 @@
     <buildtool_depend>catkin</buildtool_depend>
     <!-- depend: build, export, and execution dependency -->
     <depend>roscpp</depend>
+    <depend>engineer_middleware</depend>
     <depend>sensor_msgs</depend>
     <depend>rm_msgs</depend>
     <depend>rm_common</depend>
