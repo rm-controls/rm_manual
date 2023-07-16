@@ -32,17 +32,7 @@ protected:
   void zPressing();
   void zRelease();
   void wPress() override;
-  void aPress() override;
-  void sPress() override;
-  void dPress() override;
   void wPressing() override;
-  void aPressing() override;
-  void sPressing() override;
-  void dPressing() override;
-  void wRelease() override;
-  void aRelease() override;
-  void sRelease() override;
-  void dRelease() override;
 
   virtual void ctrlZPress();
   virtual void ctrlZRelease()
@@ -58,6 +48,5 @@ protected:
   ros::Time last_switch_time_;
   bool supply_ = false;
   bool cover_close_ = true;
-  bool switch_aiming_mode_ = false;
 };
 }  // namespace rm_manual
