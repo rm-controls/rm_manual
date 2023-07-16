@@ -393,7 +393,13 @@ void ChassisGimbalShooterManual::rPress()
   if (camera_switch_cmd_sender_)
     camera_switch_cmd_sender_->switchCamera();
   if (scope_cmd_sender_)
+  {
     use_scope_ = !scope_cmd_sender_->getState();
+    if (use_scope_)
+      gimbal_cmd_sender_->setEject(true);
+    else
+      gimbal_cmd_sender_->setEject(false);
+  }
 }
 
 void ChassisGimbalShooterManual::gPress()
