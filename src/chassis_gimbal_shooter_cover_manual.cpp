@@ -174,7 +174,7 @@ void ChassisGimbalShooterCoverManual::wPress()
 void ChassisGimbalShooterCoverManual::wPressing()
 {
   ChassisGimbalShooterManual::wPressing();
-  if ((ros::Time::now() - last_switch_time_).toSec() > 1.0 &&
+  if ((ros::Time::now() - last_switch_time_).toSec() > 0.5 &&
       switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
   {
     switch_buff_srv_->setTargetType(rm_msgs::StatusChangeRequest::ARMOR);
