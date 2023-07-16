@@ -53,6 +53,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
   ctrl_q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlQPress, this));
+  ctrl_r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this));
   shift_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::shiftPress, this),
                        boost::bind(&ChassisGimbalShooterManual::shiftRelease, this));
   mouse_left_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseLeftPress, this));
@@ -94,6 +95,7 @@ void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr
   ctrl_v_event_.update(dbus_data->key_ctrl & dbus_data->key_v);
   ctrl_b_event_.update(dbus_data->key_ctrl & dbus_data->key_b & !dbus_data->key_shift);
   ctrl_q_event_.update(dbus_data->key_ctrl & dbus_data->key_q);
+  ctrl_r_event_.update(dbus_data->key_ctrl & dbus_data->key_r);
   shift_event_.update(dbus_data->key_shift & !dbus_data->key_ctrl);
   ctrl_shift_b_event_.update(dbus_data->key_ctrl & dbus_data->key_shift & dbus_data->key_b);
   mouse_left_event_.update(dbus_data->p_l & !dbus_data->key_ctrl);
@@ -151,9 +153,21 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
   if (camera_switch_cmd_sender_)
     camera_switch_cmd_sender_->sendCommand(time);
   if (scope_cmd_sender_)
+  {
+    if (!use_scope_)
+      scope_cmd_sender_->off();
+    else
+      scope_cmd_sender_->on();
     scope_cmd_sender_->sendCommand(time);
+  }
   if (image_transmission_cmd_sender_)
+  {
+    if (!adjust_image_transmission_)
+      image_transmission_cmd_sender_->off();
+    else
+      image_transmission_cmd_sender_->on();
     image_transmission_cmd_sender_->sendCommand(time);
+  }
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOff()
@@ -372,26 +386,10 @@ void ChassisGimbalShooterManual::bPress()
 
 void ChassisGimbalShooterManual::rPress()
 {
-  if (!lob_)
-  {
-    gimbal_cmd_sender_->setEject(true);
-    lob_ = true;
-    if (camera_switch_cmd_sender_)
-      camera_switch_cmd_sender_->switchCamera();
-    if (scope_cmd_sender_)
-      scope_cmd_sender_->on();
-    if (image_transmission_cmd_sender_)
-      image_transmission_cmd_sender_->on();
-  }
-  else
-  {
-    gimbal_cmd_sender_->setEject(false);
-    lob_ = false;
-    if (scope_cmd_sender_)
-      scope_cmd_sender_->off();
-    if (image_transmission_cmd_sender_)
-      image_transmission_cmd_sender_->off();
-  }
+  if (camera_switch_cmd_sender_)
+    camera_switch_cmd_sender_->switchCamera();
+  if (scope_cmd_sender_)
+    use_scope_ = !scope_cmd_sender_->getState();
 }
 
 void ChassisGimbalShooterManual::gPress()
@@ -560,6 +558,12 @@ void ChassisGimbalShooterManual::ctrlVPress()
     shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::LOW);
   else
     shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::HIGH);
+}
+
+void ChassisGimbalShooterManual::ctrlRPress()
+{
+  if (image_transmission_cmd_sender_)
+    adjust_image_transmission_ = !image_transmission_cmd_sender_->getState();
 }
 
 void ChassisGimbalShooterManual::ctrlBPress()
