@@ -62,8 +62,10 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("calibration_gather", rpc_value);
   calibration_gather_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  nh.getParam("joint5_calibration", rpc_value);
+  nh.getParam("pitch_calibration", rpc_value);
+  pitch_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
 
+  gimbal_power_on_event_.setRising(boost::bind(&EngineerManual::gimbalOutputOn, this));
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_up_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpRise, this));
   left_switch_down_event_.setFalling(boost::bind(&EngineerManual::leftSwitchDownFall, this));
@@ -145,7 +147,7 @@ void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 int EngineerManual::checkJointsLimit()
 {
   //  joint1_.current_position = tf_buffer_.lookupTransform("base_link", "link1", ros::Time(0)).transform.translation.z;
-  //  joint2_.current_position = tf_buffer_.lookupTransform("link1", "link2", ros::Time(0)).transform.translation.x;
+  //  joint2_.current_position = tf_buffer_.lookupTransform("link1", "link2", ros::Time(0)).transform.tr  anslation.x;
   //  joint3_.current_position = tf_buffer_.lookupTransform("link2", "link3", ros::Time(0)).transform.translation.y;
   //  for (int i = 0; i < (int)joints_.size(); ++i)
   //  {
@@ -334,6 +336,13 @@ void EngineerManual::remoteControlTurnOff()
   action_client_.cancelAllGoals();
 }
 
+void EngineerManual::gimbalOutputOn()
+{
+  ChassisGimbalManual::gimbalOutputOn();
+  pitch_calibration_->reset();
+  ROS_INFO("pitch calibrated6666677777");
+}
+
 void EngineerManual::chassisOutputOn()
 {
   if (operating_mode_ == MIDDLEWARE)
@@ -448,17 +457,17 @@ void EngineerManual::mouseRightRelease()
 }
 void EngineerManual::ctrlXPress()
 {
-  prefix_ = "NEW_LF_";
-  root_ = "SMALL_ISLAND";
+  prefix_ = "SMALL_ISLAND";
+  root_ = "_TWO_ORE_L";
   changeSpeedMode(LOW);
-  runStepQueue("NEW_LF_SMALL_ISLAND");
+  runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlEPress()
 {
-  prefix_ = "NEW_";
-  root_ = "RT_SMALL_ISLAND";
+  prefix_ = "SMALL_ISLAND";
+  root_ = "_RT";
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
@@ -485,10 +494,10 @@ void EngineerManual::ctrlRPress()
 
 void EngineerManual::ctrlAPress()
 {
-  prefix_ = "";
-  root_ = "NEW_SMALL_ISLAND";
+  prefix_ = "SMALL_ISLAND";
+  root_ = "_MID";
   changeSpeedMode(LOW);
-  runStepQueue("NEW_SMALL_ISLAND");
+  runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
@@ -524,16 +533,13 @@ void EngineerManual::ctrlGPress()
   switch (stone_num_)
   {
     case 0:
-      root_ = "STORE_WHEN_ZERO_STONE0";
+      root_ = "STORE_WHEN_ZERO_STONE";
       break;
     case 1:
-      root_ = "STORE_WHEN_ONE_STONE0";
+      root_ = "STORE_WHEN_ONE_STONE";
       break;
     case 2:
-      root_ = "STORE_WHEN_TWO_STONE0";
-      break;
-    case 3:
-      root_ = "STORE_WHEN_TWO_STONE0";
+      root_ = "STORE_WHEN_TWO_STONE";
       break;
   }
   prefix_ = "";
@@ -556,8 +562,8 @@ void EngineerManual::ctrlZRelease()
 
 void EngineerManual::ctrlQPress()
 {
-  prefix_ = "";
-  root_ = "TWO_STONE_SMALL_ISLAND";
+  prefix_ = "SMALL_ISLAND";
+  root_ = "_LF";
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
@@ -689,8 +695,7 @@ void EngineerManual::vRelease()
 void EngineerManual::gPress()
 {
   // PITCH
-  runStepQueue("PITCH_PI_2");
-  // reversal_command_sender_->setGroupVel(0., 0., -0.3, 0., 1.5, 0.);
+  runStepQueue("PITCH_REVERSAL_PI_2");
   reversal_state_ = "PITCH";
 }
 
