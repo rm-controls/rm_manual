@@ -148,6 +148,7 @@ private:
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 
   auto_exchange::AutoServoMove* auto_servo_move_;
+  auto_exchange::Find* auto_find_;
   rm_msgs::GpioData gpio_state_;
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::MultiDofCommandSender* reversal_command_sender_;

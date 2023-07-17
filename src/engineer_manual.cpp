@@ -14,11 +14,13 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
+  // Auto Find
+  XmlRpc::XmlRpcValue auto_exchange_value;
+  nh.getParam("auto_find", auto_exchange_value);
+  auto_find_ = new auto_exchange::Find(auto_exchange_value, tf_buffer_, nh);
   // Auto Exchange
-  ros::NodeHandle nh_servo_move(nh, "auto_servo_move");
-  XmlRpc::XmlRpcValue auto_servo_move;
-  nh.getParam("auto_servo_move", auto_servo_move);
-  auto_servo_move_ = new auto_exchange::AutoServoMove(auto_servo_move, nh, tf_buffer_);
+  nh.getParam("auto_servo_move", auto_exchange_value);
+  auto_servo_move_ = new auto_exchange::AutoServoMove(auto_exchange_value, tf_buffer_, nh);
   // Pub
   exchanger_update_pub_ = nh.advertise<std_msgs::Bool>("/is_update_exchanger", 1);
   // Sub
@@ -287,10 +289,20 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     joint7_command_sender_->getMsg()->data = auto_servo_move_->getJoint7Msg();
     auto_servo_move_->run();
   }
+  else if (dbus_data->wheel == -1)
+  {
+    auto_find_->run();
+    gimbal_mode_ = RATE;
+    std::vector<double> gimbal_scale = auto_find_->getGimbalScale();
+    gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
+  }
   else
   {
+    gimbal_mode_ = DIRECT;
     servo_mode_ = JOINT;
     auto_servo_move_->init();
+    auto_find_->init();
+    gimbal_cmd_sender_->setZero();
   }
   if (!reversal_motion_ && servo_mode_ == JOINT)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
@@ -303,7 +315,7 @@ void EngineerManual::sendCommand(const ros::Time& time)
   {
     chassis_cmd_sender_->sendChassisCommand(time, false);
     vel_cmd_sender_->sendCommand(time);
-    // reversal_command_sender_->sendCommand(time);
+    reversal_command_sender_->sendCommand(time);
     drag_command_sender_->sendCommand(time);
   }
   if (servo_mode_ == SERVO)
