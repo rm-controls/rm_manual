@@ -128,8 +128,8 @@ void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   if (auto_servo_move_->getEnterAutoServoFlag() != true)
   {
-    servo_command_sender_->setLinearVel(dbus_data->ch_l_y, -dbus_data->ch_l_x, -dbus_data->wheel);
-    servo_command_sender_->setAngularVel(dbus_data->ch_r_x, dbus_data->ch_r_y, angular_z_scale_);
+    servo_command_sender_->setLinearVel(dbus_data->wheel, -dbus_data->ch_l_x, dbus_data->ch_l_y);
+    servo_command_sender_->setAngularVel(-angular_z_scale_, dbus_data->ch_r_y, dbus_data->ch_r_x);
   }
   else
   {
@@ -299,29 +299,29 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ChassisGimbalManual::updatePc(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  //  if (dbus_data->wheel == 1)
-  //  {
-  //    servo_mode_ = SERVO;
-  //    joint7_command_sender_->getMsg()->data = auto_servo_move_->getJoint7Msg();
-  //    auto_servo_move_->run();
-  //  }
-  //  else if (dbus_data->wheel == -1)
-  //  {
-  //    auto_find_->run();
-  //    gimbal_mode_ = RATE;
-  //    std::vector<double> gimbal_scale = auto_find_->getGimbalScale();
-  //    gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
-  //  }
-  //  else
-  //  {
+  if (dbus_data->wheel == 1)
+  {
+    servo_mode_ = SERVO;
+    joint7_command_sender_->getMsg()->data = auto_servo_move_->getJoint7Msg();
+    auto_servo_move_->run();
+  }
+  else if (dbus_data->wheel == -1)
+  {
+    auto_find_->run();
+    gimbal_mode_ = RATE;
+    std::vector<double> gimbal_scale = auto_find_->getGimbalScale();
+    gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
+  }
+  else
+  {
+    gimbal_mode_ = DIRECT;
+    servo_mode_ = JOINT;
+    auto_servo_move_->init();
+    auto_find_->init();
+    gimbal_cmd_sender_->setZero();
+  }
   //    gimbal_mode_ = DIRECT;
   //    servo_mode_ = JOINT;
-  //    auto_servo_move_->init();
-  //    auto_find_->init();
-  //    gimbal_cmd_sender_->setZero();
-  //  }
-  gimbal_mode_ = DIRECT;
-  servo_mode_ = JOINT;
   if (!reversal_motion_ && servo_mode_ == JOINT)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
@@ -356,7 +356,7 @@ void EngineerManual::gimbalOutputOn()
 {
   ChassisGimbalManual::gimbalOutputOn();
   pitch_calibration_->reset();
-  ROS_INFO("pitch calibrated");
+  ROS_INFO("pitch calibrated6666677777");
 }
 
 void EngineerManual::chassisOutputOn()
@@ -850,5 +850,6 @@ void EngineerManual::shiftGPress()
   prefix_ = "";
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
+  EngineerManual::shiftCPress();
 }
 }  // namespace rm_manual
