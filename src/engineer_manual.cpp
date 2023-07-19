@@ -18,6 +18,9 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   XmlRpc::XmlRpcValue auto_exchange_value;
   nh.getParam("auto_find", auto_exchange_value);
   auto_find_ = new auto_exchange::Find(auto_exchange_value, tf_buffer_, nh);
+  // Auto Pre Adjust
+  nh.getParam("auto_pre_adjust", auto_exchange_value);
+  auto_pre_adjust_ = new auto_exchange::ProAdjust(auto_exchange_value, tf_buffer_, nh);
   // Auto Exchange
   nh.getParam("auto_servo_move", auto_exchange_value);
   auto_servo_move_ = new auto_exchange::AutoServoMove(auto_exchange_value, tf_buffer_, nh);
@@ -185,6 +188,19 @@ void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
 void EngineerManual::run()
 {
   ChassisGimbalManual::run();
+  //  double roll, pitch, yaw;
+  //  geometry_msgs::TransformStamped base2exchanger;
+  //  try
+  //  {
+  //        base2exchanger = tf_buffer_.lookupTransform("base_link", "exchanger", ros::Time(0));
+  //        quatToRPY(base2exchanger.transform.rotation, roll, pitch, yaw);
+  //  }
+  //  catch (tf2::TransformException& ex)
+  //    {
+  //        ROS_WARN("%s", ex.what());
+  //    }
+  //    ROS_INFO_STREAM("YAW:  " << yaw);
+
   calibration_gather_->update(ros::Time::now());
 }
 
@@ -252,10 +268,8 @@ void EngineerManual::stoneNumCallback(const std_msgs::String ::ConstPtr& data)
     stone_num_ -= 1;
   else if (data->data == "+1")
     stone_num_ += 1;
-  else if (data->data == "+3")
-    stone_num_ += 3;
-  if (stone_num_ >= 4)
-    stone_num_ = 3;
+  if (stone_num_ >= 3)
+    stone_num_ = 2;
   else if (stone_num_ <= -1)
     stone_num_ = 0;
 }
@@ -285,27 +299,29 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ChassisGimbalManual::updatePc(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  if (dbus_data->wheel == 1)
-  {
-    servo_mode_ = SERVO;
-    joint7_command_sender_->getMsg()->data = auto_servo_move_->getJoint7Msg();
-    auto_servo_move_->run();
-  }
-  else if (dbus_data->wheel == -1)
-  {
-    auto_find_->run();
-    gimbal_mode_ = RATE;
-    std::vector<double> gimbal_scale = auto_find_->getGimbalScale();
-    gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
-  }
-  else
-  {
-    gimbal_mode_ = DIRECT;
-    servo_mode_ = JOINT;
-    auto_servo_move_->init();
-    auto_find_->init();
-    gimbal_cmd_sender_->setZero();
-  }
+  //  if (dbus_data->wheel == 1)
+  //  {
+  //    servo_mode_ = SERVO;
+  //    joint7_command_sender_->getMsg()->data = auto_servo_move_->getJoint7Msg();
+  //    auto_servo_move_->run();
+  //  }
+  //  else if (dbus_data->wheel == -1)
+  //  {
+  //    auto_find_->run();
+  //    gimbal_mode_ = RATE;
+  //    std::vector<double> gimbal_scale = auto_find_->getGimbalScale();
+  //    gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
+  //  }
+  //  else
+  //  {
+  //    gimbal_mode_ = DIRECT;
+  //    servo_mode_ = JOINT;
+  //    auto_servo_move_->init();
+  //    auto_find_->init();
+  //    gimbal_cmd_sender_->setZero();
+  //  }
+  gimbal_mode_ = DIRECT;
+  servo_mode_ = JOINT;
   if (!reversal_motion_ && servo_mode_ == JOINT)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
@@ -340,7 +356,7 @@ void EngineerManual::gimbalOutputOn()
 {
   ChassisGimbalManual::gimbalOutputOn();
   pitch_calibration_->reset();
-  ROS_INFO("pitch calibrated6666677777");
+  ROS_INFO("pitch calibrated");
 }
 
 void EngineerManual::chassisOutputOn()
@@ -742,7 +758,7 @@ void EngineerManual::shiftRelease()
 }
 void EngineerManual::shiftFPress()
 {
-  runStepQueue("EXCHANGE_GIMBAL");
+  runStepQueue("GIMBAL_SMALL_SCREEN");
   ROS_INFO("enter gimbal EXCHANGE_GIMBAL");
 }
 
@@ -774,7 +790,7 @@ void EngineerManual::initMode()
 }
 void EngineerManual::shiftZPress()
 {
-  runStepQueue("ISLAND_GIMBAL");
+  runStepQueue("GIMBAL_ISLAND");
   chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
   ROS_INFO("enter gimbal REVERSAL_GIMBAL");
 }
@@ -791,7 +807,7 @@ void EngineerManual::ctrlVRelease()
 
 void EngineerManual::shiftBPress()
 {
-  runStepQueue("SIDE_GIMBAL");
+  runStepQueue("GIMBAL_SIDE");
   chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
   ROS_INFO("enter gimbal BACK_GIMBAL");
 }
@@ -812,7 +828,7 @@ void EngineerManual::shiftRPressing()
 
 void EngineerManual::shiftXPress()
 {
-  runStepQueue("GROUND_GIMBAL");
+  runStepQueue("GIMBAL_GROUND");
   chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
   ROS_INFO("enter gimbal GROUND_GIMBAL");
 }
@@ -825,13 +841,10 @@ void EngineerManual::shiftGPress()
       root_ = "NO STONE!!";
       break;
     case 1:
-      root_ = "TAKE_WHEN_ONE_STONE0";
+      root_ = "TAKE_WHEN_ONE_STONE";
       break;
     case 2:
-      root_ = "TAKE_WHEN_TWO_STONE0";
-      break;
-    case 3:
-      root_ = "TAKE_WHEN_THREE_STONE0";
+      root_ = "TAKE_WHEN_TWO_STONE";
       break;
   }
   prefix_ = "";
