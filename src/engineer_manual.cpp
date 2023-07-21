@@ -17,13 +17,16 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   // Auto Find
   XmlRpc::XmlRpcValue auto_exchange_value;
   nh.getParam("auto_find", auto_exchange_value);
-  auto_find_ = new auto_exchange::Find(auto_exchange_value, tf_buffer_, nh);
+  ros::NodeHandle nh_auto_find(nh, "auto_find");
+  auto_find_ = new auto_exchange::Find(auto_exchange_value, tf_buffer_, nh_auto_find);
   // Auto Pre Adjust
   nh.getParam("auto_pre_adjust", auto_exchange_value);
-  auto_pre_adjust_ = new auto_exchange::ProAdjust(auto_exchange_value, tf_buffer_, nh);
+  ros::NodeHandle nh_pre_adjust(nh, "auto_pre_adjust");
+  auto_pre_adjust_ = new auto_exchange::ProAdjust(auto_exchange_value, tf_buffer_, nh_pre_adjust);
   // Auto Exchange
   nh.getParam("auto_servo_move", auto_exchange_value);
-  auto_servo_move_ = new auto_exchange::AutoServoMove(auto_exchange_value, tf_buffer_, nh);
+  ros::NodeHandle nh_auto_servo_move(nh, "auto_servo_move");
+  auto_servo_move_ = new auto_exchange::AutoServoMove(auto_exchange_value, tf_buffer_, nh_auto_servo_move);
   // Pub
   exchanger_update_pub_ = nh.advertise<std_msgs::Bool>("/is_update_exchanger", 1);
   // Sub
