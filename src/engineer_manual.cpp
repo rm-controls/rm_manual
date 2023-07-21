@@ -295,27 +295,27 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
   //  Use for test auto exchange
-  //  if (dbus_data->wheel == 1)
-  //  {
-  //    servo_mode_ = SERVO;
-  //    joint7_command_sender_->getMsg()->data = auto_servo_move_->getJoint7Msg();
-  //    auto_servo_move_->run();
-  //  }
-  //  else if (dbus_data->wheel == -1)
-  //  {
-  //    auto_find_->run();
-  //    gimbal_mode_ = RATE;
-  //    std::vector<double> gimbal_scale = auto_find_->getGimbalScale();
-  //    gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
-  //  }
-  //  else
-  //  {
-  //    gimbal_mode_ = DIRECT;
-  //    servo_mode_ = JOINT;
-  //    auto_servo_move_->init();
-  //    auto_find_->init();
-  //    gimbal_cmd_sender_->setZero();
-  //  }
+  if (dbus_data->wheel == 1)
+  {
+    servo_mode_ = SERVO;
+    joint7_command_sender_->getMsg()->data = auto_servo_move_->getJoint7Msg();
+    auto_servo_move_->run();
+  }
+  else if (dbus_data->wheel == -1)
+  {
+    auto_find_->run();
+    gimbal_mode_ = RATE;
+    std::vector<double> gimbal_scale = auto_find_->getGimbalScale();
+    gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
+  }
+  else
+  {
+    gimbal_mode_ = DIRECT;
+    servo_mode_ = JOINT;
+    auto_servo_move_->init();
+    auto_find_->init();
+    gimbal_cmd_sender_->setZero();
+  }
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
