@@ -63,6 +63,7 @@ private:
   void actionDoneCallback(const actionlib::SimpleClientGoalState& state, const rm_msgs::EngineerResultConstPtr& result);
   void runStepQueue(const std::string& step_queue_name);
   void initMode();
+  void enterServo();
   void actionActiveCallback()
   {
     operating_mode_ = MIDDLEWARE;

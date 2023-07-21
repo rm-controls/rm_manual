@@ -188,24 +188,6 @@ void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
 void EngineerManual::run()
 {
   ChassisGimbalManual::run();
-  double roll, pitch, yaw;
-  geometry_msgs::TransformStamped optical2exchanger;
-  try
-  {
-    optical2exchanger = tf_buffer_.lookupTransform("camera_optical_frame", "exchanger", ros::Time(0));
-    quatToRPY(optical2exchanger.transform.rotation, roll, pitch, yaw);
-  }
-  catch (tf2::TransformException& ex)
-  {
-    ROS_WARN("%s", ex.what());
-  }
-  //    ROS_INFO_STREAM("X:       " << optical2exchanger.transform.translation.x);
-  //    ROS_INFO_STREAM("Y:       " << optical2exchanger.transform.translation.y);
-  //    ROS_INFO_STREAM("Z:       " << optical2exchanger.transform.translation.z);
-  //    ROS_INFO_STREAM("ROLL:    " << roll);
-  //    ROS_INFO_STREAM("PITCH:   " << pitch);
-  //    ROS_INFO_STREAM("YAW:     " << yaw);
-
   calibration_gather_->update(ros::Time::now());
 }
 
@@ -304,31 +286,33 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ChassisGimbalManual::updatePc(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  if (dbus_data->wheel == 1)
-  {
-    servo_mode_ = SERVO;
-    joint7_command_sender_->getMsg()->data = auto_servo_move_->getJoint7Msg();
-    auto_servo_move_->run();
-  }
-  else if (dbus_data->wheel == -1)
-  {
-    auto_find_->run();
-    gimbal_mode_ = RATE;
-    std::vector<double> gimbal_scale = auto_find_->getGimbalScale();
-    gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
-  }
-  else
-  {
-    gimbal_mode_ = DIRECT;
-    servo_mode_ = JOINT;
-    auto_servo_move_->init();
-    auto_find_->init();
-    gimbal_cmd_sender_->setZero();
-  }
-
+  gimbal_mode_ = DIRECT;
+  servo_mode_ = JOINT;
   if (!reversal_motion_ && servo_mode_ == JOINT)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
+  //  Use for test auto exchange
+  //  if (dbus_data->wheel == 1)
+  //  {
+  //    servo_mode_ = SERVO;
+  //    joint7_command_sender_->getMsg()->data = auto_servo_move_->getJoint7Msg();
+  //    auto_servo_move_->run();
+  //  }
+  //  else if (dbus_data->wheel == -1)
+  //  {
+  //    auto_find_->run();
+  //    gimbal_mode_ = RATE;
+  //    std::vector<double> gimbal_scale = auto_find_->getGimbalScale();
+  //    gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
+  //  }
+  //  else
+  //  {
+  //    gimbal_mode_ = DIRECT;
+  //    servo_mode_ = JOINT;
+  //    auto_servo_move_->init();
+  //    auto_find_->init();
+  //    gimbal_cmd_sender_->setZero();
+  //  }
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -360,7 +344,7 @@ void EngineerManual::gimbalOutputOn()
 {
   ChassisGimbalManual::gimbalOutputOn();
   pitch_calibration_->reset();
-  ROS_INFO("pitch calibrated6666677777");
+  ROS_INFO("pitch calibrated");
 }
 
 void EngineerManual::chassisOutputOn()
@@ -415,7 +399,7 @@ void EngineerManual::leftSwitchDownFall()
 
 void EngineerManual::leftSwitchUpFall()
 {
-  runStepQueue("EXCHANGE_WAIT");
+  runStepQueue("HOME_ZERO_STONE");
   drag_command_sender_->on();
   drag_state_ = "on";
 }
@@ -546,6 +530,7 @@ void EngineerManual::ctrlFPress()
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
+  enterServo();
 }
 
 void EngineerManual::ctrlGPress()
@@ -673,10 +658,11 @@ void EngineerManual::cRelease()
 
 void EngineerManual::rPress()
 {
-  if (stone_num_ != 3)
+  if (stone_num_ != 2)
     stone_num_++;
   else
     stone_num_ = 0;
+  ROS_INFO("Stone num is %d", stone_num_);
 }
 
 void EngineerManual::xPress()
@@ -774,13 +760,7 @@ void EngineerManual::shiftCPress()
   }
   else
   {
-    servo_mode_ = SERVO;
-    gimbal_mode_ = DIRECT;
-    changeSpeedMode(EXCHANGE);
-    servo_reset_caller_->callService();
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-    action_client_.cancelAllGoals();
-    chassis_cmd_sender_->getMsg()->command_source_frame = "fake_link5";
+    enterServo();
   }
 }
 
@@ -792,6 +772,18 @@ void EngineerManual::initMode()
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
 }
+
+void EngineerManual::enterServo()
+{
+  servo_mode_ = SERVO;
+  gimbal_mode_ = DIRECT;
+  changeSpeedMode(EXCHANGE);
+  servo_reset_caller_->callService();
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  action_client_.cancelAllGoals();
+  chassis_cmd_sender_->getMsg()->command_source_frame = "link5";
+}
+
 void EngineerManual::shiftZPress()
 {
   runStepQueue("GIMBAL_ISLAND");
@@ -854,6 +846,6 @@ void EngineerManual::shiftGPress()
   prefix_ = "";
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
-  EngineerManual::shiftCPress();
+  enterServo();
 }
 }  // namespace rm_manual
