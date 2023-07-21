@@ -17,8 +17,8 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   ros::NodeHandle buff_type_switch_nh(nh, "buff_type_switch");
   switch_buff_type_srv_ = new rm_common::SwitchDetectionCaller(buff_type_switch_nh);
   ros::NodeHandle chassis_nh(nh, "chassis");
-  chassis_nh.param("normal_speed_scale_", 1);
-  chassis_nh.param("low_speed_scale_", 0.30);
+  normal_speed_scale_ = chassis_nh.param("normal_speed_scale", 1);
+  low_speed_scale_ = chassis_nh.param("low_speed_scale", 0.30);
 
   ctrl_z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this),
                         boost::bind(&ChassisGimbalShooterCoverManual::ctrlZRelease, this));
