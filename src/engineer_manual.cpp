@@ -188,18 +188,23 @@ void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
 void EngineerManual::run()
 {
   ChassisGimbalManual::run();
-  //  double roll, pitch, yaw;
-  //  geometry_msgs::TransformStamped base2exchanger;
-  //  try
-  //  {
-  //        base2exchanger = tf_buffer_.lookupTransform("base_link", "exchanger", ros::Time(0));
-  //        quatToRPY(base2exchanger.transform.rotation, roll, pitch, yaw);
-  //  }
-  //  catch (tf2::TransformException& ex)
-  //    {
-  //        ROS_WARN("%s", ex.what());
-  //    }
-  //    ROS_INFO_STREAM("YAW:  " << yaw);
+  double roll, pitch, yaw;
+  geometry_msgs::TransformStamped optical2exchanger;
+  try
+  {
+    optical2exchanger = tf_buffer_.lookupTransform("camera_optical_frame", "exchanger", ros::Time(0));
+    quatToRPY(optical2exchanger.transform.rotation, roll, pitch, yaw);
+  }
+  catch (tf2::TransformException& ex)
+  {
+    ROS_WARN("%s", ex.what());
+  }
+  //    ROS_INFO_STREAM("X:       " << optical2exchanger.transform.translation.x);
+  //    ROS_INFO_STREAM("Y:       " << optical2exchanger.transform.translation.y);
+  //    ROS_INFO_STREAM("Z:       " << optical2exchanger.transform.translation.z);
+  //    ROS_INFO_STREAM("ROLL:    " << roll);
+  //    ROS_INFO_STREAM("PITCH:   " << pitch);
+  //    ROS_INFO_STREAM("YAW:     " << yaw);
 
   calibration_gather_->update(ros::Time::now());
 }
@@ -320,8 +325,7 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     auto_find_->init();
     gimbal_cmd_sender_->setZero();
   }
-  //    gimbal_mode_ = DIRECT;
-  //    servo_mode_ = JOINT;
+
   if (!reversal_motion_ && servo_mode_ == JOINT)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
@@ -411,7 +415,7 @@ void EngineerManual::leftSwitchDownFall()
 
 void EngineerManual::leftSwitchUpFall()
 {
-  runStepQueue("HOME_ZERO_STONE");
+  runStepQueue("EXCHANGE_WAIT");
   drag_command_sender_->on();
   drag_state_ = "on";
 }
