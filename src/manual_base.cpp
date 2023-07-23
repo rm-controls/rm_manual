@@ -38,6 +38,9 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   right_switch_down_event_.setRising(boost::bind(&ManualBase::rightSwitchDownRise, this));
   right_switch_mid_event_.setRising(boost::bind(&ManualBase::rightSwitchMidRise, this));
   right_switch_up_event_.setRising(boost::bind(&ManualBase::rightSwitchUpRise, this));
+  right_switch_down_event_.setActiveHigh(boost::bind(&ManualBase::rightSwitchDownOn, this));
+  right_switch_mid_event_.setActiveHigh(boost::bind(&ManualBase::rightSwitchMidOn, this));
+  right_switch_up_event_.setActiveHigh(boost::bind(&ManualBase::rightSwitchUpOn, this));
   left_switch_down_event_.setRising(boost::bind(&ManualBase::leftSwitchDownRise, this));
   left_switch_up_event_.setRising(boost::bind(&ManualBase::leftSwitchUpRise, this));
   left_switch_mid_event_.setEdge(boost::bind(&ManualBase::leftSwitchMidRise, this),
@@ -150,6 +153,7 @@ void ManualBase::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPt
 
 void ManualBase::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
 {
+  chassis_power_ = data->chassis_power;
   referee_last_get_stamp_ = data->stamp;
 }
 

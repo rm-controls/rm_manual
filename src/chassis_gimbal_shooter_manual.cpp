@@ -24,7 +24,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("shooter_calibration", rpc_value);
   shooter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-
+  nh.getParam("gimbal_calibration", rpc_value);
+  gimbal_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   shooter_power_on_event_.setRising(boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
   self_inspection_event_.setRising(boost::bind(&ChassisGimbalShooterManual::selfInspectionStart, this));
   game_start_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gameStart, this));
@@ -54,6 +55,7 @@ void ChassisGimbalShooterManual::run()
 {
   ChassisGimbalManual::run();
   shooter_calibration_->update(ros::Time::now());
+  gimbal_calibration_->update(ros::Time::now());
 }
 
 void ChassisGimbalShooterManual::checkReferee()
@@ -61,7 +63,7 @@ void ChassisGimbalShooterManual::checkReferee()
   manual_to_referee_pub_data_.power_limit_state = chassis_cmd_sender_->power_limit_->getState();
   manual_to_referee_pub_data_.shoot_frequency = shooter_cmd_sender_->getShootFrequency();
   manual_to_referee_pub_data_.gimbal_eject = gimbal_cmd_sender_->getEject();
-  manual_to_referee_pub_data_.det_armor_target = switch_detection_srv_->getArmorTarget();
+  manual_to_referee_pub_data_.det_armor_target = switch_armor_target_srv_->getArmorTarget();
   manual_to_referee_pub_data_.det_color = switch_detection_srv_->getColor();
   manual_to_referee_pub_data_.det_exposure = switch_detection_srv_->getExposureLevel();
   manual_to_referee_pub_data_.stamp = ros::Time::now();
@@ -92,7 +94,6 @@ void ChassisGimbalShooterManual::gameRobotStatusCallback(const rm_msgs::GameRobo
 {
   ChassisGimbalManual::gameRobotStatusCallback(data);
   shooter_cmd_sender_->updateGameRobotStatus(*data);
-  shooter_power_on_event_.update(data->mains_power_shooter_output);
 }
 
 void ChassisGimbalShooterManual::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
@@ -146,6 +147,7 @@ void ChassisGimbalShooterManual::remoteControlTurnOff()
   ChassisGimbalManual::remoteControlTurnOff();
   shooter_cmd_sender_->setZero();
   shooter_calibration_->stop();
+  gimbal_calibration_->stop();
   turn_flag_ = false;
 }
 
@@ -153,6 +155,7 @@ void ChassisGimbalShooterManual::remoteControlTurnOn()
 {
   ChassisGimbalManual::remoteControlTurnOn();
   shooter_calibration_->stopController();
+  gimbal_calibration_->stopController();
   std::string robot_color = robot_id_ >= 100 ? "blue" : "red";
   switch_detection_srv_->setEnemyColor(robot_id_, robot_color);
 }
@@ -175,6 +178,12 @@ void ChassisGimbalShooterManual::shooterOutputOn()
   ChassisGimbalManual::shooterOutputOn();
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   shooter_calibration_->reset();
+}
+
+void ChassisGimbalShooterManual::gimbalOutputOn()
+{
+  ChassisGimbalManual::gimbalOutputOn();
+  gimbal_calibration_->reset();
 }
 
 void ChassisGimbalShooterManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -217,7 +226,7 @@ void ChassisGimbalShooterManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbu
 void ChassisGimbalShooterManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
 }
 
@@ -355,7 +364,13 @@ void ChassisGimbalShooterManual::rPress()
 
 void ChassisGimbalShooterManual::gPress()
 {
-  switch_detection_srv_->setArmorTargetType(rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE);
+  if (switch_detection_srv_->getColor() != rm_msgs::StatusChangeRequest::PURPLE)
+  {
+    last_det_color_ = switch_detection_srv_->getColor();
+    switch_detection_srv_->setColor(rm_msgs::StatusChangeRequest::PURPLE);
+  }
+  else
+    switch_detection_srv_->setColor(last_det_color_);
   switch_detection_srv_->callService();
 }
 
@@ -524,5 +539,6 @@ void ChassisGimbalShooterManual::ctrlBPress()
 void ChassisGimbalShooterManual::ctrlQPress()
 {
   shooter_calibration_->reset();
+  gimbal_calibration_->reset();
 }
 }  // namespace rm_manual

@@ -24,6 +24,7 @@ protected:
   void sendCommand(const ros::Time& time) override;
   void chassisOutputOn() override;
   void shooterOutputOn() override;
+  void gimbalOutputOn() override;
   void selfInspectionStart()
   {
     shooter_calibration_->reset();
@@ -100,16 +101,19 @@ protected:
   void ctrlBPress();
   virtual void ctrlQPress();
 
-  InputEvent shooter_power_on_event_, self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_,
-      f_event_, b_event_, x_event_, r_event_, ctrl_v_event_, ctrl_b_event_, ctrl_q_event_, shift_event_,
-      ctrl_shift_b_event_, mouse_left_event_, mouse_right_event_;
+  InputEvent self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_, f_event_, b_event_,
+      x_event_, r_event_, ctrl_v_event_, ctrl_b_event_, ctrl_q_event_, shift_event_, ctrl_shift_b_event_,
+      mouse_left_event_, mouse_right_event_;
   rm_common::ShooterCommandSender* shooter_cmd_sender_{};
   rm_common::CameraSwitchCommandSender* camera_switch_cmd_sender_{};
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::SwitchDetectionCaller* switch_armor_target_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
+  rm_common::CalibrationQueue* gimbal_calibration_;
 
   geometry_msgs::PointStamped point_out_;
+
+  uint8_t last_det_color_{};
 
   bool prepare_shoot_ = false, turn_flag_ = false, is_balance_ = false;
   double yaw_current_{};
