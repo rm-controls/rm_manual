@@ -132,7 +132,10 @@ void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
   if (auto_servo_move_->getEnterAutoServoFlag() != true)
   {
     servo_command_sender_->setLinearVel(dbus_data->wheel, -dbus_data->ch_l_x, dbus_data->ch_l_y);
-    servo_command_sender_->setAngularVel(-angular_z_scale_, dbus_data->ch_r_y, dbus_data->ch_r_x);
+    servo_command_sender_->setAngularVel(-angular_z_scale_, 0., dbus_data->ch_r_x);
+    joint7_command_sender_->getMsg()->data = (joint7_command_sender_->getMsg()->data >= 0. ?
+                                                  joint7_command_sender_->getMsg()->data + 0.1 * dbus_data->ch_r_y :
+                                                  0);
   }
   else
   {
@@ -143,6 +146,7 @@ void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
       servo_scales = auto_servo_move_->getServoScale();
       servo_command_sender_->setLinearVel(servo_scales[0], servo_scales[1], servo_scales[2]);
       servo_command_sender_->setAngularVel(servo_scales[3], 0., servo_scales[5]);
+      joint7_command_sender_->getMsg()->data = auto_servo_move_->getJoint7Msg();
     }
     else
       servo_command_sender_->setZero();
@@ -289,33 +293,32 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ChassisGimbalManual::updatePc(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  gimbal_mode_ = DIRECT;
-  servo_mode_ = JOINT;
-  if (!reversal_motion_ && servo_mode_ == JOINT)
-    reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
-                                            0.);
-  //  Use for test auto exchange
-  if (dbus_data->wheel == 1)
-  {
-    servo_mode_ = SERVO;
-    joint7_command_sender_->getMsg()->data = auto_servo_move_->getJoint7Msg();
-    auto_servo_move_->run();
-  }
-  else if (dbus_data->wheel == -1)
-  {
-    auto_find_->run();
-    gimbal_mode_ = RATE;
-    std::vector<double> gimbal_scale = auto_find_->getGimbalScale();
-    gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
-  }
-  else
-  {
-    gimbal_mode_ = DIRECT;
-    servo_mode_ = JOINT;
-    auto_servo_move_->init();
-    auto_find_->init();
-    gimbal_cmd_sender_->setZero();
-  }
+  //  gimbal_mode_ = DIRECT;
+  //  servo_mode_ = JOINT;
+  //  if (!reversal_motion_ && servo_mode_ == JOINT)
+  //    reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
+  //                                            0.);
+  //  //  Use for test auto exchange
+  //  if (dbus_data->wheel == 1)
+  //  {
+  //    servo_mode_ = SERVO;
+  //    auto_servo_move_->run();
+  //  }
+  //  else if (dbus_data->wheel == -1)
+  //  {
+  //    auto_find_->run();
+  //    gimbal_mode_ = RATE;
+  //    std::vector<double> gimbal_scale = auto_find_->getGimbalScale();
+  //    gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
+  //  }
+  //  else
+  //  {
+  //    gimbal_mode_ = DIRECT;
+  //    servo_mode_ = JOINT;
+  //    auto_servo_move_->init();
+  //    auto_find_->init();
+  //    gimbal_cmd_sender_->setZero();
+  //  }
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -440,9 +443,15 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   ROS_INFO("Done %s", (prefix_ + root_).c_str());
   reversal_motion_ = false;
   change_flag_ = true;
-  if (prefix_ + root_ == "TWO_STONE_SMALL_ISLAND0")
+  if (prefix_ + root_ == "SMALL_ISLAND_TWO_ORE_L")
     changeSpeedMode(LOW);
+  if (prefix_ + root_ == "TAKE_WHEN_TWO_STONE" || prefix_ + root_ == "EXCHANGE_WAIT" ||
+      prefix_ + root_ == "TAKE_WHEN_ONE_STONE")
+    enterServo();
+  if (prefix_ + root_ == "SMALL_ISLAND_TWO_ORE_L000")
+    changeSpeedMode(NORMAL);
   ROS_INFO("%i", result->finish);
+
   operating_mode_ = MANUAL;
 }
 
@@ -533,7 +542,6 @@ void EngineerManual::ctrlFPress()
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
-  enterServo();
 }
 
 void EngineerManual::ctrlGPress()
@@ -849,6 +857,5 @@ void EngineerManual::shiftGPress()
   prefix_ = "";
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
-  enterServo();
 }
 }  // namespace rm_manual
