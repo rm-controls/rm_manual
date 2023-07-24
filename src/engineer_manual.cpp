@@ -132,10 +132,9 @@ void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
   if (auto_servo_move_->getEnterAutoServoFlag() != true)
   {
     servo_command_sender_->setLinearVel(dbus_data->wheel, -dbus_data->ch_l_x, dbus_data->ch_l_y);
-    servo_command_sender_->setAngularVel(-angular_z_scale_, 0., dbus_data->ch_r_x);
-    joint7_command_sender_->getMsg()->data = (joint7_command_sender_->getMsg()->data >= 0. ?
-                                                  joint7_command_sender_->getMsg()->data + 0.1 * dbus_data->ch_r_y :
-                                                  0);
+    servo_command_sender_->setAngularVel(-angular_z_scale_, dbus_data->ch_r_y, dbus_data->ch_r_x);
+    //    joint7_command_sender_->getMsg()->data = (joint7_command_sender_->getMsg()->data>= 0. ?
+    //    joint7_command_sender_->getMsg()->data + 0.1 * dbus_data->ch_r_y : 0);
   }
   else
   {
@@ -295,30 +294,34 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   //  gimbal_mode_ = DIRECT;
   //  servo_mode_ = JOINT;
-  //  if (!reversal_motion_ && servo_mode_ == JOINT)
-  //    reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
-  //                                            0.);
+  if (!reversal_motion_ && servo_mode_ == JOINT)
+    reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
+                                            0.);
   //  //  Use for test auto exchange
-  //  if (dbus_data->wheel == 1)
-  //  {
-  //    servo_mode_ = SERVO;
-  //    auto_servo_move_->run();
-  //  }
-  //  else if (dbus_data->wheel == -1)
-  //  {
-  //    auto_find_->run();
-  //    gimbal_mode_ = RATE;
-  //    std::vector<double> gimbal_scale = auto_find_->getGimbalScale();
-  //    gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
-  //  }
-  //  else
-  //  {
-  //    gimbal_mode_ = DIRECT;
-  //    servo_mode_ = JOINT;
-  //    auto_servo_move_->init();
-  //    auto_find_->init();
-  //    gimbal_cmd_sender_->setZero();
-  //  }
+  if (dbus_data->wheel == 1)
+  {
+    servo_mode_ = SERVO;
+    auto_servo_move_->run();
+  }
+  else if (dbus_data->wheel == -1)
+  {
+    auto_pre_adjust_->run();
+    geometry_msgs::Twist vel_msg = auto_pre_adjust_->getChassisVelMsg();
+    vel_cmd_sender_->setAngularZVel(vel_msg.angular.z);
+    vel_cmd_sender_->setLinearXVel(vel_msg.linear.x);
+    vel_cmd_sender_->setLinearYVel(vel_msg.linear.y);
+    ROS_INFO_STREAM("X   " << vel_msg.linear.x);
+    ROS_INFO_STREAM("Y   " << vel_msg.linear.y);
+    ROS_INFO_STREAM("YAW   " << vel_msg.angular.z);
+  }
+  else
+  {
+    gimbal_mode_ = DIRECT;
+    servo_mode_ = JOINT;
+    auto_servo_move_->init();
+    auto_find_->init();
+    gimbal_cmd_sender_->setZero();
+  }
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -678,9 +681,9 @@ void EngineerManual::rPress()
 
 void EngineerManual::xPress()
 {
-  prefix_ = "ENGINEER_";
-  root_ = "DRAG_CAR";
-  runStepQueue(prefix_ + root_);
+  //  prefix_ = "ENGINEER_";
+  //  root_ = "DRAG_CAR";
+  //  runStepQueue(prefix_ + root_);
   if (drag_state_ == "on")
   {
     drag_command_sender_->off();
