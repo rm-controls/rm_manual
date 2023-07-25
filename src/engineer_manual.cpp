@@ -14,19 +14,11 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
-  // Auto Find
-  XmlRpc::XmlRpcValue auto_exchange_value;
-  nh.getParam("auto_find", auto_exchange_value);
-  ros::NodeHandle nh_auto_find(nh, "auto_find");
-  auto_find_ = new auto_exchange::Find(auto_exchange_value, tf_buffer_, nh_auto_find);
-  // Auto Pre Adjust
-  nh.getParam("auto_pre_adjust", auto_exchange_value);
-  ros::NodeHandle nh_pre_adjust(nh, "auto_pre_adjust");
-  auto_pre_adjust_ = new auto_exchange::ProAdjust(auto_exchange_value, tf_buffer_, nh_pre_adjust);
   // Auto Exchange
-  nh.getParam("auto_servo_move", auto_exchange_value);
-  ros::NodeHandle nh_auto_servo_move(nh, "auto_servo_move");
-  auto_servo_move_ = new auto_exchange::AutoServoMove(auto_exchange_value, tf_buffer_, nh_auto_servo_move);
+  XmlRpc::XmlRpcValue auto_exchange_value;
+  nh.getParam("auto_exchange", auto_exchange_value);
+  ros::NodeHandle nh_auto_exchange(nh, "auto_exchange");
+  auto_exchange_ = new auto_exchange::AutoExchange(auto_exchange_value, tf_buffer_, nh_auto_exchange);
   // Pub
   exchanger_update_pub_ = nh.advertise<std_msgs::Bool>("/is_update_exchanger", 1);
   // Sub
@@ -129,23 +121,21 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  if (auto_servo_move_->getEnterAutoServoFlag() != true)
+  if (auto_exchange_->auto_servo_move_->getEnterFlag() != true)
   {
     servo_command_sender_->setLinearVel(dbus_data->wheel, -dbus_data->ch_l_x, dbus_data->ch_l_y);
     servo_command_sender_->setAngularVel(-angular_z_scale_, dbus_data->ch_r_y, dbus_data->ch_r_x);
-    //    joint7_command_sender_->getMsg()->data = (joint7_command_sender_->getMsg()->data>= 0. ?
-    //    joint7_command_sender_->getMsg()->data + 0.1 * dbus_data->ch_r_y : 0);
   }
   else
   {
-    if (!auto_servo_move_->getFinishFlag())
+    if (!auto_exchange_->auto_servo_move_->getFinishFlag())
     {
       std::vector<double> servo_scales;
       servo_scales.resize(6, 0);
-      servo_scales = auto_servo_move_->getServoScale();
+      servo_scales = auto_exchange_->auto_servo_move_->getServoScale();
       servo_command_sender_->setLinearVel(servo_scales[0], servo_scales[1], servo_scales[2]);
       servo_command_sender_->setAngularVel(servo_scales[3], 0., servo_scales[5]);
-      joint7_command_sender_->getMsg()->data = auto_servo_move_->getJoint7Msg();
+      joint7_command_sender_->getMsg()->data = auto_exchange_->auto_servo_move_->getJoint7Msg();
     }
     else
       servo_command_sender_->setZero();
@@ -297,31 +287,34 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   if (!reversal_motion_ && servo_mode_ == JOINT)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
-  //  //  Use for test auto exchange
-  if (dbus_data->wheel == 1)
+  //  Use for test auto exchange
+  if (dbus_data->wheel == -1)
   {
-    servo_mode_ = SERVO;
-    auto_servo_move_->run();
-  }
-  else if (dbus_data->wheel == -1)
-  {
-    auto_pre_adjust_->run();
-    geometry_msgs::Twist vel_msg = auto_pre_adjust_->getChassisVelMsg();
-    vel_cmd_sender_->setAngularZVel(vel_msg.angular.z);
-    vel_cmd_sender_->setLinearXVel(vel_msg.linear.x);
-    vel_cmd_sender_->setLinearYVel(vel_msg.linear.y);
-    ROS_INFO_STREAM("X   " << vel_msg.linear.x);
-    ROS_INFO_STREAM("Y   " << vel_msg.linear.y);
-    ROS_INFO_STREAM("YAW   " << vel_msg.angular.z);
+    auto_exchange_->run();
+    if (auto_exchange_->find_->getEnterFlag())
+    {
+      gimbal_mode_ = RATE;
+      std::vector<double> gimbal_scale = auto_exchange_->find_->getGimbalScale();
+      gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
+    }
+    if (auto_exchange_->pre_adjust_->getEnterFlag())
+    {
+      geometry_msgs::Twist vel_msg = auto_exchange_->pre_adjust_->getChassisVelMsg();
+      vel_cmd_sender_->setAngularZVel(vel_msg.angular.z);
+      vel_cmd_sender_->setLinearXVel(vel_msg.linear.x);
+      vel_cmd_sender_->setLinearYVel(vel_msg.linear.y);
+    }
+    if (auto_exchange_->auto_servo_move_->getEnterFlag())
+    {
+      servo_mode_ = SERVO;
+    }
   }
   else
   {
+    auto_exchange_->init();
+    ROS_INFO_STREAM("init");
     gimbal_mode_ = DIRECT;
     servo_mode_ = JOINT;
-    auto_servo_move_->init();
-    auto_find_->init();
-    auto_pre_adjust_->init();
-    gimbal_cmd_sender_->setZero();
   }
 }
 
