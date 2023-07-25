@@ -320,6 +320,7 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     servo_mode_ = JOINT;
     auto_servo_move_->init();
     auto_find_->init();
+    auto_pre_adjust_->init();
     gimbal_cmd_sender_->setZero();
   }
 }
