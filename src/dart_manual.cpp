@@ -62,14 +62,7 @@ void DartManual::getList(const XmlRpc::XmlRpcValue& darts, const XmlRpc::XmlRpcV
     dart_info.base_offset_ = static_cast<double>(dart.second["param"][2]);
     dart_info.base_qd_ = static_cast<double>(dart.second["param"][3]);
     dart_info.trigger_position_ = static_cast<double>(dart.second["param"][4]);
-    if (dart.first == "first_dart")
-      dart_list_.insert(std::make_pair(0, dart_info));
-    if (dart.first == "second_dart")
-      dart_list_.insert(std::make_pair(1, dart_info));
-    if (dart.first == "third_dart")
-      dart_list_.insert(std::make_pair(2, dart_info));
-    if (dart.first == "fourth_dart")
-      dart_list_.insert(std::make_pair(3, dart_info));
+    dart_list_.insert(std::make_pair(std::stoi(dart.first) - 1, dart_info));
   }
   for (const auto& target : targets)
   {
