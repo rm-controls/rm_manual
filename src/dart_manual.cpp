@@ -54,15 +54,16 @@ void DartManual::getList(const XmlRpc::XmlRpcValue& darts, const XmlRpc::XmlRpcV
 {
   for (const auto& dart : darts)
   {
-    ROS_ASSERT(dart.second.hasMember("param"));
-    ROS_ASSERT(dart.second["param"].getType() == XmlRpc::XmlRpcValue::TypeArray);
+    ROS_ASSERT(dart.second.hasMember("param") and dart.second.hasMember("id"));
+    ROS_ASSERT(dart.second["param"].getType() == XmlRpc::XmlRpcValue::TypeArray and
+               dart.second["id"].getType() == XmlRpc::XmlRpcValue::TypeInt);
     Dart dart_info;
     dart_info.outpost_offset_ = static_cast<double>(dart.second["param"][0]);
     dart_info.outpost_qd_ = static_cast<double>(dart.second["param"][1]);
     dart_info.base_offset_ = static_cast<double>(dart.second["param"][2]);
     dart_info.base_qd_ = static_cast<double>(dart.second["param"][3]);
     dart_info.trigger_position_ = static_cast<double>(dart.second["param"][4]);
-    dart_list_.insert(std::make_pair(std::stoi(dart.first) - 1, dart_info));
+    dart_list_.insert(std::make_pair(static_cast<int>(dart.second["id"]) - 1, dart_info));
   }
   for (const auto& target : targets)
   {
