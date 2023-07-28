@@ -8,51 +8,13 @@ namespace rm_manual
 {
 DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : ManualBase(nh, nh_referee)
 {
-  ros::NodeHandle auto_nh(nh, "auto");
-  XmlRpc::XmlRpcValue aim_list, position;
-  auto_nh.getParam("aim_list", aim_list);
-  auto_nh.getParam("position", position);
-  for (int i = 0; i < aim_list.size(); ++i)
-  {
-    ROS_ASSERT(aim_list[i].getType() == XmlRpc::XmlRpcValue::TypeArray);
-
-    ROS_ASSERT(aim_list[i][0].getType() == XmlRpc::XmlRpcValue::TypeDouble and
-               aim_list[i][1].getType() == XmlRpc::XmlRpcValue::TypeDouble and
-               aim_list[i][2].getType() == XmlRpc::XmlRpcValue::TypeDouble and
-               aim_list[i][3].getType() == XmlRpc::XmlRpcValue::TypeDouble and
-               aim_list[i][4].getType() == XmlRpc::XmlRpcValue::TypeDouble);
-    for (int j = 0; j < 5; ++j)
-    {
-      if (i == 0)
-        yaw_offset_.push_back(aim_list[i][j]);
-      if (i == 1)
-        qd_outpost_.push_back(aim_list[i][j]);
-      if (i == 2)
-        yaw_offset_base_.push_back(aim_list[i][j]);
-      if (i == 3)
-        qd_base_.push_back(aim_list[i][j]);
-      if (i == 4)
-        launch_position_.push_back(aim_list[i][j]);
-    }
-  }
-  qd_ = qd_outpost_[0];
-  for (int i = 0; i < position.size(); ++i)
-  {
-    ROS_ASSERT(position[i].getType() == XmlRpc::XmlRpcValue::TypeArray);
-
-    ROS_ASSERT(position[i][0].getType() == XmlRpc::XmlRpcValue::TypeDouble and
-               position[i][1].getType() == XmlRpc::XmlRpcValue::TypeDouble);
-    if (i == 0)
-    {
-      yaw_position_outpost_ = static_cast<double>(position[i][0]);
-      pitch_position_outpost_ = static_cast<double>(position[i][1]);
-    }
-    if (i == 1)
-    {
-      yaw_position_base_ = static_cast<double>(position[i][0]);
-      pitch_position_base_ = static_cast<double>(position[i][1]);
-    }
-  }
+  XmlRpc::XmlRpcValue dart_list, targets;
+  nh.getParam("dart_list", dart_list);
+  nh.getParam("targets", targets);
+  getList(dart_list, targets);
+  qd_ = dart_list_[0].outpost_qd_;
+  dart_list_[4].outpost_qd_ = dart_list_[3].outpost_qd_;
+  dart_list_[4].base_qd_ = dart_list_[3].base_qd_;
   ros::NodeHandle nh_yaw = ros::NodeHandle(nh, "yaw");
   ros::NodeHandle nh_left_pitch = ros::NodeHandle(nh, "left_pitch");
   yaw_sender_ = new rm_common::JointPointCommandSender(nh_yaw, joint_state_);
@@ -88,11 +50,43 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
       nh_referee.subscribe<rm_msgs::GameStatus>("game_status", 10, &DartManual::gameStatusCallback, this);
 }
 
+void DartManual::getList(const XmlRpc::XmlRpcValue& darts, const XmlRpc::XmlRpcValue& targets)
+{
+  for (const auto& dart : darts)
+  {
+    ROS_ASSERT(dart.second.hasMember("param"));
+    ROS_ASSERT(dart.second["param"].getType() == XmlRpc::XmlRpcValue::TypeArray);
+    Dart dart_info;
+    dart_info.outpost_offset_ = static_cast<double>(dart.second["param"][0]);
+    dart_info.outpost_qd_ = static_cast<double>(dart.second["param"][1]);
+    dart_info.base_offset_ = static_cast<double>(dart.second["param"][2]);
+    dart_info.base_qd_ = static_cast<double>(dart.second["param"][3]);
+    dart_info.trigger_position_ = static_cast<double>(dart.second["param"][4]);
+    if (dart.first == "first_dart")
+      dart_list_.insert(std::make_pair(0, dart_info));
+    if (dart.first == "second_dart")
+      dart_list_.insert(std::make_pair(1, dart_info));
+    if (dart.first == "third_dart")
+      dart_list_.insert(std::make_pair(2, dart_info));
+    if (dart.first == "fourth_dart")
+      dart_list_.insert(std::make_pair(3, dart_info));
+  }
+  for (const auto& target : targets)
+  {
+    ROS_ASSERT(target.second.hasMember("position"));
+    ROS_ASSERT(target.second["position"].getType() == XmlRpc::XmlRpcValue::TypeArray);
+    std::vector<double> position(2);
+    position[0] = static_cast<double>(target.second["position"][0]);
+    position[1] = static_cast<double>(target.second["position"][1]);
+    target_position_.insert(std::make_pair(target.first, position));
+  }
+}
+
 void DartManual::run()
 {
+  ManualBase::run();
   trigger_calibration_->update(ros::Time::now());
   gimbal_calibration_->update(ros::Time::now());
-  ManualBase::run();
 }
 
 void DartManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
@@ -138,15 +132,13 @@ void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     {
       case OUTPOST:
         pitch_sender_->setPoint(pitch_outpost_);
-        yaw_sender_->setPoint(yaw_outpost_ + yaw_offset_[dart_fired_num_]);
-        qd_ = qd_outpost_[dart_fired_num_];
-        ROS_INFO_STREAM("qd_outpost:" << qd_);
+        yaw_sender_->setPoint(yaw_outpost_ + dart_list_[dart_fired_num_].outpost_offset_);
+        qd_ = dart_list_[dart_fired_num_].outpost_qd_;
         break;
       case BASE:
         pitch_sender_->setPoint(pitch_base_);
-        yaw_sender_->setPoint(yaw_base_ + yaw_offset_base_[dart_fired_num_]);
-        qd_ = qd_base_[dart_fired_num_];
-        ROS_INFO_STREAM("qd_base:" << qd_);
+        yaw_sender_->setPoint(yaw_base_ + dart_list_[dart_fired_num_].base_offset_);
+        qd_ = dart_list_[dart_fired_num_].base_qd_;
         break;
     }
     friction_right_sender_->setPoint(qd_);
@@ -162,17 +154,14 @@ void DartManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
       launch_state_ = AIMED;
     else
       launch_state_ = NONE;
-    ROS_INFO_STREAM("launch_state_:" << launch_state_);
     if (dart_launch_opening_status_ == rm_msgs::DartClientCmd::OPENED)
     {
       switch (launch_state_)
       {
         case NONE:
-          ROS_INFO_STREAM("No shooting.");
           trigger_sender_->setPoint(0.);
           break;
         case AIMED:
-          ROS_INFO_STREAM("Launching.");
           launchTwoDart();
           break;
       }
@@ -227,12 +216,12 @@ void DartManual::leftSwitchUpOn()
   switch (manual_state_)
   {
     case OUTPOST:
-      qd_ = qd_outpost_[dart_fired_num_];
-      yaw_sender_->setPoint(yaw_outpost_ + yaw_offset_[dart_fired_num_]);
+      qd_ = dart_list_[dart_fired_num_].outpost_qd_;
+      yaw_sender_->setPoint(yaw_outpost_ + dart_list_[dart_fired_num_].outpost_offset_);
       break;
     case BASE:
-      qd_ = qd_base_[dart_fired_num_];
-      yaw_sender_->setPoint(yaw_base_ + yaw_offset_base_[dart_fired_num_]);
+      qd_ = dart_list_[dart_fired_num_].base_qd_;
+      yaw_sender_->setPoint(yaw_base_ + dart_list_[dart_fired_num_].base_offset_);
       break;
   }
   friction_right_sender_->setPoint(qd_);
@@ -254,13 +243,13 @@ void DartManual::rightSwitchDownOn()
   }
   if (dbus_data_.ch_l_x == 1.)
   {
-    pitch_sender_->setPoint(pitch_position_outpost_);
-    yaw_sender_->setPoint(yaw_position_outpost_);
+    pitch_sender_->setPoint(target_position_["outpost"][0]);
+    yaw_sender_->setPoint(target_position_["outpost"][1]);
   }
   if (dbus_data_.ch_l_x == -1.)
   {
-    pitch_sender_->setPoint(pitch_position_base_);
-    yaw_sender_->setPoint(yaw_position_base_);
+    pitch_sender_->setPoint(target_position_["base"][0]);
+    yaw_sender_->setPoint(target_position_["base"][1]);
   }
 }
 
@@ -336,15 +325,15 @@ void DartManual::launchTwoDart()
 
 void DartManual::getDartFiredNum()
 {
-  if (trigger_position_ < launch_position_[1])
+  if (trigger_position_ < dart_list_[0].trigger_position_)
     dart_fired_num_ = 0;
-  if (trigger_position_ > launch_position_[1])
+  if (trigger_position_ > dart_list_[0].trigger_position_)
     dart_fired_num_ = 1;
-  if (trigger_position_ > launch_position_[2])
+  if (trigger_position_ > dart_list_[1].trigger_position_)
     dart_fired_num_ = 2;
-  if (trigger_position_ > launch_position_[3])
+  if (trigger_position_ > dart_list_[2].trigger_position_)
     dart_fired_num_ = 3;
-  if (trigger_position_ > launch_position_[4])
+  if (trigger_position_ > dart_list_[3].trigger_position_)
     dart_fired_num_ = 4;
 }
 void DartManual::recordPosition(const rm_msgs::DbusData dbus_data)
@@ -421,14 +410,14 @@ void DartManual::wheelAntiClockwise()
   {
     case OUTPOST:
       manual_state_ = BASE;
-      qd_ = qd_base_[dart_fired_num_];
+      qd_ = dart_list_[dart_fired_num_].base_qd_;
       ROS_INFO("Friction wheels : BASE_MODE");
       pitch_sender_->setPoint(pitch_base_);
       yaw_sender_->setPoint(yaw_base_);
       break;
     case BASE:
       manual_state_ = OUTPOST;
-      qd_ = qd_outpost_[dart_fired_num_];
+      qd_ = dart_list_[dart_fired_num_].outpost_qd_;
       ROS_INFO("Friction wheels : OUTPOST_MODE");
       pitch_sender_->setPoint(pitch_outpost_);
       yaw_sender_->setPoint(yaw_outpost_);

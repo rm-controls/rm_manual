@@ -9,6 +9,7 @@
 #include <rm_msgs/DartClientCmd.h>
 #include <rm_msgs/GameRobotStatus.h>
 #include <rm_msgs/GameStatus.h>
+#include <unordered_map>
 
 namespace rm_manual
 {
@@ -33,16 +34,23 @@ public:
     NONE,
     AIMED
   };
+  struct Dart
+  {
+    double outpost_offset_, base_offset_;
+    double outpost_qd_, base_qd_;
+    double trigger_position_;
+  };
 
 protected:
   void sendCommand(const ros::Time& time) override;
+  void getList(const XmlRpc::XmlRpcValue& darts, const XmlRpc::XmlRpcValue& targets);
   void run() override;
   void checkReferee() override;
   void remoteControlTurnOn() override;
   void leftSwitchMidOn();
   void leftSwitchDownOn();
   void leftSwitchUpOn();
-  void rightSwitchDownOn();
+  void rightSwitchDownOn() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
   void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
@@ -64,9 +72,9 @@ protected:
   rm_common::JointPointCommandSender *pitch_sender_, *yaw_sender_;
   rm_common::CalibrationQueue *trigger_calibration_, *gimbal_calibration_;
   double pitch_outpost_{}, pitch_base_{}, yaw_outpost_{}, yaw_base_{};
-  double pitch_position_outpost_{}, yaw_position_outpost_{}, pitch_position_base_{}, yaw_position_base_{};
   double qd_, upward_vel_;
-  std::vector<double> qd_outpost_, qd_base_, yaw_offset_, yaw_offset_base_, launch_position_;
+  std::unordered_map<int, Dart> dart_list_{};
+  std::unordered_map<std::string, std::vector<double>> target_position_{};
   double scale_{ 0.04 }, scale_micro_{ 0.01 };
   bool if_stop_{ true }, has_stopped{ false };
 
