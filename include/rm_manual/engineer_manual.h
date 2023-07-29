@@ -137,7 +137,7 @@ private:
 
   int checkJointsLimit();
 
-  bool reversal_motion_{}, change_flag_{};
+  bool reversal_motion_{}, change_flag_{}, is_random_ore_{};
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{};
   double angular_z_scale_{};
   double fast_speed_scale_{}, normal_speed_scale_{}, low_speed_scale_{}, exchange_speed_scale_{};
@@ -149,7 +149,7 @@ private:
   ros::Subscriber gripper_state_sub_, stone_num_sub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 
-  auto_exchange::AutoExchange* auto_exchange_;
+  // auto_exchange::AutoExchange *auto_exchange_;
   rm_msgs::GpioData gpio_state_;
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::MultiDofCommandSender* reversal_command_sender_;

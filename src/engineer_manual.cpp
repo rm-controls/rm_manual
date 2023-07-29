@@ -18,7 +18,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   XmlRpc::XmlRpcValue auto_exchange_value;
   nh.getParam("auto_exchange", auto_exchange_value);
   ros::NodeHandle nh_auto_exchange(nh, "auto_exchange");
-  auto_exchange_ = new auto_exchange::AutoExchange(auto_exchange_value, tf_buffer_, nh_auto_exchange);
+  // auto_exchange_ = new auto_exchange::AutoExchange(auto_exchange_value, tf_buffer_, nh_auto_exchange);
   // Pub
   exchanger_update_pub_ = nh.advertise<std_msgs::Bool>("/is_update_exchanger", 1);
   // Sub
@@ -121,25 +121,33 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  if (auto_exchange_->auto_servo_move_->getEnterFlag() != true)
+  //  if (auto_exchange_->auto_servo_move_->getEnterFlag() != true)
+  //  {
+  if (is_random_ore_)
+  {
+    servo_command_sender_->setLinearVel(dbus_data->ch_l_y, dbus_data->ch_l_x, dbus_data->wheel);
+    servo_command_sender_->setAngularVel(dbus_data->ch_r_x, -dbus_data->ch_r_y, -angular_z_scale_);
+  }
+  else
   {
     servo_command_sender_->setLinearVel(dbus_data->wheel, -dbus_data->ch_l_x, dbus_data->ch_l_y);
     servo_command_sender_->setAngularVel(-angular_z_scale_, dbus_data->ch_r_y, dbus_data->ch_r_x);
   }
-  else
-  {
-    if (!auto_exchange_->auto_servo_move_->getFinishFlag())
-    {
-      std::vector<double> servo_scales;
-      servo_scales.resize(6, 0);
-      servo_scales = auto_exchange_->auto_servo_move_->getServoScale();
-      servo_command_sender_->setLinearVel(servo_scales[0], servo_scales[1], servo_scales[2]);
-      servo_command_sender_->setAngularVel(servo_scales[3], 0., servo_scales[5]);
-      joint7_command_sender_->getMsg()->data = auto_exchange_->auto_servo_move_->getJoint7Msg();
-    }
-    else
-      servo_command_sender_->setZero();
-  }
+  //  }
+  //  else
+  //  {
+  //    if (!auto_exchange_->auto_servo_move_->getFinishFlag())
+  //    {
+  //      std::vector<double> servo_scales;
+  //      servo_scales.resize(6, 0);
+  //      servo_scales = auto_exchange_->auto_servo_move_->getServoScale();
+  //      servo_command_sender_->setLinearVel(servo_scales[0], servo_scales[1], servo_scales[2]);
+  //      servo_command_sender_->setAngularVel(servo_scales[3], 0., servo_scales[5]);
+  //      joint7_command_sender_->getMsg()->data = auto_exchange_->auto_servo_move_->getJoint7Msg();
+  //    }
+  //    else
+  //      servo_command_sender_->setZero();
+  //  }
   ChassisGimbalManual::updatePc(dbus_data);
 }
 
@@ -205,6 +213,7 @@ void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ctrl_r_event_.update(dbus_data->key_ctrl & dbus_data->key_r);
   ctrl_g_event_.update(dbus_data->key_g & dbus_data->key_ctrl);
   ctrl_f_event_.update(dbus_data->key_f & dbus_data->key_ctrl);
+  ctrl_q_event_.update(dbus_data->key_ctrl & dbus_data->key_q);
 
   z_event_.update(dbus_data->key_z & !dbus_data->key_ctrl & !dbus_data->key_shift);
   x_event_.update(dbus_data->key_x & !dbus_data->key_ctrl & !dbus_data->key_shift);
@@ -282,43 +291,43 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ChassisGimbalManual::updatePc(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  gimbal_mode_ = DIRECT;
-  servo_mode_ = JOINT;
+  //    gimbal_mode_ = DIRECT;
+  //    servo_mode_ = JOINT;
   if (!reversal_motion_ && servo_mode_ == JOINT)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
   //  Use for test auto exchange
-  if (dbus_data->wheel == -1)
-  {
-    auto_exchange_->run();
-    if (auto_exchange_->find_->getEnterFlag())
-    {
-      gimbal_mode_ = RATE;
-      std::vector<double> gimbal_scale = auto_exchange_->find_->getGimbalScale();
-      gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
-    }
-    if (auto_exchange_->pre_adjust_->getEnterFlag())
-    {
-      gimbal_cmd_sender_->setZero();
-      geometry_msgs::Twist vel_msg = auto_exchange_->pre_adjust_->getChassisVelMsg();
-      vel_cmd_sender_->setAngularZVel(vel_msg.angular.z);
-      vel_cmd_sender_->setLinearXVel(vel_msg.linear.x);
-      vel_cmd_sender_->setLinearYVel(vel_msg.linear.y);
-    }
-    if (auto_exchange_->auto_servo_move_->getEnterFlag())
-    {
-      vel_cmd_sender_->setLinearXVel(0.);
-      vel_cmd_sender_->setLinearYVel(0.);
-      vel_cmd_sender_->setAngularZVel(0.);
-      servo_mode_ = SERVO;
-    }
-  }
-  else
-  {
-    auto_exchange_->init();
-    gimbal_mode_ = DIRECT;
-    servo_mode_ = JOINT;
-  }
+  //  if (dbus_data->wheel == -1)
+  //  {
+  //    auto_exchange_->run();
+  //    if (auto_exchange_->find_->getEnterFlag())
+  //    {
+  //      gimbal_mode_ = RATE;
+  //      std::vector<double> gimbal_scale = auto_exchange_->find_->getGimbalScale();
+  //      gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
+  //    }
+  //    if (auto_exchange_->pre_adjust_->getEnterFlag())
+  //    {
+  //      gimbal_cmd_sender_->setZero();
+  //      geometry_msgs::Twist vel_msg = auto_exchange_->pre_adjust_->getChassisVelMsg();
+  //      vel_cmd_sender_->setAngularZVel(vel_msg.angular.z);
+  //      vel_cmd_sender_->setLinearXVel(vel_msg.linear.x);
+  //      vel_cmd_sender_->setLinearYVel(vel_msg.linear.y);
+  //    }
+  //    if (auto_exchange_->auto_servo_move_->getEnterFlag())
+  //    {
+  //      vel_cmd_sender_->setLinearXVel(0.);
+  //      vel_cmd_sender_->setLinearYVel(0.);
+  //      vel_cmd_sender_->setAngularZVel(0.);
+  //      servo_mode_ = SERVO;
+  //    }
+  //  }
+  //  else
+  //  {
+  //    auto_exchange_->init();
+  //    gimbal_mode_ = DIRECT;
+  //    servo_mode_ = JOINT;
+  //  }
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -334,7 +343,7 @@ void EngineerManual::sendCommand(const ros::Time& time)
   {
     changeSpeedMode(EXCHANGE);
     servo_command_sender_->sendCommand(time);
-    joint7_command_sender_->sendCommand(time);
+    //    joint7_command_sender_->sendCommand(time);
   }
   if (gimbal_mode_ == RATE)
     gimbal_cmd_sender_->sendCommand(time);
@@ -446,8 +455,9 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   if (prefix_ + root_ == "SMALL_ISLAND_TWO_ORE_L")
     changeSpeedMode(LOW);
   if (prefix_ + root_ == "TAKE_WHEN_TWO_STONE" || prefix_ + root_ == "EXCHANGE_WAIT" ||
-      prefix_ + root_ == "TAKE_WHEN_ONE_STONE")
+      prefix_ + root_ == "TAKE_WHEN_ONE_STONE" || prefix_ + root_ == "BIG_ISLAND")
     enterServo();
+
   if (prefix_ + root_ == "SMALL_ISLAND_TWO_ORE_L000")
     changeSpeedMode(NORMAL);
   ROS_INFO("%i", result->finish);
@@ -471,10 +481,21 @@ void EngineerManual::mouseRightRelease()
   runStepQueue(prefix_ + root_);
   ROS_INFO("Finished %s", (prefix_ + root_).c_str());
 }
+
+void EngineerManual::ctrlQPress()
+{
+  prefix_ = "REVERSE";
+  root_ = "_STONE";
+  initMode();
+  runStepQueue(prefix_ + root_);
+  ROS_INFO("%s", (prefix_ + root_).c_str());
+}
+
 void EngineerManual::ctrlXPress()
 {
   prefix_ = "SMALL_ISLAND";
   root_ = "_TWO_ORE_L";
+  initMode();
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
@@ -482,8 +503,9 @@ void EngineerManual::ctrlXPress()
 
 void EngineerManual::ctrlEPress()
 {
-  prefix_ = "SMALL_ISLAND";
-  root_ = "_RT";
+  prefix_ = "BIG";
+  root_ = "_ISLAND";
+  is_random_ore_ = true;
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
@@ -493,6 +515,7 @@ void EngineerManual::ctrlWPress()
 {
   prefix_ = "CATCH_DROP";
   root_ = "";
+  initMode();
   changeSpeedMode(EXCHANGE);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
@@ -512,6 +535,7 @@ void EngineerManual::ctrlAPress()
 {
   prefix_ = "SMALL_ISLAND";
   root_ = "_MID";
+  initMode();
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
@@ -521,6 +545,7 @@ void EngineerManual::ctrlSPress()
 {
   prefix_ = "";
   root_ = "BIG_ISLAND";
+  initMode();
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
@@ -528,8 +553,9 @@ void EngineerManual::ctrlSPress()
 
 void EngineerManual::ctrlDPress()
 {
-  prefix_ = "GROUND_";
-  root_ = "STONE0";
+  prefix_ = "GROUND";
+  root_ = "_STONE";
+  initMode();
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
@@ -559,6 +585,7 @@ void EngineerManual::ctrlGPress()
       break;
   }
   prefix_ = "";
+  initMode();
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
   ROS_INFO("STORE_STONE");
@@ -574,14 +601,6 @@ void EngineerManual::ctrlZPressing()
 
 void EngineerManual::ctrlZRelease()
 {
-}
-
-void EngineerManual::ctrlQPress()
-{
-  prefix_ = "SMALL_ISLAND";
-  root_ = "_LF";
-  runStepQueue(prefix_ + root_);
-  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlCPress()
@@ -678,9 +697,6 @@ void EngineerManual::rPress()
 
 void EngineerManual::xPress()
 {
-  //  prefix_ = "ENGINEER_";
-  //  root_ = "DRAG_CAR";
-  //  runStepQueue(prefix_ + root_);
   if (drag_state_ == "on")
   {
     drag_command_sender_->off();
@@ -779,6 +795,7 @@ void EngineerManual::initMode()
 {
   servo_mode_ = JOINT;
   gimbal_mode_ = DIRECT;
+  is_random_ore_ = false;
   changeSpeedMode(NORMAL);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
