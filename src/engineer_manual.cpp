@@ -282,8 +282,8 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   ChassisGimbalManual::updatePc(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  //  gimbal_mode_ = DIRECT;
-  //  servo_mode_ = JOINT;
+  gimbal_mode_ = DIRECT;
+  servo_mode_ = JOINT;
   if (!reversal_motion_ && servo_mode_ == JOINT)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
@@ -299,6 +299,7 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     }
     if (auto_exchange_->pre_adjust_->getEnterFlag())
     {
+      gimbal_cmd_sender_->setZero();
       geometry_msgs::Twist vel_msg = auto_exchange_->pre_adjust_->getChassisVelMsg();
       vel_cmd_sender_->setAngularZVel(vel_msg.angular.z);
       vel_cmd_sender_->setLinearXVel(vel_msg.linear.x);
@@ -306,13 +307,15 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     }
     if (auto_exchange_->auto_servo_move_->getEnterFlag())
     {
+      vel_cmd_sender_->setLinearXVel(0.);
+      vel_cmd_sender_->setLinearYVel(0.);
+      vel_cmd_sender_->setAngularZVel(0.);
       servo_mode_ = SERVO;
     }
   }
   else
   {
     auto_exchange_->init();
-    ROS_INFO_STREAM("init");
     gimbal_mode_ = DIRECT;
     servo_mode_ = JOINT;
   }
@@ -488,7 +491,7 @@ void EngineerManual::ctrlEPress()
 
 void EngineerManual::ctrlWPress()
 {
-  prefix_ = "ARM_ADJUST";
+  prefix_ = "CATCH_DROP";
   root_ = "";
   changeSpeedMode(EXCHANGE);
   runStepQueue(prefix_ + root_);
