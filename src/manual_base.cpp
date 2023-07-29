@@ -73,16 +73,18 @@ void ManualBase::run()
 
 void ManualBase::checkReferee()
 {
-  gimbal_power_on_event_.update((ros::Time::now() - gimbal_actuator_last_get_stamp_) < ros::Duration(2.5));
-  shooter_power_on_event_.update((ros::Time::now() - shooter_actuator_last_get_stamp_) < ros::Duration(2.5));
+  chassis_power_on_event_.update(chassis_actuator_halted_);
+  gimbal_power_on_event_.update(gimbal_actuator_halted_);
+  shooter_power_on_event_.update(shooter_actuator_halted_);
   referee_is_online_ = (ros::Time::now() - referee_last_get_stamp_ < ros::Duration(0.3));
   manual_to_referee_pub_.publish(manual_to_referee_pub_data_);
 }
 
-void ManualBase::updateActuatorStamp(const rm_msgs::ActuatorState::ConstPtr& data, std::vector<std::string> act_vector,
-                                     ros::Time& last_get_stamp)
+void ManualBase::updateActuatorHalted(const rm_msgs::ActuatorState::ConstPtr& data, std::vector<std::string> act_vector,
+                                      int& halted)
 {
   int dis;
+  bool first = true;
   for (long unsigned int i = 0; i < act_vector.size(); i++)
   {
     auto it = std::find(data->name.begin(), data->name.end(), act_vector.at(i));
@@ -92,8 +94,13 @@ void ManualBase::updateActuatorStamp(const rm_msgs::ActuatorState::ConstPtr& dat
       continue;
     }
     dis = std::distance(data->name.begin(), it);
-    if (data->stamp.at(dis) > last_get_stamp)
-      last_get_stamp = data->stamp.at(dis);
+    if (first)
+    {
+      halted = data->halted.at(dis);
+      first = false;
+    }
+    else
+      halted |= data->halted.at(dis);
   }
 }
 
@@ -104,8 +111,9 @@ void ManualBase::jointStateCallback(const sensor_msgs::JointState::ConstPtr& dat
 
 void ManualBase::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
 {
-  updateActuatorStamp(data, gimbal_mount_motor_, gimbal_actuator_last_get_stamp_);
-  updateActuatorStamp(data, shooter_mount_motor_, shooter_actuator_last_get_stamp_);
+  updateActuatorHalted(data, chassis_mount_motor_, chassis_actuator_halted_);
+  updateActuatorHalted(data, gimbal_mount_motor_, gimbal_actuator_halted_);
+  updateActuatorHalted(data, shooter_mount_motor_, shooter_actuator_halted_);
 }
 
 void ManualBase::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
@@ -114,9 +122,17 @@ void ManualBase::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
   {
     if (!remote_is_open_)
     {
-      ROS_INFO("Remote controller ON");
-      remoteControlTurnOn();
-      remote_is_open_ = true;
+      if (gimbal_actuator_halted_ && shooter_actuator_halted_)
+      {
+        ROS_INFO_THROTTLE(5, "Remote controller wait for Server");
+        return;
+      }
+      else
+      {
+        ROS_INFO("Remote controller ON");
+        remoteControlTurnOn();
+        remote_is_open_ = true;
+      }
     }
     right_switch_down_event_.update(data->s_r == rm_msgs::DbusData::DOWN);
     right_switch_mid_event_.update(data->s_r == rm_msgs::DbusData::MID);

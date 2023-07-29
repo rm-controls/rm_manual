@@ -23,8 +23,8 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& n
   if (!gimbal_nh.getParam("finish_turning_threshold", finish_turning_threshold_))
     ROS_ERROR("Finish turning threshold no defined (namespace: %s)", nh.getNamespace().c_str());
 
-  chassis_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::chassisOutputOn, this));
-  gimbal_power_on_event_.setRising(boost::bind(&ChassisGimbalManual::gimbalOutputOn, this));
+  chassis_power_on_event_.setFalling(boost::bind(&ChassisGimbalManual::chassisOutputOn, this));
+  gimbal_power_on_event_.setFalling(boost::bind(&ChassisGimbalManual::gimbalOutputOn, this));
   w_event_.setEdge(boost::bind(&ChassisGimbalManual::wPress, this), boost::bind(&ChassisGimbalManual::wRelease, this));
   w_event_.setActiveHigh(boost::bind(&ChassisGimbalManual::wPressing, this));
   s_event_.setEdge(boost::bind(&ChassisGimbalManual::sPress, this), boost::bind(&ChassisGimbalManual::sRelease, this));

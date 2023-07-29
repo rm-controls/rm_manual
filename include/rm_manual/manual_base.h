@@ -57,8 +57,8 @@ protected:
   virtual void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data);
   virtual void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data);
   virtual void sendCommand(const ros::Time& time) = 0;
-  virtual void updateActuatorStamp(const rm_msgs::ActuatorState::ConstPtr& data, std::vector<std::string> act_vector,
-                                   ros::Time& last_get_stamp);
+  virtual void updateActuatorHalted(const rm_msgs::ActuatorState::ConstPtr& data, std::vector<std::string> act_vector,
+                                    int& halted);
 
   virtual void jointStateCallback(const sensor_msgs::JointState::ConstPtr& data);
   virtual void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data);
@@ -161,7 +161,7 @@ protected:
       left_switch_down_event_, left_switch_mid_event_, left_switch_up_event_;
 
   InputEvent chassis_power_on_event_, gimbal_power_on_event_, shooter_power_on_event_;
-  ros::Time chassis_actuator_last_get_stamp_, gimbal_actuator_last_get_stamp_, shooter_actuator_last_get_stamp_;
+  int chassis_actuator_halted_ = 1, gimbal_actuator_halted_ = 1, shooter_actuator_halted_ = 1;
   std::vector<std::string> chassis_mount_motor_, gimbal_mount_motor_, shooter_mount_motor_;
 };
 

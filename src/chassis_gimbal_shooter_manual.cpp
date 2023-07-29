@@ -36,7 +36,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   shooter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   nh.getParam("gimbal_calibration", rpc_value);
   gimbal_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  shooter_power_on_event_.setRising(boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
+  shooter_power_on_event_.setFalling(boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
   self_inspection_event_.setRising(boost::bind(&ChassisGimbalShooterManual::selfInspectionStart, this));
   game_start_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gameStart, this));
   left_switch_up_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::leftSwitchUpOn, this, _1));
