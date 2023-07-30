@@ -18,7 +18,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   XmlRpc::XmlRpcValue auto_exchange_value;
   nh.getParam("auto_exchange", auto_exchange_value);
   ros::NodeHandle nh_auto_exchange(nh, "auto_exchange");
-  // auto_exchange_ = new auto_exchange::AutoExchange(auto_exchange_value, tf_buffer_, nh_auto_exchange);
+  auto_exchange_ = new auto_exchange::AutoExchange(auto_exchange_value, tf_buffer_, nh_auto_exchange);
   // Pub
   exchanger_update_pub_ = nh.advertise<std_msgs::Bool>("/is_update_exchanger", 1);
   // Sub
@@ -121,33 +121,33 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  //  if (auto_exchange_->auto_servo_move_->getEnterFlag() != true)
-  //  {
-  if (is_random_ore_)
+  if (auto_exchange_->auto_servo_move_->getEnterFlag() != true)
   {
-    servo_command_sender_->setLinearVel(dbus_data->ch_l_y, dbus_data->ch_l_x, dbus_data->wheel);
-    servo_command_sender_->setAngularVel(dbus_data->ch_r_x, -dbus_data->ch_r_y, -angular_z_scale_);
+    if (is_random_ore_)
+    {
+      servo_command_sender_->setLinearVel(dbus_data->ch_l_y, dbus_data->ch_l_x, dbus_data->wheel);
+      servo_command_sender_->setAngularVel(dbus_data->ch_r_x, -dbus_data->ch_r_y, -angular_z_scale_);
+    }
+    else
+    {
+      servo_command_sender_->setLinearVel(dbus_data->wheel, -dbus_data->ch_l_x, dbus_data->ch_l_y);
+      servo_command_sender_->setAngularVel(-angular_z_scale_, dbus_data->ch_r_y, dbus_data->ch_r_x);
+    }
   }
   else
   {
-    servo_command_sender_->setLinearVel(dbus_data->wheel, -dbus_data->ch_l_x, dbus_data->ch_l_y);
-    servo_command_sender_->setAngularVel(-angular_z_scale_, dbus_data->ch_r_y, dbus_data->ch_r_x);
+    if (!auto_exchange_->auto_servo_move_->getFinishFlag())
+    {
+      std::vector<double> servo_scales;
+      servo_scales.resize(6, 0);
+      servo_scales = auto_exchange_->auto_servo_move_->getServoScale();
+      servo_command_sender_->setLinearVel(servo_scales[0], servo_scales[1], servo_scales[2]);
+      servo_command_sender_->setAngularVel(servo_scales[3], 0., servo_scales[5]);
+      joint7_command_sender_->getMsg()->data = auto_exchange_->auto_servo_move_->getJoint7Msg();
+    }
+    else
+      servo_command_sender_->setZero();
   }
-  //  }
-  //  else
-  //  {
-  //    if (!auto_exchange_->auto_servo_move_->getFinishFlag())
-  //    {
-  //      std::vector<double> servo_scales;
-  //      servo_scales.resize(6, 0);
-  //      servo_scales = auto_exchange_->auto_servo_move_->getServoScale();
-  //      servo_command_sender_->setLinearVel(servo_scales[0], servo_scales[1], servo_scales[2]);
-  //      servo_command_sender_->setAngularVel(servo_scales[3], 0., servo_scales[5]);
-  //      joint7_command_sender_->getMsg()->data = auto_exchange_->auto_servo_move_->getJoint7Msg();
-  //    }
-  //    else
-  //      servo_command_sender_->setZero();
-  //  }
   ChassisGimbalManual::updatePc(dbus_data);
 }
 
@@ -297,37 +297,37 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
   //  Use for test auto exchange
-  //  if (dbus_data->wheel == -1)
-  //  {
-  //    auto_exchange_->run();
-  //    if (auto_exchange_->find_->getEnterFlag())
-  //    {
-  //      gimbal_mode_ = RATE;
-  //      std::vector<double> gimbal_scale = auto_exchange_->find_->getGimbalScale();
-  //      gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
-  //    }
-  //    if (auto_exchange_->pre_adjust_->getEnterFlag())
-  //    {
-  //      gimbal_cmd_sender_->setZero();
-  //      geometry_msgs::Twist vel_msg = auto_exchange_->pre_adjust_->getChassisVelMsg();
-  //      vel_cmd_sender_->setAngularZVel(vel_msg.angular.z);
-  //      vel_cmd_sender_->setLinearXVel(vel_msg.linear.x);
-  //      vel_cmd_sender_->setLinearYVel(vel_msg.linear.y);
-  //    }
-  //    if (auto_exchange_->auto_servo_move_->getEnterFlag())
-  //    {
-  //      vel_cmd_sender_->setLinearXVel(0.);
-  //      vel_cmd_sender_->setLinearYVel(0.);
-  //      vel_cmd_sender_->setAngularZVel(0.);
-  //      servo_mode_ = SERVO;
-  //    }
-  //  }
-  //  else
-  //  {
-  //    auto_exchange_->init();
-  //    gimbal_mode_ = DIRECT;
-  //    servo_mode_ = JOINT;
-  //  }
+  if (dbus_data->wheel == -1)
+  {
+    auto_exchange_->run();
+    if (auto_exchange_->find_->getEnterFlag())
+    {
+      gimbal_mode_ = RATE;
+      std::vector<double> gimbal_scale = auto_exchange_->find_->getGimbalScale();
+      gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
+    }
+    if (auto_exchange_->pre_adjust_->getEnterFlag())
+    {
+      gimbal_cmd_sender_->setZero();
+      geometry_msgs::Twist vel_msg = auto_exchange_->pre_adjust_->getChassisVelMsg();
+      vel_cmd_sender_->setAngularZVel(vel_msg.angular.z);
+      vel_cmd_sender_->setLinearXVel(vel_msg.linear.x);
+      vel_cmd_sender_->setLinearYVel(vel_msg.linear.y);
+    }
+    if (auto_exchange_->auto_servo_move_->getEnterFlag())
+    {
+      vel_cmd_sender_->setLinearXVel(0.);
+      vel_cmd_sender_->setLinearYVel(0.);
+      vel_cmd_sender_->setAngularZVel(0.);
+      servo_mode_ = SERVO;
+    }
+  }
+  else
+  {
+    auto_exchange_->init();
+    gimbal_mode_ = DIRECT;
+    servo_mode_ = JOINT;
+  }
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -343,7 +343,10 @@ void EngineerManual::sendCommand(const ros::Time& time)
   {
     changeSpeedMode(EXCHANGE);
     servo_command_sender_->sendCommand(time);
-    //    joint7_command_sender_->sendCommand(time);
+    if (auto_exchange_->auto_servo_move_->getEnterFlag())
+    {
+      joint7_command_sender_->sendCommand(time);
+    }
   }
   if (gimbal_mode_ == RATE)
     gimbal_cmd_sender_->sendCommand(time);
