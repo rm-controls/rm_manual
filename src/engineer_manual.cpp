@@ -324,9 +324,9 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   }
   else
   {
-    auto_exchange_->init();
     gimbal_mode_ = DIRECT;
     servo_mode_ = JOINT;
+    auto_exchange_->init();
   }
 }
 
@@ -600,10 +600,36 @@ void EngineerManual::ctrlZPress()
 
 void EngineerManual::ctrlZPressing()
 {
+  //  Use for auto exchange
+  auto_exchange_->run();
+  if (auto_exchange_->find_->getEnterFlag())
+  {
+    gimbal_mode_ = RATE;
+    std::vector<double> gimbal_scale = auto_exchange_->find_->getGimbalScale();
+    gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
+  }
+  if (auto_exchange_->pre_adjust_->getEnterFlag())
+  {
+    gimbal_cmd_sender_->setZero();
+    geometry_msgs::Twist vel_msg = auto_exchange_->pre_adjust_->getChassisVelMsg();
+    vel_cmd_sender_->setAngularZVel(vel_msg.angular.z);
+    vel_cmd_sender_->setLinearXVel(vel_msg.linear.x);
+    vel_cmd_sender_->setLinearYVel(vel_msg.linear.y);
+  }
+  if (auto_exchange_->auto_servo_move_->getEnterFlag())
+  {
+    vel_cmd_sender_->setLinearXVel(0.);
+    vel_cmd_sender_->setLinearYVel(0.);
+    vel_cmd_sender_->setAngularZVel(0.);
+    servo_mode_ = SERVO;
+  }
 }
 
 void EngineerManual::ctrlZRelease()
 {
+  gimbal_mode_ = DIRECT;
+  servo_mode_ = JOINT;
+  auto_exchange_->init();
 }
 
 void EngineerManual::ctrlCPress()
@@ -645,6 +671,8 @@ void EngineerManual::ctrlBPress()
       break;
   }
   ROS_INFO("RUN_HOME");
+  drag_command_sender_->off();
+  drag_state_ = "off";
   prefix_ = "";
   runStepQueue(prefix_ + root_);
 }
