@@ -19,6 +19,7 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   ros::NodeHandle chassis_nh(nh, "chassis");
   normal_speed_scale_ = chassis_nh.param("normal_speed_scale", 1);
   low_speed_scale_ = chassis_nh.param("low_speed_scale", 0.30);
+  nh.param("exit_buff_mode_duration", exit_buff_mode_duration_, 0.5);
 
   ctrl_z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this),
                         boost::bind(&ChassisGimbalShooterCoverManual::ctrlZRelease, this));
@@ -174,7 +175,7 @@ void ChassisGimbalShooterCoverManual::wPress()
 void ChassisGimbalShooterCoverManual::wPressing()
 {
   ChassisGimbalShooterManual::wPressing();
-  if ((ros::Time::now() - last_switch_time_).toSec() > 0.5 &&
+  if ((ros::Time::now() - last_switch_time_).toSec() > exit_buff_mode_duration_ &&
       switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
   {
     switch_buff_srv_->setTargetType(rm_msgs::StatusChangeRequest::ARMOR);
