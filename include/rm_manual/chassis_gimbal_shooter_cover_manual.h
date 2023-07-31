@@ -12,8 +12,14 @@ class ChassisGimbalShooterCoverManual : public ChassisGimbalShooterManual
 {
 public:
   ChassisGimbalShooterCoverManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
+  enum SpeedMode
+  {
+    LOW,
+    NORMAL
+  };
 
 protected:
+  void changeSpeedMode(SpeedMode speed_mode);
   void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void checkReferee() override;
@@ -30,6 +36,7 @@ protected:
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   };
+  double low_speed_scale_{}, normal_speed_scale_{};
   rm_common::SwitchDetectionCaller* switch_buff_srv_{};
   rm_common::SwitchDetectionCaller* switch_buff_type_srv_{};
   rm_common::JointPositionBinaryCommandSender* cover_command_sender_{};
