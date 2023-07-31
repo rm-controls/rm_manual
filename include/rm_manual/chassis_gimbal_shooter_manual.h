@@ -110,7 +110,6 @@ protected:
   rm_common::CameraSwitchCommandSender* camera_switch_cmd_sender_{};
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::SwitchDetectionCaller* switch_armor_target_srv_{};
-  rm_common::ExtraFrictionWheelSpeedCaller* extra_friction_wheel_speed_srv_{};
   rm_common::CalibrationQueue* shooter_calibration_;
   rm_common::CalibrationQueue* gimbal_calibration_;
 
