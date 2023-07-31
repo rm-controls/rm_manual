@@ -121,7 +121,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  if (auto_exchange_->auto_servo_move_->getEnterFlag() != true)
+  if (auto_exchange_->auto_servo_move_->getEnterFlag() != true && !auto_exchange_->getFinishFlag())
   {
     if (is_random_ore_)
     {
@@ -255,15 +255,17 @@ void EngineerManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 
 void EngineerManual::stoneNumCallback(const std_msgs::String ::ConstPtr& data)
 {
-  std::cout << stone_num_ << std::endl;
-  if (data->data == "-1")
-    stone_num_ -= 1;
-  else if (data->data == "+1")
-    stone_num_ += 1;
-  if (stone_num_ >= 3)
-    stone_num_ = 2;
-  else if (stone_num_ <= -1)
-    stone_num_ = 0;
+  std::cout << stone_num_.size() << std::endl;
+  if (data->data == "-1" && !stone_num_.empty())
+    stone_num_.pop_back();
+  else if (data->data == "WHITE")
+    stone_num_.push_back("WHITE");
+  else if (data->data == "YELLOW")
+    stone_num_.push_back("YELLOW");
+  else if (data->data == "MANUALLY")
+    stone_num_.push_back("MANUALLY");
+  if (stone_num_.size() >= 3)
+    stone_num_.pop_back();
 }
 void EngineerManual::gpioStateCallback(const rm_msgs::GpioData ::ConstPtr& data)
 {
@@ -324,9 +326,9 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   }
   else
   {
+    auto_exchange_->init();
     gimbal_mode_ = DIRECT;
     servo_mode_ = JOINT;
-    auto_exchange_->init();
   }
 }
 
@@ -575,16 +577,13 @@ void EngineerManual::ctrlFPress()
 
 void EngineerManual::ctrlGPress()
 {
-  switch (stone_num_)
+  switch (stone_num_.size())
   {
     case 0:
       root_ = "STORE_WHEN_ZERO_STONE";
       break;
     case 1:
       root_ = "STORE_WHEN_ONE_STONE";
-      break;
-    case 2:
-      root_ = "STORE_WHEN_TWO_STONE";
       break;
   }
   prefix_ = "";
@@ -627,9 +626,8 @@ void EngineerManual::ctrlZPressing()
 
 void EngineerManual::ctrlZRelease()
 {
-  gimbal_mode_ = DIRECT;
-  servo_mode_ = JOINT;
   auto_exchange_->init();
+  initMode();
 }
 
 void EngineerManual::ctrlCPress()
@@ -655,7 +653,7 @@ void EngineerManual::shiftVRelease()
 void EngineerManual::ctrlBPress()
 {
   initMode();
-  switch (stone_num_)
+  switch (stone_num_.size())
   {
     case 0:
       root_ = "HOME_ZERO_STONE";
@@ -665,9 +663,6 @@ void EngineerManual::ctrlBPress()
       break;
     case 2:
       root_ = "HOME_TWO_STONE";
-      break;
-    case 3:
-      root_ = "HOME_THREE_STONE";
       break;
   }
   ROS_INFO("RUN_HOME");
@@ -719,11 +714,11 @@ void EngineerManual::cRelease()
 
 void EngineerManual::rPress()
 {
-  if (stone_num_ != 2)
-    stone_num_++;
+  if (stone_num_.size() != 2)
+    stone_num_.push_back("MANUALLY");
   else
-    stone_num_ = 0;
-  ROS_INFO("Stone num is %d", stone_num_);
+    stone_num_.clear();
+  ROS_INFO("Stone num is %d", static_cast<int>(stone_num_.size()));
 }
 
 void EngineerManual::xPress()
@@ -890,19 +885,23 @@ void EngineerManual::shiftXPress()
 
 void EngineerManual::shiftGPress()
 {
-  switch (stone_num_)
+  if (stone_num_.empty())
   {
-    case 0:
-      root_ = "NO STONE!!";
-      break;
-    case 1:
-      root_ = "TAKE_WHEN_ONE_STONE";
-      break;
-    case 2:
-      root_ = "TAKE_WHEN_TWO_STONE";
-      break;
+    root_ = "NO STONE!!";
   }
-  prefix_ = "";
+  else
+  {
+    if (stone_num_.size() == 1)
+      prefix_ = "TAKE_WHEN_ONE_STONE";
+    else if (stone_num_.size() == 2)
+      prefix_ = "TAKE_WHEN_TWO_STONE";
+    if (stone_num_.back() == "YELLOW")
+      root_ = "_NO_REVERSE";
+    else if (stone_num_.back() == "WHITE")
+      root_ = "_AUTO_REVERSE";
+    else if (stone_num_.back() == "MANUALLY")
+      root_ = "_MANUAL_REVERSE";
+  }
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
 }
