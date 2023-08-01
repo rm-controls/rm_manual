@@ -299,37 +299,37 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
   //  Use for test auto exchange
-  if (dbus_data->wheel == -1)
-  {
-    auto_exchange_->run();
-    if (auto_exchange_->find_->getEnterFlag())
-    {
-      gimbal_mode_ = RATE;
-      std::vector<double> gimbal_scale = auto_exchange_->find_->getGimbalScale();
-      gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
-    }
-    if (auto_exchange_->pre_adjust_->getEnterFlag())
-    {
-      gimbal_cmd_sender_->setZero();
-      geometry_msgs::Twist vel_msg = auto_exchange_->pre_adjust_->getChassisVelMsg();
-      vel_cmd_sender_->setAngularZVel(vel_msg.angular.z);
-      vel_cmd_sender_->setLinearXVel(vel_msg.linear.x);
-      vel_cmd_sender_->setLinearYVel(vel_msg.linear.y);
-    }
-    if (auto_exchange_->auto_servo_move_->getEnterFlag())
-    {
-      vel_cmd_sender_->setLinearXVel(0.);
-      vel_cmd_sender_->setLinearYVel(0.);
-      vel_cmd_sender_->setAngularZVel(0.);
-      servo_mode_ = SERVO;
-    }
-  }
-  else
-  {
-    auto_exchange_->init();
-    gimbal_mode_ = DIRECT;
-    servo_mode_ = JOINT;
-  }
+  //  if (dbus_data->wheel == -1)
+  //  {
+  //      auto_exchange_->run();
+  //      if (auto_exchange_->find_->getEnterFlag())
+  //      {
+  //        gimbal_mode_ = RATE;
+  //        std::vector<double> gimbal_scale = auto_exchange_->find_->getGimbalScale();
+  //        gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
+  //      }
+  //      if (auto_exchange_->pre_adjust_->getEnterFlag())
+  //      {
+  //        gimbal_cmd_sender_->setZero();
+  //        geometry_msgs::Twist vel_msg = auto_exchange_->pre_adjust_->getChassisVelMsg();
+  //        vel_cmd_sender_->setAngularZVel(vel_msg.angular.z);
+  //        vel_cmd_sender_->setLinearXVel(vel_msg.linear.x);
+  //        vel_cmd_sender_->setLinearYVel(vel_msg.linear.y);
+  //      }
+  //      if (auto_exchange_->auto_servo_move_->getEnterFlag())
+  //      {
+  //        vel_cmd_sender_->setLinearXVel(0.);
+  //        vel_cmd_sender_->setLinearYVel(0.);
+  //        vel_cmd_sender_->setAngularZVel(0.);
+  //        servo_mode_ = SERVO;
+  //      }
+  //    }
+  //    else
+  //    {
+  //      auto_exchange_->init();
+  //      gimbal_mode_ = DIRECT;
+  //      servo_mode_ = JOINT;
+  //  }
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -413,15 +413,15 @@ void EngineerManual::leftSwitchUpRise()
 void EngineerManual::leftSwitchDownFall()
 {
   runStepQueue("EXCHANGE_WAIT");
-  drag_command_sender_->on();
-  drag_state_ = "on";
+  drag_command_sender_->off();
+  drag_state_ = "off";
 }
 
 void EngineerManual::leftSwitchUpFall()
 {
   runStepQueue("HOME_ZERO_STONE");
-  drag_command_sender_->on();
-  drag_state_ = "on";
+  drag_command_sender_->off();
+  drag_state_ = "off";
 }
 
 void EngineerManual::leftSwitchDownRise()
@@ -498,12 +498,17 @@ void EngineerManual::ctrlQPress()
 
 void EngineerManual::ctrlXPress()
 {
-  prefix_ = "SMALL_ISLAND";
-  root_ = "_TWO_ORE_L";
-  initMode();
-  changeSpeedMode(LOW);
-  runStepQueue(prefix_ + root_);
-  ROS_INFO("%s", (prefix_ + root_).c_str());
+  if (drag_state_ == "on")
+  {
+    drag_command_sender_->off();
+    drag_state_ = "off";
+  }
+  else
+  {
+    drag_command_sender_->on();
+    drag_state_ = "on";
+  }
+  runStepQueue("DRAG_CAR");
 }
 
 void EngineerManual::ctrlEPress()
@@ -548,8 +553,8 @@ void EngineerManual::ctrlAPress()
 
 void EngineerManual::ctrlSPress()
 {
-  prefix_ = "";
-  root_ = "BIG_ISLAND";
+  prefix_ = "SMALL_ISLAND";
+  root_ = "_TWO_ORE_L";
   initMode();
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
@@ -626,6 +631,8 @@ void EngineerManual::ctrlZPressing()
 
 void EngineerManual::ctrlZRelease()
 {
+  auto_exchange_->init();
+  enterServo();
 }
 
 void EngineerManual::ctrlCPress()
@@ -721,16 +728,6 @@ void EngineerManual::rPress()
 
 void EngineerManual::xPress()
 {
-  if (drag_state_ == "on")
-  {
-    drag_command_sender_->off();
-    drag_state_ = "off";
-  }
-  else
-  {
-    drag_command_sender_->on();
-    drag_state_ = "on";
-  }
 }
 
 void EngineerManual::bPressing()
