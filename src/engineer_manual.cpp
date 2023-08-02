@@ -2,6 +2,7 @@
 // Created by qiayuan on 7/25/21.
 //
 
+#include <rm_msgs/EngineerUi.h>
 #include "rm_manual/engineer_manual.h"
 
 namespace rm_manual
@@ -11,6 +12,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   , operating_mode_(MANUAL)
   , action_client_("/engineer_middleware/move_steps", true)
 {
+  //  engineer_ui_pub_ = nh.advertise<rm_msgs::EngineerUi>("/engineer_ui", 10);
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
@@ -193,6 +195,7 @@ void EngineerManual::run()
 {
   ChassisGimbalManual::run();
   calibration_gather_->update(ros::Time::now());
+  //  engineer_ui_pub_.publish(engineer_ui_);
 }
 
 void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -271,9 +274,15 @@ void EngineerManual::gpioStateCallback(const rm_msgs::GpioData ::ConstPtr& data)
 {
   gpio_state_.gpio_state = data->gpio_state;
   if (!gpio_state_.gpio_state[0])
+  {
     gripper_state_ = "open";
+    //    engineer_ui_.gripper_state = "open";
+  }
   else
+  {
     gripper_state_ = "close";
+    //    engineer_ui_.gripper_state = "close";
+  }
 }
 
 void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -290,46 +299,14 @@ void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 
 void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  ChassisGimbalManual::updatePc(dbus_data);
+  checkKeyboard(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  //    gimbal_mode_ = DIRECT;
-  //    servo_mode_ = JOINT;
   if (!reversal_motion_ && servo_mode_ == JOINT)
+  {
     reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
                                             0.);
-  //  Use for test auto exchange
-  //  if (dbus_data->wheel == -1)
-  //  {
-  //      auto_exchange_->run();
-  //      if (auto_exchange_->find_->getEnterFlag())
-  //      {
-  //        gimbal_mode_ = RATE;
-  //        std::vector<double> gimbal_scale = auto_exchange_->find_->getGimbalScale();
-  //        gimbal_cmd_sender_->setRate(gimbal_scale[0], gimbal_scale[1]);
-  //      }
-  //      if (auto_exchange_->pre_adjust_->getEnterFlag())
-  //      {
-  //        gimbal_cmd_sender_->setZero();
-  //        geometry_msgs::Twist vel_msg = auto_exchange_->pre_adjust_->getChassisVelMsg();
-  //        vel_cmd_sender_->setAngularZVel(vel_msg.angular.z);
-  //        vel_cmd_sender_->setLinearXVel(vel_msg.linear.x);
-  //        vel_cmd_sender_->setLinearYVel(vel_msg.linear.y);
-  //      }
-  //      if (auto_exchange_->auto_servo_move_->getEnterFlag())
-  //      {
-  //        vel_cmd_sender_->setLinearXVel(0.);
-  //        vel_cmd_sender_->setLinearYVel(0.);
-  //        vel_cmd_sender_->setAngularZVel(0.);
-  //        servo_mode_ = SERVO;
-  //      }
-  //    }
-  //    else
-  //    {
-  //      auto_exchange_->init();
-  //      gimbal_mode_ = DIRECT;
-  //      servo_mode_ = JOINT;
-  //  }
+  }
 }
 
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -415,6 +392,7 @@ void EngineerManual::leftSwitchDownFall()
   runStepQueue("EXCHANGE_WAIT");
   drag_command_sender_->off();
   drag_state_ = "off";
+  //  engineer_ui_.drag_state = "off";
 }
 
 void EngineerManual::leftSwitchUpFall()
@@ -422,6 +400,7 @@ void EngineerManual::leftSwitchUpFall()
   runStepQueue("HOME_ZERO_STONE");
   drag_command_sender_->off();
   drag_state_ = "off";
+  //  engineer_ui_.drag_state = "off";
 }
 
 void EngineerManual::leftSwitchDownRise()
@@ -463,7 +442,7 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
       prefix_ + root_ == "BIG_ISLAND")
     enterServo();
 
-  if (prefix_ + root_ == "SMALL_ISLAND_TWO_ORE_L000")
+  if (prefix_ + root_ == "SMALL_ISLAND_TWO_ORE_L00")
     changeSpeedMode(NORMAL);
   ROS_INFO("%i", result->finish);
 
@@ -502,12 +481,16 @@ void EngineerManual::ctrlXPress()
   {
     drag_command_sender_->off();
     drag_state_ = "off";
+    //    engineer_ui_.drag_state = "off";
   }
   else
   {
     drag_command_sender_->on();
     drag_state_ = "on";
+    //    engineer_ui_.drag_state = "on";
   }
+  prefix_ = "DRAG";
+  root_ = "_CAR";
   runStepQueue("DRAG_CAR");
 }
 
@@ -644,10 +627,14 @@ void EngineerManual::ctrlCPress()
 void EngineerManual::shiftVPress()
 {
   if (gripper_state_ == "open")
+  {
     runStepQueue("CLOSE_GRIPPER");
+    //    engineer_ui_.gripper_state = "open";
+  }
   else
   {
     runStepQueue("OPEN_GRIPPER");
+    //    engineer_ui_.gripper_state = "close";
   }
 }
 
@@ -673,6 +660,7 @@ void EngineerManual::ctrlBPress()
   ROS_INFO("RUN_HOME");
   drag_command_sender_->off();
   drag_state_ = "off";
+  //  engineer_ui_.drag_state = "off";
   prefix_ = "";
   runStepQueue(prefix_ + root_);
 }
@@ -723,6 +711,7 @@ void EngineerManual::rPress()
     stone_num_.push_back("MANUALLY");
   else
     stone_num_.clear();
+  //  engineer_ui_.stone_num = stone_num_.size();
   ROS_INFO("Stone num is %d", static_cast<int>(stone_num_.size()));
 }
 
@@ -893,7 +882,7 @@ void EngineerManual::shiftGPress()
     if (stone_num_.back() == "YELLOW")
       root_ = "_NO_REVERSE";
     else if (stone_num_.back() == "WHITE")
-      root_ = "_AUTO_REVERSE";
+      root_ = "_NO_REVERSE";
     else if (stone_num_.back() == "MANUALLY")
       root_ = "_NO_REVERSE";
   }
