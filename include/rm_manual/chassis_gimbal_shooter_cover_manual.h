@@ -31,17 +31,22 @@ protected:
   void ePress() override;
   void zPressing();
   void zRelease();
+  void wPress() override;
+  void wPressing() override;
+
   virtual void ctrlZPress();
   virtual void ctrlZRelease()
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   };
   double low_speed_scale_{}, normal_speed_scale_{};
+  double exit_buff_mode_duration_{};
   rm_common::SwitchDetectionCaller* switch_buff_srv_{};
   rm_common::SwitchDetectionCaller* switch_buff_type_srv_{};
   rm_common::JointPositionBinaryCommandSender* cover_command_sender_{};
   InputEvent ctrl_z_event_, ctrl_q_event_, x_event_, z_event_;
   std::string supply_frame_;
+  ros::Time last_switch_time_;
   bool supply_ = false;
   bool cover_close_ = true;
 };
