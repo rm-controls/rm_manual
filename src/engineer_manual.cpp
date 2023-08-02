@@ -615,7 +615,12 @@ void EngineerManual::ctrlZPressing()
 void EngineerManual::ctrlZRelease()
 {
   auto_exchange_->init();
+  gimbal_cmd_sender_->setZero();
+  chassis_cmd_sender_->setZero();
+
   gimbal_mode_ = DIRECT;
+  runStepQueue("GIMBAL_ISLAND");
+  chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
   enterServo();
 }
 
