@@ -615,6 +615,7 @@ void EngineerManual::ctrlZPressing()
 void EngineerManual::ctrlZRelease()
 {
   auto_exchange_->init();
+  gimbal_mode_ = DIRECT;
   enterServo();
 }
 
