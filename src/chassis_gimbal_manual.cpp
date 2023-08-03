@@ -148,11 +148,6 @@ void ChassisGimbalManual::rightSwitchUpRise()
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
 }
 
-void ChassisGimbalManual::leftSwitchMidFall()
-{
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
-}
-
 void ChassisGimbalManual::leftSwitchDownRise()
 {
   ManualBase::leftSwitchDownRise();
