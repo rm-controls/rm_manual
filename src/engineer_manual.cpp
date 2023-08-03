@@ -122,7 +122,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  if (auto_exchange_->auto_servo_move_->getEnterFlag() != true && !auto_exchange_->getFinishFlag())
+  if (auto_exchange_->union_move_->getEnterFlag() != true && !auto_exchange_->getFinishFlag())
   {
     if (is_random_ore_)
     {
@@ -137,14 +137,12 @@ void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
   }
   else
   {
-    if (!auto_exchange_->auto_servo_move_->getFinishFlag())
+    if (!auto_exchange_->union_move_->getFinishFlag())
     {
       std::vector<double> servo_scales;
-      servo_scales.resize(6, 0);
-      servo_scales = auto_exchange_->auto_servo_move_->getServoScale();
+      servo_scales.resize(3, 0.);
+      servo_scales = auto_exchange_->union_move_->getServoScale();
       servo_command_sender_->setLinearVel(servo_scales[0], servo_scales[1], servo_scales[2]);
-      servo_command_sender_->setAngularVel(servo_scales[3], 0., servo_scales[5]);
-      joint7_command_sender_->getMsg()->data = auto_exchange_->auto_servo_move_->getJoint7Msg();
     }
     else
       servo_command_sender_->setZero();
@@ -439,7 +437,8 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   if ((prefix_ == "TAKE_WHEN_TWO_STONE" && root_ != "_AUTO_REVERSE") || prefix_ + root_ == "EXCHANGE_WAIT" ||
       (prefix_ == "TAKE_WHEN_ONE_STONE" && root_ != "_AUTO_REVERSE") || prefix_ + root_ == "BIG_ISLAND")
     enterServo();
-
+  if (prefix_ + root_ == auto_exchange_->union_move_->getMotionName())
+    auto_exchange_->union_move_->changeIsMotionFinish(true);
   if (prefix_ + root_ == "SMALL_ISLAND_TWO_ORE_L00")
     changeSpeedMode(NORMAL);
   ROS_INFO("%i", result->finish);
@@ -601,12 +600,24 @@ void EngineerManual::ctrlZPressing()
     vel_cmd_sender_->setLinearXVel(vel_msg.linear.x);
     vel_cmd_sender_->setLinearYVel(vel_msg.linear.y);
   }
-  if (auto_exchange_->auto_servo_move_->getEnterFlag())
+  if (auto_exchange_->union_move_->getEnterFlag())
   {
     vel_cmd_sender_->setLinearXVel(0.);
     vel_cmd_sender_->setLinearYVel(0.);
     vel_cmd_sender_->setAngularZVel(0.);
-    servo_mode_ = SERVO;
+    if (!auto_exchange_->union_move_->getIsMotionStart())
+    {
+      auto_exchange_->union_move_->changeIsMotionStart(true);
+      runStepQueue(auto_exchange_->union_move_->getMotionName());
+      ROS_INFO_STREAM("START MOVE");
+    }
+    else
+    {
+      if (!auto_exchange_->union_move_->getIsMotionFinish())
+      {
+        ROS_INFO_STREAM("MOVING");
+      }
+    }
   }
 }
 
