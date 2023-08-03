@@ -437,7 +437,7 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   if (prefix_ + root_ == "SMALL_ISLAND_TWO_ORE_L")
     changeSpeedMode(LOW);
   if ((prefix_ == "TAKE_WHEN_TWO_STONE" && root_ != "_AUTO_REVERSE") || prefix_ + root_ == "EXCHANGE_WAIT" ||
-      prefix_ == "TAKE_WHEN_ONE_STONE" || prefix_ + root_ == "BIG_ISLAND")
+      (prefix_ == "TAKE_WHEN_ONE_STONE" && root_ != "_AUTO_REVERSE") || prefix_ + root_ == "BIG_ISLAND")
     enterServo();
 
   if (prefix_ + root_ == "SMALL_ISLAND_TWO_ORE_L00")
@@ -834,7 +834,7 @@ void EngineerManual::shiftZPress()
 }
 void EngineerManual::ctrlVPress()
 {
-  prefix_ = "TAKE_BLOCK";
+  prefix_ = "EXCHANGE_SPHERE";
   root_ = "";
   runStepQueue(prefix_ + root_);
 }
@@ -888,7 +888,7 @@ void EngineerManual::shiftGPress()
     else if (stone_num_.back() == "WHITE")
       root_ = "_AUTO_REVERSE";
     else if (stone_num_.back() == "MANUALLY")
-      root_ = "_AUTO_REVERSE";
+      root_ = "_NO_REVERSE";
   }
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
