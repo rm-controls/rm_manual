@@ -59,6 +59,10 @@ public:
   void update(bool state)
   {
     if (state != last_state_)
+      count_++;
+    else
+      count_ = 0;
+    if (count_ > 5)
     {
       if (state && rising_handler_)
         rising_handler_();
@@ -71,9 +75,9 @@ public:
       last_state_ = state;
       last_change_ = ros::Time::now();
     }
-    if (state && active_high_handler_)
+    if (last_state_ && active_high_handler_)
       active_high_handler_(ros::Time::now() - last_change_);
-    if (!state && active_low_handler_)
+    if (!last_state_ && active_low_handler_)
       active_low_handler_(ros::Time::now() - last_change_);
   }
 
@@ -85,6 +89,7 @@ private:
   }
 
   bool last_state_;
+  int count_ = 0;
   double delay_time_;
   ros::Time last_change_;
   ros::Timer triggered_timer_;
