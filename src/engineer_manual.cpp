@@ -266,6 +266,7 @@ void EngineerManual::stoneNumCallback(const std_msgs::String ::ConstPtr& data)
     stone_num_.push_back("MANUALLY");
   if (stone_num_.size() >= 3)
     stone_num_.pop_back();
+  engineer_ui_.stone_num = std::to_string(stone_num_.size());
 }
 void EngineerManual::gpioStateCallback(const rm_msgs::GpioData ::ConstPtr& data)
 {
@@ -406,7 +407,6 @@ void EngineerManual::runStepQueue(const std::string& step_queue_name)
 {
   reversal_motion_ = true;
   rm_msgs::EngineerGoal goal;
-  engineer_ui_.current_step_name = step_queue_name;
   goal.step_queue_name = step_queue_name;
   if (action_client_.isServerConnected())
   {
@@ -432,6 +432,7 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   ROS_INFO("Done %s", (prefix_ + root_).c_str());
   reversal_motion_ = false;
   change_flag_ = true;
+  engineer_ui_.stone_num = std::to_string(stone_num_.size());
   if (prefix_ + root_ == "SMALL_ISLAND_TWO_ORE_L")
     changeSpeedMode(LOW);
   if ((prefix_ == "TAKE_WHEN_TWO_STONE" && root_ != "_AUTO_REVERSE") || prefix_ + root_ == "EXCHANGE_WAIT" ||
@@ -609,14 +610,6 @@ void EngineerManual::ctrlZPressing()
     {
       auto_exchange_->union_move_->changeIsMotionStart(true);
       runStepQueue(auto_exchange_->union_move_->getMotionName());
-      ROS_INFO_STREAM("START MOVE");
-    }
-    else
-    {
-      if (!auto_exchange_->union_move_->getIsMotionFinish())
-      {
-        ROS_INFO_STREAM("MOVING");
-      }
     }
   }
 }
@@ -726,7 +719,7 @@ void EngineerManual::rPress()
     stone_num_.push_back("MANUALLY");
   else
     stone_num_.clear();
-  engineer_ui_.stone_num = stone_num_.size();
+  engineer_ui_.stone_num = std::to_string(stone_num_.size());
   ROS_INFO("Stone num is %d", static_cast<int>(stone_num_.size()));
 }
 
@@ -901,6 +894,7 @@ void EngineerManual::shiftGPress()
     else if (stone_num_.back() == "MANUALLY")
       root_ = "_NO_REVERSE";
   }
+  engineer_ui_.stone_num = std::to_string(stone_num_.size());
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
 }
