@@ -436,7 +436,7 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   if (prefix_ + root_ == "SMALL_ISLAND_TWO_ORE_L")
     changeSpeedMode(LOW);
   if ((prefix_ == "TAKE_WHEN_TWO_STONE" && root_ != "_AUTO_REVERSE") || prefix_ + root_ == "EXCHANGE_WAIT" ||
-      (prefix_ == "TAKE_WHEN_ONE_STONE" && root_ != "_AUTO_REVERSE") || prefix_ + root_ == "BIG_ISLAND")
+      (prefix_ == "TAKE_WHEN_ONE_STONE" && root_ != "_AUTO_REVERSE") || prefix_ + root_ == "BIG_ISLAND0")
     enterServo();
   if (prefix_ + root_ == auto_exchange_->union_move_->getMotionName())
     auto_exchange_->union_move_->changeIsMotionFinish(true);
@@ -695,7 +695,7 @@ void EngineerManual::eRelease()
 
 void EngineerManual::zPressing()
 {
-  angular_z_scale_ = 0.3;
+  angular_z_scale_ = 0.5;
 }
 
 void EngineerManual::zRelease()
@@ -705,7 +705,7 @@ void EngineerManual::zRelease()
 
 void EngineerManual::cPressing()
 {
-  angular_z_scale_ = -0.3;
+  angular_z_scale_ = -0.5;
 }
 
 void EngineerManual::cRelease()
