@@ -20,6 +20,7 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& n
     ROS_ERROR("Gyro rotate reduction no defined (namespace: %s)", nh.getNamespace().c_str());
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh);
+  gimbal_scale_ = getParam(gimbal_nh, "gimbal_scale", 1.0);
   if (!gimbal_nh.getParam("finish_turning_threshold", finish_turning_threshold_))
     ROS_ERROR("Finish turning threshold no defined (namespace: %s)", nh.getNamespace().c_str());
 
@@ -202,14 +203,14 @@ void ChassisGimbalManual::dRelease()
   vel_cmd_sender_->setLinearYVel(y_scale_);
 }
 
-void ChassisGimbalManual::mouseMidRise(int m_z)
+void ChassisGimbalManual::mouseMidRise(double m_z)
 {
-  if (gimbal_scale_ >= 0. && gimbal_scale_ <= 3.)
+  if (gimbal_scale_ >= 0. && gimbal_scale_ <= 30.)
   {
-    if (gimbal_scale_ + 0.2 <= 3. && m_z > 0.)
-      gimbal_scale_ += 0.2;
-    else if (gimbal_scale_ - 0.2 >= 0. && m_z < 0.)
-      gimbal_scale_ -= 0.2;
+    if (gimbal_scale_ + 2. <= 30. && m_z > 0.)
+      gimbal_scale_ += 2.;
+    else if (gimbal_scale_ - 2. >= 0. && m_z < 0.)
+      gimbal_scale_ -= 2.;
   }
 }
 
