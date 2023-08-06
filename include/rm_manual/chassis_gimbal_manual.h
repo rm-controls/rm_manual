@@ -54,7 +54,7 @@ protected:
   virtual void aPressing();
   virtual void sPressing();
   virtual void dPressing();
-  void mouseMidRise(int m_z);
+  void mouseMidRise(double m_z);
 
   rm_common::Vel2DCommandSender* vel_cmd_sender_{};
   rm_common::GimbalCommandSender* gimbal_cmd_sender_{};
