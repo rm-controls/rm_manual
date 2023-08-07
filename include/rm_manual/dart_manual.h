@@ -43,7 +43,8 @@ public:
 
 protected:
   void sendCommand(const ros::Time& time) override;
-  void getList(const XmlRpc::XmlRpcValue& darts, const XmlRpc::XmlRpcValue& targets);
+  void getList(const XmlRpc::XmlRpcValue& darts, const XmlRpc::XmlRpcValue& targets,
+               const XmlRpc::XmlRpcValue& launch_id, const XmlRpc::XmlRpcValue& trigger_position);
   void run() override;
   void checkReferee() override;
   void remoteControlTurnOn() override;

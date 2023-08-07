@@ -8,10 +8,12 @@ namespace rm_manual
 {
 DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : ManualBase(nh, nh_referee)
 {
-  XmlRpc::XmlRpcValue dart_list, targets;
+  XmlRpc::XmlRpcValue dart_list, targets, launch_id, trigger_position;
+  nh.getParam("launch_id", launch_id);
+  nh.getParam("trigger_position", trigger_position);
   nh.getParam("dart_list", dart_list);
   nh.getParam("targets", targets);
-  getList(dart_list, targets);
+  getList(dart_list, targets, launch_id, trigger_position);
   qd_ = dart_list_[0].outpost_qd_;
   dart_list_[4].outpost_qd_ = dart_list_[3].outpost_qd_;
   dart_list_[4].base_qd_ = dart_list_[3].base_qd_;
@@ -50,20 +52,27 @@ DartManual::DartManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee) : Manua
       nh_referee.subscribe<rm_msgs::GameStatus>("game_status", 10, &DartManual::gameStatusCallback, this);
 }
 
-void DartManual::getList(const XmlRpc::XmlRpcValue& darts, const XmlRpc::XmlRpcValue& targets)
+void DartManual::getList(const XmlRpc::XmlRpcValue& darts, const XmlRpc::XmlRpcValue& targets,
+                         const XmlRpc::XmlRpcValue& launch_id, const XmlRpc::XmlRpcValue& trigger_position)
 {
   for (const auto& dart : darts)
   {
     ROS_ASSERT(dart.second.hasMember("param") and dart.second.hasMember("id"));
     ROS_ASSERT(dart.second["param"].getType() == XmlRpc::XmlRpcValue::TypeArray and
                dart.second["id"].getType() == XmlRpc::XmlRpcValue::TypeInt);
-    Dart dart_info;
-    dart_info.outpost_offset_ = static_cast<double>(dart.second["param"][0]);
-    dart_info.outpost_qd_ = static_cast<double>(dart.second["param"][1]);
-    dart_info.base_offset_ = static_cast<double>(dart.second["param"][2]);
-    dart_info.base_qd_ = static_cast<double>(dart.second["param"][3]);
-    dart_info.trigger_position_ = static_cast<double>(dart.second["param"][4]);
-    dart_list_.insert(std::make_pair(static_cast<int>(dart.second["id"]) - 1, dart_info));
+    for (int i = 0; i < 4; ++i)
+    {
+      if (dart.second["id"] == launch_id[i])
+      {
+        Dart dart_info;
+        dart_info.outpost_offset_ = static_cast<double>(dart.second["param"][0]);
+        dart_info.outpost_qd_ = static_cast<double>(dart.second["param"][1]);
+        dart_info.base_offset_ = static_cast<double>(dart.second["param"][2]);
+        dart_info.base_qd_ = static_cast<double>(dart.second["param"][3]);
+        dart_info.trigger_position_ = static_cast<double>(trigger_position[i]);
+        dart_list_.insert(std::make_pair(i, dart_info));
+      }
+    }
   }
   for (const auto& target : targets)
   {
