@@ -205,12 +205,12 @@ void ChassisGimbalManual::dRelease()
 
 void ChassisGimbalManual::mouseMidRise(double m_z)
 {
-  if (gimbal_scale_ >= 0. && gimbal_scale_ <= 30.)
+  if (gimbal_scale_ >= 1. && gimbal_scale_ <= 30.)
   {
-    if (gimbal_scale_ + 2. <= 30. && m_z > 0.)
-      gimbal_scale_ += 2.;
-    else if (gimbal_scale_ - 2. >= 0. && m_z < 0.)
-      gimbal_scale_ -= 2.;
+    if (gimbal_scale_ + 1. <= 30. && m_z > 0.)
+      gimbal_scale_ += 1.;
+    else if (gimbal_scale_ - 1. >= 1. && m_z < 0.)
+      gimbal_scale_ -= 1.;
   }
 }
 
