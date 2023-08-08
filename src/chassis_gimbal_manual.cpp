@@ -209,7 +209,7 @@ void ChassisGimbalManual::mouseMidRise(double m_z)
   {
     if (gimbal_scale_ + 1. <= 30. && m_z > 0.)
       gimbal_scale_ += 1.;
-    else if (gimbal_scale_ - 1. >= 0. && m_z < 0.)
+    else if (gimbal_scale_ - 1. >= 1. && m_z < 0.)
       gimbal_scale_ -= 1.;
   }
 }
