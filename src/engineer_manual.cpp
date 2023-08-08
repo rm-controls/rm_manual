@@ -385,7 +385,7 @@ void EngineerManual::leftSwitchUpRise()
 
 void EngineerManual::leftSwitchDownFall()
 {
-  runStepQueue("EXCHANGE_WAIT");
+  runStepQueue("HOME_ZERO_STONE");
   drag_command_sender_->off();
   drag_state_ = "off";
   engineer_ui_.drag_state = "off";
@@ -435,9 +435,14 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   engineer_ui_.stone_num = std::to_string(stone_num_.size());
   if (prefix_ + root_ == "SMALL_ISLAND_TWO_ORE_L")
     changeSpeedMode(LOW);
-  if ((prefix_ == "TAKE_WHEN_TWO_STONE" && root_ != "_AUTO_REVERSE") || prefix_ + root_ == "EXCHANGE_WAIT" ||
-      (prefix_ == "TAKE_WHEN_ONE_STONE" && root_ != "_AUTO_REVERSE") || prefix_ + root_ == "BIG_ISLAND0")
+  if (((prefix_ == "TAKE_WHEN_TWO_STONE" || prefix_ == "TAKE_WHEN_ONE_STONE") && (root_ != "_AUTO_REVERSE")) ||
+      prefix_ + root_ == "EXCHANGE_WAIT")
     enterServo();
+  if ((prefix_ == "TAKE_WHEN_ONE_STONE" && root_ == "_AUTO_REVERSE") ||
+      (prefix_ == "TAKE_WHEN_TWO_STONE" && root_ == "_AUTO_REVERSE"))
+    initMode();
+  if (prefix_ != "REVERSE")
+    reverse_high_ = false;
   if (prefix_ + root_ == auto_exchange_->union_move_->getMotionName())
     auto_exchange_->union_move_->changeIsMotionFinish(true);
   if (prefix_ + root_ == "SMALL_ISLAND_TWO_ORE_L00")
@@ -460,14 +465,21 @@ void EngineerManual::mouseLeftRelease()
 
 void EngineerManual::mouseRightRelease()
 {
-  runStepQueue(prefix_ + root_);
-  ROS_INFO("Finished %s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlQPress()
 {
   prefix_ = "REVERSE";
-  root_ = "_STONE";
+  if (reverse_high_)
+  {
+    root_ = "_STONE_HIGH";
+    reverse_high_ = false;
+  }
+  else
+  {
+    root_ = "_STONE_LOW";
+    reverse_high_ = true;
+  }
   initMode();
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
@@ -659,7 +671,7 @@ void EngineerManual::ctrlBPress()
       root_ = "HOME_ZERO_STONE";
       break;
     case 1:
-      root_ = "HOME_ONE_STONE";
+      root_ = "HOME_ZERO_STONE";
       break;
     case 2:
       root_ = "HOME_TWO_STONE";
@@ -870,9 +882,6 @@ void EngineerManual::shiftRPressing()
 
 void EngineerManual::shiftXPress()
 {
-  runStepQueue("GIMBAL_GROUND");
-  chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
-  ROS_INFO("enter gimbal GROUND_GIMBAL");
 }
 
 void EngineerManual::shiftGPress()
@@ -888,11 +897,11 @@ void EngineerManual::shiftGPress()
     else if (stone_num_.size() == 2)
       prefix_ = "TAKE_WHEN_TWO_STONE";
     if (stone_num_.back() == "YELLOW")
-      root_ = "_NO_REVERSE";
+      root_ = "_AUTO_REVERSE";
     else if (stone_num_.back() == "WHITE")
       root_ = "_AUTO_REVERSE";
     else if (stone_num_.back() == "MANUALLY")
-      root_ = "_NO_REVERSE";
+      root_ = "_AUTO_REVERSE";
   }
   engineer_ui_.stone_num = std::to_string(stone_num_.size());
   changeSpeedMode(LOW);

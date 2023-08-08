@@ -15,6 +15,7 @@
 #include <rm_msgs/EngineerAction.h>
 #include <rm_msgs/MultiDofCmd.h>
 #include <rm_msgs/GpioData.h>
+#include <rm_msgs/EngineerUi.h>
 #include <angles/angles.h>
 #include <engineer_middleware/auto_exchange.h>
 
@@ -137,7 +138,7 @@ private:
 
   int checkJointsLimit();
 
-  bool reversal_motion_{}, change_flag_{}, is_random_ore_{};
+  bool reversal_motion_{}, change_flag_{}, is_random_ore_{}, reverse_high_{ false };
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{};
   std::vector<std::string> stone_num_{};
   double angular_z_scale_{};
@@ -146,12 +147,13 @@ private:
   std::string prefix_{}, root_{}, drag_state_{ "off" }, max_temperature_joint_{}, joint_temperature_{},
       reversal_state_{}, gripper_state_{};
 
-  ros::Publisher exchanger_update_pub_;
+  ros::Publisher exchanger_update_pub_, engineer_ui_pub_;
   ros::Subscriber gripper_state_sub_, stone_num_sub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 
   auto_exchange::AutoExchange* auto_exchange_;
   rm_msgs::GpioData gpio_state_;
+  rm_msgs::EngineerUi engineer_ui_;
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::MultiDofCommandSender* reversal_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
