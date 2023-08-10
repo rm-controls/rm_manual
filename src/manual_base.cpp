@@ -181,6 +181,7 @@ void ManualBase::remoteControlTurnOff()
 
 void ManualBase::remoteControlTurnOn()
 {
+  controller_manager_.startStateControllers();
   controller_manager_.startMainControllers();
   state_ = IDLE;
 }
