@@ -710,7 +710,7 @@ void EngineerManual::eRelease()
 
 void EngineerManual::zPressing()
 {
-  angular_z_scale_ = 0.5;
+  angular_z_scale_ = 0.7;
 }
 
 void EngineerManual::zRelease()
@@ -720,7 +720,7 @@ void EngineerManual::zRelease()
 
 void EngineerManual::cPressing()
 {
-  angular_z_scale_ = -0.5;
+  angular_z_scale_ = -0.7;
 }
 
 void EngineerManual::cRelease()
