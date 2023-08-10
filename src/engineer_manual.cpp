@@ -271,7 +271,7 @@ void EngineerManual::stoneNumCallback(const std_msgs::String ::ConstPtr& data)
 void EngineerManual::gpioStateCallback(const rm_msgs::GpioData ::ConstPtr& data)
 {
   gpio_state_.gpio_state = data->gpio_state;
-  if (!gpio_state_.gpio_state[0])
+  if (gpio_state_.gpio_state[0])
   {
     gripper_state_ = "open";
     engineer_ui_.gripper_state = "open";
@@ -381,6 +381,7 @@ void EngineerManual::leftSwitchUpRise()
   root_ = "CALIBRATION";
   calibration_gather_->reset();
   ROS_INFO_STREAM("START CALIBRATE");
+  //  gripper_state_ = "close";
 }
 
 void EngineerManual::leftSwitchDownFall()
@@ -435,7 +436,8 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   engineer_ui_.stone_num = std::to_string(stone_num_.size());
   if (prefix_ + root_ == "SMALL_ISLAND_TWO_ORE_L")
     changeSpeedMode(LOW);
-  if (((prefix_ == "TAKE_WHEN_TWO_STONE" || prefix_ == "TAKE_WHEN_ONE_STONE") && (root_ != "_AUTO_REVERSE")) ||
+  if (((prefix_ == "TAKE_WHEN_TWO_STONE" || prefix_ == "TAKE_WHEN_ONE_STONE") &&
+       (root_ != "_AUTO_REVERSE" || root_ != "_NO_REVERSE")) ||
       prefix_ + root_ == "EXCHANGE_WAIT")
     enterServo();
   if ((prefix_ == "TAKE_WHEN_ONE_STONE" && root_ == "_AUTO_REVERSE") ||
@@ -646,6 +648,7 @@ void EngineerManual::ctrlCPress()
 
 void EngineerManual::shiftVPress()
 {
+  ROS_INFO_STREAM(gripper_state_);
   if (gripper_state_ == "open")
   {
     runStepQueue("CLOSE_GRIPPER");
