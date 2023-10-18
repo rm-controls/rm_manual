@@ -402,6 +402,7 @@ void EngineerManual::leftSwitchUpFall()
 
 void EngineerManual::leftSwitchDownRise()
 {
+  runStepQueue("EXCHANGE_WAIT_NOT_ENTER_SERVO");
 }
 
 void EngineerManual::runStepQueue(const std::string& step_queue_name)
@@ -648,8 +649,7 @@ void EngineerManual::ctrlCPress()
 
 void EngineerManual::shiftVPress()
 {
-  ROS_INFO_STREAM(gripper_state_);
-  if (gripper_state_ == "open")
+  if (gripper_state_ == "close")
   {
     runStepQueue("CLOSE_GRIPPER");
     engineer_ui_.gripper_state = "open";
@@ -847,9 +847,6 @@ void EngineerManual::enterServo()
 
 void EngineerManual::shiftZPress()
 {
-  runStepQueue("GIMBAL_ISLAND");
-  chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
-  ROS_INFO("enter gimbal REVERSAL_GIMBAL");
 }
 void EngineerManual::ctrlVPress()
 {
@@ -885,6 +882,9 @@ void EngineerManual::shiftRPressing()
 
 void EngineerManual::shiftXPress()
 {
+  runStepQueue("GIMBAL_ISLAND");
+  chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
+  ROS_INFO("enter gimbal REVERSAL_GIMBAL");
 }
 
 void EngineerManual::shiftGPress()
