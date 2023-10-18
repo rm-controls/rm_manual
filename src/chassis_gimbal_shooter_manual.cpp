@@ -297,8 +297,9 @@ void ChassisGimbalShooterManual::leftSwitchMidOn(ros::Duration duration)
 {
   if (track_data_.id == 0)
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-  else
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+  else说了HEAD就代表当前，所以上一个版本其实就是当前 - 1，我们也可以用
+
+                                                       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
 }
 
 void ChassisGimbalShooterManual::leftSwitchUpRise()
@@ -414,6 +415,8 @@ void ChassisGimbalShooterManual::rPress()
       adjust_image_transmission_ = false;
     }
   }
+  if (x_scale_ != 0 || y_scale_ != 0)
+    use_scope_ = false;
 }
 
 void ChassisGimbalShooterManual::gPress()
