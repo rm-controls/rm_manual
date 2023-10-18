@@ -15,7 +15,9 @@
 #include <rm_msgs/EngineerAction.h>
 #include <rm_msgs/MultiDofCmd.h>
 #include <rm_msgs/GpioData.h>
+#include <rm_msgs/EngineerUi.h>
 #include <angles/angles.h>
+#include <engineer_middleware/auto_exchange.h>
 
 namespace rm_manual
 {
@@ -57,18 +59,19 @@ private:
   void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void sendCommand(const ros::Time& time) override;
-  void updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data);
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override;
   void actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback);
   void actionDoneCallback(const actionlib::SimpleClientGoalState& state, const rm_msgs::EngineerResultConstPtr& result);
   void runStepQueue(const std::string& step_queue_name);
   void initMode();
+  void enterServo();
   void actionActiveCallback()
   {
     operating_mode_ = MIDDLEWARE;
   }
   void remoteControlTurnOff() override;
   void chassisOutputOn() override;
+  void gimbalOutputOn() override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
@@ -130,22 +133,32 @@ private:
   void gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data);
   void stoneNumCallback(const std_msgs::String ::ConstPtr& data);
 
-  bool motion_change_flag_{};
-  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{};
-  double angular_z_scale_{}, angular_z_max_scale_{}, fast_speed_scale_{}, normal_speed_scale_{}, low_speed_scale_{},
-      exchange_speed_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, normal_gyro_scale_{}, low_gyro_scale_{},
-      exchange_gyro_scale_{};
-  std::string prefix_{}, root_{}, drag_state_{ "on" }, reversal_state_{}, gripper_state_{};
+  // Servo
+  void updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data);
 
+  int checkJointsLimit();
+
+  bool reversal_motion_{}, change_flag_{}, is_random_ore_{}, reverse_high_{ false };
+  int operating_mode_{}, servo_mode_{}, gimbal_mode_{};
+  std::vector<std::string> stone_num_{};
+  double angular_z_scale_{};
+  double fast_speed_scale_{}, normal_speed_scale_{}, low_speed_scale_{}, exchange_speed_scale_{};
+  double gyro_scale_{}, fast_gyro_scale_{}, normal_gyro_scale_{}, low_gyro_scale_{}, exchange_gyro_scale_{};
+  std::string prefix_{}, root_{}, drag_state_{ "off" }, max_temperature_joint_{}, joint_temperature_{},
+      reversal_state_{}, gripper_state_{};
+
+  ros::Publisher exchanger_update_pub_, engineer_ui_pub_;
   ros::Subscriber gripper_state_sub_, stone_num_sub_;
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 
+  auto_exchange::AutoExchange* auto_exchange_;
   rm_msgs::GpioData gpio_state_;
+  rm_msgs::EngineerUi engineer_ui_;
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::MultiDofCommandSender* reversal_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
   rm_common::JointPositionBinaryCommandSender *drag_command_sender_, *joint7_command_sender_;
-  rm_common::CalibrationQueue* calibration_gather_{};
+  rm_common::CalibrationQueue *calibration_gather_{}, *pitch_calibration_;
   InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_q_event_, ctrl_a_event_, ctrl_z_event_, ctrl_w_event_,
       ctrl_s_event_, ctrl_x_event_, ctrl_e_event_, ctrl_d_event_, ctrl_c_event_, ctrl_b_event_, ctrl_v_event_, z_event_,
       q_event_, e_event_, x_event_, c_event_, v_event_, b_event_, f_event_, shift_z_event_, shift_x_event_,
