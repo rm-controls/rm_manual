@@ -23,7 +23,6 @@ protected:
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
-  void leftSwitchMidFall() override;
   void leftSwitchDownRise() override;
   void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override;
   void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
@@ -55,7 +54,7 @@ protected:
   virtual void aPressing();
   virtual void sPressing();
   virtual void dPressing();
-  void mouseMidRise(int m_z);
+  void mouseMidRise(double m_z);
 
   rm_common::Vel2DCommandSender* vel_cmd_sender_{};
   rm_common::GimbalCommandSender* gimbal_cmd_sender_{};

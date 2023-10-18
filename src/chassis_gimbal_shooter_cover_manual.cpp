@@ -16,19 +16,27 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   switch_buff_srv_ = new rm_common::SwitchDetectionCaller(buff_switch_nh);
   ros::NodeHandle buff_type_switch_nh(nh, "buff_type_switch");
   switch_buff_type_srv_ = new rm_common::SwitchDetectionCaller(buff_type_switch_nh);
-  XmlRpc::XmlRpcValue rpc_value;
-  nh.getParam("gimbal_calibration", rpc_value);
-  gimbal_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  ros::NodeHandle chassis_nh(nh, "chassis");
+  normal_speed_scale_ = chassis_nh.param("normal_speed_scale", 1);
+  low_speed_scale_ = chassis_nh.param("low_speed_scale", 0.30);
+  nh.param("exit_buff_mode_duration", exit_buff_mode_duration_, 0.5);
+
   ctrl_z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this),
                         boost::bind(&ChassisGimbalShooterCoverManual::ctrlZRelease, this));
   z_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterCoverManual::zPressing, this));
   z_event_.setFalling(boost::bind(&ChassisGimbalShooterCoverManual::zRelease, this));
 }
 
-void ChassisGimbalShooterCoverManual::run()
+void ChassisGimbalShooterCoverManual::changeSpeedMode(SpeedMode speed_mode)
 {
-  ChassisGimbalShooterManual::run();
-  gimbal_calibration_->update(ros::Time::now());
+  if (speed_mode == LOW)
+  {
+    speed_change_scale_ = low_speed_scale_;
+  }
+  else if (speed_mode == NORMAL)
+  {
+    speed_change_scale_ = normal_speed_scale_;
+  }
 }
 
 void ChassisGimbalShooterCoverManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -104,24 +112,6 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
   cover_command_sender_->sendCommand(time);
 }
 
-void ChassisGimbalShooterCoverManual::gimbalOutputOn()
-{
-  ChassisGimbalShooterManual::gimbalOutputOn();
-  gimbal_calibration_->reset();
-}
-
-void ChassisGimbalShooterCoverManual::remoteControlTurnOff()
-{
-  ChassisGimbalShooterManual::remoteControlTurnOff();
-  gimbal_calibration_->stop();
-}
-
-void ChassisGimbalShooterCoverManual::remoteControlTurnOn()
-{
-  ChassisGimbalShooterManual::remoteControlTurnOn();
-  gimbal_calibration_->stopController();
-}
-
 void ChassisGimbalShooterCoverManual::rightSwitchDownRise()
 {
   ChassisGimbalShooterManual::rightSwitchDownRise();
@@ -175,6 +165,28 @@ void ChassisGimbalShooterCoverManual::zRelease()
   shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::LOW);
 }
 
+void ChassisGimbalShooterCoverManual::wPress()
+{
+  ChassisGimbalShooterManual::wPress();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    last_switch_time_ = ros::Time::now();
+}
+
+void ChassisGimbalShooterCoverManual::wPressing()
+{
+  ChassisGimbalShooterManual::wPressing();
+  if ((ros::Time::now() - last_switch_time_).toSec() > exit_buff_mode_duration_ &&
+      switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+  {
+    switch_buff_srv_->setTargetType(rm_msgs::StatusChangeRequest::ARMOR);
+    switch_detection_srv_->setTargetType(rm_msgs::StatusChangeRequest::ARMOR);
+    switch_buff_type_srv_->setTargetType(switch_buff_srv_->getTarget());
+    switch_buff_srv_->callService();
+    switch_detection_srv_->callService();
+    switch_buff_type_srv_->callService();
+  }
+}
+
 void ChassisGimbalShooterCoverManual::ctrlZPress()
 {
   if (!cover_command_sender_->getState())
@@ -182,12 +194,14 @@ void ChassisGimbalShooterCoverManual::ctrlZPress()
   else
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   supply_ = !cover_command_sender_->getState();
-}
-
-void ChassisGimbalShooterCoverManual::ctrlQPress()
-{
-  ChassisGimbalShooterManual::ctrlQPress();
-  gimbal_calibration_->reset();
+  if (supply_)
+  {
+    changeSpeedMode(LOW);
+  }
+  else
+  {
+    changeSpeedMode(NORMAL);
+  }
 }
 
 }  // namespace rm_manual

@@ -18,7 +18,7 @@ int main(int argc, char** argv)
   robot = getParam(nh, "robot_type", (std::string) "error");
   if (robot == "standard")
     manual_control = new rm_manual::ChassisGimbalShooterCoverManual(nh, nh_referee);
-  else if (robot == "hero")
+  else if ((robot == "hero") || (robot == "drone"))
     manual_control = new rm_manual::ChassisGimbalShooterManual(nh, nh_referee);
   else if (robot == "engineer")
     manual_control = new rm_manual::EngineerManual(nh, nh_referee);

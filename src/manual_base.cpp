@@ -73,8 +73,8 @@ void ManualBase::run()
 
 void ManualBase::checkReferee()
 {
-  gimbal_power_on_event_.update((ros::Time::now() - gimbal_actuator_last_get_stamp_) < ros::Duration(2.5));
-  shooter_power_on_event_.update((ros::Time::now() - shooter_actuator_last_get_stamp_) < ros::Duration(2.5));
+  gimbal_power_on_event_.update(gimbal_output_on_);
+  shooter_power_on_event_.update(shooter_output_on_);
   referee_is_online_ = (ros::Time::now() - referee_last_get_stamp_ < ros::Duration(0.3));
   manual_to_referee_pub_.publish(manual_to_referee_pub_data_);
 }
@@ -148,6 +148,9 @@ void ManualBase::trackCallback(const rm_msgs::TrackData::ConstPtr& data)
 void ManualBase::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
 {
   robot_id_ = data->robot_id;
+  chassis_output_on_ = data->mains_power_chassis_output;
+  gimbal_output_on_ = data->mains_power_gimbal_output;
+  shooter_output_on_ = data->mains_power_shooter_output;
   robot_hp_event_.update(data->remain_hp != 0);
 }
 
@@ -178,6 +181,7 @@ void ManualBase::remoteControlTurnOff()
 
 void ManualBase::remoteControlTurnOn()
 {
+  controller_manager_.startStateControllers();
   controller_manager_.startMainControllers();
   state_ = IDLE;
 }
