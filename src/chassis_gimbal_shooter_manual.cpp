@@ -414,6 +414,8 @@ void ChassisGimbalShooterManual::rPress()
       adjust_image_transmission_ = false;
     }
   }
+  if (x_scale_ != 0 || y_scale_ != 0)
+    use_scope_ = false;
 }
 
 void ChassisGimbalShooterManual::gPress()
