@@ -41,9 +41,18 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   chassis_nh.param("normal_gyro_scale", normal_gyro_scale_, 0.15);
   chassis_nh.param("low_gyro_scale", low_gyro_scale_, 0.05);
   chassis_nh.param("exchange_gyro_scale", exchange_gyro_scale_, 0.12);
-  ros::NodeHandle nh_reversal(nh, "reversal");
-  reversal_command_sender_ = new rm_common::MultiDofCommandSender(nh_reversal);
-
+  //Extend arm
+  ros::NodeHandle nh_extend_arm_a(nh, "extend_arm_a");
+  ros::NodeHandle nh_extend_arm_b(nh, "extend_arm_b");
+  extend_arm_a_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_extend_arm_a);
+  extend_arm_b_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_extend_arm_b);
+  //Ore bin
+  ros::NodeHandle nh_ore_bin_lifter(nh, "ore_bin_lifter");
+  ros::NodeHandle nh_ore_bin_rotator(nh, "ore_bin_rotator");
+  ore_bin_lifter_command_sender_ = new rm_common::JointPointCommandSender(nh_ore_bin_lifter, joint_state_);
+  ore_bin_rotate_command_sender_ = new rm_common::JointPointCommandSender(nh_ore_bin_rotator, joint_state_);
+  ros::NodeHandle nh_gimbal_lifter(nh, "gimbal_lifter");
+  gimbal_lifter_command_sender_ = new rm_common::JointPointCommandSender(nh_gimbal_lifter, joint_state_);
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("pitch_calibration", rpc_value);
@@ -198,9 +207,6 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   checkKeyboard(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  if (!reversal_motion_ && servo_mode_ == JOINT)
-    reversal_command_sender_->setGroupValue(0., 0., 5 * dbus_data->ch_r_y, 5 * dbus_data->ch_l_x, 5 * dbus_data->ch_l_y,
-                                            0.);
 }
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
@@ -263,7 +269,6 @@ void EngineerManual::sendCommand(const ros::Time& time)
   {
     chassis_cmd_sender_->sendChassisCommand(time, false);
     vel_cmd_sender_->sendCommand(time);
-    reversal_command_sender_->sendCommand(time);
   }
   if (servo_mode_ == SERVO)
   {
@@ -275,7 +280,6 @@ void EngineerManual::sendCommand(const ros::Time& time)
 }
 void EngineerManual::runStepQueue(const std::string& step_queue_name)
 {
-  reversal_motion_ = true;
   rm_msgs::EngineerGoal goal;
   goal.step_queue_name = step_queue_name;
   if (action_client_.isServerConnected())
@@ -299,7 +303,6 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
   ROS_INFO("Done %s", (prefix_ + root_).c_str());
-  reversal_motion_ = false;
   change_flag_ = true;
   engineer_ui_.stone_num = stone_num_;
   ROS_INFO("%i", result->finish);
@@ -718,8 +721,7 @@ void EngineerManual::shiftXPress()
 
 void EngineerManual::shiftZPress()
 {
-  runStepQueue("REVERSAL_GIMBAL");
-  ROS_INFO("enter gimbal REVERSAL_GIMBAL");
+
 }
 
 }  // namespace rm_manual

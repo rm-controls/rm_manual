@@ -140,7 +140,7 @@ private:
 
 
 
-  bool reversal_motion_{}, change_flag_{};
+  bool change_flag_{};
   double angular_z_scale_{}, gyro_scale_{},
       fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},exchange_gyro_scale_{},
       fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
@@ -156,9 +156,9 @@ private:
   rm_msgs::EngineerUi engineer_ui_;
 
   rm_common::Vel3DCommandSender* servo_command_sender_;
-  rm_common::MultiDofCommandSender* reversal_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
-  rm_common::JointPositionBinaryCommandSender *drag_command_sender_;
+  rm_common::JointPositionBinaryCommandSender *extend_arm_a_command_sender_, *extend_arm_b_command_sender_;
+  rm_common::JointPointCommandSender *ore_bin_lifter_command_sender_, *ore_bin_rotate_command_sender_, *gimbal_lifter_command_sender_;
   rm_common::CalibrationQueue *calibration_gather_{}, *pitch_calibration_;
 
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
