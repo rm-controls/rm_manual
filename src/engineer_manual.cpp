@@ -16,9 +16,9 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
   // Auto Exchange
-  XmlRpc::XmlRpcValue auto_exchange_value;
-  nh.getParam("auto_exchange", auto_exchange_value);
-  ros::NodeHandle nh_auto_exchange(nh, "auto_exchange");
+//  XmlRpc::XmlRpcValue auto_exchange_value;
+//  nh.getParam("auto_exchange", auto_exchange_value);
+//  ros::NodeHandle nh_auto_exchange(nh, "auto_exchange");
 //  auto_exchange_ = new auto_exchange::AutoExchange(auto_exchange_value, tf_buffer_, nh_auto_exchange);
   // Pub
 //  exchanger_update_pub_ = nh.advertise<std_msgs::Bool>("/is_update_exchanger", 1);
@@ -42,17 +42,17 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   chassis_nh.param("low_gyro_scale", low_gyro_scale_, 0.05);
   chassis_nh.param("exchange_gyro_scale", exchange_gyro_scale_, 0.12);
   //Extend arm
-  ros::NodeHandle nh_extend_arm_a(nh, "extend_arm_a");
-  ros::NodeHandle nh_extend_arm_b(nh, "extend_arm_b");
-  extend_arm_a_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_extend_arm_a);
-  extend_arm_b_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_extend_arm_b);
-  //Ore bin
-  ros::NodeHandle nh_ore_bin_lifter(nh, "ore_bin_lifter");
-  ros::NodeHandle nh_ore_bin_rotator(nh, "ore_bin_rotator");
-  ore_bin_lifter_command_sender_ = new rm_common::JointPointCommandSender(nh_ore_bin_lifter, joint_state_);
-  ore_bin_rotate_command_sender_ = new rm_common::JointPointCommandSender(nh_ore_bin_rotator, joint_state_);
-  ros::NodeHandle nh_gimbal_lifter(nh, "gimbal_lifter");
-  gimbal_lifter_command_sender_ = new rm_common::JointPointCommandSender(nh_gimbal_lifter, joint_state_);
+//  ros::NodeHandle nh_extend_arm_a(nh, "extend_arm_a");
+//  ros::NodeHandle nh_extend_arm_b(nh, "extend_arm_b");
+//  extend_arm_a_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_extend_arm_a);
+//  extend_arm_b_command_sender_ = new rm_common::JointPositionBinaryCommandSender(nh_extend_arm_b);
+//  //Ore bin
+//  ros::NodeHandle nh_ore_bin_lifter(nh, "ore_bin_lifter");
+//  ros::NodeHandle nh_ore_bin_rotator(nh, "ore_bin_rotator");
+//  ore_bin_lifter_command_sender_ = new rm_common::JointPointCommandSender(nh_ore_bin_lifter, joint_state_);
+//  ore_bin_rotate_command_sender_ = new rm_common::JointPointCommandSender(nh_ore_bin_rotator, joint_state_);
+//  ros::NodeHandle nh_gimbal_lifter(nh, "gimbal_lifter");
+//  gimbal_lifter_command_sender_ = new rm_common::JointPointCommandSender(nh_gimbal_lifter, joint_state_);
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("pitch_calibration", rpc_value);
@@ -210,24 +210,8 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 }
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-//  if (auto_exchange_->union_move_->getEnterFlag() != true && !auto_exchange_->getFinishFlag())
-//  {
-     servo_command_sender_->setLinearVel(dbus_data->wheel, -dbus_data->ch_l_x, dbus_data->ch_l_y);
-     servo_command_sender_->setAngularVel(-angular_z_scale_, dbus_data->ch_r_y, dbus_data->ch_r_x);
-//  }
-//  else
-//  {
-//    if (!auto_exchange_->union_move_->getFinishFlag())
-//    {
-//      std::vector<double> servo_scales;
-//      servo_scales.resize(3, 0.);
-//      servo_scales = auto_exchange_->union_move_->getServoScale();
-//      servo_command_sender_->setLinearVel(servo_scales[0], servo_scales[1], servo_scales[2]);
-//    }
-//    else
-//      servo_command_sender_->setZero();
-//  }
-  ChassisGimbalManual::updatePc(dbus_data);
+  servo_command_sender_->setLinearVel(dbus_data->wheel, -dbus_data->ch_l_x, dbus_data->ch_l_y);
+  servo_command_sender_->setAngularVel(angular_z_scale_, dbus_data->ch_r_y, dbus_data->ch_r_x);
 }
 
 void EngineerManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
@@ -364,14 +348,13 @@ void EngineerManual::rightSwitchMidRise()
 }
 void EngineerManual::rightSwitchDownRise()
 {
-  shiftVPress();
   ChassisGimbalManual::rightSwitchDownRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   servo_mode_ = SERVO;
   gimbal_mode_ = RATE;
   servo_reset_caller_->callService();
   action_client_.cancelAllGoals();
-  ROS_INFO_STREAM(servo_mode_);
+  ROS_INFO_STREAM("servo_mode");
 }
 
 void EngineerManual::leftSwitchUpRise()
@@ -394,8 +377,6 @@ void EngineerManual::leftSwitchDownRise()
 void EngineerManual::leftSwitchDownFall()
 {
   runStepQueue("HOME_ZERO_STONE");
-  drag_state_ = "off";
-  engineer_ui_.drag_state = "off";
 }
 //mouse input
 void EngineerManual::mouseLeftRelease()
@@ -468,7 +449,7 @@ void EngineerManual::ctrlEPress()
 void EngineerManual::ctrlFPress()
 {
   prefix_ = "";
-  root_ = "EXCHANGE_WAIT";
+  root_ = "EXCHANGE_POS";
   runStepQueue(root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
@@ -519,16 +500,16 @@ void EngineerManual::ctrlSPress()
 
 void EngineerManual::ctrlVPress()
 {
-  if (state_)
-  {
-    runStepQueue("CLOSE_GRIPPER");
-    state_ = false;
-  }
-  else if (!state_)
-  {
-    runStepQueue("OPEN_GRIPPER");
-    state_ = true;
-  }
+    if (gripper_state_ == "close")
+    {
+        runStepQueue("OPEN_GRIPPER");
+        engineer_ui_.gripper_state = "open";
+    }
+    else
+    {
+        runStepQueue("CLOSE_GRIPPER");
+        engineer_ui_.gripper_state = "close";
+    }
 }
 void EngineerManual::ctrlVRelease()
 {
@@ -558,7 +539,8 @@ void EngineerManual::bRelease()
 
 void EngineerManual::cPressing()
 {
-  angular_z_scale_ = -0.1;
+  angular_z_scale_ = 0.5;
+    ROS_INFO_STREAM("angular_z_scale is 0.5");
 }
 void EngineerManual::cRelease()
 {
@@ -614,7 +596,8 @@ void EngineerManual::xPress()
 
 void EngineerManual::zPressing()
 {
-  angular_z_scale_ = 0.1;
+  angular_z_scale_ = -0.5;
+  ROS_INFO_STREAM("angular_z_scale is -0.5");
 }
 void EngineerManual::zRelease()
 {
@@ -695,16 +678,7 @@ void EngineerManual::shiftRRelease()
 
 void EngineerManual::shiftVPress()
 {
-  if (gripper_state_ == "close")
-  {
-    runStepQueue("CLOSE_GRIPPER");
-    engineer_ui_.gripper_state = "open";
-  }
-  else
-  {
-    runStepQueue("OPEN_GRIPPER");
-    engineer_ui_.gripper_state = "close";
-  }
+
 }
 void EngineerManual::shiftVRelease()
 {
