@@ -83,6 +83,7 @@ protected:
   virtual void eRelease();
   virtual void cPress();
   virtual void bPress();
+  virtual void bRelease();
   virtual void rPress();
   virtual void xReleasing();
   virtual void shiftPress();
