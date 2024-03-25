@@ -567,7 +567,7 @@ void ChassisGimbalShooterManual::vPress()
 
 void ChassisGimbalShooterManual::shiftPress()
 {
-  if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::FOLLOW || is_gyro_)
+  if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::FOLLOW && is_gyro_)
   {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setAngularZVel(1.0);
