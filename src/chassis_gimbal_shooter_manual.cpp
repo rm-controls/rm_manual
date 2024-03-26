@@ -165,6 +165,8 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
       scope_cmd_sender_->on();
     scope_cmd_sender_->sendCommand(time);
   }
+  if (x_scale_ != 0 || y_scale_ != 0)
+    use_scope_ = false;
   if (image_transmission_cmd_sender_)
   {
     if (!adjust_image_transmission_)
