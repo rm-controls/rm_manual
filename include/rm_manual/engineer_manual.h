@@ -134,19 +134,14 @@ private:
   void mouseLeftRelease();
   void mouseRightRelease();
 
-
   // Servo
 
-
-
-
   bool change_flag_{};
-  double angular_z_scale_{}, gyro_scale_{},
-      fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},exchange_gyro_scale_{},
-      fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
+  double angular_z_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
+      exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
 
-  std::string prefix_{}, root_{}, reversal_state_{}, drag_state_{ "off" }, gripper_state_{"off"};
-  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{0};
+  std::string prefix_{}, root_{}, reversal_state_{}, drag_state_{ "off" }, gripper_state_{ "off" };
+  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{ 0 };
 
   ros::Time last_time_;
   ros::Subscriber stone_num_sub_, gripper_state_sub_;
@@ -158,19 +153,18 @@ private:
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
   rm_common::JointPositionBinaryCommandSender *extend_arm_a_command_sender_, *extend_arm_b_command_sender_;
-  rm_common::JointPointCommandSender *ore_bin_lifter_command_sender_, *ore_bin_rotate_command_sender_, *gimbal_lifter_command_sender_;
+  rm_common::JointPointCommandSender *ore_bin_lifter_command_sender_, *ore_bin_rotate_command_sender_,
+      *gimbal_lifter_command_sender_;
   rm_common::CalibrationQueue *calibration_gather_{}, *pitch_calibration_;
 
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 
-  InputEvent left_switch_up_event_, left_switch_down_event_,
-      ctrl_a_event_, ctrl_b_event_, ctrl_c_event_, ctrl_d_event_, ctrl_e_event_, ctrl_f_event_, ctrl_g_event_,
-      ctrl_q_event_, ctrl_r_event_, ctrl_s_event_, ctrl_v_event_, ctrl_w_event_, ctrl_x_event_, ctrl_z_event_,
-      b_event_, c_event_, e_event_, f_event_, g_event_, q_event_, r_event_, v_event_, x_event_, z_event_,
-      shift_event_,
-      shift_b_event_, shift_c_event_, shift_e_event_, shift_f_event_, shift_g_event_,
-      shift_v_event_, shift_q_event_, shift_r_event_, shift_x_event_, shift_z_event_,
-      mouse_left_event_,mouse_right_event_;
+  InputEvent left_switch_up_event_, left_switch_down_event_, ctrl_a_event_, ctrl_b_event_, ctrl_c_event_, ctrl_d_event_,
+      ctrl_e_event_, ctrl_f_event_, ctrl_g_event_, ctrl_q_event_, ctrl_r_event_, ctrl_s_event_, ctrl_v_event_,
+      ctrl_w_event_, ctrl_x_event_, ctrl_z_event_, b_event_, c_event_, e_event_, f_event_, g_event_, q_event_, r_event_,
+      v_event_, x_event_, z_event_, shift_event_, shift_b_event_, shift_c_event_, shift_e_event_, shift_f_event_,
+      shift_g_event_, shift_v_event_, shift_q_event_, shift_r_event_, shift_x_event_, shift_z_event_, mouse_left_event_,
+      mouse_right_event_;
 };
 
 }  // namespace rm_manual
