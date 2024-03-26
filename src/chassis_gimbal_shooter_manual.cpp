@@ -47,7 +47,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   q_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::qPress, this),
                    boost::bind(&ChassisGimbalShooterManual::qRelease, this));
   f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::fPress, this));
-  b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::bPress, this));
+  b_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::bPress, this),
+                   boost::bind(&ChassisGimbalShooterManual::bRelease, this));
   x_event_.setRising(boost::bind(&ChassisGimbalShooterManual::xPress, this));
   x_event_.setActiveLow(boost::bind(&ChassisGimbalShooterManual::xReleasing, this));
   r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::rPress, this));
@@ -399,6 +400,11 @@ void ChassisGimbalShooterManual::bPress()
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
 }
 
+void ChassisGimbalShooterManual::bRelease()
+{
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+}
+
 void ChassisGimbalShooterManual::rPress()
 {
   if (camera_switch_cmd_sender_)
@@ -561,10 +567,11 @@ void ChassisGimbalShooterManual::vPress()
 
 void ChassisGimbalShooterManual::shiftPress()
 {
-  if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::FOLLOW)
+  if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::FOLLOW && is_gyro_)
   {
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    vel_cmd_sender_->setAngularZVel(0.);
+    vel_cmd_sender_->setAngularZVel(1.0);
+    is_gyro_ = false;
   }
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
 }
