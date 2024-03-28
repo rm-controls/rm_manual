@@ -152,7 +152,7 @@ namespace rm_manual {
 
             last_dart_door_status_ = dart_launch_opening_status_;
         } else {
-            AllToZero(); //          全部复位 reset
+            AllToZero(); 
         }
     }
 
