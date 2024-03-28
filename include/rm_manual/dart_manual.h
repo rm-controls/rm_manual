@@ -22,6 +22,17 @@ public:
     OUTPOST,
     BASE
   };
+  enum TriggerMode
+  {
+      ToArrive,
+      ToReady,
+      ToShoot,
+  };
+  enum DartMode
+  {
+      Dropdown,
+      Reset,
+  };
   enum MoveMode
   {
     NORMAL,
@@ -34,17 +45,17 @@ public:
     NONE,
     AIMED
   };
-  struct Dart
-  {
-    double outpost_offset_, base_offset_;
-    double outpost_qd_, base_qd_;
-    double trigger_position_;
-  };
+    struct Dart
+    {
+        double outpost_dart_position_, base_dart_position_;
+        double outpost_shoot_position_, base_shoot_position_;
+        double dart_push_position_, dart_trans_position_;
+    };
 
 protected:
   void sendCommand(const ros::Time& time) override;
   void getList(const XmlRpc::XmlRpcValue& darts, const XmlRpc::XmlRpcValue& targets,
-               const XmlRpc::XmlRpcValue& launch_id, const XmlRpc::XmlRpcValue& trigger_position);
+               const XmlRpc::XmlRpcValue& launch_id);
   void run() override;
   void checkReferee() override;
   void remoteControlTurnOn() override;
@@ -62,6 +73,11 @@ protected:
   void launchTwoDart();
   void getDartFiredNum();
   void triggerComeBackProtect();
+  void LaunchDart();
+  void AllToZero();
+  void ReadyToShoot();
+  void waitUntilReady();
+  void moveDart();
   void gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data) override;
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override;
   void dartClientCmdCallback(const rm_msgs::DartClientCmd::ConstPtr& data);
@@ -69,15 +85,15 @@ protected:
   void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override;
   void wheelClockwise();
   void wheelAntiClockwise();
-  rm_common::JointPointCommandSender *trigger_sender_, *friction_left_sender_, *friction_right_sender_;
-  rm_common::JointPointCommandSender *pitch_sender_, *yaw_sender_;
+  rm_common::JointPointCommandSender *trigger_sender_, *trigger_position_sender_, *trigger_switch_sender_;
+  rm_common::JointPointCommandSender *chassis_yaw_sender_;
   rm_common::CalibrationQueue *trigger_calibration_, *gimbal_calibration_;
-  double pitch_outpost_{}, pitch_base_{}, yaw_outpost_{}, yaw_base_{};
+  double pitch_outpost_{}, pitch_base_{}, chassis_yaw_outpost_{}, chassis_yaw_base_{};
   double qd_, upward_vel_;
   std::unordered_map<int, Dart> dart_list_{};
   std::unordered_map<std::string, std::vector<double>> target_position_{};
   double scale_{ 0.04 }, scale_micro_{ 0.01 };
-  bool if_stop_{ true }, has_stopped{ false };
+  bool if_stop_{ true }, has_stopped{ false },have_launch{true};
 
   rm_msgs::DbusData dbus_data_;
   uint8_t robot_id_, game_progress_, dart_launch_opening_status_;
@@ -91,5 +107,7 @@ protected:
   int outpost_hp_;
   int dart_door_open_times_ = 0, last_dart_door_status_ = 1;
   int auto_state_ = OUTPOST, manual_state_ = OUTPOST, move_state_ = NORMAL, launch_state_ = NONE;
+  int trigger_state_=Dropdown;
+  int Launch_state_ = ToArrive;
 };
 }  // namespace rm_manual
