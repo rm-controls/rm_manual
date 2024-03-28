@@ -6,7 +6,7 @@
 
 namespace rm_manual {
     DartManual::DartManual(ros::NodeHandle &nh, ros::NodeHandle &nh_referee) : ManualBase(nh, nh_referee) {
-        //  ros::NodeHandle dart_list_nh(nh, "dart_list");
+
         XmlRpc::XmlRpcValue dart_list, targets, launch_id;
         nh.getParam("launch_id", launch_id);
         nh.getParam("dart_list", dart_list);
@@ -24,9 +24,8 @@ namespace rm_manual {
         ros::NodeHandle nh_dart_position = ros::NodeHandle(nh, "dart_position");
         ros::NodeHandle nh_trigger_switch = ros::NodeHandle(nh, "trigger_switch");
 
-        //      发射位置
+
         trigger_position_sender_ = new rm_common::JointPointCommandSender(nh_dart_position, joint_state_);
-//      发射开关
         trigger_switch_sender_ = new rm_common::JointPointCommandSender(nh_trigger_switch, joint_state_);
 
 
@@ -68,9 +67,6 @@ namespace rm_manual {
                     dart_info.outpost_shoot_position_ = static_cast<double>(dart.second["param"][2]);
                     dart_info.base_dart_position_ = static_cast<double>(dart.second["param"][3]);
                     dart_info.base_shoot_position_ = static_cast<double>(dart.second["param"][4]);
-
-//                  dart_info.dart_push_position = static_cast<double>(dart_push_position[i]);
-//                  dart_info.dart_trans_position = static_cast<double>(dart_trans_position[i]);
                     dart_list_.insert(std::make_pair(i, dart_info));
                 }
             }
@@ -80,7 +76,6 @@ namespace rm_manual {
             ROS_ASSERT(target.second["position"].getType() == XmlRpc::XmlRpcValue::TypeArray);
             std::vector<double> position(2);
             position[0] = static_cast<double>(target.second["position"][0]);
-//            position[1] = static_cast<double>(target.second["position"][1]);
             target_position_.insert(std::make_pair(target.first, position));
         }
     }
@@ -106,8 +101,6 @@ namespace rm_manual {
         trigger_position_sender_->sendCommand(time);
         trigger_switch_sender_->sendCommand(time);
         chassis_yaw_sender_->sendCommand(time);
-//    dart_trans_sender_->sendCommand(time);
-//    dart_push_sender_->sendCommand(time);
     }
 
     void DartManual::updateRc(const rm_msgs::DbusData::ConstPtr &dbus_data) {
@@ -126,10 +119,10 @@ namespace rm_manual {
         if (game_progress_ == rm_msgs::GameStatus::IN_BATTLE) {
             switch (auto_state_) {
                 case OUTPOST:
-//                  chassis_yaw_sender_->setPoint(yaw_outpost_);
+
                     break;
                 case BASE:
-//                  chassis_yaw_sender_->setPoint(yaw_base_);
+
                     break;
             }
             moveDart();
@@ -146,17 +139,17 @@ namespace rm_manual {
             if (dart_launch_opening_status_ == rm_msgs::DartClientCmd::OPENED) {
                 switch (launch_state_) {
                     case NONE:
-//                    trigger_switch_sender_->setPoint(0.);
+
                         break;
                     case AIMED:
                         LaunchDart();
                         break;
                 }
             } else {
-                //              trigger_switch_sender_->setPoint();
+
             }
 
-//              trigger_sender_->setPoint();
+
             last_dart_door_status_ = dart_launch_opening_status_;
         } else {
             AllToZero(); //          全部复位 reset
@@ -171,39 +164,32 @@ namespace rm_manual {
         ManualBase::remoteControlTurnOn();
         gimbal_calibration_->stopController();
         trigger_calibration_->stopController();
-//      chassis_calibration_->stopController();
         gimbal_calibration_->reset();
         trigger_calibration_->reset();
-//      chassis_calibration_->reset();
+
     }
 
     void DartManual::leftSwitchDownOn() {
-        // 初始化  回归最初位置  飞镖装填回位 AllToZero
-//        trigger_sender_->setPoint(-upward_vel_);
-//        trigger_sender_->setPoint(-upward_vel_);
-//        triggerComeBackProtect();
+        AllToZero();
+
     }
 
     void DartManual::leftSwitchMidOn() {
         getDartFiredNum();
         initial_dart_fired_num_ = dart_fired_num_;
         has_stopped = false;
-//        飞镖位置放置
-//       moveDart();
+        moveDart();
 
     }
 
     void DartManual::leftSwitchUpOn() {
         getDartFiredNum();
-//        launchTwoDart();
-//      launchDart();
+
 
         switch (manual_state_) {
             case OUTPOST:
-//                chassis_yaw_sender_->setPoint(yaw_outpost_ + dart_list_[dart_fired_num_].outpost_offset_);
                 break;
             case BASE:
-//                chassis_yaw_sender_->setPoint(yaw_base_ + dart_list_[dart_fired_num_].base_offset_);
                 break;
         }
 
@@ -211,7 +197,6 @@ namespace rm_manual {
 
 
     void DartManual::LaunchDart() {
-        //   发射全过程 : 飞镖到达位置->发射准备->发射
         switch (Launch_state_) {
             case ToArrive:
                 moveDart();
@@ -251,7 +236,6 @@ namespace rm_manual {
 
     void DartManual::rightSwitchUpRise() {
         ManualBase::rightSwitchUpRise();
-//      chassis_yaw_sender_->setPoint(chassis_yaw_output_);
     }
 
     void DartManual::move(rm_common::JointPointCommandSender *joint, double ch) {
@@ -276,115 +260,70 @@ namespace rm_manual {
     void DartManual::waitAfterLaunch(double time) {
         if (!has_stopped)
             stop_time_ = ros::Time::now();
-        if (ros::Time::now() - stop_time_ < ros::Duration(time))//说明还在等待时间
-        {
-            // trigger_switch_sender_->setPoint();   fuwei
+        if (ros::Time::now() - stop_time_ < ros::Duration(time)) {
             has_stopped = true;
         } else
             trigger_sender_->setPoint(upward_vel_);
 
-        //   ReadyToShoot();
     }
 
-    //  全部复位
+
     void DartManual::AllToZero() {
-        //发射装置
-//        trigger_sender_->setPoint( );
-        //发射启动开关
-//        trigger_switch_sender_ -> setPoint ( );
-//        dart_push_sender_-> setPoint();
-//        dart_tele_sender_-> setPoint();
+
+        trigger_sender_->setPoint(0);
+        trigger_switch_sender_->setPoint(0);
+
     }
 
     // 检查是否符合发射条件
     void DartManual::ReadyToShoot() {
-        if (!have_launch) {   // 发射 switch 复位
-//            trigger_switch_sender_ -> ( );
+        if (!have_launch) {
             Launch_state_ = ToArrive;
         } else {
-//            trigger_switch_sender_ -> ( );
             have_launch = false;
         }
 
     }
 
-    //        飞镖准备 传送下拉到目标位置
     void DartManual::waitUntilReady() {
         if (!have_launch) {
             switch (trigger_state_) {
                 case Dropdown:
                     have_launch = false;
-//               trigger_left_sender_->setPoint(0.); // 下拉
-//               if( trigger_position_  > )
-//                 trigger_state_ = Reset;
                     break;
                 case Reset:
-//               trigger_left_sender_->setPoint(0.); //回位
-//
-//               if( trigger_position_  < )
-//                {
-//                 trigger_state_ = Dropdown;
-//                 have_launch = true;
-//                 }
+
                     break;
             }
         }
 
     }
 
-    //    到达装载位置 -> 下降飞镖 -> 推动尾部飞镖
     void DartManual::moveDart() {
 
-//          if( trigger_position_ > ){
-//
-//           dart_trans_sender_ -> ();
-//          }else{
-//           trigger_sender_ ->setPoint() ;
-//          }
-//
-//           dart_push_sender_ -> ();
-//       确保飞镖位置放置成功
         Launch_state_ = ToShoot;
     }
 
-    //  发射函数
+    //
     void DartManual::launchTwoDart() {
         if (dart_fired_num_ < 4) {
-//            trigger_switch_sender_->setPoint();
-
         } else {
-            //            trigger_switch_sender_->setPoint(0);
         }
 
     }
-//    void DartManual::launchTwoDart() {
-//        if (dart_fired_num_ < 4) {
-//            if (dart_fired_num_ - initial_dart_fired_num_ < 2) {
-//                if (dart_fired_num_ - initial_dart_fired_num_ == 1)
-//                    waitAfterLaunch(2.0);
-//                else
-//                    trigger_sender_->setPoint(upward_vel_);
-//                //  trigger_switch_sender_ -> ( );
-//            } else
-//                trigger_sender_->setPoint(0.);
-//            //   trigger_switch_sender_ -> ( );
-//        } else
-//            trigger_sender_->setPoint(0.);
-//        //  trigger_switch_sender_ -> ( );
-//    }
 
 
     void DartManual::getDartFiredNum() {
-//        if (trigger_position_ < dart_list_[0].trigger_position_)
-//            dart_fired_num_ = 0;
-//        if (trigger_position_ > dart_list_[0].trigger_position_)
-//            dart_fired_num_ = 1;
-//        if (trigger_position_ > dart_list_[1].trigger_position_)
-//            dart_fired_num_ = 2;
-//        if (trigger_position_ > dart_list_[2].trigger_position_)
-//            dart_fired_num_ = 3;
-//        if (trigger_position_ > dart_list_[3].trigger_position_)
-//            dart_fired_num_ = 4;
+        if (trigger_position_ < dart_list_[0].trigger_position_)
+            dart_fired_num_ = 0;
+        if (trigger_position_ > dart_list_[0].trigger_position_)
+            dart_fired_num_ = 1;
+        if (trigger_position_ > dart_list_[1].trigger_position_)
+            dart_fired_num_ = 2;
+        if (trigger_position_ > dart_list_[2].trigger_position_)
+            dart_fired_num_ = 3;
+        if (trigger_position_ > dart_list_[3].trigger_position_)
+            dart_fired_num_ = 4;
     }
 
     void DartManual::recordPosition(const rm_msgs::DbusData dbus_data) {
@@ -401,7 +340,6 @@ namespace rm_manual {
     void DartManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr &data) {
         ManualBase::dbusDataCallback(data);
         if (!joint_state_.name.empty()) {
-//            trigger_position_ = std::abs(joint_state_.position[trigger_sender_->getIndex()]);
             yaw_velocity_ = std::abs(joint_state_.velocity[chassis_yaw_sender_->getIndex()]);
         }
         wheel_clockwise_event_.update(data->wheel == 1.0);
@@ -428,7 +366,6 @@ namespace rm_manual {
             auto_state_ = BASE;
     }
 
-    //  微动调整
     void DartManual::wheelClockwise() {
         switch (move_state_) {
             case NORMAL:
