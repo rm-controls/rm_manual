@@ -314,16 +314,7 @@ namespace rm_manual {
 
 
     void DartManual::getDartFiredNum() {
-        if (trigger_position_ < dart_list_[0].trigger_position_)
-            dart_fired_num_ = 0;
-        if (trigger_position_ > dart_list_[0].trigger_position_)
-            dart_fired_num_ = 1;
-        if (trigger_position_ > dart_list_[1].trigger_position_)
-            dart_fired_num_ = 2;
-        if (trigger_position_ > dart_list_[2].trigger_position_)
-            dart_fired_num_ = 3;
-        if (trigger_position_ > dart_list_[3].trigger_position_)
-            dart_fired_num_ = 4;
+ 
     }
 
     void DartManual::recordPosition(const rm_msgs::DbusData dbus_data) {
