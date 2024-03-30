@@ -8,11 +8,13 @@ namespace rm_manual
 ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   : controller_manager_(nh), tf_listener_(tf_buffer_), nh_(nh)
 {
+  std::string dbus_topic_;
+  nh.getParam("dbus_topic", dbus_topic_);
   // sub
   joint_state_sub_ = nh.subscribe<sensor_msgs::JointState>("/joint_states", 10, &ManualBase::jointStateCallback, this);
   actuator_state_sub_ =
       nh.subscribe<rm_msgs::ActuatorState>("/actuator_states", 10, &ManualBase::actuatorStateCallback, this);
-  dbus_sub_ = nh.subscribe<rm_msgs::DbusData>("/dbus_data", 10, &ManualBase::dbusDataCallback, this);
+  dbus_sub_ = nh.subscribe<rm_msgs::DbusData>(dbus_topic_, 10, &ManualBase::dbusDataCallback, this);
   track_sub_ = nh.subscribe<rm_msgs::TrackData>("/track", 10, &ManualBase::trackCallback, this);
   gimbal_des_error_sub_ = nh.subscribe<rm_msgs::GimbalDesError>("/controllers/gimbal_controller/error", 10,
                                                                 &ManualBase::gimbalDesErrorCallback, this);
@@ -110,14 +112,10 @@ void ManualBase::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& d
 
 void ManualBase::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
-  if (ros::Time::now() - data->stamp < ros::Duration(1.0))
+  if (data->rc_is_open)
   {
-    if (!remote_is_open_)
-    {
-      ROS_INFO("Remote controller ON");
-      remoteControlTurnOn();
-      remote_is_open_ = true;
-    }
+    ROS_INFO("Remote controller ON");
+    remoteControlTurnOn();
     right_switch_down_event_.update(data->s_r == rm_msgs::DbusData::DOWN);
     right_switch_mid_event_.update(data->s_r == rm_msgs::DbusData::MID);
     right_switch_up_event_.update(data->s_r == rm_msgs::DbusData::UP);
@@ -129,12 +127,8 @@ void ManualBase::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
   }
   else
   {
-    if (remote_is_open_)
-    {
-      ROS_INFO("Remote controller OFF");
-      remoteControlTurnOff();
-      remote_is_open_ = false;
-    }
+    ROS_INFO("Remote controller OFF");
+    remoteControlTurnOff();
   }
 
   sendCommand(data->stamp);
