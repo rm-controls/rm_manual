@@ -114,7 +114,12 @@ void ManualBase::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
   if (data->rc_is_open)
   {
-    remoteControlTurnOn();
+    if (!remote_is_open_)
+    {
+      ROS_INFO("Remote controller ON");
+      remoteControlTurnOn();
+      remote_is_open_ = true;
+    }
     right_switch_down_event_.update(data->s_r == rm_msgs::DbusData::DOWN);
     right_switch_mid_event_.update(data->s_r == rm_msgs::DbusData::MID);
     right_switch_up_event_.update(data->s_r == rm_msgs::DbusData::UP);
@@ -126,7 +131,12 @@ void ManualBase::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
   }
   else
   {
-    remoteControlTurnOff();
+    if (remote_is_open_)
+    {
+      ROS_INFO("Remote controller OFF");
+      remoteControlTurnOff();
+      remote_is_open_ = false;
+    }
   }
 
   sendCommand(data->stamp);
