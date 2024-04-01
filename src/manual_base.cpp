@@ -30,7 +30,8 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
       nh_referee.subscribe<rm_msgs::PowerHeatData>("power_heat_data", 10, &ManualBase::powerHeatDataCallback, this);
   suggest_fire_sub_ =
       nh.subscribe<std_msgs::Bool>("/forecast/suggest_fire", 10, &ManualBase::suggestFireCallback, this);
-
+  suggest_fire_after_delay_sub_ = nh.subscribe<rm_msgs::GimbalDesError>(
+      "/controllers/gimbal_controller/bullet_solver/allow_shoot", 10, &ManualBase::allowShootAfterDelayCallback, this);
   // pub
   manual_to_referee_pub_ = nh.advertise<rm_msgs::ManualToReferee>("/manual_to_referee", 1);
 
