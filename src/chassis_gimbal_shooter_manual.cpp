@@ -363,6 +363,8 @@ void ChassisGimbalShooterManual::mouseRightPress()
 
 void ChassisGimbalShooterManual::ePress()
 {
+  if (camera_switch_cmd_sender_)
+    camera_switch_cmd_sender_->switchCamera();
   switch_armor_target_srv_->setArmorTargetType(rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE);
   switch_armor_target_srv_->callService();
   shooter_cmd_sender_->setArmorType(switch_armor_target_srv_->getArmorTarget());
@@ -407,8 +409,6 @@ void ChassisGimbalShooterManual::bRelease()
 
 void ChassisGimbalShooterManual::rPress()
 {
-  if (camera_switch_cmd_sender_)
-    camera_switch_cmd_sender_->switchCamera();
   if (scope_cmd_sender_)
   {
     use_scope_ = !scope_cmd_sender_->getState();
