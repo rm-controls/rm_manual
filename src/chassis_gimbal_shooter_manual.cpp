@@ -372,6 +372,8 @@ void ChassisGimbalShooterManual::ePress()
 
 void ChassisGimbalShooterManual::eRelease()
 {
+  if (camera_switch_cmd_sender_)
+    camera_switch_cmd_sender_->switchCamera();
   switch_armor_target_srv_->setArmorTargetType(rm_msgs::StatusChangeRequest::ARMOR_ALL);
   switch_armor_target_srv_->callService();
   shooter_cmd_sender_->setArmorType(switch_armor_target_srv_->getArmorTarget());
