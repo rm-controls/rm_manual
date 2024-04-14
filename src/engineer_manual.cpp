@@ -209,7 +209,6 @@ void EngineerManual::stoneNumCallback(const std_msgs::String::ConstPtr& data)
     stone_num_--;
   else if (data->data == "+1" && stone_num_ < 2)
     stone_num_++;
-  engineer_ui_.stone_num = stone_num_;
 }
 void EngineerManual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
 {
@@ -217,12 +216,10 @@ void EngineerManual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
   if (gpio_state_.gpio_state[0])
   {
     gripper_state_ = "open";
-    engineer_ui_.gripper_state = "open";
   }
   else
   {
     gripper_state_ = "close";
-    engineer_ui_.gripper_state = "close";
   }
 }
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -284,7 +281,6 @@ void EngineerManual::enterServo()
 {
   servo_mode_ = SERVO;
   gimbal_mode_ = DIRECT;
-  engineer_ui_.control_mode = "SERVO";
   changeSpeedMode(EXCHANGE);
   servo_reset_caller_->callService();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
@@ -295,7 +291,6 @@ void EngineerManual::initMode()
 {
   servo_mode_ = JOINT;
   gimbal_mode_ = DIRECT;
-  engineer_ui_.control_mode = "JOINT";
   changeSpeedMode(NORMAL);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
@@ -495,6 +490,10 @@ void EngineerManual::ctrlVRelease()
 
 void EngineerManual::ctrlWPress()
 {
+  prefix_ = "SIDE_";
+  root_ = "BIG_ISLAND";
+  runStepQueue(prefix_ + root_);
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 
 void EngineerManual::ctrlXPress()
@@ -535,6 +534,21 @@ void EngineerManual::eRelease()
 
 void EngineerManual::fPress()
 {
+  switch (gimbal_height_)
+  {
+    case 0:
+      runStepQueue("GIMBAL_DOWN");
+      gimbal_height_ = 1;
+      break;
+    case 1:
+      runStepQueue("GIMBAL_MID");
+      gimbal_height_ = 2;
+      break;
+    case 2:
+      runStepQueue("GIMBAL_TALL");
+      gimbal_height_ = 0;
+      break;
+  }
 }
 void EngineerManual::fRelease()
 {
@@ -564,7 +578,6 @@ void EngineerManual::rPress()
     stone_num_++;
   else
     stone_num_ = 0;
-  engineer_ui_.stone_num = stone_num_;
   ROS_INFO_STREAM("Stone num is: " << stone_num_);
 }
 
@@ -660,12 +673,10 @@ void EngineerManual::shiftVPress()
   if (gripper_state_ == "close")
   {
     runStepQueue("OPEN_GRIPPER");
-    engineer_ui_.gripper_state = "OPEN";
   }
   else
   {
     runStepQueue("CLOSE_GRIPPER");
-    engineer_ui_.gripper_state = "CLOSE";
   }
 }
 void EngineerManual::shiftVRelease()
