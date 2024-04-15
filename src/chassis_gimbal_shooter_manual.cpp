@@ -139,6 +139,12 @@ void ChassisGimbalShooterManual::gimbalDesErrorCallback(const rm_msgs::GimbalDes
   shooter_cmd_sender_->updateGimbalDesError(*data);
 }
 
+void ChassisGimbalShooterManual::allowShootCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data)
+{
+  ChassisGimbalManual::allowShootCallback(data);
+  shooter_cmd_sender_->updateAllowShoot(*data);
+}
+
 void ChassisGimbalShooterManual::trackCallback(const rm_msgs::TrackData::ConstPtr& data)
 {
   ChassisGimbalManual::trackCallback(data);
