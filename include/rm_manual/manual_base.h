@@ -72,7 +72,7 @@ protected:
   virtual void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
   {
   }
-  virtual void allowShootCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data)
+  virtual void shootBeforehandCmdCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data)
   {
   }
   virtual void odomCallback(const nav_msgs::Odometry::ConstPtr& data)

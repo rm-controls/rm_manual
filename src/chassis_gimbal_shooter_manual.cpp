@@ -139,10 +139,10 @@ void ChassisGimbalShooterManual::gimbalDesErrorCallback(const rm_msgs::GimbalDes
   shooter_cmd_sender_->updateGimbalDesError(*data);
 }
 
-void ChassisGimbalShooterManual::allowShootCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data)
+void ChassisGimbalShooterManual::shootBeforehandCmdCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data)
 {
-  ChassisGimbalManual::allowShootCallback(data);
-  shooter_cmd_sender_->updateAllowShoot(*data);
+  ChassisGimbalManual::shootBeforehandCmdCallback(data);
+  shooter_cmd_sender_->updateShootBeforehandCmd(*data);
 }
 
 void ChassisGimbalShooterManual::trackCallback(const rm_msgs::TrackData::ConstPtr& data)
