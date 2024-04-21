@@ -7,7 +7,7 @@
 #include "rm_manual/engineer_manual.h"
 #include "rm_manual/dart_manual.h"
 #include "rm_manual/balance_manual.h"
-
+#include "rm_manual/CatapultDart_manual.h"
 int main(int argc, char** argv)
 {
   std::string robot;
@@ -26,6 +26,8 @@ int main(int argc, char** argv)
     manual_control = new rm_manual::DartManual(nh, nh_referee);
   else if (robot == "balance")
     manual_control = new rm_manual::BalanceManual(nh, nh_referee);
+  else if (robot == "CatapultDart")
+    manual_control = new rm_manual::CatapultDartManual(nh, nh_referee);
   else
   {
     ROS_ERROR("no robot type ");
