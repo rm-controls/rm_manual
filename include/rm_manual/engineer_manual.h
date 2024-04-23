@@ -16,6 +16,7 @@
 #include <rm_msgs/MultiDofCmd.h>
 #include <rm_msgs/GpioData.h>
 #include <rm_msgs/EngineerUi.h>
+#include <stack>
 
 namespace rm_manual
 {
@@ -141,14 +142,16 @@ private:
       exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
 
   std::string prefix_{}, root_{}, reversal_state_{}, drag_state_{ "off" }, gripper_state_{ "off" };
-  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{ 0 }, gimbal_height_{ 0 };
+  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, gimbal_height_{ 0 };
+
+  std::stack<std::string> stone_num_{};
 
   ros::Time last_time_;
   ros::Subscriber stone_num_sub_, gripper_state_sub_;
   ros::Publisher engineer_ui_pub_;
 
   rm_msgs::GpioData gpio_state_;
-  rm_msgs::EngineerUi engineer_ui_;
+  rm_msgs::EngineerUi engineer_ui_, old_ui_;
 
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;

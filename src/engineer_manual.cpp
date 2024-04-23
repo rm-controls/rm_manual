@@ -101,7 +101,11 @@ void EngineerManual::run()
 {
   ChassisGimbalManual::run();
   calibration_gather_->update(ros::Time::now());
-  engineer_ui_pub_.publish(engineer_ui_);
+  if (engineer_ui_ != old_ui_)
+  {
+    engineer_ui_pub_.publish(engineer_ui_);
+    old_ui_ = engineer_ui_;
+  }
 }
 void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
 {
@@ -205,10 +209,19 @@ void EngineerManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 }
 void EngineerManual::stoneNumCallback(const std_msgs::String::ConstPtr& data)
 {
-  if (data->data == "-1" && stone_num_ > 0)
-    stone_num_--;
-  else if (data->data == "+1" && stone_num_ < 2)
-    stone_num_++;
+  if (data->data == "-1" && !stone_num_.empty())
+  {
+    stone_num_.pop();
+    engineer_ui_.stone_num--;
+  }
+  else if (stone_num_.size() < 2)
+  {
+    if (data->data == "GOLD")
+      stone_num_.push("GOLD");
+    else if (data->data == "SILVER")
+      stone_num_.push("SILVER");
+    engineer_ui_.stone_num++;
+  }
 }
 void EngineerManual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
 {
@@ -216,10 +229,12 @@ void EngineerManual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
   if (gpio_state_.gpio_state[0])
   {
     gripper_state_ = "open";
+    engineer_ui_.gripper_state = "OPEN";
   }
   else
   {
     gripper_state_ = "close";
+    engineer_ui_.gripper_state = "CLOSED";
   }
 }
 void EngineerManual::sendCommand(const ros::Time& time)
@@ -270,9 +285,14 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
     enterServo();
     changeSpeedMode(EXCHANGE);
   }
-  if (prefix_ == "HOME_")
+  if (root_ == "HOME")
   {
     initMode();
+    changeSpeedMode(NORMAL);
+  }
+  if (root_ + prefix_ == "TWO_STONE_SMALL_ISLAND0" || root_ + prefix_ == "THREE_STONE_SMALL_ISLAND0" ||
+      root_ + prefix_ == "MID_BIG_ISLAND0" || root_ + prefix_ == "SIDE_BIG_ISLAND0")
+  {
     changeSpeedMode(NORMAL);
   }
 }
@@ -286,6 +306,7 @@ void EngineerManual::enterServo()
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   action_client_.cancelAllGoals();
   chassis_cmd_sender_->getMsg()->command_source_frame = "link4";
+  engineer_ui_.control_mode = "SERVO";
 }
 void EngineerManual::initMode()
 {
@@ -294,6 +315,7 @@ void EngineerManual::initMode()
   changeSpeedMode(NORMAL);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
+  engineer_ui_.control_mode = "NORMAL";
 }
 
 void EngineerManual::remoteControlTurnOff()
@@ -345,11 +367,17 @@ void EngineerManual::leftSwitchUpRise()
   prefix_ = "";
   root_ = "CALIBRATION";
   calibration_gather_->reset();
+  while (!stone_num_.empty())
+    stone_num_.pop();
+  ROS_INFO_STREAM("stone num is" << stone_num_.size());
+  engineer_ui_.stone_num = 0;
+  engineer_ui_.gripper_state = "CLOSED";
+  engineer_ui_.control_mode = "NORMAL";
   ROS_INFO_STREAM("START CALIBRATE");
 }
 void EngineerManual::leftSwitchUpFall()
 {
-  runStepQueue("HOME_ZERO_STONE");
+  runStepQueue("HOME");
   runStepQueue("CLOSE_GRIPPER");
 }
 
@@ -358,10 +386,12 @@ void EngineerManual::leftSwitchDownRise()
   if (gripper_state_ == "close")
   {
     runStepQueue("OPEN_GRIPPER");
+    engineer_ui_.gripper_state = "OPEN";
   }
   else
   {
     runStepQueue("CLOSE_GRIPPER");
+    engineer_ui_.gripper_state = "CLOSED";
   }
 }
 void EngineerManual::leftSwitchDownFall()
@@ -397,21 +427,11 @@ void EngineerManual::ctrlAPress()
 
 void EngineerManual::ctrlBPress()
 {
-  prefix_ = "HOME_";
-  switch (stone_num_)
-  {
-    case 0:
-      root_ = "ZERO_STONE";
-      break;
-    case 1:
-      root_ = "ONE_STONE";
-      break;
-    case 2:
-      root_ = "TWO_STONE";
-      break;
-  }
+  prefix_ = "";
+  root_ = "HOME";
   runStepQueue(prefix_ + root_);
-  ROS_INFO_STREAM("RUN_HOME" << stone_num_);
+  ROS_INFO_STREAM("RUN_HOME");
+  changeSpeedMode(NORMAL);
 }
 
 void EngineerManual::ctrlCPress()
@@ -426,6 +446,7 @@ void EngineerManual::ctrlDPress()
   root_ = "SMALL_ISLAND";
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
+  changeSpeedMode(LOW);
 }
 
 void EngineerManual::ctrlEPress()
@@ -438,6 +459,7 @@ void EngineerManual::ctrlFPress()
   root_ = "EXCHANGE_POS";
   runStepQueue(root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
+  changeSpeedMode(EXCHANGE);
 }
 
 void EngineerManual::ctrlGPress()
@@ -471,6 +493,10 @@ void EngineerManual::ctrlRPress()
   calibration_gather_->reset();
   runStepQueue("CLOSE_GRIPPER");
   ROS_INFO_STREAM("START CALIBRATE");
+  changeSpeedMode(NORMAL);
+  while (!stone_num_.empty())
+    stone_num_.pop();
+  ROS_INFO_STREAM("stone num is" << stone_num_.size());
 }
 
 void EngineerManual::ctrlSPress()
@@ -479,6 +505,7 @@ void EngineerManual::ctrlSPress()
   root_ = "BIG_ISLAND";
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
+  changeSpeedMode(LOW);
 }
 
 void EngineerManual::ctrlVPress()
@@ -494,6 +521,7 @@ void EngineerManual::ctrlWPress()
   root_ = "BIG_ISLAND";
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
+  changeSpeedMode(LOW);
 }
 
 void EngineerManual::ctrlXPress()
@@ -556,6 +584,12 @@ void EngineerManual::fRelease()
 
 void EngineerManual::gPress()
 {
+  if (stone_num_.size() < 2)
+  {
+    stone_num_.push("GOLD");
+    engineer_ui_.stone_num = stone_num_.size();
+  }
+  ROS_INFO_STREAM("Stone num is: " << stone_num_.size() << ", stone is " << stone_num_.top());
 }
 void EngineerManual::gRelease()
 {
@@ -574,11 +608,12 @@ void EngineerManual::qRelease()
 
 void EngineerManual::rPress()
 {
-  if (stone_num_ < 2)
-    stone_num_++;
-  else
-    stone_num_ = 0;
-  ROS_INFO_STREAM("Stone num is: " << stone_num_);
+  if (stone_num_.size() < 2)
+  {
+    stone_num_.push("SILVER");
+    engineer_ui_.stone_num = stone_num_.size();
+  }
+  ROS_INFO_STREAM("Stone num is: " << stone_num_.size() << ", stone is " << stone_num_.top());
 }
 
 void EngineerManual::vPressing()
@@ -642,17 +677,34 @@ void EngineerManual::shiftFPress()
 
 void EngineerManual::shiftGPress()
 {
-  switch (stone_num_)
+  switch (stone_num_.size())
   {
     case 0:
       root_ = "NO STONE!!";
-      stone_num_ = 0;
       break;
     case 1:
-      root_ = "GET_DOWN_STONE_BIN";
+      if (stone_num_.top() == "SILVER")
+      {
+        root_ = "GET_DOWN_STONE_BIN";
+        ROS_INFO_STREAM("take but silver");
+      }
+      else
+      {
+        root_ = "GET_DOWN_STONE_BIN";
+        ROS_INFO_STREAM("take but gold");
+      }
       break;
     case 2:
-      root_ = "GET_UP_STONE_BIN";
+      if (stone_num_.top() == "SILVER")
+      {
+        root_ = "GET_DOWN_STONE_BIN";
+        ROS_INFO_STREAM("take but silver");
+      }
+      else
+      {
+        root_ = "GET_DOWN_STONE_BIN";
+        ROS_INFO_STREAM("take but gold");
+      }
       break;
   }
   runStepQueue(root_);
@@ -673,10 +725,12 @@ void EngineerManual::shiftVPress()
   if (gripper_state_ == "close")
   {
     runStepQueue("OPEN_GRIPPER");
+    engineer_ui_.gripper_state = "OPEN";
   }
   else
   {
     runStepQueue("CLOSE_GRIPPER");
+    engineer_ui_.gripper_state = "CLOSED";
   }
 }
 void EngineerManual::shiftVRelease()
