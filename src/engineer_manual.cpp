@@ -197,8 +197,8 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 }
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  servo_command_sender_->setLinearVel(-dbus_data->wheel, -dbus_data->ch_l_x, -dbus_data->ch_l_y);
-  servo_command_sender_->setAngularVel(-angular_z_scale_, dbus_data->ch_r_y, -dbus_data->ch_r_x);
+  servo_command_sender_->setLinearVel(dbus_data->wheel, -dbus_data->ch_l_x, dbus_data->ch_l_y);
+  servo_command_sender_->setAngularVel(angular_z_scale_, dbus_data->ch_r_y, dbus_data->ch_r_x);
 }
 void EngineerManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
@@ -323,6 +323,7 @@ void EngineerManual::remoteControlTurnOff()
   ManualBase::remoteControlTurnOff();
   action_client_.cancelAllGoals();
 }
+
 void EngineerManual::gimbalOutputOn()
 {
   ChassisGimbalManual::gimbalOutputOn();
@@ -423,6 +424,7 @@ void EngineerManual::ctrlAPress()
   root_ = "SMALL_ISLAND";
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
+  changeSpeedMode(LOW);
 }
 
 void EngineerManual::ctrlBPress()
