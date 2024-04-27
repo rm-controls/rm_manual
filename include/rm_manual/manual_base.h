@@ -141,7 +141,7 @@ protected:
 
   ros::Subscriber odom_sub_, dbus_sub_, track_sub_, referee_sub_, capacity_sub_, game_status_sub_, joint_state_sub_,
       game_robot_hp_sub_, actuator_state_sub_, power_heat_data_sub_, gimbal_des_error_sub_, game_robot_status_sub_,
-      suggest_fire_sub_, suggest_fire_near_switching_sub_;
+      suggest_fire_sub_, shoot_beforehand_sub_;
 
   sensor_msgs::JointState joint_state_;
   rm_msgs::TrackData track_data_;
