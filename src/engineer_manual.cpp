@@ -197,8 +197,8 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 }
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  servo_command_sender_->setLinearVel(dbus_data->wheel, -dbus_data->ch_l_x, dbus_data->ch_l_y);
-  servo_command_sender_->setAngularVel(angular_z_scale_, dbus_data->ch_r_y, dbus_data->ch_r_x);
+  servo_command_sender_->setLinearVel(-dbus_data->wheel, -dbus_data->ch_l_x, -dbus_data->ch_l_y);
+  servo_command_sender_->setAngularVel(-angular_z_scale_, dbus_data->ch_r_y, -dbus_data->ch_r_x);
 }
 void EngineerManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
@@ -544,7 +544,7 @@ void EngineerManual::bRelease()
 void EngineerManual::cPressing()
 {
   angular_z_scale_ = 0.5;
-  ROS_INFO_STREAM("angular_z_scale is 0.5");
+  //  ROS_INFO_STREAM("angular_z_scale is 0.5");
 }
 void EngineerManual::cRelease()
 {
@@ -632,7 +632,7 @@ void EngineerManual::xPress()
 void EngineerManual::zPressing()
 {
   angular_z_scale_ = -0.5;
-  ROS_INFO_STREAM("angular_z_scale is -0.5");
+  //  ROS_INFO_STREAM("angular_z_scale is -0.5");
 }
 void EngineerManual::zRelease()
 {
