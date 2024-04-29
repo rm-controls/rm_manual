@@ -699,12 +699,12 @@ void EngineerManual::shiftGPress()
     case 2:
       if (stone_num_.top() == "SILVER")
       {
-        root_ = "GET_DOWN_STONE_BIN";
+        root_ = "GET_UP_STONE_BIN";
         ROS_INFO_STREAM("take but silver");
       }
       else
       {
-        root_ = "GET_DOWN_STONE_BIN";
+        root_ = "GET_UP_STONE_BIN";
         ROS_INFO_STREAM("take but gold");
       }
       break;
@@ -745,6 +745,16 @@ void EngineerManual::shiftXPress()
 
 void EngineerManual::shiftZPress()
 {
+  if (ore_lifter_pos_)
+  {
+    runStepQueue("ORE_LIFTER_MID");
+    ore_lifter_pos_ = true;
+  }
+  else
+  {
+    runStepQueue("ORE_LIFTER_DOWN");
+    ore_lifter_pos_ = false;
+  }
 }
 
 }  // namespace rm_manual
