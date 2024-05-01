@@ -84,8 +84,10 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   shift_b_event_.setRising(boost::bind(&EngineerManual::shiftBPress, this));
   shift_b_event_.setFalling(boost::bind(&EngineerManual::shiftBRelease, this));
   shift_c_event_.setRising(boost::bind(&EngineerManual::shiftCPress, this));
+  shift_e_event_.setRising(boost::bind(&EngineerManual::shiftEPress, this));
   shift_f_event_.setRising(boost::bind(&EngineerManual::shiftFPress, this));
   shift_g_event_.setRising(boost::bind(&EngineerManual::shiftGPress, this));
+  shift_q_event_.setRising(boost::bind(&EngineerManual::shiftQPress, this));
   shift_r_event_.setRising(boost::bind(&EngineerManual::shiftRPress, this));
   shift_r_event_.setFalling(boost::bind(&EngineerManual::shiftRRelease, this));
   shift_v_event_.setRising(boost::bind(&EngineerManual::shiftVPress, this));
@@ -279,8 +281,9 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   change_flag_ = true;
   ROS_INFO("%i", result->finish);
   operating_mode_ = MANUAL;
-  if (prefix_ + root_ == "EXCHANGE_POS" || prefix_ + root_ == "GET_DOWN_STONE_BIN" ||
-      prefix_ + root_ == "GET_UP_STONE_BIN")
+  if (prefix_ + root_ == "EXCHANGE_POS" || prefix_ + root_ == "GET_DOWN_STONE_LEFT" ||
+      prefix_ + root_ == "GET_DOWN_STONE_RIGHT" || prefix_ + root_ == "GET_UP_STONE_RIGHT" ||
+      prefix_ + root_ == "GET_UP_STONE_LEFT")
   {
     enterServo();
     changeSpeedMode(EXCHANGE);
@@ -673,6 +676,44 @@ void EngineerManual::shiftCPress()
   ROS_INFO("cancel all goal");
 }
 
+void EngineerManual::shiftEPress()
+{
+  switch (stone_num_.size())
+  {
+    case 0:
+      root_ = "NO STONE!!";
+      break;
+    case 1:
+      if (stone_num_.top() == "SILVER")
+      {
+        root_ = "GET_DOWN_STONE_RIGHT";
+        ROS_INFO_STREAM("take but silver");
+      }
+      else
+      {
+        root_ = "GET_DOWN_STONE_RIGHT";
+        ROS_INFO_STREAM("take but gold");
+      }
+      break;
+    case 2:
+      if (stone_num_.top() == "SILVER")
+      {
+        root_ = "GET_UP_STONE_RIGHT";
+        ROS_INFO_STREAM("take but silver");
+      }
+      else
+      {
+        root_ = "GET_UP_STONE_RIGHT";
+        ROS_INFO_STREAM("take but gold");
+      }
+      break;
+  }
+  runStepQueue(root_);
+  prefix_ = "";
+
+  ROS_INFO("TAKE_STONE");
+}
+
 void EngineerManual::shiftFPress()
 {
 }
@@ -705,6 +746,44 @@ void EngineerManual::shiftGPress()
       else
       {
         root_ = "GET_UP_STONE_BIN";
+        ROS_INFO_STREAM("take but gold");
+      }
+      break;
+  }
+  runStepQueue(root_);
+  prefix_ = "";
+
+  ROS_INFO("TAKE_STONE");
+}
+
+void EngineerManual::shiftQPress()
+{
+  switch (stone_num_.size())
+  {
+    case 0:
+      root_ = "NO STONE!!";
+      break;
+    case 1:
+      if (stone_num_.top() == "SILVER")
+      {
+        root_ = "GET_DOWN_STONE_LEFT";
+        ROS_INFO_STREAM("take but silver");
+      }
+      else
+      {
+        root_ = "GET_DOWN_STONE_LEFT";
+        ROS_INFO_STREAM("take but gold");
+      }
+      break;
+    case 2:
+      if (stone_num_.top() == "SILVER")
+      {
+        root_ = "GET_UP_STONE_LEFT";
+        ROS_INFO_STREAM("take but silver");
+      }
+      else
+      {
+        root_ = "GET_UP_STONE_LEFT";
         ROS_INFO_STREAM("take but gold");
       }
       break;

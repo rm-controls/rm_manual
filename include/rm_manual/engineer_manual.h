@@ -123,8 +123,10 @@ private:
   void shiftBPress();
   void shiftBRelease();
   void shiftCPress();
+  void shiftEPress();
   void shiftFPress();
   void shiftGPress();
+  void shiftQPress();
   void shiftRPress();
   void shiftRRelease();
   void shiftVPress();
