@@ -423,7 +423,14 @@ void EngineerManual::mouseRightRelease()
 //------------------------- ctrl ------------------------------
 void EngineerManual::ctrlAPress()
 {
-  prefix_ = "ONE_STONE_";
+  if (stone_num_.size() == 0)
+  {
+    prefix_ = "0_TAKE_ONE_STONE_";
+  }
+  else if (stone_num_.size() == 1)
+  {
+    prefix_ = "1_TAKE_ONE_STONE_";
+  }
   root_ = "SMALL_ISLAND";
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
