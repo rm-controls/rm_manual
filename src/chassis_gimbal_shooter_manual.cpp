@@ -149,6 +149,7 @@ void ChassisGimbalShooterManual::trackCallback(const rm_msgs::TrackData::ConstPt
 {
   ChassisGimbalManual::trackCallback(data);
   shooter_cmd_sender_->updateTrackData(*data);
+  vel_cmd_sender_->updateTrackData(*data);
 }
 
 void ChassisGimbalShooterManual::suggestFireCallback(const std_msgs::Bool::ConstPtr& data)
