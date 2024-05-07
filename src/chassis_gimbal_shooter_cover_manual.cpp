@@ -23,8 +23,8 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
 
   ctrl_z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this),
                         boost::bind(&ChassisGimbalShooterCoverManual::ctrlZRelease, this));
-  z_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterCoverManual::zPressing, this));
-  z_event_.setFalling(boost::bind(&ChassisGimbalShooterCoverManual::zRelease, this));
+  z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::zPress, this),
+                   boost::bind(&ChassisGimbalShooterCoverManual::zRelease, this));
 }
 
 void ChassisGimbalShooterCoverManual::changeSpeedMode(SpeedMode speed_mode)
@@ -155,14 +155,15 @@ void ChassisGimbalShooterCoverManual::ePress()
   switch_buff_type_srv_->callService();
 }
 
-void ChassisGimbalShooterCoverManual::zPressing()
+void ChassisGimbalShooterCoverManual::zPress()
 {
+  last_shoot_freq_ = shooter_cmd_sender_->getShootFrequency();
   shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::MINIMAL);
 }
 
 void ChassisGimbalShooterCoverManual::zRelease()
 {
-  shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::LOW);
+  shooter_cmd_sender_->setShootFrequency(last_shoot_freq_);
 }
 
 void ChassisGimbalShooterCoverManual::wPress()
