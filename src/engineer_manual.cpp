@@ -41,6 +41,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   pitch_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   nh.getParam("calibration_gather", rpc_value);
   calibration_gather_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  nh.getParam("ore_bin_lifter_calibration", rpc_value);
+  ore_bin_lifter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   // Key binding
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_up_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpRise, this));
@@ -103,6 +105,7 @@ void EngineerManual::run()
 {
   ChassisGimbalManual::run();
   calibration_gather_->update(ros::Time::now());
+  ore_bin_lifter_calibration_->update(ros::Time::now());
   if (engineer_ui_ != old_ui_)
   {
     engineer_ui_pub_.publish(engineer_ui_);
@@ -281,17 +284,25 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   change_flag_ = true;
   ROS_INFO("%i", result->finish);
   operating_mode_ = MANUAL;
+  if (prefix_ + root_ == "0_TAKE_ONE_STONE_SMALL_ISLAND0" || prefix_ + root_ == "TWO_STONE_SMALL_ISLAND0" ||
+      prefix_ + root_ == "ORE_LIFTER_DOWN")
+  {
+    ore_bin_lifter_calibration_->reset();
+  }
   if (prefix_ + root_ == "EXCHANGE_POS" || prefix_ + root_ == "GET_DOWN_STONE_LEFT" ||
       prefix_ + root_ == "GET_DOWN_STONE_RIGHT" || prefix_ + root_ == "GET_UP_STONE_RIGHT" ||
-      prefix_ + root_ == "GET_UP_STONE_LEFT")
+      prefix_ + root_ == "GET_UP_STONE_LEFT" || prefix_ + root_ == "GET_DOWN_STONE_BIN" ||
+      prefix_ + root_ == "GET_UP_STONE_BIN")
   {
     enterServo();
     changeSpeedMode(EXCHANGE);
+    ore_bin_lifter_calibration_->reset();
   }
   if (root_ == "HOME")
   {
     initMode();
     changeSpeedMode(NORMAL);
+    ore_bin_lifter_calibration_->reset();
   }
   if (root_ + prefix_ == "TWO_STONE_SMALL_ISLAND0" || root_ + prefix_ == "THREE_STONE_SMALL_ISLAND0" ||
       root_ + prefix_ == "MID_BIG_ISLAND0" || root_ + prefix_ == "SIDE_BIG_ISLAND0")
@@ -858,15 +869,15 @@ void EngineerManual::shiftXPress()
 
 void EngineerManual::shiftZPress()
 {
-  if (ore_lifter_pos_)
+  if (!ore_lifter_on_)
   {
     runStepQueue("ORE_LIFTER_MID");
-    ore_lifter_pos_ = true;
+    ore_lifter_on_ = true;
   }
   else
   {
     runStepQueue("ORE_LIFTER_DOWN");
-    ore_lifter_pos_ = false;
+    ore_lifter_on_ = false;
   }
 }
 
