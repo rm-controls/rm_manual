@@ -441,6 +441,7 @@ void EngineerManual::ctrlBPress()
 {
   prefix_ = "";
   root_ = "HOME";
+  engineer_ui_.gripper_state = "CLOSED";
   runStepQueue(prefix_ + root_);
   ROS_INFO_STREAM("RUN_HOME");
   changeSpeedMode(NORMAL);
@@ -476,19 +477,19 @@ void EngineerManual::ctrlFPress()
 
 void EngineerManual::ctrlGPress()
 {
-  //  switch (stone_num_)
-  //  {
-  //    case 0:
-  //      root_ = "STORE_WHEN_ZERO_STONE";
-  //      stone_num_ = 1;
-  //      break;
-  //    case 1:
-  //      root_ = "DOWN_STONE_FROM_BIN";
-  //      stone_num_ = 2;
-  //      break;
-  //  }
-  //  runStepQueue(root_);
-  //  prefix_ = "";
+  switch (stone_num_.size())
+  {
+    case 0:
+      root_ = "STORE_WHEN_ZERO_STONE";
+      stone_num_.push("SILVER");
+      break;
+    case 1:
+      root_ = "DOWN_STONE_FROM_BIN";
+      stone_num_.push("SILVER");
+      break;
+  }
+  runStepQueue(root_);
+  prefix_ = "";
 
   //  ROS_INFO("STORE_STONE");
 }
@@ -508,6 +509,7 @@ void EngineerManual::ctrlRPress()
   changeSpeedMode(NORMAL);
   while (!stone_num_.empty())
     stone_num_.pop();
+  engineer_ui_.stone_num = 0;
   ROS_INFO_STREAM("stone num is" << stone_num_.size());
 }
 
@@ -630,6 +632,16 @@ void EngineerManual::rPress()
 
 void EngineerManual::vPressing()
 {
+  if (!ore_rotator_pos_)
+  {
+    runStepQueue("ORE_ROTATOR_EXCHANGE");
+    ore_rotator_pos_ = true;
+  }
+  else
+  {
+    runStepQueue("ORE_ROTATOR_INIT");
+    ore_rotator_pos_ = false;
+  }
 }
 void EngineerManual::vRelease()
 {
@@ -637,6 +649,21 @@ void EngineerManual::vRelease()
 
 void EngineerManual::xPress()
 {
+  switch (gimbal_direction_)
+  {
+    case 0:
+      runStepQueue("GIMBAL_RIGHT");
+      gimbal_direction_ = 1;
+      break;
+    case 1:
+      runStepQueue("GIMBAL_LEFT");
+      gimbal_direction_ = 2;
+      break;
+    case 2:
+      runStepQueue("GIMBAL_FRONT");
+      gimbal_direction_ = 0;
+      break;
+  }
 }
 
 void EngineerManual::zPressing()

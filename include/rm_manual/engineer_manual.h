@@ -139,12 +139,12 @@ private:
 
   // Servo
 
-  bool change_flag_{}, ore_lifter_pos_{ false };
+  bool change_flag_{}, ore_lifter_pos_{ false }, ore_rotator_pos_{ false };
   double angular_z_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
       exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
 
-  std::string prefix_{}, root_{}, reversal_state_{}, drag_state_{ "off" }, gripper_state_{ "off" };
-  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, gimbal_height_{ 0 };
+  std::string prefix_{}, root_{}, reversal_state_{}, drag_state_{ "off" }, gripper_state_{ "off" }, last_ore_{};
+  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, gimbal_height_{ 0 }, gimbal_direction_{ 0 };
 
   std::stack<std::string> stone_num_{};
 
