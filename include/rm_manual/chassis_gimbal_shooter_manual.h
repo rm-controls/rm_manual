@@ -97,7 +97,7 @@ protected:
   {
     shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::LOW);
   }
-  void fPress()
+  void ctrlFPress()
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   }
@@ -106,8 +106,8 @@ protected:
   void ctrlRPress();
   virtual void ctrlQPress();
 
-  InputEvent self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_, f_event_, b_event_,
-      x_event_, r_event_, v_event_, ctrl_v_event_, ctrl_b_event_, ctrl_q_event_, ctrl_r_event_, shift_event_,
+  InputEvent self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_, b_event_, x_event_,
+      r_event_, v_event_, ctrl_f_event_, ctrl_v_event_, ctrl_b_event_, ctrl_q_event_, ctrl_r_event_, shift_event_,
       ctrl_shift_b_event_, mouse_left_event_, mouse_right_event_;
   rm_common::ShooterCommandSender* shooter_cmd_sender_{};
   rm_common::CameraSwitchCommandSender* camera_switch_cmd_sender_{};
