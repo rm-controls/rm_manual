@@ -43,6 +43,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   calibration_gather_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   nh.getParam("ore_bin_lifter_calibration", rpc_value);
   ore_bin_lifter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  nh.getParam("joint2_calibration", rpc_value);
+  joint2_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   // Key binding
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_up_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpRise, this));
@@ -51,6 +53,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ctrl_a_event_.setRising(boost::bind(&EngineerManual::ctrlAPress, this));
   ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
+  ctrl_b_event_.setActiveHigh(boost::bind(&EngineerManual::ctrlBPressing, this));
   ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
   ctrl_e_event_.setRising(boost::bind(&EngineerManual::ctrlEPress, this));
   ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
@@ -106,6 +109,7 @@ void EngineerManual::run()
   ChassisGimbalManual::run();
   calibration_gather_->update(ros::Time::now());
   ore_bin_lifter_calibration_->update(ros::Time::now());
+  joint2_calibration_->update(ros::Time::now());
   if (engineer_ui_ != old_ui_)
   {
     engineer_ui_pub_.publish(engineer_ui_);
@@ -289,6 +293,11 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   {
     ore_bin_lifter_calibration_->reset();
   }
+  if (prefix_ + root_ == "HOME")
+  {
+    joint2_calibrated_ = false;
+    ROS_INFO_STREAM("joint2_calibrated_ IS" << joint2_calibrated_);
+  }
   if (prefix_ + root_ == "EXCHANGE_POS" || prefix_ + root_ == "GET_DOWN_STONE_LEFT" ||
       prefix_ + root_ == "GET_DOWN_STONE_RIGHT" || prefix_ + root_ == "GET_UP_STONE_RIGHT" ||
       prefix_ + root_ == "GET_UP_STONE_LEFT" || prefix_ + root_ == "GET_DOWN_STONE_BIN" ||
@@ -450,12 +459,32 @@ void EngineerManual::ctrlAPress()
 
 void EngineerManual::ctrlBPress()
 {
-  prefix_ = "";
-  root_ = "HOME";
-  engineer_ui_.gripper_state = "CLOSED";
-  runStepQueue(prefix_ + root_);
-  ROS_INFO_STREAM("RUN_HOME");
-  changeSpeedMode(NORMAL);
+  //  joint2_calibration_->reset();
+  //  prefix_ = "";
+  //  root_ = "HOME";
+  //  engineer_ui_.gripper_state = "CLOSED";
+  //  runStepQueue(prefix_ + root_);
+  //  ROS_INFO_STREAM("RUN_HOME");
+  //  changeSpeedMode(NORMAL);
+  //
+}
+
+void EngineerManual::ctrlBPressing()
+{
+  if (!joint2_calibrated_)
+  {
+    joint2_calibration_->reset();
+    joint2_calibrated_ = true;
+  }
+  if (joint2_calibration_->isCalibrated())
+  {
+    prefix_ = "";
+    root_ = "HOME";
+    engineer_ui_.gripper_state = "CLOSED";
+    runStepQueue(prefix_ + root_);
+    ROS_INFO_STREAM("RUN_HOME");
+    changeSpeedMode(NORMAL);
+  }
 }
 
 void EngineerManual::ctrlCPress()

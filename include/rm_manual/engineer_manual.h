@@ -85,6 +85,7 @@ private:
   void leftSwitchDownFall();
   void ctrlAPress();
   void ctrlBPress();
+  void ctrlBPressing();
   void ctrlCPress();
   void ctrlDPress();
   void ctrlEPress();
@@ -139,7 +140,7 @@ private:
 
   // Servo
 
-  bool change_flag_{}, ore_lifter_on_{ false }, ore_rotator_pos_{ false };
+  bool change_flag_{}, ore_lifter_on_{ false }, ore_rotator_pos_{ false }, joint2_calibrated_{ false };
   double angular_z_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
       exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
 
@@ -160,7 +161,8 @@ private:
   rm_common::JointPositionBinaryCommandSender *extend_arm_a_command_sender_, *extend_arm_b_command_sender_;
   rm_common::JointPointCommandSender *ore_bin_lifter_command_sender_, *ore_bin_rotate_command_sender_,
       *gimbal_lifter_command_sender_;
-  rm_common::CalibrationQueue *calibration_gather_{}, *pitch_calibration_, *ore_bin_lifter_calibration_{};
+  rm_common::CalibrationQueue *calibration_gather_{}, *pitch_calibration_, *ore_bin_lifter_calibration_{},
+      *joint2_calibration_{};
 
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 
