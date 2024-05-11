@@ -86,6 +86,7 @@ private:
   void ctrlAPress();
   void ctrlBPress();
   void ctrlBPressing();
+  void ctrlBRelease();
   void ctrlCPress();
   void ctrlDPress();
   void ctrlEPress();
@@ -140,7 +141,8 @@ private:
 
   // Servo
 
-  bool change_flag_{}, ore_lifter_on_{ false }, ore_rotator_pos_{ false }, joint2_calibrated_{ false };
+  bool change_flag_{}, ore_lifter_on_{ false }, ore_rotator_pos_{ false }, joint2_calibrated_{ false },
+      joint2_homed_{ false };
   double angular_z_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
       exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
 

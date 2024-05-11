@@ -54,6 +54,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
   ctrl_b_event_.setActiveHigh(boost::bind(&EngineerManual::ctrlBPressing, this));
+  ctrl_b_event_.setFalling(boost::bind(&EngineerManual::ctrlBRelease, this));
   ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
   ctrl_e_event_.setRising(boost::bind(&EngineerManual::ctrlEPress, this));
   ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
@@ -296,7 +297,7 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   if (prefix_ + root_ == "HOME")
   {
     joint2_calibrated_ = false;
-    ROS_INFO_STREAM("joint2_calibrated_ IS" << joint2_calibrated_);
+    joint2_homed_ = true;
   }
   if (prefix_ + root_ == "EXCHANGE_POS" || prefix_ + root_ == "GET_DOWN_STONE_LEFT" ||
       prefix_ + root_ == "GET_DOWN_STONE_RIGHT" || prefix_ + root_ == "GET_UP_STONE_RIGHT" ||
@@ -471,20 +472,30 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::ctrlBPressing()
 {
-  if (!joint2_calibrated_)
+  if (!joint2_homed_)
   {
-    joint2_calibration_->reset();
-    joint2_calibrated_ = true;
+    if (!joint2_calibrated_)
+    {
+      joint2_calibration_->reset();
+      joint2_calibrated_ = true;
+    }
+    if (joint2_calibration_->isCalibrated())
+    {
+      ROS_INFO_STREAM("joint2 homed is " << joint2_homed_);
+      prefix_ = "";
+      root_ = "HOME";
+      engineer_ui_.gripper_state = "CLOSED";
+      runStepQueue(prefix_ + root_);
+      ROS_INFO_STREAM("RUN_HOME");
+      changeSpeedMode(NORMAL);
+    }
   }
-  if (joint2_calibration_->isCalibrated())
-  {
-    prefix_ = "";
-    root_ = "HOME";
-    engineer_ui_.gripper_state = "CLOSED";
-    runStepQueue(prefix_ + root_);
-    ROS_INFO_STREAM("RUN_HOME");
-    changeSpeedMode(NORMAL);
-  }
+}
+
+void EngineerManual::ctrlBRelease()
+{
+  joint2_homed_ = false;
+  ROS_INFO_STREAM("joint2 homed is " << joint2_homed_);
 }
 
 void EngineerManual::ctrlCPress()
