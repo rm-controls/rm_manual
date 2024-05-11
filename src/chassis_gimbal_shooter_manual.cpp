@@ -46,7 +46,6 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   c_event_.setRising(boost::bind(&ChassisGimbalShooterManual::cPress, this));
   q_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::qPress, this),
                    boost::bind(&ChassisGimbalShooterManual::qRelease, this));
-  f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::fPress, this));
   b_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::bPress, this),
                    boost::bind(&ChassisGimbalShooterManual::bRelease, this));
   x_event_.setRising(boost::bind(&ChassisGimbalShooterManual::xPress, this));
@@ -54,6 +53,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::rPress, this));
   g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
   v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::vPress, this));
+  ctrl_f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlFPress, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
   ctrl_q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlQPress, this));
@@ -92,11 +92,11 @@ void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr
   c_event_.update((!dbus_data->key_ctrl) & dbus_data->key_c);
   g_event_.update(dbus_data->key_g & !dbus_data->key_ctrl);
   q_event_.update((!dbus_data->key_ctrl) & dbus_data->key_q);
-  f_event_.update(dbus_data->key_f & !dbus_data->key_ctrl);
   b_event_.update((!dbus_data->key_ctrl && !dbus_data->key_shift) & dbus_data->key_b);
   x_event_.update(dbus_data->key_x & !dbus_data->key_ctrl);
   r_event_.update((!dbus_data->key_ctrl) & dbus_data->key_r);
   v_event_.update((!dbus_data->key_ctrl) & dbus_data->key_v);
+  ctrl_f_event_.update(dbus_data->key_f & dbus_data->key_ctrl);
   ctrl_v_event_.update(dbus_data->key_ctrl & dbus_data->key_v);
   ctrl_b_event_.update(dbus_data->key_ctrl & dbus_data->key_b & !dbus_data->key_shift);
   ctrl_q_event_.update(dbus_data->key_ctrl & dbus_data->key_q);
@@ -139,10 +139,17 @@ void ChassisGimbalShooterManual::gimbalDesErrorCallback(const rm_msgs::GimbalDes
   shooter_cmd_sender_->updateGimbalDesError(*data);
 }
 
+void ChassisGimbalShooterManual::shootBeforehandCmdCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data)
+{
+  ChassisGimbalManual::shootBeforehandCmdCallback(data);
+  shooter_cmd_sender_->updateShootBeforehandCmd(*data);
+}
+
 void ChassisGimbalShooterManual::trackCallback(const rm_msgs::TrackData::ConstPtr& data)
 {
   ChassisGimbalManual::trackCallback(data);
   shooter_cmd_sender_->updateTrackData(*data);
+  vel_cmd_sender_->updateTrackData(*data);
 }
 
 void ChassisGimbalShooterManual::suggestFireCallback(const std_msgs::Bool::ConstPtr& data)
