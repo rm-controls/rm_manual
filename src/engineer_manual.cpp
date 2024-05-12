@@ -297,7 +297,8 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   if (prefix_ + root_ == "HOME")
   {
     joint2_calibrated_ = false;
-    joint2_homed_ = true;
+    if (b_pressed_)
+      joint2_homed_ = true;
   }
   if (prefix_ + root_ == "EXCHANGE_POS" || prefix_ + root_ == "GET_DOWN_STONE_LEFT" ||
       prefix_ + root_ == "GET_DOWN_STONE_RIGHT" || prefix_ + root_ == "GET_UP_STONE_RIGHT" ||
@@ -444,7 +445,7 @@ void EngineerManual::mouseRightRelease()
 //------------------------- ctrl ------------------------------
 void EngineerManual::ctrlAPress()
 {
-  if (stone_num_.size() == 0)
+  if (stone_num_.empty())
   {
     prefix_ = "0_TAKE_ONE_STONE_";
   }
@@ -472,8 +473,10 @@ void EngineerManual::ctrlBPress()
 
 void EngineerManual::ctrlBPressing()
 {
+  b_pressed_ = true;
   if (!joint2_homed_)
   {
+    initMode();
     if (!joint2_calibrated_)
     {
       joint2_calibration_->reset();
@@ -481,12 +484,10 @@ void EngineerManual::ctrlBPressing()
     }
     if (joint2_calibration_->isCalibrated())
     {
-      ROS_INFO_STREAM("joint2 homed is " << joint2_homed_);
       prefix_ = "";
       root_ = "HOME";
       engineer_ui_.gripper_state = "CLOSED";
       runStepQueue(prefix_ + root_);
-      ROS_INFO_STREAM("RUN_HOME");
       changeSpeedMode(NORMAL);
     }
   }
@@ -495,7 +496,7 @@ void EngineerManual::ctrlBPressing()
 void EngineerManual::ctrlBRelease()
 {
   joint2_homed_ = false;
-  ROS_INFO_STREAM("joint2 homed is " << joint2_homed_);
+  b_pressed_ = false;
 }
 
 void EngineerManual::ctrlCPress()
