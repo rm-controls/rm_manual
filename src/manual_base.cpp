@@ -204,5 +204,4 @@ void ManualBase::robotDie()
     controller_manager_.stopCalibrationControllers();
   }
 }
-
 }  // namespace rm_manual
