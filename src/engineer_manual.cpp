@@ -33,8 +33,6 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   chassis_nh.param("normal_gyro_scale", normal_gyro_scale_, 0.15);
   chassis_nh.param("low_gyro_scale", low_gyro_scale_, 0.05);
   chassis_nh.param("exchange_gyro_scale", exchange_gyro_scale_, 0.12);
-  //  ros::NodeHandle nh_gimbal_lifter(nh, "gimbal_lifter");
-  //  gimbal_lifter_command_sender_ = new rm_common::JointPointCommandSender(nh_gimbal_lifter, joint_state_);
   // Calibration
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("pitch_calibration", rpc_value);
@@ -100,6 +98,7 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   shift_v_event_.setFalling(boost::bind(&EngineerManual::shiftVRelease, this));
   shift_x_event_.setRising(boost::bind(&EngineerManual::shiftXPress, this));
   shift_z_event_.setRising(boost::bind(&EngineerManual::shiftZPress, this));
+  shift_z_event_.setFalling(boost::bind(&EngineerManual::shiftZRelease, this));
 
   mouse_left_event_.setFalling(boost::bind(&EngineerManual::mouseLeftRelease, this));
   mouse_right_event_.setFalling(boost::bind(&EngineerManual::mouseRightRelease, this));
@@ -289,6 +288,7 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   change_flag_ = true;
   ROS_INFO("%i", result->finish);
   operating_mode_ = MANUAL;
+
   if (prefix_ + root_ == "0_TAKE_ONE_STONE_SMALL_ISLAND0" || prefix_ + root_ == "TWO_STONE_SMALL_ISLAND0" ||
       prefix_ + root_ == "ORE_LIFTER_DOWN")
   {
@@ -303,7 +303,7 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
   if (prefix_ + root_ == "EXCHANGE_POS" || prefix_ + root_ == "GET_DOWN_STONE_LEFT" ||
       prefix_ + root_ == "GET_DOWN_STONE_RIGHT" || prefix_ + root_ == "GET_UP_STONE_RIGHT" ||
       prefix_ + root_ == "GET_UP_STONE_LEFT" || prefix_ + root_ == "GET_DOWN_STONE_BIN" ||
-      prefix_ + root_ == "GET_UP_STONE_BIN")
+      prefix_ + root_ == "GET_UP_STONE_BIN" || prefix_ + root_ == "EXCHANGE_L" || prefix_ + root_ == "EXCHANGE_R")
   {
     enterServo();
     changeSpeedMode(EXCHANGE);
@@ -445,7 +445,7 @@ void EngineerManual::mouseRightRelease()
 //------------------------- ctrl ------------------------------
 void EngineerManual::ctrlAPress()
 {
-  if (stone_num_.empty())
+  if (stone_num_.size() == 0)
   {
     prefix_ = "0_TAKE_ONE_STONE_";
   }
@@ -684,19 +684,24 @@ void EngineerManual::rPress()
 
 void EngineerManual::vPressing()
 {
-  if (!ore_rotator_pos_)
+  if (!v_pressed_)
   {
-    runStepQueue("ORE_ROTATOR_EXCHANGE");
-    ore_rotator_pos_ = true;
-  }
-  else
-  {
-    runStepQueue("ORE_ROTATOR_INIT");
-    ore_rotator_pos_ = false;
+    v_pressed_ = true;
+    if (!ore_rotator_pos_)
+    {
+      runStepQueue("ORE_ROTATOR_EXCHANGE");
+      ore_rotator_pos_ = true;
+    }
+    else
+    {
+      runStepQueue("ORE_ROTATOR_INIT");
+      ore_rotator_pos_ = false;
+    }
   }
 }
 void EngineerManual::vRelease()
 {
+  v_pressed_ = false;
 }
 
 void EngineerManual::xPress()
@@ -910,16 +915,28 @@ void EngineerManual::shiftXPress()
 
 void EngineerManual::shiftZPress()
 {
-  if (!ore_lifter_on_)
+  if (!shift_z_pressed_)
   {
-    runStepQueue("ORE_LIFTER_MID");
-    ore_lifter_on_ = true;
+    if (!ore_lifter_on_)
+    {
+      prefix_ = "ORE_LIFTER_UP";
+      root_ = "";
+      ore_lifter_on_ = true;
+      runStepQueue(prefix_ + root_);
+    }
+    else
+    {
+      prefix_ = "ORE_LIFTER_DOWN";
+      root_ = "";
+      ore_lifter_on_ = false;
+      runStepQueue(prefix_ + root_);
+    }
   }
-  else
-  {
-    runStepQueue("ORE_LIFTER_DOWN");
-    ore_lifter_on_ = false;
-  }
+}
+
+void EngineerManual::shiftZRelease()
+{
+  shift_z_pressed_ = false;
 }
 
 }  // namespace rm_manual

@@ -135,19 +135,21 @@ private:
   void shiftVRelease();
   void shiftXPress();
   void shiftZPress();
+  void shiftZRelease();
 
   void mouseLeftRelease();
   void mouseRightRelease();
 
   // Servo
 
-  bool change_flag_{}, ore_lifter_on_{ false }, ore_rotator_pos_{ false }, joint2_calibrated_{ false },
-      joint2_homed_{ false }, b_pressed_{ false };
+  bool change_flag_{}, ore_rotator_pos_{ false }, joint2_calibrated_{ false }, joint2_homed_{ false },
+      b_pressed_{ false }, shift_z_pressed_{ false }, ore_lifter_on_{ false }, v_pressed_{ false };
   double angular_z_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
       exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
 
   std::string prefix_{}, root_{}, reversal_state_{}, drag_state_{ "off" }, gripper_state_{ "off" }, last_ore_{};
-  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, gimbal_height_{ 0 }, gimbal_direction_{ 0 };
+  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, gimbal_height_{ 0 }, gimbal_direction_{ 0 },
+      ore_lifter_pos_{ 0 };
 
   std::stack<std::string> stone_num_{};
 
@@ -160,9 +162,6 @@ private:
 
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
-  rm_common::JointPositionBinaryCommandSender *extend_arm_a_command_sender_, *extend_arm_b_command_sender_;
-  rm_common::JointPointCommandSender *ore_bin_lifter_command_sender_, *ore_bin_rotate_command_sender_,
-      *gimbal_lifter_command_sender_;
   rm_common::CalibrationQueue *calibration_gather_{}, *pitch_calibration_, *ore_bin_lifter_calibration_{},
       *joint2_calibration_{};
 
