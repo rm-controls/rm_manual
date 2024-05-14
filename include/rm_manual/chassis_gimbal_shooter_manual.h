@@ -52,6 +52,7 @@ protected:
   void suggestFireCallback(const std_msgs::Bool::ConstPtr& data) override;
   void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override;
   void leftSwitchUpOn(ros::Duration duration);
+  void leftSwitchUpFall();
   void mouseLeftPress();
   void mouseLeftRelease()
   {
@@ -119,6 +120,7 @@ protected:
   rm_common::CalibrationQueue* gimbal_calibration_;
 
   geometry_msgs::PointStamped point_out_;
+  uint8_t last_shoot_freq_{};
 
   bool prepare_shoot_ = false, turn_flag_ = false, is_balance_ = false, use_scope_ = false,
        adjust_image_transmission_ = false;
