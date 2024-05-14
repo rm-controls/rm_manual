@@ -43,6 +43,7 @@ protected:
   double exit_buff_mode_duration_{};
   rm_common::SwitchDetectionCaller* switch_buff_srv_{};
   rm_common::SwitchDetectionCaller* switch_buff_type_srv_{};
+  rm_common::SwitchDetectionCaller* switch_exposure_srv_{};
   rm_common::JointPositionBinaryCommandSender* cover_command_sender_{};
   InputEvent ctrl_z_event_, ctrl_q_event_, x_event_, z_event_;
   std::string supply_frame_;
