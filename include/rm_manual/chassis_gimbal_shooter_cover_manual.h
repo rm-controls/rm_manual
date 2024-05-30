@@ -27,12 +27,19 @@ protected:
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
-  void rPress() override;
   void ePress() override;
-  void zPressing();
+  void cPress() override;
+  void zPress();
   void zRelease();
   void wPress() override;
   void wPressing() override;
+  void aPressing() override;
+  void sPressing() override;
+  void dPressing() override;
+  void wRelease() override;
+  void aRelease() override;
+  void sRelease() override;
+  void dRelease() override;
 
   virtual void ctrlZPress();
   virtual void ctrlZRelease()
@@ -41,6 +48,7 @@ protected:
   };
   double low_speed_scale_{}, normal_speed_scale_{};
   double exit_buff_mode_duration_{};
+  double buff_gyro_rotate_limit_{};
   rm_common::SwitchDetectionCaller* switch_buff_srv_{};
   rm_common::SwitchDetectionCaller* switch_buff_type_srv_{};
   rm_common::SwitchDetectionCaller* switch_exposure_srv_{};
