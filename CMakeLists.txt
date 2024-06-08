@@ -66,9 +66,7 @@ include_directories(
 
 ## Declare cpp executables
 FILE(GLOB ALL_SOURCES "src/*.cpp")
-add_executable(${PROJECT_NAME} ${ALL_SOURCES}
-        include/rm_manual/scara_manual.h
-        src/scara_manual.cpp)
+add_executable(${PROJECT_NAME} ${ALL_SOURCES})
 
 ## Add dependencies to exported targets, like ROS msgs or srvs
 add_dependencies(${PROJECT_NAME}

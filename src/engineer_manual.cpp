@@ -434,13 +434,12 @@ void EngineerManual::mouseLeftRelease()
     ROS_INFO("Finished %s", (prefix_ + root_).c_str());
   }
 }
-
+//--------------------- keyboard input ------------------------
 void EngineerManual::mouseRightRelease()
 {
   runStepQueue(prefix_ + root_);
   ROS_INFO("Finished %s", (prefix_ + root_).c_str());
 }
-//--------------------- keyboard input ------------------------
 
 //------------------------- ctrl ------------------------------
 void EngineerManual::ctrlAPress()
