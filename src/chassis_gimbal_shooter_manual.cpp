@@ -343,14 +343,16 @@ void ChassisGimbalShooterManual::mouseLeftPress()
     prepare_shoot_ = false;
   }
   if (prepare_shoot_)
-  {
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-    shooter_cmd_sender_->checkError(ros::Time::now());
-  }
+    if ((!turn_flag_) || (turn_flag_ && track_data_.id != 0))
+    {
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+      shooter_cmd_sender_->checkError(ros::Time::now());
+    }
 }
 
 void ChassisGimbalShooterManual::mouseRightPress()
 {
+  turn_flag_ = true;
   if (track_data_.id == 0)
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   else
