@@ -64,6 +64,7 @@ protected:
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+    turn_flag_ = false;
   }
   void wPress() override;
   void aPress() override;
