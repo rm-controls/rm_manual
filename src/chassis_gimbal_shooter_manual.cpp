@@ -343,11 +343,15 @@ void ChassisGimbalShooterManual::mouseLeftPress()
     prepare_shoot_ = false;
   }
   if (prepare_shoot_)
-    if ((!turn_flag_) || (turn_flag_ && track_data_.id != 0))
+  {
+    if (!turn_flag_ || (turn_flag_ && track_data_.id != 0))
     {
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
       shooter_cmd_sender_->checkError(ros::Time::now());
     }
+    else
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+  }
 }
 
 void ChassisGimbalShooterManual::mouseRightPress()
