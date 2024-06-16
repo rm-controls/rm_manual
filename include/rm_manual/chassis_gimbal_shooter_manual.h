@@ -61,6 +61,7 @@ protected:
   void mouseRightPress();
   void mouseRightRelease()
   {
+    is_track_ = false;
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
@@ -121,7 +122,7 @@ protected:
   geometry_msgs::PointStamped point_out_;
 
   bool prepare_shoot_ = false, turn_flag_ = false, is_balance_ = false, use_scope_ = false,
-       adjust_image_transmission_ = false;
+       adjust_image_transmission_ = false, is_track_ = false;
   double yaw_current_{};
 };
 }  // namespace rm_manual

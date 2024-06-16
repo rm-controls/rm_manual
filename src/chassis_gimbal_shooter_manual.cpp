@@ -344,15 +344,22 @@ void ChassisGimbalShooterManual::mouseLeftPress()
   }
   if (prepare_shoot_)
   {
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-    shooter_cmd_sender_->checkError(ros::Time::now());
+    if (gimbal_cmd_sender_->getMsg()->mode == rm_msgs::GimbalCmd::TRACK || !is_track_)
+    {
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+      shooter_cmd_sender_->checkError(ros::Time::now());
+    }
   }
 }
 
 void ChassisGimbalShooterManual::mouseRightPress()
 {
+  is_track_ = true;
   if (track_data_.id == 0)
+  {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+  }
   else
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
