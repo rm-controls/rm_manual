@@ -158,6 +158,13 @@ void ChassisGimbalShooterManual::suggestFireCallback(const std_msgs::Bool::Const
   shooter_cmd_sender_->updateSuggestFireData(*data);
 }
 
+void ChassisGimbalShooterManual::shootDataCallback(const rm_msgs::ShootData::ConstPtr& data)
+{
+  ChassisGimbalManual::shootDataCallback(data);
+  if (referee_is_online_)
+    shooter_cmd_sender_->updateShootData(*data);
+}
+
 void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
 {
   ChassisGimbalManual::sendCommand(time);

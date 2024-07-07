@@ -31,9 +31,7 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   suggest_fire_sub_ =
       nh.subscribe<std_msgs::Bool>("/forecast/suggest_fire", 10, &ManualBase::suggestFireCallback, this);
 
-  shoot_beforehand_cmd_sub_ =
-      nh.subscribe<rm_msgs::ShootBeforehandCmd>("/controllers/gimbal_controller/bullet_solver/shoot_beforehand_cmd", 10,
-                                                &ManualBase::shootBeforehandCmdCallback, this);
+  shoot_data_sub_ = nh_referee.subscribe<rm_msgs::ShootData>("shoot_data", 10, &ManualBase::shootDataCallback, this);
 
   // pub
   manual_to_referee_pub_ = nh.advertise<rm_msgs::ManualToReferee>("/manual_to_referee", 1);
