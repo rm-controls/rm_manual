@@ -189,6 +189,7 @@ void ChassisGimbalShooterManual::remoteControlTurnOff()
   shooter_calibration_->stop();
   gimbal_calibration_->stop();
   turn_flag_ = false;
+  is_mouse_right_press_ = false;
   use_scope_ = false;
   adjust_image_transmission_ = false;
 }
@@ -207,6 +208,7 @@ void ChassisGimbalShooterManual::robotDie()
   ManualBase::robotDie();
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   turn_flag_ = false;
+  is_mouse_right_press_ = false;
   use_scope_ = false;
   adjust_image_transmission_ = false;
 }
@@ -344,7 +346,7 @@ void ChassisGimbalShooterManual::mouseLeftPress()
   }
   if (prepare_shoot_)
   {
-    if (!turn_flag_ || (turn_flag_ && track_data_.id != 0))
+    if (!is_mouse_right_press_ || (is_mouse_right_press_ && track_data_.id != 0))
     {
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
       shooter_cmd_sender_->checkError(ros::Time::now());
@@ -356,7 +358,7 @@ void ChassisGimbalShooterManual::mouseLeftPress()
 
 void ChassisGimbalShooterManual::mouseRightPress()
 {
-  turn_flag_ = true;
+  is_mouse_right_press_ = true;
   if (track_data_.id == 0)
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   else
