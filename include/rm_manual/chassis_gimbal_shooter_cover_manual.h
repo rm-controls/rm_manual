@@ -40,6 +40,8 @@ protected:
   void aRelease() override;
   void sRelease() override;
   void dRelease() override;
+  void setAngularVelByTargetWhenMov();
+  void setAngularVelByTargetWhenStopMov();
 
   virtual void ctrlZPress();
   virtual void ctrlZRelease()
