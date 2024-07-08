@@ -182,6 +182,55 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
   }
 }
 
+void ChassisGimbalShooterManual::modeFSM(int mode)
+{
+  switch (mode)
+  {
+    case RAW:
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+      is_gyro_ = true;
+      break;
+    case FOLLOW:
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+      is_gyro_ = false;
+      break;
+    case RATE:
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+      break;
+    case TRACK:
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+      gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
+      break;
+    case DIRECT:
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
+      gimbal_cmd_sender_->setPoint(point_out_);
+      break;
+    case STOP:
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+      break;
+    case READY:
+      if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::STOP)
+        prepare_shoot_ = false;
+      else
+        prepare_shoot_ = true;
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+      break;
+    case PUSH:
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+      shooter_cmd_sender_->checkError(ros::Time::now());
+      break;
+    case CHARGE:
+      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
+      break;
+    case BURST:
+      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
+      break;
+    case NORMAL:
+      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+      break;
+  }
+}
+
 void ChassisGimbalShooterManual::remoteControlTurnOff()
 {
   ChassisGimbalManual::remoteControlTurnOff();
@@ -205,7 +254,7 @@ void ChassisGimbalShooterManual::remoteControlTurnOn()
 void ChassisGimbalShooterManual::robotDie()
 {
   ManualBase::robotDie();
-  shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+  modeFSM(STOP);
   turn_flag_ = false;
   use_scope_ = false;
   adjust_image_transmission_ = false;
@@ -214,13 +263,13 @@ void ChassisGimbalShooterManual::robotDie()
 void ChassisGimbalShooterManual::chassisOutputOn()
 {
   ChassisGimbalManual::chassisOutputOn();
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
+  modeFSM(CHARGE);
 }
 
 void ChassisGimbalShooterManual::shooterOutputOn()
 {
   ChassisGimbalManual::shooterOutputOn();
-  shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+  modeFSM(STOP);
   shooter_calibration_->reset();
 }
 
@@ -235,22 +284,20 @@ void ChassisGimbalShooterManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbu
   ChassisGimbalManual::updateRc(dbus_data);
   if (std::abs(dbus_data->wheel) > 0.01)
   {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-    is_gyro_ = true;
+    modeFSM(RAW);
   }
   else
   {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    is_gyro_ = false;
+    modeFSM(FOLLOW);
   }
   vel_cmd_sender_->setAngularZVel((std::abs(dbus_data->ch_r_y) > 0.01 || std::abs(dbus_data->ch_r_x) > 0.01) ?
                                       dbus_data->wheel * gyro_rotate_reduction_ :
                                       dbus_data->wheel);
   vel_cmd_sender_->setLinearXVel(is_gyro_ ? dbus_data->ch_r_y * gyro_move_reduction_ : dbus_data->ch_r_y);
   vel_cmd_sender_->setLinearYVel(is_gyro_ ? -dbus_data->ch_r_x * gyro_move_reduction_ : -dbus_data->ch_r_x);
-
+  // RC下，shooter不是STOP就setBulletSpeed
   if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP)
-    gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
+    modeFSM(TRACK);
 }
 
 void ChassisGimbalShooterManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -258,112 +305,104 @@ void ChassisGimbalShooterManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbu
   ChassisGimbalManual::updatePc(dbus_data);
   if (chassis_cmd_sender_->power_limit_->getState() != rm_common::PowerLimit::BURST && !is_gyro_ && !is_balance_)
   {  // Capacitor enter fast charge when chassis stop.
+    // 底盘不动才充电, PC
     if (!dbus_data->key_shift && chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW &&
         std::sqrt(std::pow(vel_cmd_sender_->getMsg()->linear.x, 2) + std::pow(vel_cmd_sender_->getMsg()->linear.y, 2)) >
             0.0)
-      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+      modeFSM(NORMAL);
     else if (chassis_power_ < 6.0 && chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW)
-      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
+      modeFSM(CHARGE);
   }
 }
 
 void ChassisGimbalShooterManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-  shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+  modeFSM(NORMAL);
+  modeFSM(STOP);
 }
 
 void ChassisGimbalShooterManual::rightSwitchMidRise()
 {
   ChassisGimbalManual::rightSwitchMidRise();
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
-  shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+  modeFSM(BURST);
+  modeFSM(STOP);
 }
 
 void ChassisGimbalShooterManual::rightSwitchUpRise()
 {
   ChassisGimbalManual::rightSwitchUpRise();
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
-  shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+  modeFSM(CHARGE);
+  modeFSM(STOP);
 }
 
 void ChassisGimbalShooterManual::leftSwitchDownRise()
 {
   ChassisGimbalManual::leftSwitchDownRise();
-  gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-  shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
+  modeFSM(RATE);
+  modeFSM(STOP);
 }
 
 void ChassisGimbalShooterManual::leftSwitchMidRise()
 {
   ChassisGimbalManual::leftSwitchMidRise();
-  shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+  modeFSM(READY);
 }
 
 void ChassisGimbalShooterManual::leftSwitchMidOn(ros::Duration duration)
 {
   if (track_data_.id == 0)
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+    modeFSM(RATE);
   else
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+    modeFSM(TRACK);
 }
 
 void ChassisGimbalShooterManual::leftSwitchUpRise()
 {
   ChassisGimbalManual::leftSwitchUpRise();
-  gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+  modeFSM(TRACK);
 }
 
 void ChassisGimbalShooterManual::leftSwitchUpOn(ros::Duration duration)
 {
   if (track_data_.id == 0)
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+    modeFSM(RATE);
   else
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+    modeFSM(TRACK);
   if (duration > ros::Duration(1.))
   {
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-    shooter_cmd_sender_->checkError(ros::Time::now());
+    modeFSM(PUSH);
   }
   else if (duration < ros::Duration(0.02))
   {
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-    shooter_cmd_sender_->checkError(ros::Time::now());
+    modeFSM(PUSH);
   }
   else
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+    modeFSM(READY);
 }
 
 void ChassisGimbalShooterManual::mouseLeftPress()
 {
-  if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::STOP)
-  {
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
-    prepare_shoot_ = false;
-  }
+  modeFSM(READY);
   if (prepare_shoot_)
   {
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-    shooter_cmd_sender_->checkError(ros::Time::now());
+    modeFSM(PUSH);
   }
 }
 
 void ChassisGimbalShooterManual::mouseRightPress()
 {
   if (track_data_.id == 0)
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+    modeFSM(RATE);
   else
   {
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
-    gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
+    modeFSM(TRACK);
   }
   if (switch_armor_target_srv_->getArmorTarget() == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
   {
     if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP)
     {
-      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-      shooter_cmd_sender_->checkError(ros::Time::now());
+      modeFSM(PUSH);
     }
   }
 }
@@ -386,15 +425,13 @@ void ChassisGimbalShooterManual::cPress()
 {
   if (is_gyro_)
   {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    modeFSM(FOLLOW);
     vel_cmd_sender_->setAngularZVel(0.0);
-    is_gyro_ = false;
   }
   else
   {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-    is_gyro_ = true;
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    modeFSM(RAW);
+    modeFSM(NORMAL);
     if (x_scale_ != 0.0 || y_scale_ != 0.0)
       vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
     else
@@ -404,12 +441,12 @@ void ChassisGimbalShooterManual::cPress()
 
 void ChassisGimbalShooterManual::bPress()
 {
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
+  modeFSM(CHARGE);
 }
 
 void ChassisGimbalShooterManual::bRelease()
 {
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+  modeFSM(NORMAL);
 }
 
 void ChassisGimbalShooterManual::rPress()
@@ -440,10 +477,11 @@ void ChassisGimbalShooterManual::wPress()
   if ((robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO) &&
       gimbal_cmd_sender_->getEject())
   {
+    // TODO 开倍镜才能进，这里getEject()只能是false
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    modeFSM(FOLLOW);
+    modeFSM(NORMAL);
   }
 }
 
@@ -455,8 +493,8 @@ void ChassisGimbalShooterManual::aPress()
   {
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    modeFSM(FOLLOW);
+    modeFSM(NORMAL);
   }
 }
 
@@ -468,8 +506,8 @@ void ChassisGimbalShooterManual::sPress()
   {
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    modeFSM(FOLLOW);
+    modeFSM(NORMAL);
   }
 }
 
@@ -481,8 +519,8 @@ void ChassisGimbalShooterManual::dPress()
   {
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    modeFSM(FOLLOW);
+    modeFSM(NORMAL);
   }
 }
 
@@ -555,13 +593,12 @@ void ChassisGimbalShooterManual::xReleasing()
 {
   if (turn_flag_)
   {
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
-    gimbal_cmd_sender_->setPoint(point_out_);
+    modeFSM(DIRECT);
     double roll{}, pitch{}, yaw{};
     quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
     if (std::abs(angles::shortest_angular_distance(yaw, yaw_current_)) > finish_turning_threshold_)
     {
-      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+      modeFSM(RATE);
       turn_flag_ = false;
     }
   }
@@ -576,21 +613,21 @@ void ChassisGimbalShooterManual::shiftPress()
 {
   if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::FOLLOW && is_gyro_)
   {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    modeFSM(FOLLOW);
     vel_cmd_sender_->setAngularZVel(1.0);
-    is_gyro_ = false;
   }
-  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
+  modeFSM(BURST);
 }
 
 void ChassisGimbalShooterManual::shiftRelease()
 {
+  // 松shift，底盘不动的时候CHARGE
   if (chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::RAW ||
       std::sqrt(std::pow(vel_cmd_sender_->getMsg()->linear.x, 2) + std::pow(vel_cmd_sender_->getMsg()->linear.y, 2)) >
           0.0)
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    modeFSM(NORMAL);
   else
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
+    modeFSM(CHARGE);
 }
 
 void ChassisGimbalShooterManual::ctrlVPress()
