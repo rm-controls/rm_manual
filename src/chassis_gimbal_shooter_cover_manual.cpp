@@ -252,4 +252,9 @@ void ChassisGimbalShooterCoverManual::ctrlZPress()
   }
 }
 
+void ChassisGimbalShooterCoverManual::eventDartCallback(const rm_msgs::EventData::ConstPtr& data)
+{
+  ChassisGimbalManual::eventDartCallback(data);
+}
+
 }  // namespace rm_manual

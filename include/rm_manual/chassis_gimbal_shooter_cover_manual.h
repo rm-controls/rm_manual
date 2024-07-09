@@ -35,6 +35,7 @@ protected:
   void wPressing() override;
   void mouseRightPress() override;
   void mouseRightRelease() override;
+  void eventDartCallback(const rm_msgs::EventData ::ConstPtr& data) override;
 
   virtual void ctrlZPress();
   virtual void ctrlZRelease()
