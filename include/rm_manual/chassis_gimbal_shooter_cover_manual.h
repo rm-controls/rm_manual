@@ -52,5 +52,7 @@ protected:
   ros::Time last_switch_time_;
   bool supply_ = false;
   bool cover_close_ = true;
+  bool is_auto_ = true;
+  int count_{};
 };
 }  // namespace rm_manual
