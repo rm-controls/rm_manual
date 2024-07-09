@@ -33,8 +33,7 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   shoot_beforehand_cmd_sub_ =
       nh.subscribe<rm_msgs::ShootBeforehandCmd>("/controllers/gimbal_controller/bullet_solver/shoot_beforehand_cmd", 10,
                                                 &ManualBase::shootBeforehandCmdCallback, this);
-  event_dart_sub_ =
-      nh.subscribe<rm_msgs::EventData>("/rm_referee/event_data", 10, &ManualBase::eventDartCallback, this);
+  event_dart_sub_ = nh.subscribe<rm_msgs::EventData>("event_data", 10, &ManualBase::eventDartCallback, this);
 
   // pub
   manual_to_referee_pub_ = nh.advertise<rm_msgs::ManualToReferee>("/manual_to_referee", 1);
