@@ -132,6 +132,18 @@ void ChassisGimbalShooterCoverManual::rightSwitchUpRise()
   supply_ = false;
 }
 
+void ChassisGimbalShooterCoverManual::mouseRightPress()
+{
+  ChassisGimbalShooterManual::mouseRightPress();
+  ROS_INFO("OK");
+}
+
+void ChassisGimbalShooterCoverManual::mouseRightRelease()
+{
+  ChassisGimbalShooterManual::mouseRightRelease();
+  ROS_INFO("OK_release");
+}
+
 void ChassisGimbalShooterCoverManual::rPress()
 {
   if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)

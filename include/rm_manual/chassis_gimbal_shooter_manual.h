@@ -58,8 +58,8 @@ protected:
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
     prepare_shoot_ = true;
   }
-  void mouseRightPress();
-  void mouseRightRelease()
+  virtual void mouseRightPress();
+  virtual void mouseRightRelease()
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
