@@ -27,6 +27,7 @@
 #include <rm_msgs/TrackData.h>
 #include <rm_msgs/GameStatus.h>
 #include <rm_msgs/GameRobotHp.h>
+#include <rm_msgs/EventData.h>
 #include <rm_msgs/BalanceState.h>
 #include <rm_msgs/PowerHeatData.h>
 #include <rm_msgs/ActuatorState.h>
@@ -73,6 +74,9 @@ protected:
   {
   }
   virtual void shootBeforehandCmdCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data)
+  {
+  }
+  virtual void eventDartCallback(const rm_msgs::EventData ::ConstPtr& data)
   {
   }
   virtual void odomCallback(const nav_msgs::Odometry::ConstPtr& data)
@@ -141,7 +145,7 @@ protected:
 
   ros::Subscriber odom_sub_, dbus_sub_, track_sub_, referee_sub_, capacity_sub_, game_status_sub_, joint_state_sub_,
       game_robot_hp_sub_, actuator_state_sub_, power_heat_data_sub_, gimbal_des_error_sub_, game_robot_status_sub_,
-      suggest_fire_sub_, shoot_beforehand_cmd_sub_;
+      suggest_fire_sub_, shoot_beforehand_cmd_sub_, event_dart_sub_;
 
   sensor_msgs::JointState joint_state_;
   rm_msgs::TrackData track_data_;
