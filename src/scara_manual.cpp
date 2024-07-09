@@ -411,4 +411,157 @@ void ScaraManual::bPressing()
 void ScaraManual::bRelease()
 {
 }
+void ScaraManual::cPressing()
+{
+}
+void ScaraManual::cRelease()
+{
+}
+void ScaraManual::ePressing()
+{
+}
+void ScaraManual::eRelease()
+{
+}
+void ScaraManual::fPress()
+{
+}
+void ScaraManual::fRelease()
+{
+}
+void ScaraManual::gPress()
+{
+}
+void ScaraManual::gRelease()
+{
+}
+void ScaraManual::qPressing()
+{
+}
+void ScaraManual::qRelease()
+{
+}
+void ScaraManual::rPress()
+{
+}
+void ScaraManual::vPressing()
+{
+}
+void ScaraManual::vRelease()
+{
+}
+void ScaraManual::xPress()
+{
+}
+void ScaraManual::zPressing()
+{
+}
+void ScaraManual::zRelease()
+{
+}
+
+//---------------------  CTRL  ---------------------
+void ScaraManual::ctrlAPress()
+{
+}
+void ScaraManual::ctrlBPress()
+{
+}
+void ScaraManual::ctrlBPressing()
+{
+}
+void ScaraManual::ctrlBRelease()
+{
+}
+void ScaraManual::ctrlCPress()
+{
+}
+void ScaraManual::ctrlDPress()
+{
+}
+void ScaraManual::ctrlEPress()
+{
+}
+void ScaraManual::ctrlFPress()
+{
+}
+void ScaraManual::ctrlGPress()
+{
+}
+void ScaraManual::ctrlQPress()
+{
+}
+void ScaraManual::ctrlRPress()
+{
+}
+void ScaraManual::ctrlSPress()
+{
+}
+void ScaraManual::ctrlVPress()
+{
+}
+void ScaraManual::ctrlVRelease()
+{
+}
+void ScaraManual::ctrlWPress()
+{
+}
+void ScaraManual::ctrlXPress()
+{
+}
+void ScaraManual::ctrlZPress()
+{
+}
+
+//---------------  SHIFT  --------------------------
+
+void ScaraManual::shiftPressing()
+{
+}
+void ScaraManual::shiftRelease()
+{
+}
+void ScaraManual::shiftBPress()
+{
+}
+void ScaraManual::shiftBRelease()
+{
+}
+void ScaraManual::shiftCPress()
+{
+}
+void ScaraManual::shiftEPress()
+{
+}
+void ScaraManual::shiftFPress()
+{
+}
+void ScaraManual::shiftGPress()
+{
+}
+void ScaraManual::shiftQPress()
+{
+}
+void ScaraManual::shiftRPress()
+{
+}
+void ScaraManual::shiftRRelease()
+{
+}
+void ScaraManual::shiftVPress()
+{
+}
+void ScaraManual::shiftVRelease()
+{
+}
+void ScaraManual::shiftXPress()
+{
+}
+void ScaraManual::shiftZPress()
+{
+}
+void ScaraManual::shiftZRelease()
+{
+}
+
 }  // namespace rm_manual
