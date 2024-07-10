@@ -33,9 +33,6 @@ protected:
   void zRelease();
   void wPress() override;
   void wPressing() override;
-  void mouseRightPress() override;
-  void mouseRightRelease() override;
-  void eventDartCallback(const rm_msgs::EventData ::ConstPtr& data) override;
 
   virtual void ctrlZPress();
   virtual void ctrlZRelease()
@@ -53,7 +50,5 @@ protected:
   ros::Time last_switch_time_;
   bool supply_ = false;
   bool cover_close_ = true;
-  bool is_auto_ = true;
-  int count_{};
 };
 }  // namespace rm_manual

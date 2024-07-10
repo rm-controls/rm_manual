@@ -58,9 +58,14 @@ protected:
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
     prepare_shoot_ = true;
   }
-  virtual void mouseRightPress();
-  virtual void mouseRightRelease()
+  void mouseRightPress();
+  void mouseRightRelease()
   {
+    if (is_auto_)
+    {
+      is_auto_ = false;
+      count_ = 0;
+    }
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
@@ -104,7 +109,10 @@ protected:
   void ctrlVPress();
   void ctrlBPress();
   void ctrlRPress();
+  void judgeIsAuto();
+  void sentryMode();
   virtual void ctrlQPress();
+  void eventDartCallback(const rm_msgs::EventData ::ConstPtr& data) override;
 
   InputEvent self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_, b_event_, x_event_,
       r_event_, v_event_, ctrl_f_event_, ctrl_v_event_, ctrl_b_event_, ctrl_q_event_, ctrl_r_event_, shift_event_,
@@ -123,5 +131,7 @@ protected:
   bool prepare_shoot_ = false, turn_flag_ = false, is_balance_ = false, use_scope_ = false,
        adjust_image_transmission_ = false;
   double yaw_current_{};
+  bool is_auto_ = true;
+  int count_{}, target_hit_by_dart{}, time_hit_by_dart{}, last_time_hit_by_dart{};
 };
 }  // namespace rm_manual

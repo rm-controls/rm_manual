@@ -351,19 +351,25 @@ void ChassisGimbalShooterManual::mouseLeftPress()
 
 void ChassisGimbalShooterManual::mouseRightPress()
 {
-  if (track_data_.id == 0)
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+  //  judgeIsAuto();
+  if (is_auto_ && robot_id_ != rm_msgs::GameRobotStatus::BLUE_HERO && robot_id_ != rm_msgs::GameRobotStatus::RED_HERO)
+    sentryMode();
   else
   {
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
-    gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
-  }
-  if (switch_armor_target_srv_->getArmorTarget() == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
-  {
-    if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP)
+    if (track_data_.id == 0)
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+    else
     {
-      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-      shooter_cmd_sender_->checkError(ros::Time::now());
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+      gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
+    }
+    if (switch_armor_target_srv_->getArmorTarget() == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
+    {
+      if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP)
+      {
+        shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+        shooter_cmd_sender_->checkError(ros::Time::now());
+      }
     }
   }
 }
@@ -617,5 +623,65 @@ void ChassisGimbalShooterManual::ctrlQPress()
 {
   shooter_calibration_->reset();
   gimbal_calibration_->reset();
+}
+
+void ChassisGimbalShooterManual::eventDartCallback(const rm_msgs::EventData::ConstPtr& data)
+{
+  ChassisGimbalManual::eventDartCallback(data);
+  time_hit_by_dart = data->be_hit_time;
+  target_hit_by_dart = data->be_hit_target;
+}
+
+void ChassisGimbalShooterManual::judgeIsAuto()
+{
+  ros::Time hit_time;
+  if (time_hit_by_dart != last_time_hit_by_dart)
+  {
+    last_time_hit_by_dart = time_hit_by_dart;
+    hit_time = ros::Time::now();
+    is_auto_ = true;
+  }
+  //  std::cout << " out hit_time is " << hit_time.toSec() << std::endl;
+  //  std::cout << " out ROS TIME is " << ros::Time::now().toSec() << std::endl;
+  //  while (is_auto_)
+  //  {
+  double is = (ros::Time::now() - hit_time).toSec();
+  std::cout << "cha is " << is << std::endl;
+  //  }
+  if ((target_hit_by_dart == 1 && (ros::Time::now() - hit_time).toSec() >= 5) ||
+      (target_hit_by_dart == 2 && (ros::Time::now() - hit_time).toSec() >= 10) ||
+      (target_hit_by_dart == 3 && (ros::Time::now() - hit_time).toSec() >= 15))
+    is_auto_ = false;
+}
+
+void ChassisGimbalShooterManual::sentryMode()
+{
+  if (!is_gyro_)
+  {
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+    is_gyro_ = true;
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    if (x_scale_ != 0.0 || y_scale_ != 0.0)
+      vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
+    else
+      vel_cmd_sender_->setAngularZVel(1.0);
+  }
+  if (track_data_.id == 0)
+  {
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
+    gimbal_cmd_sender_->setYawTraj(1, 800, count_);
+    gimbal_cmd_sender_->setPitchTraj(0.15, 1000, count_, 0.2);
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+    count_++;
+  }
+  else
+  {
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+    gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
+    if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::STOP)
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+  }
 }
 }  // namespace rm_manual

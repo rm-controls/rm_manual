@@ -132,48 +132,6 @@ void ChassisGimbalShooterCoverManual::rightSwitchUpRise()
   supply_ = false;
 }
 
-void ChassisGimbalShooterCoverManual::mouseRightPress()
-{
-  ChassisGimbalShooterManual::mouseRightPress();
-  // 这里还欠一个判断is_auto的
-  if (is_auto_)
-  {
-    if (!is_gyro_)
-    {
-      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-      is_gyro_ = true;
-      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-      if (x_scale_ != 0.0 || y_scale_ != 0.0)
-        vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
-      else
-        vel_cmd_sender_->setAngularZVel(1.0);
-    }
-    if (track_data_.id == 0)
-    {
-      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
-      gimbal_cmd_sender_->setYawTraj(1, 800, count_);
-      gimbal_cmd_sender_->setPitchTraj(0.15, 1000, count_, 0.15);
-      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
-      count_++;
-    }
-    else
-    {
-      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
-      gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
-      if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::STOP)
-        shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
-      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-    }
-  }
-}
-
-void ChassisGimbalShooterCoverManual::mouseRightRelease()
-{
-  ChassisGimbalShooterManual::mouseRightRelease();
-  is_auto_ = false;
-  count_ = 0;
-}
-
 void ChassisGimbalShooterCoverManual::rPress()
 {
   if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
@@ -250,11 +208,6 @@ void ChassisGimbalShooterCoverManual::ctrlZPress()
   {
     changeSpeedMode(NORMAL);
   }
-}
-
-void ChassisGimbalShooterCoverManual::eventDartCallback(const rm_msgs::EventData::ConstPtr& data)
-{
-  ChassisGimbalManual::eventDartCallback(data);
 }
 
 }  // namespace rm_manual
