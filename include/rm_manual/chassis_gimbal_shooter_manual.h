@@ -51,21 +51,7 @@ protected:
   void shootBeforehandCmdCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data) override;
   void suggestFireCallback(const std_msgs::Bool::ConstPtr& data) override;
   void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override;
-  void modeFSM(int mode);
-  typedef enum
-  {
-    RAW = 0,
-    FOLLOW = 1,
-    RATE = 2,
-    TRACK = 3,
-    DIRECT = 4,
-    STOP = 5,
-    READY = 6,
-    PUSH = 7,
-    CHARGE = 8,
-    BURST = 9,
-    NORMAL = 10
-  } Mode;
+  void chassisMode(int mode);
   void leftSwitchUpOn(ros::Duration duration);
   void mouseLeftPress();
   void mouseLeftRelease()
