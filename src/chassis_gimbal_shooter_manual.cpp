@@ -640,12 +640,17 @@ void ChassisGimbalShooterManual::judgeIsAuto()
   {
     last_time_hit_by_dart_ = time_hit_by_dart_;
     hit_time_ = ros::Time::now();
-    is_auto_ = true;
   }
-  if ((target_hit_by_dart_ == 1 && (ros::Time::now() - hit_time_).toSec() >= 5) ||
-      (target_hit_by_dart_ == 2 && (ros::Time::now() - hit_time_).toSec() >= 10) ||
-      (target_hit_by_dart_ == 3 && (ros::Time::now() - hit_time_).toSec() >= 15))
+  if (((target_hit_by_dart_ == 1 && (ros::Time::now() - hit_time_).toSec() <= 5) ||
+       (target_hit_by_dart_ == 2 && (ros::Time::now() - hit_time_).toSec() <= 10) ||
+       (target_hit_by_dart_ == 3 && (ros::Time::now() - hit_time_).toSec() <= 15)) &&
+      mouse_right_event_.getState())
+    is_auto_ = true;
+  else
+  {
     is_auto_ = false;
+    count_ = 0;
+  }
   if (target_hit_by_dart_ == 0)
     is_auto_ = false;
 }
