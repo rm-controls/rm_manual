@@ -658,7 +658,6 @@ void ChassisGimbalShooterManual::sentryMode()
 {
   if (!is_gyro_)
   {
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
     is_gyro_ = true;
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
