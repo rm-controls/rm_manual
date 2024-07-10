@@ -132,6 +132,6 @@ protected:
        adjust_image_transmission_ = false;
   double yaw_current_{};
   ros::Time hit_time_;
-  int count_{}, target_hit_by_dart{}, time_hit_by_dart{}, last_time_hit_by_dart{};
+  int count_{}, target_hit_by_dart_{}, time_hit_by_dart_{}, last_time_hit_by_dart_{};
 };
 }  // namespace rm_manual

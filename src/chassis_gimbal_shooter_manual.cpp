@@ -629,24 +629,24 @@ void ChassisGimbalShooterManual::ctrlQPress()
 void ChassisGimbalShooterManual::eventDartCallback(const rm_msgs::EventData::ConstPtr& data)
 {
   ChassisGimbalManual::eventDartCallback(data);
-  time_hit_by_dart = data->be_hit_time;
-  target_hit_by_dart = data->be_hit_target;
+  time_hit_by_dart_ = data->be_hit_time;
+  target_hit_by_dart_ = data->be_hit_target;
   judgeIsAuto();
 }
 
 void ChassisGimbalShooterManual::judgeIsAuto()
 {
-  if (time_hit_by_dart != last_time_hit_by_dart)
+  if (time_hit_by_dart_ != last_time_hit_by_dart_)
   {
-    last_time_hit_by_dart = time_hit_by_dart;
+    last_time_hit_by_dart_ = time_hit_by_dart_;
     hit_time_ = ros::Time::now();
     is_auto_ = true;
   }
-  if ((target_hit_by_dart == 1 && (ros::Time::now() - hit_time_).toSec() >= 5) ||
-      (target_hit_by_dart == 2 && (ros::Time::now() - hit_time_).toSec() >= 10) ||
-      (target_hit_by_dart == 3 && (ros::Time::now() - hit_time_).toSec() >= 15))
+  if ((target_hit_by_dart_ == 1 && (ros::Time::now() - hit_time_).toSec() >= 5) ||
+      (target_hit_by_dart_ == 2 && (ros::Time::now() - hit_time_).toSec() >= 10) ||
+      (target_hit_by_dart_ == 3 && (ros::Time::now() - hit_time_).toSec() >= 15))
     is_auto_ = false;
-  if (target_hit_by_dart == 0)
+  if (target_hit_by_dart_ == 0)
     is_auto_ = false;
 }
 
