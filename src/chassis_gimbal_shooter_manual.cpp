@@ -190,6 +190,7 @@ void ChassisGimbalShooterManual::remoteControlTurnOff()
   gimbal_calibration_->stop();
   turn_flag_ = false;
   use_scope_ = false;
+  is_auto_ = false;
   adjust_image_transmission_ = false;
 }
 
@@ -208,6 +209,7 @@ void ChassisGimbalShooterManual::robotDie()
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   turn_flag_ = false;
   use_scope_ = false;
+  is_auto_ = false;
   adjust_image_transmission_ = false;
 }
 
