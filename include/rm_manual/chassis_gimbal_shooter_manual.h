@@ -131,7 +131,8 @@ protected:
   bool prepare_shoot_ = false, turn_flag_ = false, is_balance_ = false, use_scope_ = false,
        adjust_image_transmission_ = false;
   double yaw_current_{};
-  bool is_auto_ = true;
+  bool is_auto_ = false;
+  ros::Time hit_time_;
   int count_{}, target_hit_by_dart{}, time_hit_by_dart{}, last_time_hit_by_dart{};
 };
 }  // namespace rm_manual

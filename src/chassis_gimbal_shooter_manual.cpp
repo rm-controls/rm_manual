@@ -351,7 +351,6 @@ void ChassisGimbalShooterManual::mouseLeftPress()
 
 void ChassisGimbalShooterManual::mouseRightPress()
 {
-  //  judgeIsAuto();
   if (is_auto_ && robot_id_ != rm_msgs::GameRobotStatus::BLUE_HERO && robot_id_ != rm_msgs::GameRobotStatus::RED_HERO)
     sentryMode();
   else
@@ -630,27 +629,22 @@ void ChassisGimbalShooterManual::eventDartCallback(const rm_msgs::EventData::Con
   ChassisGimbalManual::eventDartCallback(data);
   time_hit_by_dart = data->be_hit_time;
   target_hit_by_dart = data->be_hit_target;
+  judgeIsAuto();
 }
 
 void ChassisGimbalShooterManual::judgeIsAuto()
 {
-  ros::Time hit_time;
   if (time_hit_by_dart != last_time_hit_by_dart)
   {
     last_time_hit_by_dart = time_hit_by_dart;
-    hit_time = ros::Time::now();
+    hit_time_ = ros::Time::now();
     is_auto_ = true;
   }
-  //  std::cout << " out hit_time is " << hit_time.toSec() << std::endl;
-  //  std::cout << " out ROS TIME is " << ros::Time::now().toSec() << std::endl;
-  //  while (is_auto_)
-  //  {
-  double is = (ros::Time::now() - hit_time).toSec();
-  std::cout << "cha is " << is << std::endl;
-  //  }
-  if ((target_hit_by_dart == 1 && (ros::Time::now() - hit_time).toSec() >= 5) ||
-      (target_hit_by_dart == 2 && (ros::Time::now() - hit_time).toSec() >= 10) ||
-      (target_hit_by_dart == 3 && (ros::Time::now() - hit_time).toSec() >= 15))
+  if ((target_hit_by_dart == 1 && (ros::Time::now() - hit_time_).toSec() >= 5) ||
+      (target_hit_by_dart == 2 && (ros::Time::now() - hit_time_).toSec() >= 10) ||
+      (target_hit_by_dart == 3 && (ros::Time::now() - hit_time_).toSec() >= 15))
+    is_auto_ = false;
+  if (target_hit_by_dart == 0)
     is_auto_ = false;
 }
 
@@ -669,7 +663,7 @@ void ChassisGimbalShooterManual::sentryMode()
   if (track_data_.id == 0)
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
-    gimbal_cmd_sender_->setYawTraj(1, 800, count_);
+    gimbal_cmd_sender_->setYawTraj(0, 800, count_);
     gimbal_cmd_sender_->setPitchTraj(0.15, 1000, count_, 0.2);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
     count_++;
