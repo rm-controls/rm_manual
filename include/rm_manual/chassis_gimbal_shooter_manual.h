@@ -61,11 +61,6 @@ protected:
   void mouseRightPress();
   void mouseRightRelease()
   {
-    if (is_auto_)
-    {
-      is_auto_ = false;
-      count_ = 0;
-    }
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
     if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
