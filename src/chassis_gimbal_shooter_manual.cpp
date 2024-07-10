@@ -665,7 +665,7 @@ void ChassisGimbalShooterManual::sentryMode()
   if (track_data_.id == 0)
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
-    gimbal_cmd_sender_->setYawTraj(0, 800, count_);
+    gimbal_cmd_sender_->setYawTraj(1, 800, count_);
     gimbal_cmd_sender_->setPitchTraj(0.15, 1000, count_, 0.2);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
     count_++;
