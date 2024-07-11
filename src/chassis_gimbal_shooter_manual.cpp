@@ -355,6 +355,8 @@ void ChassisGimbalShooterManual::mouseRightPress()
 {
   if (is_auto_ && robot_id_ != rm_msgs::GameRobotStatus::BLUE_HERO && robot_id_ != rm_msgs::GameRobotStatus::RED_HERO)
     sentryMode();
+  else if (!mouse_left_event_.getState() && shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
   else
   {
     if (track_data_.id == 0)
