@@ -51,7 +51,7 @@ protected:
   void shootBeforehandCmdCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data) override;
   void suggestFireCallback(const std_msgs::Bool::ConstPtr& data) override;
   void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override;
-  void chassisMode(int mode);
+  void setChassisMode(int mode);
   void leftSwitchUpOn(ros::Duration duration);
   void mouseLeftPress();
   void mouseLeftRelease()
