@@ -344,8 +344,13 @@ void ChassisGimbalShooterManual::mouseLeftPress()
   }
   if (prepare_shoot_)
   {
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-    shooter_cmd_sender_->checkError(ros::Time::now());
+    if (!mouse_right_event_.getState() || (mouse_right_event_.getState() && track_data_.id != 0))
+    {
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+      shooter_cmd_sender_->checkError(ros::Time::now());
+    }
+    else
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
   }
 }
 
