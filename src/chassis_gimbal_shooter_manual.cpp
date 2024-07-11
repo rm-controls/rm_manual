@@ -670,8 +670,12 @@ void ChassisGimbalShooterManual::sentryMode()
   if (track_data_.id == 0)
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
-    gimbal_cmd_sender_->setYawTraj(1, 800, count_);
-    gimbal_cmd_sender_->setPitchTraj(0.15, 1000, count_, 0.2);
+    double yaw_des, pitch_des;
+    yaw_des = M_PI * count_ / 900;
+    pitch_des = 0.15 * sin(2 * M_PI * count_ / 900) + 0.2;
+    count_ = (count_ + 1) % 900;
+    gimbal_cmd_sender_->yawTraj(yaw_des);
+    gimbal_cmd_sender_->pitchTraj(pitch_des);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
     count_++;
   }
