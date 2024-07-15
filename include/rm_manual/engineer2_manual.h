@@ -20,7 +20,7 @@
 
 namespace rm_manual
 {
-class ScaraManual : public ChassisGimbalManual
+class Engineer2Manual : public ChassisGimbalManual
 {
 public:
   enum ControlMode
@@ -49,7 +49,7 @@ public:
     EXCHANGE
   };
 
-  ScaraManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
+  Engineer2Manual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
 private:

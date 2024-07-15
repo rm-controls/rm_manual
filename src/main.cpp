@@ -5,7 +5,7 @@
 #include "rm_manual/manual_base.h"
 #include "rm_manual/chassis_gimbal_shooter_cover_manual.h"
 #include "rm_manual/engineer_manual.h"
-#include "rm_manual/scara_manual.h"
+#include "rm_manual/engineer2_manual.h"
 #include "rm_manual/dart_manual.h"
 #include "rm_manual/balance_manual.h"
 
@@ -24,7 +24,7 @@ int main(int argc, char** argv)
   else if (robot == "engineer")
     manual_control = new rm_manual::EngineerManual(nh, nh_referee);
   else if (robot == "engineer2")
-    manual_control = new rm_manual::ScaraManual(nh, nh_referee);
+    manual_control = new rm_manual::Engineer2Manual(nh, nh_referee);
   else if (robot == "dart")
     manual_control = new rm_manual::DartManual(nh, nh_referee);
   else if (robot == "balance")

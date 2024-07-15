@@ -1,11 +1,11 @@
 //
 // Created by cch on 24-5-31.
 //
-#include "rm_manual/scara_manual.h"
+#include "rm_manual/engineer2_manual.h"
 
 namespace rm_manual
 {
-ScaraManual::ScaraManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
+Engineer2Manual::Engineer2Manual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   : ChassisGimbalManual(nh, nh_referee)
   , operating_mode_(MANUAL)
   , action_client_("/engineer_middleware/move_steps", true)
@@ -14,9 +14,9 @@ ScaraManual::ScaraManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
-  stone_num_sub_ = nh.subscribe<std_msgs::String>("/stone_num", 10, &ScaraManual::stoneNumCallback, this);
+  stone_num_sub_ = nh.subscribe<std_msgs::String>("/stone_num", 10, &Engineer2Manual::stoneNumCallback, this);
   gripper_state_sub_ = nh.subscribe<rm_msgs::GpioData>("/controllers/gpio_controller/gpio_states", 10,
-                                                       &ScaraManual::gpioStateCallback, this);
+                                                       &Engineer2Manual::gpioStateCallback, this);
 
   // Servo
   ros::NodeHandle nh_servo(nh, "servo");
@@ -36,67 +36,67 @@ ScaraManual::ScaraManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   XmlRpc::XmlRpcValue rpc_value;
   nh.getParam("calibration_gather", rpc_value);
   calibration_gather_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  left_switch_up_event_.setFalling(boost::bind(&ScaraManual::leftSwitchUpFall, this));
-  left_switch_up_event_.setRising(boost::bind(&ScaraManual::leftSwitchUpRise, this));
-  left_switch_down_event_.setFalling(boost::bind(&ScaraManual::leftSwitchDownFall, this));
-  left_switch_down_event_.setRising(boost::bind(&ScaraManual::leftSwitchDownRise, this));
-  ctrl_a_event_.setRising(boost::bind(&ScaraManual::ctrlAPress, this));
-  ctrl_b_event_.setRising(boost::bind(&ScaraManual::ctrlBPress, this));
-  ctrl_c_event_.setRising(boost::bind(&ScaraManual::ctrlCPress, this));
-  ctrl_b_event_.setActiveHigh(boost::bind(&ScaraManual::ctrlBPressing, this));
-  ctrl_b_event_.setFalling(boost::bind(&ScaraManual::ctrlBRelease, this));
-  ctrl_d_event_.setRising(boost::bind(&ScaraManual::ctrlDPress, this));
-  ctrl_e_event_.setRising(boost::bind(&ScaraManual::ctrlEPress, this));
-  ctrl_f_event_.setRising(boost::bind(&ScaraManual::ctrlFPress, this));
-  ctrl_g_event_.setRising(boost::bind(&ScaraManual::ctrlGPress, this));
-  ctrl_q_event_.setRising(boost::bind(&ScaraManual::ctrlQPress, this));
-  ctrl_r_event_.setRising(boost::bind(&ScaraManual::ctrlRPress, this));
-  ctrl_s_event_.setRising(boost::bind(&ScaraManual::ctrlSPress, this));
-  ctrl_v_event_.setRising(boost::bind(&ScaraManual::ctrlVPress, this));
-  ctrl_v_event_.setFalling(boost::bind(&ScaraManual::ctrlVRelease, this));
-  ctrl_w_event_.setRising(boost::bind(&ScaraManual::ctrlWPress, this));
-  ctrl_x_event_.setRising(boost::bind(&ScaraManual::ctrlXPress, this));
-  ctrl_z_event_.setRising(boost::bind(&ScaraManual::ctrlZPress, this));
-  b_event_.setActiveHigh(boost::bind(&ScaraManual::bPressing, this));
-  b_event_.setFalling(boost::bind(&ScaraManual::bRelease, this));
-  c_event_.setActiveHigh(boost::bind(&ScaraManual::cPressing, this));
-  c_event_.setFalling(boost::bind(&ScaraManual::cRelease, this));
-  e_event_.setActiveHigh(boost::bind(&ScaraManual::ePressing, this));
-  e_event_.setFalling(boost::bind(&ScaraManual::eRelease, this));
-  f_event_.setRising(boost::bind(&ScaraManual::fPress, this));
-  f_event_.setFalling(boost::bind(&ScaraManual::fRelease, this));
-  g_event_.setRising(boost::bind(&ScaraManual::gPress, this));
-  g_event_.setFalling(boost::bind(&ScaraManual::gRelease, this));
-  q_event_.setActiveHigh(boost::bind(&ScaraManual::qPressing, this));
-  q_event_.setFalling(boost::bind(&ScaraManual::qRelease, this));
-  r_event_.setRising(boost::bind(&ScaraManual::rPress, this));
-  v_event_.setActiveHigh(boost::bind(&ScaraManual::vPressing, this));
-  v_event_.setFalling(boost::bind(&ScaraManual::vRelease, this));
-  x_event_.setRising(boost::bind(&ScaraManual::xPress, this));
-  z_event_.setActiveHigh(boost::bind(&ScaraManual::zPressing, this));
-  z_event_.setFalling(boost::bind(&ScaraManual::zRelease, this));
-  shift_event_.setActiveHigh(boost::bind(&ScaraManual::shiftPressing, this));
-  shift_event_.setFalling(boost::bind(&ScaraManual::shiftRelease, this));
-  shift_b_event_.setRising(boost::bind(&ScaraManual::shiftBPress, this));
-  shift_b_event_.setFalling(boost::bind(&ScaraManual::shiftBRelease, this));
-  shift_c_event_.setRising(boost::bind(&ScaraManual::shiftCPress, this));
-  shift_e_event_.setRising(boost::bind(&ScaraManual::shiftEPress, this));
-  shift_f_event_.setRising(boost::bind(&ScaraManual::shiftFPress, this));
-  shift_g_event_.setRising(boost::bind(&ScaraManual::shiftGPress, this));
-  shift_q_event_.setRising(boost::bind(&ScaraManual::shiftQPress, this));
-  shift_r_event_.setRising(boost::bind(&ScaraManual::shiftRPress, this));
-  shift_r_event_.setFalling(boost::bind(&ScaraManual::shiftRRelease, this));
-  shift_v_event_.setRising(boost::bind(&ScaraManual::shiftVPress, this));
-  shift_v_event_.setFalling(boost::bind(&ScaraManual::shiftVRelease, this));
-  shift_x_event_.setRising(boost::bind(&ScaraManual::shiftXPress, this));
-  shift_z_event_.setRising(boost::bind(&ScaraManual::shiftZPress, this));
-  shift_z_event_.setFalling(boost::bind(&ScaraManual::shiftZRelease, this));
+  left_switch_up_event_.setFalling(boost::bind(&Engineer2Manual::leftSwitchUpFall, this));
+  left_switch_up_event_.setRising(boost::bind(&Engineer2Manual::leftSwitchUpRise, this));
+  left_switch_down_event_.setFalling(boost::bind(&Engineer2Manual::leftSwitchDownFall, this));
+  left_switch_down_event_.setRising(boost::bind(&Engineer2Manual::leftSwitchDownRise, this));
+  ctrl_a_event_.setRising(boost::bind(&Engineer2Manual::ctrlAPress, this));
+  ctrl_b_event_.setRising(boost::bind(&Engineer2Manual::ctrlBPress, this));
+  ctrl_c_event_.setRising(boost::bind(&Engineer2Manual::ctrlCPress, this));
+  ctrl_b_event_.setActiveHigh(boost::bind(&Engineer2Manual::ctrlBPressing, this));
+  ctrl_b_event_.setFalling(boost::bind(&Engineer2Manual::ctrlBRelease, this));
+  ctrl_d_event_.setRising(boost::bind(&Engineer2Manual::ctrlDPress, this));
+  ctrl_e_event_.setRising(boost::bind(&Engineer2Manual::ctrlEPress, this));
+  ctrl_f_event_.setRising(boost::bind(&Engineer2Manual::ctrlFPress, this));
+  ctrl_g_event_.setRising(boost::bind(&Engineer2Manual::ctrlGPress, this));
+  ctrl_q_event_.setRising(boost::bind(&Engineer2Manual::ctrlQPress, this));
+  ctrl_r_event_.setRising(boost::bind(&Engineer2Manual::ctrlRPress, this));
+  ctrl_s_event_.setRising(boost::bind(&Engineer2Manual::ctrlSPress, this));
+  ctrl_v_event_.setRising(boost::bind(&Engineer2Manual::ctrlVPress, this));
+  ctrl_v_event_.setFalling(boost::bind(&Engineer2Manual::ctrlVRelease, this));
+  ctrl_w_event_.setRising(boost::bind(&Engineer2Manual::ctrlWPress, this));
+  ctrl_x_event_.setRising(boost::bind(&Engineer2Manual::ctrlXPress, this));
+  ctrl_z_event_.setRising(boost::bind(&Engineer2Manual::ctrlZPress, this));
+  b_event_.setActiveHigh(boost::bind(&Engineer2Manual::bPressing, this));
+  b_event_.setFalling(boost::bind(&Engineer2Manual::bRelease, this));
+  c_event_.setActiveHigh(boost::bind(&Engineer2Manual::cPressing, this));
+  c_event_.setFalling(boost::bind(&Engineer2Manual::cRelease, this));
+  e_event_.setActiveHigh(boost::bind(&Engineer2Manual::ePressing, this));
+  e_event_.setFalling(boost::bind(&Engineer2Manual::eRelease, this));
+  f_event_.setRising(boost::bind(&Engineer2Manual::fPress, this));
+  f_event_.setFalling(boost::bind(&Engineer2Manual::fRelease, this));
+  g_event_.setRising(boost::bind(&Engineer2Manual::gPress, this));
+  g_event_.setFalling(boost::bind(&Engineer2Manual::gRelease, this));
+  q_event_.setActiveHigh(boost::bind(&Engineer2Manual::qPressing, this));
+  q_event_.setFalling(boost::bind(&Engineer2Manual::qRelease, this));
+  r_event_.setRising(boost::bind(&Engineer2Manual::rPress, this));
+  v_event_.setActiveHigh(boost::bind(&Engineer2Manual::vPressing, this));
+  v_event_.setFalling(boost::bind(&Engineer2Manual::vRelease, this));
+  x_event_.setRising(boost::bind(&Engineer2Manual::xPress, this));
+  z_event_.setActiveHigh(boost::bind(&Engineer2Manual::zPressing, this));
+  z_event_.setFalling(boost::bind(&Engineer2Manual::zRelease, this));
+  shift_event_.setActiveHigh(boost::bind(&Engineer2Manual::shiftPressing, this));
+  shift_event_.setFalling(boost::bind(&Engineer2Manual::shiftRelease, this));
+  shift_b_event_.setRising(boost::bind(&Engineer2Manual::shiftBPress, this));
+  shift_b_event_.setFalling(boost::bind(&Engineer2Manual::shiftBRelease, this));
+  shift_c_event_.setRising(boost::bind(&Engineer2Manual::shiftCPress, this));
+  shift_e_event_.setRising(boost::bind(&Engineer2Manual::shiftEPress, this));
+  shift_f_event_.setRising(boost::bind(&Engineer2Manual::shiftFPress, this));
+  shift_g_event_.setRising(boost::bind(&Engineer2Manual::shiftGPress, this));
+  shift_q_event_.setRising(boost::bind(&Engineer2Manual::shiftQPress, this));
+  shift_r_event_.setRising(boost::bind(&Engineer2Manual::shiftRPress, this));
+  shift_r_event_.setFalling(boost::bind(&Engineer2Manual::shiftRRelease, this));
+  shift_v_event_.setRising(boost::bind(&Engineer2Manual::shiftVPress, this));
+  shift_v_event_.setFalling(boost::bind(&Engineer2Manual::shiftVRelease, this));
+  shift_x_event_.setRising(boost::bind(&Engineer2Manual::shiftXPress, this));
+  shift_z_event_.setRising(boost::bind(&Engineer2Manual::shiftZPress, this));
+  shift_z_event_.setFalling(boost::bind(&Engineer2Manual::shiftZRelease, this));
 
-  mouse_left_event_.setFalling(boost::bind(&ScaraManual::mouseLeftRelease, this));
-  mouse_right_event_.setFalling(boost::bind(&ScaraManual::mouseRightRelease, this));
+  mouse_left_event_.setFalling(boost::bind(&Engineer2Manual::mouseLeftRelease, this));
+  mouse_right_event_.setFalling(boost::bind(&Engineer2Manual::mouseRightRelease, this));
 }
 
-void ScaraManual::run()
+void Engineer2Manual::run()
 {
   ChassisGimbalManual::run();
   calibration_gather_->update(ros::Time::now());
@@ -107,7 +107,7 @@ void ScaraManual::run()
   }
 }
 
-void ScaraManual::changeSpeedMode(SpeedMode speed_mode)
+void Engineer2Manual::changeSpeedMode(SpeedMode speed_mode)
 {
   switch (speed_mode)
   {
@@ -134,7 +134,7 @@ void ScaraManual::changeSpeedMode(SpeedMode speed_mode)
   }
 }
 
-void ScaraManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
+void Engineer2Manual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::checkKeyboard(dbus_data);
   ctrl_a_event_.update(dbus_data->key_ctrl & dbus_data->key_a);
@@ -180,7 +180,7 @@ void ScaraManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
   c_event_.update(dbus_data->key_c & !dbus_data->key_ctrl & !dbus_data->key_shift);
 }
 
-void ScaraManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
+void Engineer2Manual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updateRc(dbus_data);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
@@ -192,7 +192,7 @@ void ScaraManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
 }
 
-void ScaraManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
+void Engineer2Manual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   checkKeyboard(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
@@ -201,13 +201,13 @@ void ScaraManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
     vel_cmd_sender_->setAngularZVel(-dbus_data->m_x * gimbal_scale_);
 }
 
-void ScaraManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
+void Engineer2Manual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   servo_command_sender_->setLinearVel(-dbus_data->wheel, -dbus_data->ch_l_x, -dbus_data->ch_l_y);
   servo_command_sender_->setAngularVel(-angular_z_scale_, dbus_data->ch_r_y, -dbus_data->ch_r_x);
 }
 
-void ScaraManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
+void Engineer2Manual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
   ManualBase::dbusDataCallback(data);
   chassis_cmd_sender_->updateRefereeStatus(referee_is_online_);
@@ -215,11 +215,11 @@ void ScaraManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
     updateServo(data);
 }
 
-void ScaraManual::stoneNumCallback(const std_msgs::String::ConstPtr& data)
+void Engineer2Manual::stoneNumCallback(const std_msgs::String::ConstPtr& data)
 {
 }
 
-void ScaraManual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
+void Engineer2Manual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
 {
   gpio_state_.gpio_state = data->gpio_state;
   if (gpio_state_.gpio_state[0])
@@ -234,7 +234,7 @@ void ScaraManual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
   }
 }
 
-void ScaraManual::sendCommand(const ros::Time& time)
+void Engineer2Manual::sendCommand(const ros::Time& time)
 {
   if (operating_mode_ == MANUAL)
   {
@@ -250,28 +250,28 @@ void ScaraManual::sendCommand(const ros::Time& time)
   }
 }
 
-void ScaraManual::runStepQueue(const std::string& step_queue_name)
+void Engineer2Manual::runStepQueue(const std::string& step_queue_name)
 {
   rm_msgs::EngineerGoal goal;
   goal.step_queue_name = step_queue_name;
   if (action_client_.isServerConnected())
   {
     if (operating_mode_ == MANUAL)
-      action_client_.sendGoal(goal, boost::bind(&ScaraManual::actionDoneCallback, this, _1, _2),
-                              boost::bind(&ScaraManual::actionActiveCallback, this),
-                              boost::bind(&ScaraManual::actionFeedbackCallback, this, _1));
+      action_client_.sendGoal(goal, boost::bind(&Engineer2Manual::actionDoneCallback, this, _1, _2),
+                              boost::bind(&Engineer2Manual::actionActiveCallback, this),
+                              boost::bind(&Engineer2Manual::actionFeedbackCallback, this, _1));
     operating_mode_ = MIDDLEWARE;
   }
   else
     ROS_ERROR("Can not connect to middleware");
 }
 
-void ScaraManual::actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback)
+void Engineer2Manual::actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback)
 {
 }
 
-void ScaraManual::actionDoneCallback(const actionlib::SimpleClientGoalState& state,
-                                     const rm_msgs::EngineerResultConstPtr& result)
+void Engineer2Manual::actionDoneCallback(const actionlib::SimpleClientGoalState& state,
+                                         const rm_msgs::EngineerResultConstPtr& result)
 {
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
@@ -286,7 +286,7 @@ void ScaraManual::actionDoneCallback(const actionlib::SimpleClientGoalState& sta
   }
 }
 
-void ScaraManual::enterServo()
+void Engineer2Manual::enterServo()
 {
   servo_mode_ = SERVO;
   gimbal_mode_ = DIRECT;
@@ -298,7 +298,7 @@ void ScaraManual::enterServo()
   engineer_ui_.control_mode = "SERVO";
 }
 
-void ScaraManual::initMode()
+void Engineer2Manual::initMode()
 {
   servo_mode_ = JOINT;
   gimbal_mode_ = DIRECT;
@@ -308,32 +308,32 @@ void ScaraManual::initMode()
   engineer_ui_.control_mode = "NORMAL";
 }
 
-void ScaraManual::remoteControlTurnOff()
+void Engineer2Manual::remoteControlTurnOff()
 {
   ManualBase::remoteControlTurnOff();
   action_client_.cancelAllGoals();
 }
 
-void ScaraManual::gimbalOutputOn()
+void Engineer2Manual::gimbalOutputOn()
 {
   ChassisGimbalManual::gimbalOutputOn();
 }
 
-void ScaraManual::chassisOutputOn()
+void Engineer2Manual::chassisOutputOn()
 {
   if (operating_mode_ == MIDDLEWARE)
     action_client_.cancelAllGoals();
 }
 
 //-------------------controller input-------------------
-void ScaraManual::rightSwitchUpRise()
+void Engineer2Manual::rightSwitchUpRise()
 {
   ChassisGimbalManual::rightSwitchUpRise();
   gimbal_mode_ = DIRECT;
   servo_mode_ = JOINT;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
-void ScaraManual::rightSwitchMidRise()
+void Engineer2Manual::rightSwitchMidRise()
 {
   ChassisGimbalManual::rightSwitchMidRise();
   servo_mode_ = JOINT;
@@ -341,7 +341,7 @@ void ScaraManual::rightSwitchMidRise()
   gimbal_cmd_sender_->setZero();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
-void ScaraManual::rightSwitchDownRise()
+void Engineer2Manual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
@@ -352,7 +352,7 @@ void ScaraManual::rightSwitchDownRise()
   ROS_INFO_STREAM("servo_mode");
 }
 
-void ScaraManual::leftSwitchUpRise()
+void Engineer2Manual::leftSwitchUpRise()
 {
   prefix_ = "";
   root_ = "CALIBRATION";
@@ -362,13 +362,13 @@ void ScaraManual::leftSwitchUpRise()
   engineer_ui_.control_mode = "NORMAL";
   ROS_INFO_STREAM("START CALIBRATE");
 }
-void ScaraManual::leftSwitchUpFall()
+void Engineer2Manual::leftSwitchUpFall()
 {
   runStepQueue("HOME");
   runStepQueue("CLOSE_GRIPPER");
 }
 
-void ScaraManual::leftSwitchDownRise()
+void Engineer2Manual::leftSwitchDownRise()
 {
   if (gripper_state_ == "close")
   {
@@ -381,13 +381,13 @@ void ScaraManual::leftSwitchDownRise()
     engineer_ui_.gripper_state = "CLOSED";
   }
 }
-void ScaraManual::leftSwitchDownFall()
+void Engineer2Manual::leftSwitchDownFall()
 {
 }
 
 //--------------------- keyboard input ------------------------
 // mouse input
-void ScaraManual::mouseLeftRelease()
+void Engineer2Manual::mouseLeftRelease()
 {
   if (change_flag_)
   {
@@ -398,169 +398,169 @@ void ScaraManual::mouseLeftRelease()
   }
 }
 
-void ScaraManual::mouseRightRelease()
+void Engineer2Manual::mouseRightRelease()
 {
   runStepQueue(prefix_ + root_);
   ROS_INFO("Finished %s", (prefix_ + root_).c_str());
 }
 
-void ScaraManual::bPressing()
+void Engineer2Manual::bPressing()
 {
 }
 
-void ScaraManual::bRelease()
+void Engineer2Manual::bRelease()
 {
 }
-void ScaraManual::cPressing()
+void Engineer2Manual::cPressing()
 {
 }
-void ScaraManual::cRelease()
+void Engineer2Manual::cRelease()
 {
 }
-void ScaraManual::ePressing()
+void Engineer2Manual::ePressing()
 {
 }
-void ScaraManual::eRelease()
+void Engineer2Manual::eRelease()
 {
 }
-void ScaraManual::fPress()
+void Engineer2Manual::fPress()
 {
 }
-void ScaraManual::fRelease()
+void Engineer2Manual::fRelease()
 {
 }
-void ScaraManual::gPress()
+void Engineer2Manual::gPress()
 {
 }
-void ScaraManual::gRelease()
+void Engineer2Manual::gRelease()
 {
 }
-void ScaraManual::qPressing()
+void Engineer2Manual::qPressing()
 {
 }
-void ScaraManual::qRelease()
+void Engineer2Manual::qRelease()
 {
 }
-void ScaraManual::rPress()
+void Engineer2Manual::rPress()
 {
 }
-void ScaraManual::vPressing()
+void Engineer2Manual::vPressing()
 {
 }
-void ScaraManual::vRelease()
+void Engineer2Manual::vRelease()
 {
 }
-void ScaraManual::xPress()
+void Engineer2Manual::xPress()
 {
 }
-void ScaraManual::zPressing()
+void Engineer2Manual::zPressing()
 {
 }
-void ScaraManual::zRelease()
+void Engineer2Manual::zRelease()
 {
 }
 
 //---------------------  CTRL  ---------------------
-void ScaraManual::ctrlAPress()
+void Engineer2Manual::ctrlAPress()
 {
 }
-void ScaraManual::ctrlBPress()
+void Engineer2Manual::ctrlBPress()
 {
 }
-void ScaraManual::ctrlBPressing()
+void Engineer2Manual::ctrlBPressing()
 {
 }
-void ScaraManual::ctrlBRelease()
+void Engineer2Manual::ctrlBRelease()
 {
 }
-void ScaraManual::ctrlCPress()
+void Engineer2Manual::ctrlCPress()
 {
 }
-void ScaraManual::ctrlDPress()
+void Engineer2Manual::ctrlDPress()
 {
 }
-void ScaraManual::ctrlEPress()
+void Engineer2Manual::ctrlEPress()
 {
 }
-void ScaraManual::ctrlFPress()
+void Engineer2Manual::ctrlFPress()
 {
 }
-void ScaraManual::ctrlGPress()
+void Engineer2Manual::ctrlGPress()
 {
 }
-void ScaraManual::ctrlQPress()
+void Engineer2Manual::ctrlQPress()
 {
 }
-void ScaraManual::ctrlRPress()
+void Engineer2Manual::ctrlRPress()
 {
 }
-void ScaraManual::ctrlSPress()
+void Engineer2Manual::ctrlSPress()
 {
 }
-void ScaraManual::ctrlVPress()
+void Engineer2Manual::ctrlVPress()
 {
 }
-void ScaraManual::ctrlVRelease()
+void Engineer2Manual::ctrlVRelease()
 {
 }
-void ScaraManual::ctrlWPress()
+void Engineer2Manual::ctrlWPress()
 {
 }
-void ScaraManual::ctrlXPress()
+void Engineer2Manual::ctrlXPress()
 {
 }
-void ScaraManual::ctrlZPress()
+void Engineer2Manual::ctrlZPress()
 {
 }
 
 //---------------  SHIFT  --------------------------
 
-void ScaraManual::shiftPressing()
+void Engineer2Manual::shiftPressing()
 {
 }
-void ScaraManual::shiftRelease()
+void Engineer2Manual::shiftRelease()
 {
 }
-void ScaraManual::shiftBPress()
+void Engineer2Manual::shiftBPress()
 {
 }
-void ScaraManual::shiftBRelease()
+void Engineer2Manual::shiftBRelease()
 {
 }
-void ScaraManual::shiftCPress()
+void Engineer2Manual::shiftCPress()
 {
 }
-void ScaraManual::shiftEPress()
+void Engineer2Manual::shiftEPress()
 {
 }
-void ScaraManual::shiftFPress()
+void Engineer2Manual::shiftFPress()
 {
 }
-void ScaraManual::shiftGPress()
+void Engineer2Manual::shiftGPress()
 {
 }
-void ScaraManual::shiftQPress()
+void Engineer2Manual::shiftQPress()
 {
 }
-void ScaraManual::shiftRPress()
+void Engineer2Manual::shiftRPress()
 {
 }
-void ScaraManual::shiftRRelease()
+void Engineer2Manual::shiftRRelease()
 {
 }
-void ScaraManual::shiftVPress()
+void Engineer2Manual::shiftVPress()
 {
 }
-void ScaraManual::shiftVRelease()
+void Engineer2Manual::shiftVRelease()
 {
 }
-void ScaraManual::shiftXPress()
+void Engineer2Manual::shiftXPress()
 {
 }
-void ScaraManual::shiftZPress()
+void Engineer2Manual::shiftZPress()
 {
 }
-void ScaraManual::shiftZRelease()
+void Engineer2Manual::shiftZRelease()
 {
 }
 
