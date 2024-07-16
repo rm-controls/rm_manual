@@ -15,7 +15,7 @@
 #include <rm_msgs/EngineerAction.h>
 #include <rm_msgs/MultiDofCmd.h>
 #include <rm_msgs/GpioData.h>
-#include <rm_msgs/EngineerUi.h>
+#include <rm_msgs/Engineer2Ui.h>
 #include <stack>
 
 namespace rm_manual
@@ -142,14 +142,12 @@ private:
 
   // Servo
 
-  bool change_flag_{}, ore_rotator_pos_{ false }, joint2_calibrated_{ false }, joint2_homed_{ false },
-      b_pressed_{ false }, shift_z_pressed_{ false }, ore_lifter_on_{ false }, v_pressed_{ false };
+  bool change_flag_{};
   double angular_z_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
       exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
 
-  std::string prefix_{}, root_{}, reversal_state_{}, drag_state_{ "off" }, gripper_state_{ "off" }, last_ore_{};
-  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, gimbal_height_{ 0 }, gimbal_direction_{ 0 },
-      ore_lifter_pos_{ 0 };
+  std::string prefix_{}, root_{}, main_gripper_state_{ "off" }, exchange_direction_{ "left" };
+  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, gimbal_direction_{ 0 };
 
   std::stack<std::string> stone_num_{};
 
@@ -158,12 +156,11 @@ private:
   ros::Publisher engineer_ui_pub_;
 
   rm_msgs::GpioData gpio_state_;
-  rm_msgs::EngineerUi engineer_ui_, old_ui_;
+  rm_msgs::Engineer2Ui engineer_ui_, old_ui_;
 
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
-  rm_common::CalibrationQueue *calibration_gather_{}, *pitch_calibration_, *ore_bin_lifter_calibration_{},
-      *joint2_calibration_{};
+  rm_common::CalibrationQueue* calibration_gather_{};
 
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 

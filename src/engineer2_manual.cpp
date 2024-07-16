@@ -10,7 +10,7 @@ Engineer2Manual::Engineer2Manual(ros::NodeHandle& nh, ros::NodeHandle& nh_refere
   , operating_mode_(MANUAL)
   , action_client_("/engineer_middleware/move_steps", true)
 {
-  engineer_ui_pub_ = nh.advertise<rm_msgs::EngineerUi>("/engineer_ui", 10);
+  engineer_ui_pub_ = nh.advertise<rm_msgs::Engineer2Ui>("/engineer_ui", 10);
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
@@ -222,15 +222,20 @@ void Engineer2Manual::stoneNumCallback(const std_msgs::String::ConstPtr& data)
 void Engineer2Manual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
 {
   gpio_state_.gpio_state = data->gpio_state;
-  if (gpio_state_.gpio_state[0])
+  for (int i = 0; i < gpio_state_.gpio_state.size(); i++)
   {
-    gripper_state_ = "open";
-    engineer_ui_.gripper_state = "OPEN";
-  }
-  else
-  {
-    gripper_state_ = "close";
-    engineer_ui_.gripper_state = "CLOSED";
+    if (gpio_state_.gpio_state[i] == true)
+    {
+      if (i == 0)
+        main_gripper_state_ = "open";
+      engineer_ui_.gripper_state[i] = true;
+    }
+    else
+    {
+      if (i == 0)
+        main_gripper_state_ = "close";
+      engineer_ui_.gripper_state[i] = false;
+    }
   }
 }
 
@@ -294,7 +299,7 @@ void Engineer2Manual::enterServo()
   servo_reset_caller_->callService();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   action_client_.cancelAllGoals();
-  chassis_cmd_sender_->getMsg()->command_source_frame = "link4";
+  chassis_cmd_sender_->getMsg()->command_source_frame = "link3";
   engineer_ui_.control_mode = "SERVO";
 }
 
@@ -357,8 +362,14 @@ void Engineer2Manual::leftSwitchUpRise()
   prefix_ = "";
   root_ = "CALIBRATION";
   calibration_gather_->reset();
-  engineer_ui_.stone_num = 0;
-  engineer_ui_.gripper_state = "CLOSED";
+  for (auto& stone : engineer_ui_.stone_num)
+  {
+    stone = false;
+  }
+  for (auto& gripper_state : engineer_ui_.gripper_state)
+  {
+    gripper_state = false;
+  }
   engineer_ui_.control_mode = "NORMAL";
   ROS_INFO_STREAM("START CALIBRATE");
 }
@@ -370,15 +381,15 @@ void Engineer2Manual::leftSwitchUpFall()
 
 void Engineer2Manual::leftSwitchDownRise()
 {
-  if (gripper_state_ == "close")
+  if (main_gripper_state_ == "close")
   {
-    runStepQueue("OPEN_GRIPPER");
-    engineer_ui_.gripper_state = "OPEN";
+    runStepQueue("OPEN_MAIN_GRIPPER");
+    engineer_ui_.gripper_state[0] = true;
   }
   else
   {
-    runStepQueue("CLOSE_GRIPPER");
-    engineer_ui_.gripper_state = "CLOSED";
+    runStepQueue("CLOSE_MAIN_GRIPPER");
+    engineer_ui_.gripper_state[0] = false;
   }
 }
 void Engineer2Manual::leftSwitchDownFall()
@@ -413,15 +424,21 @@ void Engineer2Manual::bRelease()
 }
 void Engineer2Manual::cPressing()
 {
+  angular_z_scale_ = 0.6;
 }
 void Engineer2Manual::cRelease()
 {
+  angular_z_scale_ = 0.;
 }
 void Engineer2Manual::ePressing()
 {
+  if (servo_mode_ == SERVO)
+    vel_cmd_sender_->setAngularZVel(-gyro_scale_);
 }
 void Engineer2Manual::eRelease()
 {
+  if (servo_mode_ == SERVO)
+    vel_cmd_sender_->setAngularZVel(0.);
 }
 void Engineer2Manual::fPress()
 {
@@ -437,9 +454,13 @@ void Engineer2Manual::gRelease()
 }
 void Engineer2Manual::qPressing()
 {
+  if (servo_mode_ == SERVO)
+    vel_cmd_sender_->setAngularZVel(gyro_scale_);
 }
 void Engineer2Manual::qRelease()
 {
+  if (servo_mode_ == SERVO)
+    vel_cmd_sender_->setAngularZVel(0.);
 }
 void Engineer2Manual::rPress()
 {
@@ -452,20 +473,45 @@ void Engineer2Manual::vRelease()
 }
 void Engineer2Manual::xPress()
 {
+  switch (gimbal_direction_)
+  {
+    case 0:
+      runStepQueue("GIMBAL_RIGHT");
+      gimbal_direction_ = 1;
+      break;
+    case 1:
+      runStepQueue("GIMBAL_LEFT");
+      gimbal_direction_ = 2;
+      break;
+    case 2:
+      runStepQueue("GIMBAL_FRONT");
+      gimbal_direction_ = 0;
+      break;
+  }
 }
 void Engineer2Manual::zPressing()
 {
+  angular_z_scale_ = -0.6;
 }
 void Engineer2Manual::zRelease()
 {
+  angular_z_scale_ = 0.;
 }
 
 //---------------------  CTRL  ---------------------
 void Engineer2Manual::ctrlAPress()
 {
+  prefix_ = "";
+  root_ = "GET_SMALL_ISLAND";
+  runStepQueue(prefix_ + root_);
+  changeSpeedMode(LOW);
 }
 void Engineer2Manual::ctrlBPress()
 {
+  prefix_ = "";
+  root_ = "HOME";
+  runStepQueue("HOME");
+  changeSpeedMode(NORMAL);
 }
 void Engineer2Manual::ctrlBPressing()
 {
@@ -475,6 +521,8 @@ void Engineer2Manual::ctrlBRelease()
 }
 void Engineer2Manual::ctrlCPress()
 {
+  action_client_.cancelAllGoals();
+  ROS_INFO("cancel all goal");
 }
 void Engineer2Manual::ctrlDPress()
 {
@@ -484,6 +532,11 @@ void Engineer2Manual::ctrlEPress()
 }
 void Engineer2Manual::ctrlFPress()
 {
+  prefix_ = "LV4_";
+  root_ = "EXCHANGE";
+  runStepQueue(prefix_ + root_);
+  ROS_INFO("%s", (prefix_ + root_).c_str());
+  changeSpeedMode(EXCHANGE);
 }
 void Engineer2Manual::ctrlGPress()
 {
@@ -493,9 +546,23 @@ void Engineer2Manual::ctrlQPress()
 }
 void Engineer2Manual::ctrlRPress()
 {
+  prefix_ = "";
+  root_ = "CALIBRATION";
+  servo_mode_ = JOINT;
+  calibration_gather_->reset();
+  runStepQueue("CLOSE_ALL_GRIPPER");
+  ROS_INFO_STREAM("START CALIBRATE");
+  changeSpeedMode(NORMAL);
+  for (auto& stone : engineer_ui_.stone_num)
+    stone = false;
 }
 void Engineer2Manual::ctrlSPress()
 {
+  prefix_ = "BOTH_";
+  root_ = "BIG_ISLAND";
+  runStepQueue(prefix_ + root_);
+  ROS_INFO("%s", (prefix_ + root_).c_str());
+  changeSpeedMode(LOW);
 }
 void Engineer2Manual::ctrlVPress()
 {
@@ -505,6 +572,11 @@ void Engineer2Manual::ctrlVRelease()
 }
 void Engineer2Manual::ctrlWPress()
 {
+  prefix_ = "SIDE_";
+  root_ = "BIG_ISLAND";
+  runStepQueue(prefix_ + root_);
+  ROS_INFO("%s", (prefix_ + root_).c_str());
+  changeSpeedMode(LOW);
 }
 void Engineer2Manual::ctrlXPress()
 {
@@ -517,9 +589,13 @@ void Engineer2Manual::ctrlZPress()
 
 void Engineer2Manual::shiftPressing()
 {
+  changeSpeedMode(FAST);
+  ROS_INFO_ONCE("ENTER FAST SPEED MODE");
 }
 void Engineer2Manual::shiftRelease()
 {
+  changeSpeedMode(NORMAL);
+  ROS_INFO_ONCE("EXIT FAST SPEED MODE");
 }
 void Engineer2Manual::shiftBPress()
 {
@@ -529,6 +605,18 @@ void Engineer2Manual::shiftBRelease()
 }
 void Engineer2Manual::shiftCPress()
 {
+  action_client_.cancelAllGoals();
+  if (servo_mode_ == SERVO)
+  {
+    initMode();
+    ROS_INFO("EXIT SERVO");
+  }
+  else
+  {
+    enterServo();
+    ROS_INFO("ENTER SERVO");
+  }
+  ROS_INFO("cancel all goal");
 }
 void Engineer2Manual::shiftEPress()
 {
@@ -550,6 +638,16 @@ void Engineer2Manual::shiftRRelease()
 }
 void Engineer2Manual::shiftVPress()
 {
+  if (main_gripper_state_ == "close")
+  {
+    runStepQueue("OPEN_GRIPPER");
+    engineer_ui_.gripper_state[0] = true;
+  }
+  else
+  {
+    runStepQueue("CLOSE_GRIPPER");
+    engineer_ui_.gripper_state[0] = false;
+  }
 }
 void Engineer2Manual::shiftVRelease()
 {
