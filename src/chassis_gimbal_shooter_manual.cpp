@@ -161,7 +161,7 @@ void ChassisGimbalShooterManual::suggestFireCallback(const std_msgs::Bool::Const
 void ChassisGimbalShooterManual::shootDataCallback(const rm_msgs::ShootData::ConstPtr& data)
 {
   ChassisGimbalManual::shootDataCallback(data);
-  if (referee_is_online_)
+  if (referee_is_online_ && !use_scope_)
     shooter_cmd_sender_->updateShootData(*data);
 }
 
