@@ -254,7 +254,7 @@ void ChassisGimbalShooterManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbu
   if (gimbal_cmd_sender_->getMsg()->mode == rm_msgs::GimbalCmd::RATE)
     chassis_cmd_sender_->setFollowVelDes(gimbal_cmd_sender_->getMsg()->rate_yaw);
   else
-    chassis_cmd_sender_->setFollowVelDes(0);
+    chassis_cmd_sender_->setFollowVelDes(0.);
 }
 
 void ChassisGimbalShooterManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -272,7 +272,7 @@ void ChassisGimbalShooterManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbu
   if (gimbal_cmd_sender_->getMsg()->mode == rm_msgs::GimbalCmd::RATE)
     chassis_cmd_sender_->setFollowVelDes(gimbal_cmd_sender_->getMsg()->rate_yaw);
   else
-    chassis_cmd_sender_->setFollowVelDes(0);
+    chassis_cmd_sender_->setFollowVelDes(0.);
 }
 
 void ChassisGimbalShooterManual::rightSwitchDownRise()
