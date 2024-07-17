@@ -251,10 +251,6 @@ void ChassisGimbalShooterManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbu
 
   if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP)
     gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
-  if (gimbal_cmd_sender_->getMsg()->mode == rm_msgs::GimbalCmd::RATE)
-    chassis_cmd_sender_->setFollowVelDes(gimbal_cmd_sender_->getMsg()->rate_yaw);
-  else
-    chassis_cmd_sender_->setFollowVelDes(0.);
 }
 
 void ChassisGimbalShooterManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -269,10 +265,6 @@ void ChassisGimbalShooterManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbu
     else if (chassis_power_ < 6.0 && chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW)
       chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
   }
-  if (gimbal_cmd_sender_->getMsg()->mode == rm_msgs::GimbalCmd::RATE)
-    chassis_cmd_sender_->setFollowVelDes(gimbal_cmd_sender_->getMsg()->rate_yaw);
-  else
-    chassis_cmd_sender_->setFollowVelDes(0.);
 }
 
 void ChassisGimbalShooterManual::rightSwitchDownRise()
