@@ -29,7 +29,7 @@ protected:
   void rightSwitchUpRise() override;
   void rPress() override;
   void ePress() override;
-  void zPressing();
+  void zPress();
   void zRelease();
   void wPress() override;
   void wPressing() override;
