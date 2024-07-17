@@ -47,14 +47,12 @@ void ChassisGimbalManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ManualBase::updateRc(dbus_data);
   gimbal_cmd_sender_->setRate(-dbus_data->ch_l_x, -dbus_data->ch_l_y);
-  chassis_cmd_sender_->setFollowVelDes(gimbal_cmd_sender_->getMsg()->rate_yaw);
 }
 
 void ChassisGimbalManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ManualBase::updatePc(dbus_data);
   gimbal_cmd_sender_->setRate(-dbus_data->m_x * gimbal_scale_, dbus_data->m_y * gimbal_scale_);
-  chassis_cmd_sender_->setFollowVelDes(gimbal_cmd_sender_->getMsg()->rate_yaw);
 }
 
 void ChassisGimbalManual::checkReferee()
