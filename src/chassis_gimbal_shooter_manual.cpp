@@ -633,8 +633,8 @@ void ChassisGimbalShooterManual::ctrlRPress()
       point_in.point.z = tf_buffer_.lookupTransform("yaw", "pitch", ros::Time(0)).transform.translation.z + 0.82;
       tf2::doTransform(point_in, point_out_, tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)));
 
-      double roll{}, pitch{};
-      quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw_current_);
+      double roll{}, yaw{};
+      quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch_current_, yaw);
     }
     catch (tf2::TransformException& ex)
     {
