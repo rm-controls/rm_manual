@@ -47,6 +47,7 @@ protected:
   void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data) override;
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override;
   void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override;
+  void gimbalPosStateCallback(const rm_msgs::GimbalPosState::ConstPtr& data) override;
   void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data) override;
   void shootBeforehandCmdCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data) override;
   void suggestFireCallback(const std_msgs::Bool::ConstPtr& data) override;
@@ -125,6 +126,6 @@ protected:
 
   bool prepare_shoot_ = false, turn_x_flag_ = false, turn_ctrl_r_flag_ = false, is_balance_ = false, use_scope_ = false,
        adjust_image_transmission_ = false;
-  double yaw_current_{}, pitch_current_{};
+  double yaw_current_{}, pitch_current_{}, pitch_pid_pos_error_;
 };
 }  // namespace rm_manual

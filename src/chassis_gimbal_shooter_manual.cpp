@@ -141,6 +141,12 @@ void ChassisGimbalShooterManual::gimbalDesErrorCallback(const rm_msgs::GimbalDes
   shooter_cmd_sender_->updateGimbalDesError(*data);
 }
 
+void ChassisGimbalShooterManual::gimbalPosStateCallback(const rm_msgs::GimbalPosState::ConstPtr& data)
+{
+  ManualBase::gimbalPosStateCallback(data);
+  pitch_pid_pos_error_ = data->error;
+}
+
 void ChassisGimbalShooterManual::shootBeforehandCmdCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data)
 {
   ChassisGimbalManual::shootBeforehandCmdCallback(data);

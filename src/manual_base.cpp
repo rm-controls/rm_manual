@@ -16,6 +16,8 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   track_sub_ = nh.subscribe<rm_msgs::TrackData>("/track", 10, &ManualBase::trackCallback, this);
   gimbal_des_error_sub_ = nh.subscribe<rm_msgs::GimbalDesError>("/controllers/gimbal_controller/error", 10,
                                                                 &ManualBase::gimbalDesErrorCallback, this);
+  gimbal_pos_state_pub_ = nh.subscribe<rm_msgs::GimbalPosState>("/controllers/gimbal_controller/pitch/pos_state", 10,
+                                                                &ManualBase::gimbalPosStateCallback, this);
   odom_sub_ = nh.subscribe<nav_msgs::Odometry>("/odom", 10, &ManualBase::odomCallback, this);
 
   game_robot_status_sub_ = nh_referee.subscribe<rm_msgs::GameRobotStatus>("game_robot_status", 10,

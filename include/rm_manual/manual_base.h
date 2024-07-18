@@ -32,6 +32,7 @@
 #include <rm_msgs/ActuatorState.h>
 #include <rm_msgs/ShootBeforehandCmd.h>
 #include <rm_msgs/GimbalDesError.h>
+#include <rm_msgs/GimbalPosState.h>
 #include <rm_msgs/GameRobotStatus.h>
 #include <rm_msgs/ManualToReferee.h>
 #include <rm_msgs/PowerManagementSampleAndStatusData.h>
@@ -70,6 +71,9 @@ protected:
   {
   }
   virtual void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
+  {
+  }
+  virtual void gimbalPosStateCallback(const rm_msgs::GimbalPosState::ConstPtr& data)
   {
   }
   virtual void shootBeforehandCmdCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data)
@@ -141,7 +145,7 @@ protected:
 
   ros::Subscriber odom_sub_, dbus_sub_, track_sub_, referee_sub_, capacity_sub_, game_status_sub_, joint_state_sub_,
       game_robot_hp_sub_, actuator_state_sub_, power_heat_data_sub_, gimbal_des_error_sub_, game_robot_status_sub_,
-      suggest_fire_sub_, shoot_beforehand_cmd_sub_;
+      suggest_fire_sub_, shoot_beforehand_cmd_sub_, gimbal_pos_state_pub_;
 
   sensor_msgs::JointState joint_state_;
   rm_msgs::TrackData track_data_;
