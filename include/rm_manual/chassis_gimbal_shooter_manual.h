@@ -125,6 +125,6 @@ protected:
 
   bool prepare_shoot_ = false, turn_flag_ = false, is_balance_ = false, use_scope_ = false,
        adjust_image_transmission_ = false;
-  double yaw_current_{};
+  double yaw_current_{}, pitch_current_{};
 };
 }  // namespace rm_manual

@@ -628,9 +628,9 @@ void ChassisGimbalShooterManual::ctrlRPress()
     try
     {
       point_in.header.frame_id = "yaw";
-      point_in.point.x = -1.;
+      point_in.point.x = 1.;
       point_in.point.y = 0.;
-      point_in.point.z = tf_buffer_.lookupTransform("yaw", "pitch", ros::Time(0)).transform.translation.z;
+      point_in.point.z = tf_buffer_.lookupTransform("yaw", "pitch", ros::Time(0)).transform.translation.z + 0.82;
       tf2::doTransform(point_in, point_out_, tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)));
 
       double roll{}, pitch{};
