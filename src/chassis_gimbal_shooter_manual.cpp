@@ -145,6 +145,7 @@ void ChassisGimbalShooterManual::gimbalPosStateCallback(const rm_msgs::GimbalPos
 {
   ManualBase::gimbalPosStateCallback(data);
   pitch_pid_pos_error_ = data->error;
+  pitch_pos_des_ = data->set_point;
 }
 
 void ChassisGimbalShooterManual::shootBeforehandCmdCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data)
@@ -639,9 +640,6 @@ void ChassisGimbalShooterManual::ctrlRPress()
       point_in.point.y = 0.;
       point_in.point.z = tf_buffer_.lookupTransform("yaw", "pitch", ros::Time(0)).transform.translation.z + 0.8;
       tf2::doTransform(point_in, point_out_, tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)));
-
-      double roll{}, yaw{};
-      quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch_current_, yaw);
     }
     catch (tf2::TransformException& ex)
     {
@@ -656,9 +654,7 @@ void ChassisGimbalShooterManual::ctrlRReleasing()
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
     gimbal_cmd_sender_->setPoint(point_out_);
-    double roll{}, pitch{}, yaw{};
-    quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
-    if (std::abs(angles::shortest_angular_distance(pitch, pitch_current_)) < 0.0015)
+    if (pitch_pid_pos_error_ > -0.005 && pitch_pos_des_ < -0.6)
     {
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
       turn_ctrl_r_flag_ = false;
