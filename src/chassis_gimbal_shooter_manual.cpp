@@ -144,7 +144,7 @@ void ChassisGimbalShooterManual::gimbalDesErrorCallback(const rm_msgs::GimbalDes
 void ChassisGimbalShooterManual::gimbalPosStateCallback(const rm_msgs::GimbalPosState::ConstPtr& data)
 {
   ManualBase::gimbalPosStateCallback(data);
-  pitch_pid_pos_error_ = data->error;
+  pitch_pos_error_ = data->error;
   pitch_pos_des_ = data->set_point;
 }
 
@@ -654,7 +654,7 @@ void ChassisGimbalShooterManual::ctrlRReleasing()
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
     gimbal_cmd_sender_->setPoint(point_out_);
-    if (pitch_pid_pos_error_ > -0.005 && pitch_pos_des_ < -0.6)
+    if (pitch_pos_error_ > -0.005 && pitch_pos_des_ < -0.6)
     {
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
       turn_ctrl_r_flag_ = false;
