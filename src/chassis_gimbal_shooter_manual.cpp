@@ -59,6 +59,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
   ctrl_q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlQPress, this));
   ctrl_r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this));
+  ctrl_r_event_.setActiveLow(boost::bind(&ChassisGimbalShooterManual::ctrlRReleasing, this));
   shift_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::shiftPress, this),
                        boost::bind(&ChassisGimbalShooterManual::shiftRelease, this));
   mouse_left_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseLeftPress, this));
@@ -619,6 +620,15 @@ void ChassisGimbalShooterManual::ctrlRPress()
 {
   if (image_transmission_cmd_sender_)
     adjust_image_transmission_ = !image_transmission_cmd_sender_->getState();
+  if (image_transmission_cmd_sender_->getState())
+  {
+    ROS_INFO("ok");
+  }
+}
+
+void ChassisGimbalShooterManual::ctrlRReleasing()
+{
+  ROS_INFO("releaseing");
 }
 
 void ChassisGimbalShooterManual::ctrlBPress()
