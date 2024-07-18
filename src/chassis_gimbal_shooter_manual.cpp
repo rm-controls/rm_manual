@@ -190,7 +190,8 @@ void ChassisGimbalShooterManual::remoteControlTurnOff()
   shooter_cmd_sender_->setZero();
   shooter_calibration_->stop();
   gimbal_calibration_->stop();
-  turn_flag_ = false;
+  turn_x_flag_ = false;
+  turn_ctrl_r_flag_ = false;
   use_scope_ = false;
   adjust_image_transmission_ = false;
 }
@@ -208,7 +209,8 @@ void ChassisGimbalShooterManual::robotDie()
 {
   ManualBase::robotDie();
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
-  turn_flag_ = false;
+  turn_x_flag_ = false;
+  turn_ctrl_r_flag_ = false;
   use_scope_ = false;
   adjust_image_transmission_ = false;
 }
@@ -547,7 +549,7 @@ void ChassisGimbalShooterManual::dPressing()
 
 void ChassisGimbalShooterManual::xPress()
 {
-  turn_flag_ = true;
+  turn_x_flag_ = true;
   geometry_msgs::PointStamped point_in;
   try
   {
@@ -568,7 +570,7 @@ void ChassisGimbalShooterManual::xPress()
 
 void ChassisGimbalShooterManual::xReleasing()
 {
-  if (turn_flag_)
+  if (turn_x_flag_)
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
     gimbal_cmd_sender_->setPoint(point_out_);
@@ -577,7 +579,7 @@ void ChassisGimbalShooterManual::xReleasing()
     if (std::abs(angles::shortest_angular_distance(yaw, yaw_current_)) > finish_turning_threshold_)
     {
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-      turn_flag_ = false;
+      turn_x_flag_ = false;
     }
   }
 }
@@ -622,7 +624,7 @@ void ChassisGimbalShooterManual::ctrlRPress()
     adjust_image_transmission_ = !image_transmission_cmd_sender_->getState();
   if (!image_transmission_cmd_sender_->getState())
   {
-    turn_flag_ = true;
+    turn_ctrl_r_flag_ = true;
     geometry_msgs::PointStamped point_in;
     try
     {
@@ -644,7 +646,7 @@ void ChassisGimbalShooterManual::ctrlRPress()
 
 void ChassisGimbalShooterManual::ctrlRReleasing()
 {
-  if (turn_flag_)
+  if (turn_ctrl_r_flag_)
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
     gimbal_cmd_sender_->setPoint(point_out_);
@@ -653,7 +655,7 @@ void ChassisGimbalShooterManual::ctrlRReleasing()
     if (std::abs(angles::shortest_angular_distance(pitch, pitch_current_)) < 0.0015)
     {
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-      turn_flag_ = false;
+      turn_ctrl_r_flag_ = false;
     }
   }
 }
