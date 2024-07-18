@@ -652,7 +652,7 @@ void ChassisGimbalShooterManual::ctrlRReleasing()
     gimbal_cmd_sender_->setPoint(point_out_);
     double roll{}, pitch{}, yaw{};
     quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
-    if (std::abs(angles::shortest_angular_distance(yaw, yaw_current_)) > finish_turning_threshold_)
+    if (std::abs(angles::shortest_angular_distance(pitch, pitch_current_)) > finish_turning_threshold_)
     {
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
       turn_flag_ = false;
