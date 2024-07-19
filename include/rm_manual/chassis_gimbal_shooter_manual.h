@@ -105,7 +105,6 @@ protected:
   void ctrlVPress();
   void ctrlBPress();
   void ctrlRPress();
-  void judgeIsAuto();
   void sentryMode();
   virtual void ctrlQPress();
   void eventDartCallback(const rm_msgs::EventData ::ConstPtr& data) override;
@@ -129,6 +128,6 @@ protected:
        adjust_image_transmission_ = false;
   double yaw_current_{};
   ros::Time hit_time_;
-  int count_{}, target_hit_by_dart_{}, time_hit_by_dart_{}, last_time_hit_by_dart_{};
+  int count_{}, last_time_hit_by_dart_{};
 };
 }  // namespace rm_manual
