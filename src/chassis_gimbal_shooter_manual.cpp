@@ -653,9 +653,9 @@ void ChassisGimbalShooterManual::eventDartCallback(const rm_msgs::EventData::Con
     hit_time_ = ros::Time::now();
     count_ = 0;
   }
-  if (((target_hit_by_dart == 1 && (ros::Time::now() - hit_time_).toSec() <= 5) ||
-       (target_hit_by_dart == 2 && (ros::Time::now() - hit_time_).toSec() <= 10) ||
-       (target_hit_by_dart == 3 && (ros::Time::now() - hit_time_).toSec() <= 15)) &&
+  if (((target_hit_by_dart == OUTPOST && (ros::Time::now() - hit_time_).toSec() <= 5) ||
+       (target_hit_by_dart == BASE && (ros::Time::now() - hit_time_).toSec() <= 10) ||
+       (target_hit_by_dart == MOVE_BASE && (ros::Time::now() - hit_time_).toSec() <= 15)) &&
       mouse_right_event_.getState())
     is_auto_ = true;
   else
