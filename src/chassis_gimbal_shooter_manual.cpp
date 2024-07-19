@@ -40,6 +40,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   self_inspection_event_.setRising(boost::bind(&ChassisGimbalShooterManual::selfInspectionStart, this));
   game_start_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gameStart, this));
   left_switch_up_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::leftSwitchUpOn, this, _1));
+  left_switch_up_event_.setFalling(boost::bind(&ChassisGimbalShooterManual::leftSwitchUpFall, this));
   left_switch_mid_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::leftSwitchMidOn, this, _1));
   e_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::ePress, this),
                    boost::bind(&ChassisGimbalShooterManual::eRelease, this));
@@ -315,6 +316,12 @@ void ChassisGimbalShooterManual::leftSwitchUpRise()
 {
   ChassisGimbalManual::leftSwitchUpRise();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+  last_shoot_freq_ = shooter_cmd_sender_->getShootFrequency();
+}
+
+void ChassisGimbalShooterManual::leftSwitchUpFall()
+{
+  shooter_cmd_sender_->setShootFrequency(last_shoot_freq_);
 }
 
 void ChassisGimbalShooterManual::leftSwitchUpOn(ros::Duration duration)
@@ -325,11 +332,13 @@ void ChassisGimbalShooterManual::leftSwitchUpOn(ros::Duration duration)
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
   if (duration > ros::Duration(1.))
   {
+    shooter_cmd_sender_->setShootFrequency(last_shoot_freq_);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
     shooter_cmd_sender_->checkError(ros::Time::now());
   }
   else if (duration < ros::Duration(0.02))
   {
+    shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::MINIMAL);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
     shooter_cmd_sender_->checkError(ros::Time::now());
   }
@@ -346,8 +355,13 @@ void ChassisGimbalShooterManual::mouseLeftPress()
   }
   if (prepare_shoot_)
   {
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-    shooter_cmd_sender_->checkError(ros::Time::now());
+    if (!mouse_right_event_.getState() || (mouse_right_event_.getState() && track_data_.id != 0))
+    {
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+      shooter_cmd_sender_->checkError(ros::Time::now());
+    }
+    else
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
   }
 }
 
