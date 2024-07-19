@@ -434,11 +434,32 @@ void EngineerManual::ctrlEPress()
 
 void EngineerManual::ctrlFPress()
 {
-  prefix_ = "";
-  root_ = "EXCHANGE_POS";
-  runStepQueue(root_);
-  ROS_INFO("%s", (prefix_ + root_).c_str());
+  if(root_ == "GET_DOWN_STONE_RIGHT" || root_ == "GET_UP_STONE_RIGHT")
+  {
+    prefix_ = "";
+    root_ = "RIGHT_EXCHANGE";
+    runStepQueue(root_);
+    ROS_INFO("%s", (prefix_ + root_).c_str());
+    changeSpeedMode(EXCHANGE);
+  }
+  else if(root_ == "GET_DOWN_STONE_LEFT" || root_ == "GET_UP_STONE_LEFT")
+  {
+    prefix_ = "";
+    root_ = "LEFT_EXCHANGE";
+    runStepQueue(root_);
+    ROS_INFO("%s", (prefix_ + root_).c_str());
+    changeSpeedMode(EXCHANGE);
+  }
+  else
+  {
+    prefix_ = "";
+    root_ = "EXCHANGE_POS";
+    runStepQueue(root_);
+    ROS_INFO("%s", (prefix_ + root_).c_str());
+    changeSpeedMode(EXCHANGE);
+  }
 }
+
 
 void EngineerManual::ctrlGPress()
 {
