@@ -688,12 +688,6 @@ void ChassisGimbalShooterManual::sentryMode()
     count_++;
   }
   else
-  {
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
-    gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
-    if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::STOP)
-      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-  }
 }
 }  // namespace rm_manual
