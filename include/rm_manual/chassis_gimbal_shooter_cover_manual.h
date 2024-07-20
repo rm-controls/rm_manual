@@ -40,6 +40,7 @@ protected:
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   };
+  void sentryMode();
   double low_speed_scale_{}, normal_speed_scale_{};
   double exit_buff_mode_duration_{};
   rm_common::SwitchDetectionCaller* switch_buff_srv_{};

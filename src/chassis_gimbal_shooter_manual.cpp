@@ -367,17 +367,11 @@ void ChassisGimbalShooterManual::mouseLeftPress()
 
 void ChassisGimbalShooterManual::mouseRightPress()
 {
-  if (is_auto_ && robot_id_ != rm_msgs::GameRobotStatus::BLUE_HERO && robot_id_ != rm_msgs::GameRobotStatus::RED_HERO)
-    sentryMode();
-  else if (!mouse_left_event_.getState() && shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+  if (track_data_.id == 0)
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   else
   {
-    if (track_data_.id == 0)
-      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-    else
-    {
-      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
       gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
     }
     if (switch_armor_target_srv_->getArmorTarget() == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
@@ -388,7 +382,6 @@ void ChassisGimbalShooterManual::mouseRightPress()
         shooter_cmd_sender_->checkError(ros::Time::now());
       }
     }
-  }
 }
 
 void ChassisGimbalShooterManual::ePress()
@@ -662,31 +655,5 @@ void ChassisGimbalShooterManual::eventDartCallback(const rm_msgs::EventData::Con
     is_auto_ = false;
   if (target_hit_by_dart == 0)
     is_auto_ = false;
-}
-
-void ChassisGimbalShooterManual::sentryMode()
-{
-  if (!is_gyro_)
-  {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-    is_gyro_ = true;
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-    if (x_scale_ != 0.0 || y_scale_ != 0.0)
-      vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
-    else
-      vel_cmd_sender_->setAngularZVel(1.0);
-  }
-  if (track_data_.id == 0)
-  {
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
-    double traj_yaw, traj_pitch;
-    traj_yaw = M_PI * count_ / 900;
-    traj_pitch = 0.15 * sin(2 * M_PI * count_ / 900) + 0.2;
-    count_ = (count_ + 1) % 900;
-    gimbal_cmd_sender_->setYawAndPitchTraj(traj_yaw, traj_pitch);
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
-  }
-  else
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
 }
 }  // namespace rm_manual

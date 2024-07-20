@@ -105,7 +105,6 @@ protected:
   void ctrlVPress();
   void ctrlBPress();
   void ctrlRPress();
-  void sentryMode();
   virtual void ctrlQPress();
   void eventDartCallback(const rm_msgs::EventData ::ConstPtr& data) override;
 
