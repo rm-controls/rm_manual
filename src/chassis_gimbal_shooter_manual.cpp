@@ -629,7 +629,7 @@ void ChassisGimbalShooterManual::ctrlRPress()
 {
   if (image_transmission_cmd_sender_)
     adjust_image_transmission_ = !image_transmission_cmd_sender_->getState();
-  if (!image_transmission_cmd_sender_->getState())
+  if (adjust_image_transmission_)
   {
     turn_ctrl_r_flag_ = true;
     geometry_msgs::PointStamped point_in;
