@@ -33,6 +33,7 @@ protected:
   void zRelease();
   void wPress() override;
   void wPressing() override;
+  void mouseRightPress() override;
 
   virtual void ctrlZPress();
   virtual void ctrlZRelease()

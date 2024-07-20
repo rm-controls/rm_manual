@@ -211,4 +211,8 @@ void ChassisGimbalShooterCoverManual::ctrlZPress()
   }
 }
 
+void ChassisGimbalShooterCoverManual::mouseRightPress()
+{
+}
+
 }  // namespace rm_manual
