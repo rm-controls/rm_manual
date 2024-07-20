@@ -685,7 +685,6 @@ void ChassisGimbalShooterManual::sentryMode()
     count_ = (count_ + 1) % 900;
     gimbal_cmd_sender_->setYawAndPitchTraj(traj_yaw, traj_pitch);
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
-    count_++;
   }
   else
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
