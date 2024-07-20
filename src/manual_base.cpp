@@ -33,7 +33,7 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
       "power_management/sample_and_status", 10, &ManualBase::capacityDataCallback, this);
   power_heat_data_sub_ =
       nh_referee.subscribe<rm_msgs::PowerHeatData>("power_heat_data", 10, &ManualBase::powerHeatDataCallback, this);
-  event_dart_sub_ = nh_referee.subscribe<rm_msgs::EventData>("event_data", 10, &ManualBase::eventDartCallback, this);
+  event_data_sub_ = nh_referee.subscribe<rm_msgs::EventData>("event_data", 10, &ManualBase::eventDataCallback, this);
 
   // pub
   manual_to_referee_pub_ = nh.advertise<rm_msgs::ManualToReferee>("/manual_to_referee", 1);

@@ -635,9 +635,9 @@ void ChassisGimbalShooterManual::ctrlQPress()
   gimbal_calibration_->reset();
 }
 
-void ChassisGimbalShooterManual::eventDartCallback(const rm_msgs::EventData::ConstPtr& data)
+void ChassisGimbalShooterManual::eventDataCallback(const rm_msgs::EventData::ConstPtr& data)
 {
-  ChassisGimbalManual::eventDartCallback(data);
+  ChassisGimbalManual::eventDataCallback(data);
   double time_hit_by_dart = data->be_hit_time;
   double target_hit_by_dart = data->be_hit_target;
   if (time_hit_by_dart != last_time_hit_by_dart_)
@@ -653,7 +653,7 @@ void ChassisGimbalShooterManual::eventDartCallback(const rm_msgs::EventData::Con
     is_auto_ = true;
   else
     is_auto_ = false;
-  if (target_hit_by_dart == 0)
+  if (time_hit_by_dart == 0)
     is_auto_ = false;
 }
 }  // namespace rm_manual

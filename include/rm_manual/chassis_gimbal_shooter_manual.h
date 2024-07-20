@@ -106,7 +106,7 @@ protected:
   void ctrlBPress();
   void ctrlRPress();
   virtual void ctrlQPress();
-  void eventDartCallback(const rm_msgs::EventData ::ConstPtr& data) override;
+  void eventDataCallback(const rm_msgs::EventData ::ConstPtr& data) override;
 
   InputEvent self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_, b_event_, x_event_,
       r_event_, v_event_, ctrl_f_event_, ctrl_v_event_, ctrl_b_event_, ctrl_q_event_, ctrl_r_event_, shift_event_,
