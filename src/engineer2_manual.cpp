@@ -100,11 +100,12 @@ void Engineer2Manual::run()
 {
   ChassisGimbalManual::run();
   calibration_gather_->update(ros::Time::now());
-  if (engineer_ui_ != old_ui_)
-  {
-    engineer_ui_pub_.publish(engineer_ui_);
-    old_ui_ = engineer_ui_;
-  }
+  //  if (engineer_ui_ != old_ui_)
+  //  {
+  //    engineer_ui_pub_.publish(engineer_ui_);
+  //    old_ui_ = engineer_ui_;
+  //  }
+  engineer_ui_pub_.publish(engineer_ui_);
 }
 
 void Engineer2Manual::changeSpeedMode(SpeedMode speed_mode)
@@ -203,8 +204,8 @@ void Engineer2Manual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 
 void Engineer2Manual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  servo_command_sender_->setLinearVel(-dbus_data->wheel, -dbus_data->ch_l_x, -dbus_data->ch_l_y);
-  servo_command_sender_->setAngularVel(-angular_z_scale_, dbus_data->ch_r_y, -dbus_data->ch_r_x);
+  servo_command_sender_->setLinearVel(dbus_data->wheel, dbus_data->ch_l_x, -dbus_data->ch_l_y);
+  servo_command_sender_->setAngularVel(-angular_z_scale_, -dbus_data->ch_r_y, dbus_data->ch_r_x);
 }
 
 void Engineer2Manual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
@@ -217,26 +218,26 @@ void Engineer2Manual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 
 void Engineer2Manual::stoneNumCallback(const std_msgs::String::ConstPtr& data)
 {
+  auto it = stoneNumMap_.find(data->data);
+  if (it != stoneNumMap_.end())
+    engineer_ui_.stone_num[it->second] = (data->data[0] == '+');
+  if (engineer_ui_.stone_num[1] == false && engineer_ui_.stone_num[2] == false && engineer_ui_.stone_num[3] == false)
+    runStepQueue("CLOSE_SILVER_GRIPPER");
 }
 
 void Engineer2Manual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
 {
   gpio_state_.gpio_state = data->gpio_state;
-  for (int i = 0; i < gpio_state_.gpio_state.size(); i++)
+  for (int i = 0; i <= 4; i++)
   {
-    if (gpio_state_.gpio_state[i] == true)
-    {
-      if (i == 0)
-        main_gripper_state_ = "open";
-      engineer_ui_.gripper_state[i] = true;
-    }
-    else
-    {
-      if (i == 0)
-        main_gripper_state_ = "close";
-      engineer_ui_.gripper_state[i] = false;
-    }
+    engineer_ui_.gripper_state[i] = data->gpio_state[i];
   }
+  engineer_ui_.gripper_state[5] = data->gpio_state[7];
+  for (int i = 4; i >= 0; --i)
+  {
+    engineer_ui_.gripper_state[i] = data->gpio_state[i];
+  }
+  engineer_ui_.gripper_state[5] = data->gpio_state[7];
 }
 
 void Engineer2Manual::sendCommand(const ros::Time& time)
@@ -289,6 +290,20 @@ void Engineer2Manual::actionDoneCallback(const actionlib::SimpleClientGoalState&
     initMode();
     changeSpeedMode(NORMAL);
   }
+  if (!exchange_level_.empty())
+  {
+    prefix_ = exchange_level_ + exchange_direction_;
+    root_ = "EXCHANGE";
+    runStepQueue(prefix_ + root_);
+  }
+  if (root_ == "EXCHANGE")
+  {
+    exchange_level_.clear();
+    exchange_direction_.clear();
+    has_ground_stone_ = false;
+    changeSpeedMode(EXCHANGE);
+    enterServo();
+  }
 }
 
 void Engineer2Manual::enterServo()
@@ -309,7 +324,7 @@ void Engineer2Manual::initMode()
   gimbal_mode_ = DIRECT;
   changeSpeedMode(NORMAL);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
+  chassis_cmd_sender_->getMsg()->command_source_frame = "base_link";
   engineer_ui_.control_mode = "NORMAL";
 }
 
@@ -361,22 +376,20 @@ void Engineer2Manual::leftSwitchUpRise()
 {
   prefix_ = "";
   root_ = "CALIBRATION";
+  runStepQueue("MIDDLE_PITCH_UP");
+  runStepQueue("CLOSE_ALL_GRIPPER");
   calibration_gather_->reset();
   for (auto& stone : engineer_ui_.stone_num)
   {
     stone = false;
-  }
-  for (auto& gripper_state : engineer_ui_.gripper_state)
-  {
-    gripper_state = false;
   }
   engineer_ui_.control_mode = "NORMAL";
   ROS_INFO_STREAM("START CALIBRATE");
 }
 void Engineer2Manual::leftSwitchUpFall()
 {
-  runStepQueue("HOME");
-  runStepQueue("CLOSE_GRIPPER");
+  runStepQueue("HOME_WITH_PITCH");
+  runStepQueue("CLOSE_ALL_GRIPPER");
 }
 
 void Engineer2Manual::leftSwitchDownRise()
@@ -384,16 +397,15 @@ void Engineer2Manual::leftSwitchDownRise()
   if (main_gripper_state_ == "close")
   {
     runStepQueue("OPEN_MAIN_GRIPPER");
-    engineer_ui_.gripper_state[0] = true;
   }
   else
   {
     runStepQueue("CLOSE_MAIN_GRIPPER");
-    engineer_ui_.gripper_state[0] = false;
   }
 }
 void Engineer2Manual::leftSwitchDownFall()
 {
+  runStepQueue("MIDDLE_PITCH_UP");
 }
 
 //--------------------- keyboard input ------------------------
@@ -510,7 +522,7 @@ void Engineer2Manual::ctrlBPress()
 {
   prefix_ = "";
   root_ = "HOME";
-  runStepQueue("HOME");
+  runStepQueue(prefix_ + root_);
   changeSpeedMode(NORMAL);
 }
 void Engineer2Manual::ctrlBPressing()
@@ -526,6 +538,10 @@ void Engineer2Manual::ctrlCPress()
 }
 void Engineer2Manual::ctrlDPress()
 {
+  prefix_ = "GRIPPER_";
+  root_ = "THREE_SILVER";
+  changeSpeedMode(LOW);
+  runStepQueue(prefix_ + root_);
 }
 void Engineer2Manual::ctrlEPress()
 {
@@ -534,9 +550,9 @@ void Engineer2Manual::ctrlFPress()
 {
   prefix_ = "LV4_";
   root_ = "EXCHANGE";
+  changeSpeedMode(EXCHANGE);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
-  changeSpeedMode(EXCHANGE);
 }
 void Engineer2Manual::ctrlGPress()
 {
@@ -549,6 +565,7 @@ void Engineer2Manual::ctrlRPress()
   prefix_ = "";
   root_ = "CALIBRATION";
   servo_mode_ = JOINT;
+  has_ground_stone_ = false;
   calibration_gather_->reset();
   runStepQueue("CLOSE_ALL_GRIPPER");
   ROS_INFO_STREAM("START CALIBRATE");
@@ -560,9 +577,9 @@ void Engineer2Manual::ctrlSPress()
 {
   prefix_ = "BOTH_";
   root_ = "BIG_ISLAND";
+  changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
-  changeSpeedMode(LOW);
 }
 void Engineer2Manual::ctrlVPress()
 {
@@ -574,9 +591,9 @@ void Engineer2Manual::ctrlWPress()
 {
   prefix_ = "SIDE_";
   root_ = "BIG_ISLAND";
+  changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
-  changeSpeedMode(LOW);
 }
 void Engineer2Manual::ctrlXPress()
 {
@@ -620,15 +637,78 @@ void Engineer2Manual::shiftCPress()
 }
 void Engineer2Manual::shiftEPress()
 {
+  exchange_level_ = "LV5_";
+  exchange_direction_ = "R_";
+  if (!has_ground_stone_)
+  {
+    prefix_ = "GET_STORED_";
+    if (engineer_ui_.stone_num[0])
+      root_ = "GOLD";
+    else if (engineer_ui_.stone_num[3])
+      root_ = "SILVER3";
+    else if (engineer_ui_.stone_num[2])
+      root_ = "SILVER2";
+    else if (engineer_ui_.stone_num[1])
+      root_ = "SILVER1";
+    runStepQueue(prefix_ + root_);
+  }
+  else
+  {
+    prefix_ = "LV5_R_";
+    root_ = "EXCHANGE";
+    runStepQueue(prefix_ + root_);
+  }
 }
 void Engineer2Manual::shiftFPress()
 {
 }
 void Engineer2Manual::shiftGPress()
 {
+  exchange_level_ = "LV4_";
+  exchange_direction_ = "";
+  if (!has_ground_stone_)
+  {
+    prefix_ = "GET_STORED_";
+    if (engineer_ui_.stone_num[0])
+      root_ = "GOLD";
+    else if (engineer_ui_.stone_num[3])
+      root_ = "SILVER3";
+    else if (engineer_ui_.stone_num[2])
+      root_ = "SILVER2";
+    else if (engineer_ui_.stone_num[1])
+      root_ = "SILVER1";
+    runStepQueue(prefix_ + root_);
+  }
+  else
+  {
+    prefix_ = "LV4_";
+    root_ = "EXCHANGE";
+    runStepQueue(prefix_ + root_);
+  }
 }
 void Engineer2Manual::shiftQPress()
 {
+  exchange_level_ = "LV5_";
+  exchange_direction_ = "L_";
+  if (!has_ground_stone_)
+  {
+    prefix_ = "GET_STORED_";
+    if (engineer_ui_.stone_num[0])
+      root_ = "GOLD";
+    else if (engineer_ui_.stone_num[3])
+      root_ = "SILVER3";
+    else if (engineer_ui_.stone_num[2])
+      root_ = "SILVER2";
+    else if (engineer_ui_.stone_num[1])
+      root_ = "SILVER1";
+    runStepQueue(prefix_ + root_);
+  }
+  else
+  {
+    prefix_ = "LV5_L_";
+    root_ = "EXCHANGE";
+    runStepQueue(prefix_ + root_);
+  }
 }
 void Engineer2Manual::shiftRPress()
 {
@@ -640,13 +720,11 @@ void Engineer2Manual::shiftVPress()
 {
   if (main_gripper_state_ == "close")
   {
-    runStepQueue("OPEN_GRIPPER");
-    engineer_ui_.gripper_state[0] = true;
+    runStepQueue("OPEN_MAIN_GRIPPER");
   }
   else
   {
-    runStepQueue("CLOSE_GRIPPER");
-    engineer_ui_.gripper_state[0] = false;
+    runStepQueue("CLOSE_MAIN_GRIPPER");
   }
 }
 void Engineer2Manual::shiftVRelease()
@@ -654,6 +732,11 @@ void Engineer2Manual::shiftVRelease()
 }
 void Engineer2Manual::shiftXPress()
 {
+  has_ground_stone_ = true;
+  prefix_ = "";
+  root_ = "GET_GROUND_STONE";
+  changeSpeedMode(LOW);
+  runStepQueue(prefix_ + root_);
 }
 void Engineer2Manual::shiftZPress()
 {

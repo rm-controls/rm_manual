@@ -17,6 +17,7 @@
 #include <rm_msgs/GpioData.h>
 #include <rm_msgs/Engineer2Ui.h>
 #include <stack>
+#include "unordered_map"
 
 namespace rm_manual
 {
@@ -142,11 +143,11 @@ private:
 
   // Servo
 
-  bool change_flag_{};
+  bool change_flag_{}, has_ground_stone_{ false };
   double angular_z_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
       exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
 
-  std::string prefix_{}, root_{}, main_gripper_state_{ "off" }, exchange_direction_{ "left" };
+  std::string prefix_{}, root_{}, main_gripper_state_{ "off" }, exchange_direction_{ "left" }, exchange_level_{};
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, gimbal_direction_{ 0 };
 
   std::stack<std::string> stone_num_{};
@@ -170,6 +171,10 @@ private:
       v_event_, x_event_, z_event_, shift_event_, shift_b_event_, shift_c_event_, shift_e_event_, shift_f_event_,
       shift_g_event_, shift_v_event_, shift_q_event_, shift_r_event_, shift_x_event_, shift_z_event_, mouse_left_event_,
       mouse_right_event_;
+
+  std::unordered_map<std::string, int> stoneNumMap_ = {
+    { "+g", 0 }, { "+s1", 1 }, { "+s2", 2 }, { "+s3", 3 }, { "-g", 0 }, { "-s1", 1 }, { "-s2", 2 }, { "-s3", 3 },
+  };
 };
 
 }  // namespace rm_manual
