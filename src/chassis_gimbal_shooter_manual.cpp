@@ -399,16 +399,11 @@ void ChassisGimbalShooterManual::cPress()
   if (is_gyro_)
   {
     setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
-    vel_cmd_sender_->setAngularZVel(0.0);
   }
   else
   {
     setChassisMode(rm_msgs::ChassisCmd::RAW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-    if (x_scale_ != 0.0 || y_scale_ != 0.0)
-      vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
-    else
-      vel_cmd_sender_->setAngularZVel(1.0);
   }
 }
 
@@ -585,10 +580,7 @@ void ChassisGimbalShooterManual::vPress()
 void ChassisGimbalShooterManual::shiftPress()
 {
   if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::FOLLOW && is_gyro_)
-  {
     setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
-    vel_cmd_sender_->setAngularZVel(1.0);
-  }
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
 }
 
