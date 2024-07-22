@@ -137,11 +137,16 @@ void ChassisGimbalShooterCoverManual::rPress()
   if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
   {
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
-    if (switch_buff_type_srv_->getTarget() == rm_msgs::StatusChangeRequest::SMALL_BUFF)
-      switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::BIG_BUFF);
-    else
-      switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::SMALL_BUFF);
-    switch_buff_type_srv_->callService();
+    if (game_progress_ == 4)
+    {
+      if (stage_remain_time_ < 210)
+        switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::BIG_BUFF);
+      else
+        switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::SMALL_BUFF);
+      if ((ros::Time::now() - game_status_time_).toSec() < 0.2)
+        switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::BIG_BUFF);
+      switch_buff_type_srv_->callService();
+    }
   }
   else
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
@@ -209,6 +214,13 @@ void ChassisGimbalShooterCoverManual::ctrlZPress()
   {
     changeSpeedMode(NORMAL);
   }
+}
+
+void ChassisGimbalShooterCoverManual::gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data)
+{
+  game_status_time_ = ros::Time::now();
+  stage_remain_time_ = data->stage_remain_time;
+  game_progress_ = data->game_progress;
 }
 
 }  // namespace rm_manual

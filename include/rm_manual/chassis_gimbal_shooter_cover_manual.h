@@ -33,14 +33,19 @@ protected:
   void zRelease();
   void wPress() override;
   void wPressing() override;
+  void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override;
 
   virtual void ctrlZPress();
   virtual void ctrlZRelease()
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   };
+
+  ros::Time game_status_time_{};
   double low_speed_scale_{}, normal_speed_scale_{};
   double exit_buff_mode_duration_{};
+  double stage_remain_time_{};
+  int game_progress_{};
   rm_common::SwitchDetectionCaller* switch_buff_srv_{};
   rm_common::SwitchDetectionCaller* switch_buff_type_srv_{};
   rm_common::SwitchDetectionCaller* switch_exposure_srv_{};
