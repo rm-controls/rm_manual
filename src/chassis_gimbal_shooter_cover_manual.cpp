@@ -215,33 +215,25 @@ void ChassisGimbalShooterCoverManual::mouseRightPress()
 {
   ChassisGimbalShooterManual::mouseRightPress();
   if (is_auto_)
-    sentryMode();
+  {
+    if (!is_gyro_)
+    {
+      chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+      setChassisMode(rm_msgs::ChassisCmd::RAW);
+    }
+    if (track_data_.id == 0)
+    {
+      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
+      double traj_yaw = M_PI * count_ / 900;
+      double traj_pitch = 0.15 * sin(2 * M_PI * count_ / 900) + 0.2;
+      count_ = (count_ + 1) % 900;
+      gimbal_cmd_sender_->setYawAndPitchTraj(traj_yaw, traj_pitch);
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+    }
+    else
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+  }
   else if (!mouse_left_event_.getState() && shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
-}
-
-void ChassisGimbalShooterCoverManual::sentryMode()
-{
-  if (!is_gyro_)
-  {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-    is_gyro_ = true;
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-    if (x_scale_ != 0.0 || y_scale_ != 0.0)
-      vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
-    else
-      vel_cmd_sender_->setAngularZVel(1.0);
-  }
-  if (track_data_.id == 0)
-  {
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
-    double traj_yaw = M_PI * count_ / 900;
-    double traj_pitch = 0.15 * sin(2 * M_PI * count_ / 900) + 0.2;
-    count_ = (count_ + 1) % 900;
-    gimbal_cmd_sender_->setYawAndPitchTraj(traj_yaw, traj_pitch);
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
-  }
-  else
-    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
 }
 }  // namespace rm_manual
