@@ -222,4 +222,19 @@ void ChassisGimbalManual::mouseMidRise(double m_z)
   }
 }
 
+void ChassisGimbalManual::setChassisMode(int mode)
+{
+  switch (mode)
+  {
+    case rm_msgs::ChassisCmd::RAW:
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+      is_gyro_ = true;
+      break;
+    case rm_msgs::ChassisCmd::FOLLOW:
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+      is_gyro_ = false;
+      break;
+  }
+}
+
 }  // namespace rm_manual

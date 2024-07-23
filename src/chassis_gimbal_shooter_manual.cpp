@@ -238,13 +238,11 @@ void ChassisGimbalShooterManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbu
   ChassisGimbalManual::updateRc(dbus_data);
   if (std::abs(dbus_data->wheel) > 0.01)
   {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-    is_gyro_ = true;
+    setChassisMode(rm_msgs::ChassisCmd::RAW);
   }
   else
   {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    is_gyro_ = false;
+    setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
   }
   vel_cmd_sender_->setAngularZVel((std::abs(dbus_data->ch_r_y) > 0.01 || std::abs(dbus_data->ch_r_x) > 0.01) ?
                                       dbus_data->wheel * gyro_rotate_reduction_ :
@@ -402,14 +400,12 @@ void ChassisGimbalShooterManual::cPress()
 {
   if (is_gyro_)
   {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setAngularZVel(0.0);
-    is_gyro_ = false;
   }
   else
   {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-    is_gyro_ = true;
+    setChassisMode(rm_msgs::ChassisCmd::RAW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
     if (x_scale_ != 0.0 || y_scale_ != 0.0)
       vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
@@ -458,7 +454,7 @@ void ChassisGimbalShooterManual::wPress()
   {
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
 }
@@ -471,7 +467,7 @@ void ChassisGimbalShooterManual::aPress()
   {
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
 }
@@ -484,7 +480,7 @@ void ChassisGimbalShooterManual::sPress()
   {
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
 }
@@ -497,7 +493,7 @@ void ChassisGimbalShooterManual::dPress()
   {
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
 }
@@ -592,9 +588,8 @@ void ChassisGimbalShooterManual::shiftPress()
 {
   if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::FOLLOW && is_gyro_)
   {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
     vel_cmd_sender_->setAngularZVel(1.0);
-    is_gyro_ = false;
   }
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
 }
