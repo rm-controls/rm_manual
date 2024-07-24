@@ -205,7 +205,7 @@ void Engineer2Manual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 void Engineer2Manual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   servo_command_sender_->setLinearVel(dbus_data->wheel, dbus_data->ch_l_x, -dbus_data->ch_l_y);
-  servo_command_sender_->setAngularVel(-angular_z_scale_, -dbus_data->ch_r_y, dbus_data->ch_r_x);
+  servo_command_sender_->setAngularVel(-angular_z_scale_, -dbus_data->ch_r_y, -dbus_data->ch_r_x);
 }
 
 void Engineer2Manual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
@@ -221,8 +221,6 @@ void Engineer2Manual::stoneNumCallback(const std_msgs::String::ConstPtr& data)
   auto it = stoneNumMap_.find(data->data);
   if (it != stoneNumMap_.end())
     engineer_ui_.stone_num[it->second] = (data->data[0] == '+');
-  if (engineer_ui_.stone_num[1] == false && engineer_ui_.stone_num[2] == false && engineer_ui_.stone_num[3] == false)
-    runStepQueue("CLOSE_SILVER_GRIPPER");
 }
 
 void Engineer2Manual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
@@ -238,6 +236,7 @@ void Engineer2Manual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
     engineer_ui_.gripper_state[i] = data->gpio_state[i];
   }
   engineer_ui_.gripper_state[5] = data->gpio_state[7];
+  main_gripper_on_ = data->gpio_state[0];
 }
 
 void Engineer2Manual::sendCommand(const ros::Time& time)
@@ -290,17 +289,9 @@ void Engineer2Manual::actionDoneCallback(const actionlib::SimpleClientGoalState&
     initMode();
     changeSpeedMode(NORMAL);
   }
-  if (!exchange_level_.empty())
+  if (prefix_ == "LV4_" || prefix_ == "LV5_L_" || prefix_ == "LV5_R_")
   {
-    prefix_ = exchange_level_ + exchange_direction_;
-    root_ = "EXCHANGE";
-    runStepQueue(prefix_ + root_);
-  }
-  if (root_ == "EXCHANGE")
-  {
-    exchange_level_.clear();
-    exchange_direction_.clear();
-    has_ground_stone_ = false;
+    had_stone_in_hand_ = false;
     changeSpeedMode(EXCHANGE);
     enterServo();
   }
@@ -314,7 +305,7 @@ void Engineer2Manual::enterServo()
   servo_reset_caller_->callService();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
   action_client_.cancelAllGoals();
-  chassis_cmd_sender_->getMsg()->command_source_frame = "link3";
+  chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
   engineer_ui_.control_mode = "SERVO";
 }
 
@@ -324,7 +315,7 @@ void Engineer2Manual::initMode()
   gimbal_mode_ = DIRECT;
   changeSpeedMode(NORMAL);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-  chassis_cmd_sender_->getMsg()->command_source_frame = "base_link";
+  chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
   engineer_ui_.control_mode = "NORMAL";
 }
 
@@ -394,7 +385,7 @@ void Engineer2Manual::leftSwitchUpFall()
 
 void Engineer2Manual::leftSwitchDownRise()
 {
-  if (main_gripper_state_ == "close")
+  if (!main_gripper_on_)
   {
     runStepQueue("OPEN_MAIN_GRIPPER");
   }
@@ -436,7 +427,7 @@ void Engineer2Manual::bRelease()
 }
 void Engineer2Manual::cPressing()
 {
-  angular_z_scale_ = 0.6;
+  angular_z_scale_ = -0.8;
 }
 void Engineer2Manual::cRelease()
 {
@@ -488,22 +479,22 @@ void Engineer2Manual::xPress()
   switch (gimbal_direction_)
   {
     case 0:
-      runStepQueue("GIMBAL_RIGHT");
+      runStepQueue("GIMBAL_R");
       gimbal_direction_ = 1;
       break;
     case 1:
-      runStepQueue("GIMBAL_LEFT");
+      runStepQueue("GIMBAL_L");
       gimbal_direction_ = 2;
       break;
     case 2:
-      runStepQueue("GIMBAL_FRONT");
+      runStepQueue("GIMBAL_F");
       gimbal_direction_ = 0;
       break;
   }
 }
 void Engineer2Manual::zPressing()
 {
-  angular_z_scale_ = -0.6;
+  angular_z_scale_ = 0.8;
 }
 void Engineer2Manual::zRelease()
 {
@@ -556,16 +547,21 @@ void Engineer2Manual::ctrlFPress()
 }
 void Engineer2Manual::ctrlGPress()
 {
+  prefix_ = "";
+  root_ = "MID_BIG_ISLAND";
+  changeSpeedMode(LOW);
+  runStepQueue(prefix_ + root_);
 }
 void Engineer2Manual::ctrlQPress()
 {
 }
 void Engineer2Manual::ctrlRPress()
 {
+  runStepQueue("MIDDLE_PITCH_UP");
   prefix_ = "";
   root_ = "CALIBRATION";
   servo_mode_ = JOINT;
-  has_ground_stone_ = false;
+  had_stone_in_hand_ = false;
   calibration_gather_->reset();
   runStepQueue("CLOSE_ALL_GRIPPER");
   ROS_INFO_STREAM("START CALIBRATE");
@@ -577,6 +573,7 @@ void Engineer2Manual::ctrlSPress()
 {
   prefix_ = "BOTH_";
   root_ = "BIG_ISLAND";
+  had_stone_in_hand_ = true;
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
@@ -591,6 +588,7 @@ void Engineer2Manual::ctrlWPress()
 {
   prefix_ = "SIDE_";
   root_ = "BIG_ISLAND";
+  had_stone_in_hand_ = true;
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
@@ -607,12 +605,10 @@ void Engineer2Manual::ctrlZPress()
 void Engineer2Manual::shiftPressing()
 {
   changeSpeedMode(FAST);
-  ROS_INFO_ONCE("ENTER FAST SPEED MODE");
 }
 void Engineer2Manual::shiftRelease()
 {
   changeSpeedMode(NORMAL);
-  ROS_INFO_ONCE("EXIT FAST SPEED MODE");
 }
 void Engineer2Manual::shiftBPress()
 {
@@ -637,24 +633,21 @@ void Engineer2Manual::shiftCPress()
 }
 void Engineer2Manual::shiftEPress()
 {
-  exchange_level_ = "LV5_";
-  exchange_direction_ = "R_";
-  if (!has_ground_stone_)
+  prefix_ = "LV5_R_";
+  if (!had_stone_in_hand_)
   {
-    prefix_ = "GET_STORED_";
     if (engineer_ui_.stone_num[0])
-      root_ = "GOLD";
+      root_ = "G";
     else if (engineer_ui_.stone_num[3])
-      root_ = "SILVER3";
+      root_ = "S3";
     else if (engineer_ui_.stone_num[2])
-      root_ = "SILVER2";
+      root_ = "S2";
     else if (engineer_ui_.stone_num[1])
-      root_ = "SILVER1";
+      root_ = "S1";
     runStepQueue(prefix_ + root_);
   }
   else
   {
-    prefix_ = "LV5_R_";
     root_ = "EXCHANGE";
     runStepQueue(prefix_ + root_);
   }
@@ -664,48 +657,42 @@ void Engineer2Manual::shiftFPress()
 }
 void Engineer2Manual::shiftGPress()
 {
-  exchange_level_ = "LV4_";
-  exchange_direction_ = "";
-  if (!has_ground_stone_)
+  prefix_ = "LV4_";
+  if (!had_stone_in_hand_)
   {
-    prefix_ = "GET_STORED_";
     if (engineer_ui_.stone_num[0])
-      root_ = "GOLD";
+      root_ = "G";
     else if (engineer_ui_.stone_num[3])
-      root_ = "SILVER3";
+      root_ = "S3";
     else if (engineer_ui_.stone_num[2])
-      root_ = "SILVER2";
+      root_ = "S2";
     else if (engineer_ui_.stone_num[1])
-      root_ = "SILVER1";
+      root_ = "S1";
     runStepQueue(prefix_ + root_);
   }
   else
   {
-    prefix_ = "LV4_";
     root_ = "EXCHANGE";
     runStepQueue(prefix_ + root_);
   }
 }
 void Engineer2Manual::shiftQPress()
 {
-  exchange_level_ = "LV5_";
-  exchange_direction_ = "L_";
-  if (!has_ground_stone_)
+  prefix_ = "LV5_L_";
+  if (!had_stone_in_hand_)
   {
-    prefix_ = "GET_STORED_";
     if (engineer_ui_.stone_num[0])
-      root_ = "GOLD";
+      root_ = "G";
     else if (engineer_ui_.stone_num[3])
-      root_ = "SILVER3";
+      root_ = "S3";
     else if (engineer_ui_.stone_num[2])
-      root_ = "SILVER2";
+      root_ = "S2";
     else if (engineer_ui_.stone_num[1])
-      root_ = "SILVER1";
+      root_ = "S1";
     runStepQueue(prefix_ + root_);
   }
   else
   {
-    prefix_ = "LV5_L_";
     root_ = "EXCHANGE";
     runStepQueue(prefix_ + root_);
   }
@@ -718,21 +705,23 @@ void Engineer2Manual::shiftRRelease()
 }
 void Engineer2Manual::shiftVPress()
 {
-  if (main_gripper_state_ == "close")
+  prefix_ = "";
+  if (!main_gripper_on_)
   {
-    runStepQueue("OPEN_MAIN_GRIPPER");
+    root_ = "OM";
   }
   else
   {
-    runStepQueue("CLOSE_MAIN_GRIPPER");
+    root_ = "CM";
   }
+  runStepQueue(root_);
 }
 void Engineer2Manual::shiftVRelease()
 {
 }
 void Engineer2Manual::shiftXPress()
 {
-  has_ground_stone_ = true;
+  had_stone_in_hand_ = true;
   prefix_ = "";
   root_ = "GET_GROUND_STONE";
   changeSpeedMode(LOW);
