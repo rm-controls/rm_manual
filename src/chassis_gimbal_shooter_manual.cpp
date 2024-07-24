@@ -448,7 +448,7 @@ void ChassisGimbalShooterManual::wPress()
 {
   ChassisGimbalManual::wPress();
   if ((robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO) &&
-      gimbal_cmd_sender_->getEject())
+      (gimbal_cmd_sender_->getEject() && !use_scope_))
   {
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
@@ -461,7 +461,7 @@ void ChassisGimbalShooterManual::aPress()
 {
   ChassisGimbalManual::aPress();
   if ((robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO) &&
-      gimbal_cmd_sender_->getEject())
+      (gimbal_cmd_sender_->getEject() && !use_scope_))
   {
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
@@ -474,7 +474,7 @@ void ChassisGimbalShooterManual::sPress()
 {
   ChassisGimbalManual::sPress();
   if ((robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO) &&
-      gimbal_cmd_sender_->getEject())
+      (gimbal_cmd_sender_->getEject() && !use_scope_))
   {
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
@@ -487,7 +487,7 @@ void ChassisGimbalShooterManual::dPress()
 {
   ChassisGimbalManual::dPress();
   if ((robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO) &&
-      gimbal_cmd_sender_->getEject())
+      (gimbal_cmd_sender_->getEject() && !use_scope_))
   {
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
@@ -627,4 +627,5 @@ void ChassisGimbalShooterManual::ctrlQPress()
   shooter_calibration_->reset();
   gimbal_calibration_->reset();
 }
+
 }  // namespace rm_manual
