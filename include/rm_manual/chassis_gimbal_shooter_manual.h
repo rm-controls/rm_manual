@@ -36,6 +36,7 @@ protected:
   void remoteControlTurnOff() override;
   void remoteControlTurnOn() override;
   void robotDie() override;
+  void robotRevive() override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
