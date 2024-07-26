@@ -644,7 +644,5 @@ void ChassisGimbalShooterManual::eventDataCallback(const rm_msgs::EventData::Con
     is_auto_ = true;
   else
     is_auto_ = false;
-  if (data->be_hit_time == 0)
-    is_auto_ = false;
 }
 }  // namespace rm_manual
