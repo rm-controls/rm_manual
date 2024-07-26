@@ -17,11 +17,11 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   gimbal_des_error_sub_ = nh.subscribe<rm_msgs::GimbalDesError>("/controllers/gimbal_controller/error", 10,
                                                                 &ManualBase::gimbalDesErrorCallback, this);
   odom_sub_ = nh.subscribe<nav_msgs::Odometry>("/odom", 10, &ManualBase::odomCallback, this);
-  suggest_fire_sub_ =
-      nh.subscribe<std_msgs::Bool>("/forecast/suggest_fire", 10, &ManualBase::suggestFireCallback, this);
   shoot_beforehand_cmd_sub_ =
       nh.subscribe<rm_msgs::ShootBeforehandCmd>("/controllers/gimbal_controller/bullet_solver/shoot_beforehand_cmd", 10,
                                                 &ManualBase::shootBeforehandCmdCallback, this);
+  suggest_fire_sub_ =
+      nh.subscribe<std_msgs::Bool>("/forecast/suggest_fire", 10, &ManualBase::suggestFireCallback, this);
 
   game_robot_status_sub_ = nh_referee.subscribe<rm_msgs::GameRobotStatus>("game_robot_status", 10,
                                                                           &ManualBase::gameRobotStatusCallback, this);
