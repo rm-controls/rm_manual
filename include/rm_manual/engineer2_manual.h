@@ -115,6 +115,7 @@ private:
   void qPressing();
   void qRelease();
   void rPress();
+  void rRelease();
   void vPressing();
   void vRelease();
   void xPress();
@@ -143,11 +144,11 @@ private:
 
   // Servo
 
-  bool change_flag_{}, had_stone_in_hand_{ false }, main_gripper_on_{ false };
+  bool mouse_left_pressed_{}, had_stone_in_hand_{ false }, main_gripper_on_{ false }, stone_reduced_{ false };
   double angular_z_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
       exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
 
-  std::string prefix_{}, root_{}, exchange_direction_{ "left" }, exchange_level_{};
+  std::string prefix_{}, root_{}, exchange_direction_{ "left" };
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, gimbal_direction_{ 0 };
 
   std::stack<std::string> stone_num_{};

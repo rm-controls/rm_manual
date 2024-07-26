@@ -70,6 +70,7 @@ Engineer2Manual::Engineer2Manual(ros::NodeHandle& nh, ros::NodeHandle& nh_refere
   q_event_.setActiveHigh(boost::bind(&Engineer2Manual::qPressing, this));
   q_event_.setFalling(boost::bind(&Engineer2Manual::qRelease, this));
   r_event_.setRising(boost::bind(&Engineer2Manual::rPress, this));
+  r_event_.setFalling(boost::bind(&Engineer2Manual::rRelease, this));
   v_event_.setActiveHigh(boost::bind(&Engineer2Manual::vPressing, this));
   v_event_.setFalling(boost::bind(&Engineer2Manual::vRelease, this));
   x_event_.setRising(boost::bind(&Engineer2Manual::xPress, this));
@@ -168,6 +169,7 @@ void Engineer2Manual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data
   shift_b_event_.update(dbus_data->key_shift & dbus_data->key_b);
   shift_c_event_.update(dbus_data->key_shift & dbus_data->key_c);
   shift_e_event_.update(dbus_data->key_shift & dbus_data->key_e);
+  shift_f_event_.update(dbus_data->key_shift & dbus_data->key_f);
   shift_g_event_.update(dbus_data->key_shift & dbus_data->key_g);
   shift_q_event_.update(dbus_data->key_shift & dbus_data->key_q);
   shift_r_event_.update(dbus_data->key_shift & dbus_data->key_r);
@@ -281,7 +283,7 @@ void Engineer2Manual::actionDoneCallback(const actionlib::SimpleClientGoalState&
   ROS_INFO("Finished in state [%s]", state.toString().c_str());
   ROS_INFO("Result: %i", result->finish);
   ROS_INFO("Done %s", (prefix_ + root_).c_str());
-  change_flag_ = true;
+  mouse_left_pressed_ = true;
   ROS_INFO("%i", result->finish);
   operating_mode_ = MANUAL;
   if (root_ == "HOME")
@@ -403,10 +405,10 @@ void Engineer2Manual::leftSwitchDownFall()
 // mouse input
 void Engineer2Manual::mouseLeftRelease()
 {
-  if (change_flag_)
+  if (mouse_left_pressed_)
   {
     root_ += "0";
-    change_flag_ = false;
+    mouse_left_pressed_ = false;
     runStepQueue(prefix_ + root_);
     ROS_INFO("Finished %s", (prefix_ + root_).c_str());
   }
@@ -467,7 +469,27 @@ void Engineer2Manual::qRelease()
 }
 void Engineer2Manual::rPress()
 {
+  //  if (!stone_reduced_)
+  //  {
+  if (had_stone_in_hand_)
+    had_stone_in_hand_ = false;
+  else if (engineer_ui_.stone_num[0])
+    engineer_ui_.stone_num[0] = false;
+  else if (engineer_ui_.stone_num[3])
+    engineer_ui_.stone_num[3] = false;
+  else if (engineer_ui_.stone_num[2])
+    engineer_ui_.stone_num[2] = false;
+  else if (engineer_ui_.stone_num[1])
+    engineer_ui_.stone_num[1] = false;
+  stone_reduced_ = true;
+  //  }
 }
+
+void Engineer2Manual::rRelease()
+{
+  stone_reduced_ = false;
+}
+
 void Engineer2Manual::vPressing()
 {
 }
@@ -633,6 +655,7 @@ void Engineer2Manual::shiftCPress()
 }
 void Engineer2Manual::shiftEPress()
 {
+  exchange_direction_ = "right";
   prefix_ = "LV5_R_";
   if (!had_stone_in_hand_)
   {
@@ -654,6 +677,13 @@ void Engineer2Manual::shiftEPress()
 }
 void Engineer2Manual::shiftFPress()
 {
+  if (exchange_direction_ == "left")
+    prefix_ = "LV5_L_";
+  else
+    prefix_ = "LV5_R_";
+
+  root_ = "EXCHANGE";
+  runStepQueue(prefix_ + root_);
 }
 void Engineer2Manual::shiftGPress()
 {
@@ -675,9 +705,11 @@ void Engineer2Manual::shiftGPress()
     root_ = "EXCHANGE";
     runStepQueue(prefix_ + root_);
   }
+  ROS_INFO_STREAM(prefix_ + root_);
 }
 void Engineer2Manual::shiftQPress()
 {
+  exchange_direction_ = "left";
   prefix_ = "LV5_L_";
   if (!had_stone_in_hand_)
   {
@@ -696,6 +728,7 @@ void Engineer2Manual::shiftQPress()
     root_ = "EXCHANGE";
     runStepQueue(prefix_ + root_);
   }
+  ROS_INFO_STREAM(prefix_ + root_);
 }
 void Engineer2Manual::shiftRPress()
 {
@@ -725,10 +758,24 @@ void Engineer2Manual::shiftXPress()
   prefix_ = "";
   root_ = "GET_GROUND_STONE";
   changeSpeedMode(LOW);
+  ROS_INFO_STREAM(prefix_ + root_);
   runStepQueue(prefix_ + root_);
 }
 void Engineer2Manual::shiftZPress()
 {
+  if (exchange_direction_ == "left")
+  {
+    prefix_ = "LV5_R_";
+    exchange_direction_ = "right";
+  }
+  else if (exchange_direction_ == "right")
+  {
+    prefix_ = "LV5_L_";
+    exchange_direction_ = "left";
+  }
+  root_ = "EXCHANGE";
+  ROS_INFO_STREAM(prefix_ + root_);
+  runStepQueue(prefix_ + root_);
 }
 void Engineer2Manual::shiftZRelease()
 {
