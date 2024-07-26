@@ -233,6 +233,7 @@ void ChassisGimbalShooterCoverManual::mouseRightPress()
     else
     {
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+      shooter_cmd_sender_->checkError(ros::Time::now());
     }
   }
   else if (!mouse_left_event_.getState() && shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
