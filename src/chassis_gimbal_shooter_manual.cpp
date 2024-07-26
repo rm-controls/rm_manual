@@ -159,6 +159,13 @@ void ChassisGimbalShooterManual::suggestFireCallback(const std_msgs::Bool::Const
   shooter_cmd_sender_->updateSuggestFireData(*data);
 }
 
+void ChassisGimbalShooterManual::shootDataCallback(const rm_msgs::ShootData::ConstPtr& data)
+{
+  ChassisGimbalManual::shootDataCallback(data);
+  if (referee_is_online_ && !use_scope_)
+    shooter_cmd_sender_->updateShootData(*data);
+}
+
 void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
 {
   ChassisGimbalManual::sendCommand(time);
@@ -370,16 +377,16 @@ void ChassisGimbalShooterManual::mouseRightPress()
   else
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
-      gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
-    }
-    if (switch_armor_target_srv_->getArmorTarget() == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
+    gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());
+  }
+  if (switch_armor_target_srv_->getArmorTarget() == rm_msgs::StatusChangeRequest::ARMOR_OUTPOST_BASE)
+  {
+    if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP)
     {
-      if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP)
-      {
-        shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
-        shooter_cmd_sender_->checkError(ros::Time::now());
-      }
+      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+      shooter_cmd_sender_->checkError(ros::Time::now());
     }
+  }
 }
 
 void ChassisGimbalShooterManual::ePress()
@@ -450,7 +457,7 @@ void ChassisGimbalShooterManual::wPress()
 {
   ChassisGimbalManual::wPress();
   if ((robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO) &&
-      gimbal_cmd_sender_->getEject())
+      (gimbal_cmd_sender_->getEject() && !use_scope_))
   {
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
@@ -463,7 +470,7 @@ void ChassisGimbalShooterManual::aPress()
 {
   ChassisGimbalManual::aPress();
   if ((robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO) &&
-      gimbal_cmd_sender_->getEject())
+      (gimbal_cmd_sender_->getEject() && !use_scope_))
   {
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
@@ -476,7 +483,7 @@ void ChassisGimbalShooterManual::sPress()
 {
   ChassisGimbalManual::sPress();
   if ((robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO) &&
-      gimbal_cmd_sender_->getEject())
+      (gimbal_cmd_sender_->getEject() && !use_scope_))
   {
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
@@ -489,7 +496,7 @@ void ChassisGimbalShooterManual::dPress()
 {
   ChassisGimbalManual::dPress();
   if ((robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO) &&
-      gimbal_cmd_sender_->getEject())
+      (gimbal_cmd_sender_->getEject() && !use_scope_))
   {
     gimbal_cmd_sender_->setEject(false);
     manual_to_referee_pub_data_.hero_eject_flag = gimbal_cmd_sender_->getEject();
