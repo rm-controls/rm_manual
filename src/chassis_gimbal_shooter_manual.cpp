@@ -635,12 +635,12 @@ void ChassisGimbalShooterManual::eventDataCallback(const rm_msgs::EventData::Con
   if (data->be_hit_time != last_time_hit_by_dart_)
   {
     last_time_hit_by_dart_ = data->be_hit_time;
-    hit_time_ = ros::Time::now();
+    start_timer_time_ = ros::Time::now();
     count_ = 0;
   }
-  if ((data->be_hit_target == OUTPOST && (ros::Time::now() - hit_time_).toSec() <= 5) ||
-      (data->be_hit_target == BASE && (ros::Time::now() - hit_time_).toSec() <= 10) ||
-      (data->be_hit_target == MOVE_BASE && (ros::Time::now() - hit_time_).toSec() <= 15))
+  if ((data->be_hit_target == OUTPOST && (ros::Time::now() - start_timer_time_).toSec() <= 5) ||
+      (data->be_hit_target == BASE && (ros::Time::now() - start_timer_time_).toSec() <= 10) ||
+      (data->be_hit_target == MOVE_BASE && (ros::Time::now() - start_timer_time_).toSec() <= 15))
     is_auto_ = true;
   else
     is_auto_ = false;

@@ -131,7 +131,7 @@ protected:
     MOVE_BASE = 3
   };
 
-  ros::Time hit_time_{};
+  ros::Time start_timer_time_{};
 
   bool prepare_shoot_ = false, turn_flag_ = false, is_balance_ = false, use_scope_ = false, is_auto_ = false,
        adjust_image_transmission_ = false;
