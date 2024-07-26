@@ -227,7 +227,7 @@ void ChassisGimbalShooterCoverManual::mouseRightPress()
       double traj_yaw = M_PI * count_ / 900;
       double traj_pitch = 0.15 * sin(2 * M_PI * (count_ % 900) / 900) + 0.15;
       count_++;
-      gimbal_cmd_sender_->setYawAndPitchTraj(traj_yaw, traj_pitch);
+      gimbal_cmd_sender_->setGimbalTraj(traj_yaw, traj_pitch);
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
     }
     else
