@@ -34,6 +34,7 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   power_heat_data_sub_ =
       nh_referee.subscribe<rm_msgs::PowerHeatData>("power_heat_data", 10, &ManualBase::powerHeatDataCallback, this);
   event_data_sub_ = nh_referee.subscribe<rm_msgs::EventData>("event_data", 10, &ManualBase::eventDataCallback, this);
+  shoot_data_sub_ = nh_referee.subscribe<rm_msgs::ShootData>("shoot_data", 10, &ManualBase::shootDataCallback, this);
 
   // pub
   manual_to_referee_pub_ = nh.advertise<rm_msgs::ManualToReferee>("/manual_to_referee", 1);
