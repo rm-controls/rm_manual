@@ -225,13 +225,15 @@ void ChassisGimbalShooterCoverManual::mouseRightPress()
     {
       gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
       double traj_yaw = M_PI * count_ / 900;
-      double traj_pitch = 0.15 * sin(2 * M_PI * count_ / 900) + 0.2;
-      count_ = (count_ + 1) % 900;
+      double traj_pitch = 0.15 * sin(2 * M_PI * (count_ % 900) / 900) + 0.15;
+      count_++;
       gimbal_cmd_sender_->setYawAndPitchTraj(traj_yaw, traj_pitch);
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
     }
     else
+    {
       shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+    }
   }
   else if (!mouse_left_event_.getState() && shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
