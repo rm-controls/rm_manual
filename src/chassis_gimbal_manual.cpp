@@ -229,10 +229,15 @@ void ChassisGimbalManual::setChassisMode(int mode)
     case rm_msgs::ChassisCmd::RAW:
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
       is_gyro_ = true;
+      if (x_scale_ != 0.0 || y_scale_ != 0.0)
+        vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
+      else
+        vel_cmd_sender_->setAngularZVel(1.0);
       break;
     case rm_msgs::ChassisCmd::FOLLOW:
       chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
       is_gyro_ = false;
+      vel_cmd_sender_->setAngularZVel(0.0);
       break;
   }
 }
