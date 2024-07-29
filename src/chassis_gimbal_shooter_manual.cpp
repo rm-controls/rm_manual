@@ -49,8 +49,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
                    boost::bind(&ChassisGimbalShooterManual::qRelease, this));
   b_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::bPress, this),
                    boost::bind(&ChassisGimbalShooterManual::bRelease, this));
-  x_event_.setRising(boost::bind(&ChassisGimbalShooterManual::xPress, this));
-  x_event_.setActiveLow(boost::bind(&ChassisGimbalShooterManual::xReleasing, this));
+  x_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::xPress, this),
+                   boost::bind(&ChassisGimbalShooterManual::xRelease, this));
   r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::rPress, this));
   g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
   v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::vPress, this));
@@ -58,7 +58,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
   ctrl_q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlQPress, this));
-  ctrl_r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this));
+  ctrl_r_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this),
+                        boost::bind(&ChassisGimbalShooterManual::ctrlRRelease, this));
   shift_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::shiftPress, this),
                        boost::bind(&ChassisGimbalShooterManual::shiftRelease, this));
   mouse_left_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::mouseLeftPress, this));
@@ -196,7 +197,6 @@ void ChassisGimbalShooterManual::remoteControlTurnOff()
   shooter_cmd_sender_->setZero();
   shooter_calibration_->stop();
   gimbal_calibration_->stop();
-  turn_flag_ = false;
   use_scope_ = false;
   adjust_image_transmission_ = false;
 }
@@ -214,7 +214,6 @@ void ChassisGimbalShooterManual::robotDie()
 {
   ManualBase::robotDie();
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
-  turn_flag_ = false;
   use_scope_ = false;
   adjust_image_transmission_ = false;
 }
@@ -544,39 +543,22 @@ void ChassisGimbalShooterManual::dPressing()
 
 void ChassisGimbalShooterManual::xPress()
 {
-  turn_flag_ = true;
-  geometry_msgs::PointStamped point_in;
+  double roll{}, pitch{}, yaw{};
   try
   {
-    point_in.header.frame_id = "yaw";
-    point_in.point.x = -1.;
-    point_in.point.y = 0.;
-    point_in.point.z = tf_buffer_.lookupTransform("yaw", "pitch", ros::Time(0)).transform.translation.z;
-    tf2::doTransform(point_in, point_out_, tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)));
-
-    double roll{}, pitch{};
-    quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw_current_);
+    quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
   }
   catch (tf2::TransformException& ex)
   {
     ROS_WARN("%s", ex.what());
   }
+  gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
+  gimbal_cmd_sender_->setGimbalTraj(yaw + M_PI, pitch);
 }
 
-void ChassisGimbalShooterManual::xReleasing()
+void ChassisGimbalShooterManual::xRelease()
 {
-  if (turn_flag_)
-  {
-    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::DIRECT);
-    gimbal_cmd_sender_->setPoint(point_out_);
-    double roll{}, pitch{}, yaw{};
-    quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
-    if (std::abs(angles::shortest_angular_distance(yaw, yaw_current_)) > finish_turning_threshold_)
-    {
-      gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-      turn_flag_ = false;
-    }
-  }
+  gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
 }
 
 void ChassisGimbalShooterManual::vPress()
@@ -613,6 +595,25 @@ void ChassisGimbalShooterManual::ctrlRPress()
 {
   if (image_transmission_cmd_sender_)
     adjust_image_transmission_ = !image_transmission_cmd_sender_->getState();
+  if (adjust_image_transmission_)
+  {
+    double roll{}, pitch{}, yaw{};
+    try
+    {
+      quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
+    }
+    catch (tf2::TransformException& ex)
+    {
+      ROS_WARN("%s", ex.what());
+    }
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
+    gimbal_cmd_sender_->setGimbalTraj(yaw, pitch - 0.64);
+  }
+}
+
+void ChassisGimbalShooterManual::ctrlRRelease()
+{
+  gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
 }
 
 void ChassisGimbalShooterManual::ctrlBPress()
