@@ -88,7 +88,7 @@ protected:
   virtual void bPress();
   virtual void bRelease();
   virtual void rPress();
-  virtual void xReleasing();
+  virtual void xRelease();
   virtual void shiftPress();
   virtual void shiftRelease();
   void qPress()
@@ -106,6 +106,7 @@ protected:
   void ctrlVPress();
   void ctrlBPress();
   void ctrlRPress();
+  void ctrlRRelease();
   virtual void ctrlQPress();
 
   InputEvent self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_, b_event_, x_event_,
@@ -123,8 +124,7 @@ protected:
   geometry_msgs::PointStamped point_out_;
   uint8_t last_shoot_freq_{};
 
-  bool prepare_shoot_ = false, turn_flag_ = false, is_balance_ = false, use_scope_ = false,
-       adjust_image_transmission_ = false;
+  bool prepare_shoot_ = false, is_balance_ = false, use_scope_ = false, adjust_image_transmission_ = false;
   double yaw_current_{};
 };
 }  // namespace rm_manual
