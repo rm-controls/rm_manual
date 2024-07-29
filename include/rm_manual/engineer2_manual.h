@@ -176,6 +176,13 @@ private:
   std::unordered_map<std::string, int> stoneNumMap_ = {
     { "+g", 0 }, { "+s1", 1 }, { "+s2", 2 }, { "+s3", 3 }, { "-g", 0 }, { "-s1", 1 }, { "-s2", 2 }, { "-s3", 3 },
   };
+
+  enum UiState
+  {
+    NONE,
+    BIG_ISLAND,
+    SMALL_ISLAND
+  };
 };
 
 }  // namespace rm_manual

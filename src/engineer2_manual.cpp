@@ -26,7 +26,7 @@ Engineer2Manual::Engineer2Manual(ros::NodeHandle& nh, ros::NodeHandle& nh_refere
   ros::NodeHandle chassis_nh(nh, "chassis");
   chassis_nh.param("fast_speed_scale", fast_speed_scale_, 1.0);
   chassis_nh.param("normal_speed_scale", normal_speed_scale_, 0.5);
-  chassis_nh.param("low_speed_scale", low_speed_scale_, 0.3);
+  chassis_nh.param("low_speed_scale", low_speed_scale_, 0.1);
   chassis_nh.param("exchange_speed_scale", exchange_speed_scale_, 0.2);
   chassis_nh.param("fast_gyro_scale", fast_gyro_scale_, 0.5);
   chassis_nh.param("normal_gyro_scale", normal_gyro_scale_, 0.15);
@@ -285,6 +285,8 @@ void Engineer2Manual::actionDoneCallback(const actionlib::SimpleClientGoalState&
   ROS_INFO("Done %s", (prefix_ + root_).c_str());
   mouse_left_pressed_ = true;
   ROS_INFO("%i", result->finish);
+  engineer_ui_.symbol = UiState::NONE;
+
   operating_mode_ = MANUAL;
   if (root_ == "HOME")
   {
@@ -369,8 +371,7 @@ void Engineer2Manual::leftSwitchUpRise()
 {
   prefix_ = "";
   root_ = "CALIBRATION";
-  runStepQueue("MIDDLE_PITCH_UP");
-  runStepQueue("CLOSE_ALL_GRIPPER");
+  runStepQueue("CALIBRATION");
   calibration_gather_->reset();
   for (auto& stone : engineer_ui_.stone_num)
   {
@@ -382,7 +383,6 @@ void Engineer2Manual::leftSwitchUpRise()
 void Engineer2Manual::leftSwitchUpFall()
 {
   runStepQueue("HOME_WITH_PITCH");
-  runStepQueue("CLOSE_ALL_GRIPPER");
 }
 
 void Engineer2Manual::leftSwitchDownRise()
@@ -551,6 +551,7 @@ void Engineer2Manual::ctrlCPress()
 }
 void Engineer2Manual::ctrlDPress()
 {
+  engineer_ui_.symbol = UiState::SMALL_ISLAND;
   prefix_ = "GRIPPER_";
   root_ = "THREE_SILVER";
   changeSpeedMode(LOW);
@@ -569,6 +570,7 @@ void Engineer2Manual::ctrlFPress()
 }
 void Engineer2Manual::ctrlGPress()
 {
+  engineer_ui_.symbol = UiState::BIG_ISLAND;
   prefix_ = "";
   root_ = "MID_BIG_ISLAND";
   changeSpeedMode(LOW);
@@ -579,20 +581,21 @@ void Engineer2Manual::ctrlQPress()
 }
 void Engineer2Manual::ctrlRPress()
 {
-  runStepQueue("MIDDLE_PITCH_UP");
+  runStepQueue("CALIBRATION");
   prefix_ = "";
   root_ = "CALIBRATION";
   servo_mode_ = JOINT;
   had_stone_in_hand_ = false;
   calibration_gather_->reset();
-  runStepQueue("CLOSE_ALL_GRIPPER");
   ROS_INFO_STREAM("START CALIBRATE");
   changeSpeedMode(NORMAL);
   for (auto& stone : engineer_ui_.stone_num)
     stone = false;
+  runStepQueue("CA");
 }
 void Engineer2Manual::ctrlSPress()
 {
+  engineer_ui_.symbol = UiState::BIG_ISLAND;
   prefix_ = "BOTH_";
   root_ = "BIG_ISLAND";
   had_stone_in_hand_ = true;
@@ -608,6 +611,7 @@ void Engineer2Manual::ctrlVRelease()
 }
 void Engineer2Manual::ctrlWPress()
 {
+  engineer_ui_.symbol = UiState::BIG_ISLAND;
   prefix_ = "SIDE_";
   root_ = "BIG_ISLAND";
   had_stone_in_hand_ = true;
@@ -756,7 +760,7 @@ void Engineer2Manual::shiftXPress()
 {
   had_stone_in_hand_ = true;
   prefix_ = "";
-  root_ = "GET_GROUND_STONE";
+  root_ = "GROUND_STONE";
   changeSpeedMode(LOW);
   ROS_INFO_STREAM(prefix_ + root_);
   runStepQueue(prefix_ + root_);
