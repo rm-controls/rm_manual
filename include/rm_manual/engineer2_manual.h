@@ -144,11 +144,11 @@ private:
 
   // Servo
 
-  bool mouse_left_pressed_{}, had_stone_in_hand_{ false }, main_gripper_on_{ false }, stone_reduced_{ false };
+  bool mouse_left_pressed_{}, had_ground_stone_{ false }, main_gripper_on_{ false }, had_side_gold_{ false };
   double angular_z_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
       exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
 
-  std::string prefix_{}, root_{}, exchange_direction_{ "left" };
+  std::string prefix_{}, root_{}, exchange_direction_{ "left" }, exchange_arm_position_{ "normal" };
   int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, gimbal_direction_{ 0 };
 
   std::stack<std::string> stone_num_{};

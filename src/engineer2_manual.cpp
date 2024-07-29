@@ -10,7 +10,7 @@ Engineer2Manual::Engineer2Manual(ros::NodeHandle& nh, ros::NodeHandle& nh_refere
   , operating_mode_(MANUAL)
   , action_client_("/engineer_middleware/move_steps", true)
 {
-  engineer_ui_pub_ = nh.advertise<rm_msgs::Engineer2Ui>("/engineer_ui", 10);
+  engineer_ui_pub_ = nh.advertise<rm_msgs::Engineer2Ui>("/engineer2_ui", 10);
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
@@ -295,7 +295,8 @@ void Engineer2Manual::actionDoneCallback(const actionlib::SimpleClientGoalState&
   }
   if (prefix_ == "LV4_" || prefix_ == "LV5_L_" || prefix_ == "LV5_R_")
   {
-    had_stone_in_hand_ = false;
+    had_ground_stone_ = false;
+    had_side_gold_ = false;
     changeSpeedMode(EXCHANGE);
     enterServo();
   }
@@ -372,6 +373,8 @@ void Engineer2Manual::leftSwitchUpRise()
   prefix_ = "";
   root_ = "CALIBRATION";
   runStepQueue("CALIBRATION");
+  had_side_gold_ = false;
+  had_ground_stone_ = false;
   calibration_gather_->reset();
   for (auto& stone : engineer_ui_.stone_num)
   {
@@ -469,10 +472,10 @@ void Engineer2Manual::qRelease()
 }
 void Engineer2Manual::rPress()
 {
-  //  if (!stone_reduced_)
-  //  {
-  if (had_stone_in_hand_)
-    had_stone_in_hand_ = false;
+  if (had_side_gold_)
+    had_side_gold_ = false;
+  if (had_ground_stone_)
+    had_ground_stone_ = false;
   else if (engineer_ui_.stone_num[0])
     engineer_ui_.stone_num[0] = false;
   else if (engineer_ui_.stone_num[3])
@@ -481,13 +484,10 @@ void Engineer2Manual::rPress()
     engineer_ui_.stone_num[2] = false;
   else if (engineer_ui_.stone_num[1])
     engineer_ui_.stone_num[1] = false;
-  stone_reduced_ = true;
-  //  }
 }
 
 void Engineer2Manual::rRelease()
 {
-  stone_reduced_ = false;
 }
 
 void Engineer2Manual::vPressing()
@@ -585,7 +585,8 @@ void Engineer2Manual::ctrlRPress()
   prefix_ = "";
   root_ = "CALIBRATION";
   servo_mode_ = JOINT;
-  had_stone_in_hand_ = false;
+  had_ground_stone_ = false;
+  had_side_gold_ = false;
   calibration_gather_->reset();
   ROS_INFO_STREAM("START CALIBRATE");
   changeSpeedMode(NORMAL);
@@ -598,7 +599,8 @@ void Engineer2Manual::ctrlSPress()
   engineer_ui_.symbol = UiState::BIG_ISLAND;
   prefix_ = "BOTH_";
   root_ = "BIG_ISLAND";
-  had_stone_in_hand_ = true;
+  had_side_gold_ = true;
+  had_ground_stone_ = false;
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
@@ -614,7 +616,8 @@ void Engineer2Manual::ctrlWPress()
   engineer_ui_.symbol = UiState::BIG_ISLAND;
   prefix_ = "SIDE_";
   root_ = "BIG_ISLAND";
-  had_stone_in_hand_ = true;
+  had_side_gold_ = true;
+  had_ground_stone_ = false;
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
@@ -661,8 +664,19 @@ void Engineer2Manual::shiftEPress()
 {
   exchange_direction_ = "right";
   prefix_ = "LV5_R_";
-  if (!had_stone_in_hand_)
+  if (had_ground_stone_)
   {
+    exchange_arm_position_ = "normal";
+    root_ = "EXCHANGE";
+  }
+  else if (had_side_gold_)
+  {
+    exchange_arm_position_ = "front";
+    root_ = "CAR_FRONT_EXCHANGE";
+  }
+  else
+  {
+    exchange_arm_position_ = "normal";
     if (engineer_ui_.stone_num[0])
       root_ = "G";
     else if (engineer_ui_.stone_num[3])
@@ -671,13 +685,8 @@ void Engineer2Manual::shiftEPress()
       root_ = "S2";
     else if (engineer_ui_.stone_num[1])
       root_ = "S1";
-    runStepQueue(prefix_ + root_);
   }
-  else
-  {
-    root_ = "EXCHANGE";
-    runStepQueue(prefix_ + root_);
-  }
+  runStepQueue(prefix_ + root_);
 }
 void Engineer2Manual::shiftFPress()
 {
@@ -685,15 +694,28 @@ void Engineer2Manual::shiftFPress()
     prefix_ = "LV5_L_";
   else
     prefix_ = "LV5_R_";
-
-  root_ = "EXCHANGE";
+  if (exchange_arm_position_ == "normal")
+    root_ = "EXCHANGE";
+  else
+    root_ = "CAR_FRONT_EXCHANGE";
   runStepQueue(prefix_ + root_);
 }
 void Engineer2Manual::shiftGPress()
 {
   prefix_ = "LV4_";
-  if (!had_stone_in_hand_)
+  if (had_ground_stone_)
   {
+    exchange_arm_position_ = "normal";
+    root_ = "EXCHANGE";
+  }
+  else if (had_side_gold_)
+  {
+    exchange_arm_position_ = "front";
+    root_ = "CAR_FRONT_EXCHANGE";
+  }
+  else
+  {
+    exchange_arm_position_ = "normal";
     if (engineer_ui_.stone_num[0])
       root_ = "G";
     else if (engineer_ui_.stone_num[3])
@@ -702,21 +724,27 @@ void Engineer2Manual::shiftGPress()
       root_ = "S2";
     else if (engineer_ui_.stone_num[1])
       root_ = "S1";
-    runStepQueue(prefix_ + root_);
   }
-  else
-  {
-    root_ = "EXCHANGE";
-    runStepQueue(prefix_ + root_);
-  }
+  runStepQueue(prefix_ + root_);
   ROS_INFO_STREAM(prefix_ + root_);
 }
 void Engineer2Manual::shiftQPress()
 {
   exchange_direction_ = "left";
   prefix_ = "LV5_L_";
-  if (!had_stone_in_hand_)
+  if (had_ground_stone_)
   {
+    exchange_arm_position_ = "normal";
+    root_ = "EXCHANGE";
+  }
+  else if (had_side_gold_)
+  {
+    exchange_arm_position_ = "front";
+    root_ = "CAR_FRONT_EXCHANGE";
+  }
+  else
+  {
+    exchange_arm_position_ = "normal";
     if (engineer_ui_.stone_num[0])
       root_ = "G";
     else if (engineer_ui_.stone_num[3])
@@ -725,13 +753,8 @@ void Engineer2Manual::shiftQPress()
       root_ = "S2";
     else if (engineer_ui_.stone_num[1])
       root_ = "S1";
-    runStepQueue(prefix_ + root_);
   }
-  else
-  {
-    root_ = "EXCHANGE";
-    runStepQueue(prefix_ + root_);
-  }
+  runStepQueue(prefix_ + root_);
   ROS_INFO_STREAM(prefix_ + root_);
 }
 void Engineer2Manual::shiftRPress()
@@ -743,13 +766,13 @@ void Engineer2Manual::shiftRRelease()
 void Engineer2Manual::shiftVPress()
 {
   prefix_ = "";
-  if (!main_gripper_on_)
+  if (main_gripper_on_)
   {
-    root_ = "OM";
+    root_ = "CM";
   }
   else
   {
-    root_ = "CM";
+    root_ = "OM";
   }
   runStepQueue(root_);
 }
@@ -758,7 +781,7 @@ void Engineer2Manual::shiftVRelease()
 }
 void Engineer2Manual::shiftXPress()
 {
-  had_stone_in_hand_ = true;
+  had_ground_stone_ = true;
   prefix_ = "";
   root_ = "GROUND_STONE";
   changeSpeedMode(LOW);
@@ -777,7 +800,10 @@ void Engineer2Manual::shiftZPress()
     prefix_ = "LV5_L_";
     exchange_direction_ = "left";
   }
-  root_ = "EXCHANGE";
+  if (exchange_arm_position_ == "normal")
+    root_ = "EXCHANGE";
+  else
+    root_ = "CAR_FRONT_EXCHANGE";
   ROS_INFO_STREAM(prefix_ + root_);
   runStepQueue(prefix_ + root_);
 }
