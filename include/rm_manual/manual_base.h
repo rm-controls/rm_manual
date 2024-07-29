@@ -35,6 +35,7 @@
 #include <rm_msgs/GimbalPosState.h>
 #include <rm_msgs/GameRobotStatus.h>
 #include <rm_msgs/ManualToReferee.h>
+#include <rm_msgs/ShootData.h>
 #include <rm_msgs/PowerManagementSampleAndStatusData.h>
 #include "rm_manual/input_event.h"
 
@@ -92,6 +93,9 @@ protected:
   virtual void suggestFireCallback(const std_msgs::Bool::ConstPtr& data)
   {
   }
+  virtual void shootDataCallback(const rm_msgs::ShootData::ConstPtr& data)
+  {
+  }
 
   // Referee
   virtual void chassisOutputOn()
@@ -145,7 +149,7 @@ protected:
 
   ros::Subscriber odom_sub_, dbus_sub_, track_sub_, referee_sub_, capacity_sub_, game_status_sub_, joint_state_sub_,
       game_robot_hp_sub_, actuator_state_sub_, power_heat_data_sub_, gimbal_des_error_sub_, game_robot_status_sub_,
-      suggest_fire_sub_, shoot_beforehand_cmd_sub_, gimbal_pos_state_sub_;
+      suggest_fire_sub_, shoot_beforehand_cmd_sub_, gimbal_pos_state_sub_, shoot_data_sub_;
 
   sensor_msgs::JointState joint_state_;
   rm_msgs::TrackData track_data_;
