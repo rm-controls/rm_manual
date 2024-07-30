@@ -134,7 +134,7 @@ protected:
 
   ros::Time start_timer_time_{};
 
-  bool prepare_shoot_ = false, is_balance_ = false, use_scope_ = false,
+  bool prepare_shoot_ = false, is_balance_ = false, use_scope_ = false, is_auto_ = false,
        adjust_image_transmission_ = false;
   double yaw_current_{};
   int count_{}, last_time_hit_by_dart_{};
