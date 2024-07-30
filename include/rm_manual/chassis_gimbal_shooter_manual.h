@@ -88,7 +88,7 @@ protected:
   virtual void bPress();
   virtual void bRelease();
   virtual void rPress();
-  virtual void xReleasing();
+  virtual void xRelease();
   virtual void shiftPress();
   virtual void shiftRelease();
   void qPress()
@@ -106,6 +106,7 @@ protected:
   void ctrlVPress();
   void ctrlBPress();
   void ctrlRPress();
+  void ctrlRRelease();
   virtual void ctrlQPress();
   void eventDataCallback(const rm_msgs::EventData ::ConstPtr& data) override;
 
@@ -133,7 +134,7 @@ protected:
 
   ros::Time start_timer_time_{};
 
-  bool prepare_shoot_ = false, turn_flag_ = false, is_balance_ = false, use_scope_ = false, is_auto_ = false,
+  bool prepare_shoot_ = false, is_balance_ = false, use_scope_ = false,
        adjust_image_transmission_ = false;
   double yaw_current_{};
   int count_{}, last_time_hit_by_dart_{};
