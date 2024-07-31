@@ -72,10 +72,10 @@ void ChassisGimbalManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_
   ManualBase::checkKeyboard(dbus_data);
   if (robot_id_ == rm_msgs::GameRobotStatus::RED_ENGINEER || robot_id_ == rm_msgs::GameRobotStatus::BLUE_ENGINEER)
   {
-    w_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_w);
-    s_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_s);
-    a_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_a);
-    d_event_.update((!dbus_data->key_ctrl) && (!dbus_data->key_shift) && dbus_data->key_d);
+    w_event_.update((!dbus_data->key_ctrl) && dbus_data->key_w);
+    s_event_.update((!dbus_data->key_ctrl) && dbus_data->key_s);
+    a_event_.update((!dbus_data->key_ctrl) && dbus_data->key_a);
+    d_event_.update((!dbus_data->key_ctrl) && dbus_data->key_d);
   }
   else
   {
@@ -219,6 +219,26 @@ void ChassisGimbalManual::mouseMidRise(double m_z)
       gimbal_scale_ += 1.;
     else if (gimbal_scale_ - 1. >= 1. && m_z < 0.)
       gimbal_scale_ -= 1.;
+  }
+}
+
+void ChassisGimbalManual::setChassisMode(int mode)
+{
+  switch (mode)
+  {
+    case rm_msgs::ChassisCmd::RAW:
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+      is_gyro_ = true;
+      if (x_scale_ != 0.0 || y_scale_ != 0.0)
+        vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
+      else
+        vel_cmd_sender_->setAngularZVel(1.0);
+      break;
+    case rm_msgs::ChassisCmd::FOLLOW:
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+      is_gyro_ = false;
+      vel_cmd_sender_->setAngularZVel(0.0);
+      break;
   }
 }
 

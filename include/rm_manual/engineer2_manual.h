@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "rm_manual/chassis_gimbal_manual.h"
+#include "chassis_gimbal_manual.h"
 
 #include <utility>
 #include <std_srvs/Empty.h>
@@ -15,12 +15,13 @@
 #include <rm_msgs/EngineerAction.h>
 #include <rm_msgs/MultiDofCmd.h>
 #include <rm_msgs/GpioData.h>
-#include <rm_msgs/EngineerUi.h>
+#include <rm_msgs/Engineer2Ui.h>
 #include <stack>
+#include "unordered_map"
 
 namespace rm_manual
 {
-class EngineerManual : public ChassisGimbalManual
+class Engineer2Manual : public ChassisGimbalManual
 {
 public:
   enum ControlMode
@@ -49,14 +50,7 @@ public:
     EXCHANGE
   };
 
-  enum ServoOrientation
-  {
-      MID,
-      RIGHT,
-      LEFT
-  };
-
-  EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
+  Engineer2Manual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
   void run() override;
 
 private:
@@ -121,6 +115,7 @@ private:
   void qPressing();
   void qRelease();
   void rPress();
+  void rRelease();
   void vPressing();
   void vRelease();
   void xPress();
@@ -149,16 +144,12 @@ private:
 
   // Servo
 
-  bool change_flag_{}, ore_rotator_pos_{ false },
-      shift_z_pressed_{ false }, ore_lifter_on_{ false }, v_pressed_{ false };
-
+  bool mouse_left_pressed_{}, had_ground_stone_{ false }, main_gripper_on_{ false }, had_side_gold_{ false };
   double angular_z_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
       exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
 
-  std::string prefix_{}, root_{}, reversal_state_{}, drag_state_{ "off" }, gripper_state_{ "off" }, last_ore_{};
-
-  int operating_mode_{}, servo_mode_{}, servo_orientation_{ 0 }, gimbal_mode_{}, gimbal_height_{ 0 }, gimbal_direction_{ 0 },
-      ore_lifter_pos_{ 0 };
+  std::string prefix_{}, root_{}, exchange_direction_{ "left" }, exchange_arm_position_{ "normal" };
+  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, gimbal_direction_{ 0 };
 
   std::stack<std::string> stone_num_{};
 
@@ -167,13 +158,11 @@ private:
   ros::Publisher engineer_ui_pub_;
 
   rm_msgs::GpioData gpio_state_;
-  rm_msgs::EngineerUi engineer_ui_, old_ui_;
+  rm_msgs::Engineer2Ui engineer_ui_, old_ui_;
 
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
-
-  rm_common::CalibrationQueue *calibration_gather_{}, *pitch_calibration_, *ore_bin_lifter_calibration_{};
-
+  rm_common::CalibrationQueue* calibration_gather_{};
 
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 
@@ -183,6 +172,17 @@ private:
       v_event_, x_event_, z_event_, shift_event_, shift_b_event_, shift_c_event_, shift_e_event_, shift_f_event_,
       shift_g_event_, shift_v_event_, shift_q_event_, shift_r_event_, shift_x_event_, shift_z_event_, mouse_left_event_,
       mouse_right_event_;
+
+  std::unordered_map<std::string, int> stoneNumMap_ = {
+    { "+g", 0 }, { "+s1", 1 }, { "+s2", 2 }, { "+s3", 3 }, { "-g", 0 }, { "-s1", 1 }, { "-s2", 2 }, { "-s3", 3 },
+  };
+
+  enum UiState
+  {
+    NONE,
+    BIG_ISLAND,
+    SMALL_ISLAND
+  };
 };
 
 }  // namespace rm_manual

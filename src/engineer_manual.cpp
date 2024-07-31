@@ -49,6 +49,8 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ctrl_a_event_.setRising(boost::bind(&EngineerManual::ctrlAPress, this));
   ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
+  ctrl_b_event_.setActiveHigh(boost::bind(&EngineerManual::ctrlBPressing, this));
+  ctrl_b_event_.setFalling(boost::bind(&EngineerManual::ctrlBRelease, this));
   ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
   ctrl_e_event_.setRising(boost::bind(&EngineerManual::ctrlEPress, this));
   ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
@@ -469,7 +471,6 @@ void EngineerManual::ctrlBPress()
     runStepQueue(prefix_ + root_);
     ROS_INFO_STREAM("RUN_HOME");
     changeSpeedMode(NORMAL);
-
 }
 
 void EngineerManual::ctrlCPress()
