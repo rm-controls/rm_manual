@@ -16,6 +16,7 @@
 #include <rm_msgs/MultiDofCmd.h>
 #include <rm_msgs/GpioData.h>
 #include <rm_msgs/EngineerUi.h>
+#include <stack>
 
 namespace rm_manual
 {
@@ -46,6 +47,13 @@ public:
     NORMAL,
     FAST,
     EXCHANGE
+  };
+
+  enum ServoOrientation
+  {
+      MID,
+      RIGHT,
+      LEFT
   };
 
   EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
@@ -122,40 +130,44 @@ private:
   void shiftBPress();
   void shiftBRelease();
   void shiftCPress();
+  void shiftEPress();
   void shiftFPress();
   void shiftGPress();
+  void shiftQPress();
   void shiftRPress();
   void shiftRRelease();
   void shiftVPress();
   void shiftVRelease();
   void shiftXPress();
   void shiftZPress();
+  void shiftZRelease();
 
   void mouseLeftRelease();
   void mouseRightRelease();
 
   // Servo
 
-  bool change_flag_{};
+  bool change_flag_{}, ore_rotator_pos_{ false },
+      shift_z_pressed_{ false }, ore_lifter_on_{ false }, v_pressed_{ false };
   double angular_z_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
       exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
 
-  std::string prefix_{}, root_{}, reversal_state_{}, drag_state_{ "off" }, gripper_state_{ "off" };
-  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, stone_num_{ 0 }, gimbal_height_{ 0 };
+  std::string prefix_{}, root_{}, reversal_state_{}, drag_state_{ "off" }, gripper_state_{ "off" }, last_ore_{};
+  int operating_mode_{}, servo_mode_{}, servo_orientation_{0}, gimbal_mode_{}, gimbal_height_{ 0 }, gimbal_direction_{ 0 },
+      ore_lifter_pos_{ 0 };
+
+  std::stack<std::string> stone_num_{};
 
   ros::Time last_time_;
   ros::Subscriber stone_num_sub_, gripper_state_sub_;
   ros::Publisher engineer_ui_pub_;
 
   rm_msgs::GpioData gpio_state_;
-  rm_msgs::EngineerUi engineer_ui_;
+  rm_msgs::EngineerUi engineer_ui_, old_ui_;
 
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
-  rm_common::JointPositionBinaryCommandSender *extend_arm_a_command_sender_, *extend_arm_b_command_sender_;
-  rm_common::JointPointCommandSender *ore_bin_lifter_command_sender_, *ore_bin_rotate_command_sender_,
-      *gimbal_lifter_command_sender_;
-  rm_common::CalibrationQueue *calibration_gather_{}, *pitch_calibration_;
+  rm_common::CalibrationQueue *calibration_gather_{}, *pitch_calibration_, *ore_bin_lifter_calibration_{};
 
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 
