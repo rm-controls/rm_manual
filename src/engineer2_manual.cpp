@@ -10,7 +10,7 @@ Engineer2Manual::Engineer2Manual(ros::NodeHandle& nh, ros::NodeHandle& nh_refere
   , operating_mode_(MANUAL)
   , action_client_("/engineer_middleware/move_steps", true)
 {
-  engineer_ui_pub_ = nh.advertise<rm_msgs::Engineer2Ui>("/engineer2_ui", 10);
+  engineer_ui_pub_ = nh.advertise<rm_msgs::EngineerUi>("/engineer_ui", 10);
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
@@ -223,7 +223,7 @@ void Engineer2Manual::stoneNumCallback(const std_msgs::String::ConstPtr& data)
 {
   auto it = stoneNumMap_.find(data->data);
   if (it != stoneNumMap_.end())
-    engineer_ui_.stone_num[it->second] = (data->data[0] == '+');
+    stone_state_[it->second] = (data->data[0] == '+');
 }
 
 void Engineer2Manual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
@@ -377,7 +377,7 @@ void Engineer2Manual::leftSwitchUpRise()
   had_side_gold_ = false;
   had_ground_stone_ = false;
   calibration_gather_->reset();
-  for (auto& stone : engineer_ui_.stone_num)
+  for (auto& stone : stone_state_)
   {
     stone = false;
   }
@@ -477,14 +477,14 @@ void Engineer2Manual::rPress()
     had_side_gold_ = false;
   if (had_ground_stone_)
     had_ground_stone_ = false;
-  else if (engineer_ui_.stone_num[0])
-    engineer_ui_.stone_num[0] = false;
-  else if (engineer_ui_.stone_num[3])
-    engineer_ui_.stone_num[3] = false;
-  else if (engineer_ui_.stone_num[2])
-    engineer_ui_.stone_num[2] = false;
-  else if (engineer_ui_.stone_num[1])
-    engineer_ui_.stone_num[1] = false;
+  else if (stone_state_[0])
+    stone_state_[0] = false;
+  else if (stone_state_[3])
+    stone_state_[3] = false;
+  else if (stone_state_[2])
+    stone_state_[2] = false;
+  else if (stone_state_[1])
+    stone_state_[1] = false;
 }
 
 void Engineer2Manual::rRelease()
@@ -591,7 +591,7 @@ void Engineer2Manual::ctrlRPress()
   calibration_gather_->reset();
   ROS_INFO_STREAM("START CALIBRATE");
   changeSpeedMode(NORMAL);
-  for (auto& stone : engineer_ui_.stone_num)
+  for (auto& stone : stone_state_)
     stone = false;
   runStepQueue("CA");
 }
@@ -678,13 +678,13 @@ void Engineer2Manual::shiftEPress()
   else
   {
     exchange_arm_position_ = "normal";
-    if (engineer_ui_.stone_num[0])
+    if (stone_state_[0])
       root_ = "G";
-    else if (engineer_ui_.stone_num[3])
+    else if (stone_state_[3])
       root_ = "S3";
-    else if (engineer_ui_.stone_num[2])
+    else if (stone_state_[2])
       root_ = "S2";
-    else if (engineer_ui_.stone_num[1])
+    else if (stone_state_[1])
       root_ = "S1";
   }
   runStepQueue(prefix_ + root_);
@@ -717,13 +717,13 @@ void Engineer2Manual::shiftGPress()
   else
   {
     exchange_arm_position_ = "normal";
-    if (engineer_ui_.stone_num[0])
+    if (stone_state_[0])
       root_ = "G";
-    else if (engineer_ui_.stone_num[3])
+    else if (stone_state_[3])
       root_ = "S3";
-    else if (engineer_ui_.stone_num[2])
+    else if (stone_state_[2])
       root_ = "S2";
-    else if (engineer_ui_.stone_num[1])
+    else if (stone_state_[1])
       root_ = "S1";
   }
   runStepQueue(prefix_ + root_);
@@ -746,13 +746,13 @@ void Engineer2Manual::shiftQPress()
   else
   {
     exchange_arm_position_ = "normal";
-    if (engineer_ui_.stone_num[0])
+    if (stone_state_[0])
       root_ = "G";
-    else if (engineer_ui_.stone_num[3])
+    else if (stone_state_[3])
       root_ = "S3";
-    else if (engineer_ui_.stone_num[2])
+    else if (stone_state_[2])
       root_ = "S2";
-    else if (engineer_ui_.stone_num[1])
+    else if (stone_state_[1])
       root_ = "S1";
   }
   runStepQueue(prefix_ + root_);
