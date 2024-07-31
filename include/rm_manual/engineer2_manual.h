@@ -15,7 +15,8 @@
 #include <rm_msgs/EngineerAction.h>
 #include <rm_msgs/MultiDofCmd.h>
 #include <rm_msgs/GpioData.h>
-#include <rm_msgs/Engineer2Ui.h>
+#include <rm_msgs/EngineerUi.h>
+#include <rm_msgs/VisualizeStateData.h>
 #include <stack>
 #include "unordered_map"
 
@@ -144,7 +145,8 @@ private:
 
   // Servo
 
-  bool mouse_left_pressed_{}, had_ground_stone_{ false }, main_gripper_on_{ false }, had_side_gold_{ false };
+  bool mouse_left_pressed_{}, had_ground_stone_{ false }, main_gripper_on_{ false }, had_side_gold_{ false },
+      stone_state_[4]{};
   double angular_z_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
       exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
 
@@ -155,10 +157,11 @@ private:
 
   ros::Time last_time_;
   ros::Subscriber stone_num_sub_, gripper_state_sub_;
-  ros::Publisher engineer_ui_pub_;
+  ros::Publisher engineer_ui_pub_, gripper_ui_pub_;
 
   rm_msgs::GpioData gpio_state_;
-  rm_msgs::Engineer2Ui engineer_ui_, old_ui_;
+  rm_msgs::EngineerUi engineer_ui_, old_ui_;
+  rm_msgs::VisualizeStateData gripper_state_{};
 
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
