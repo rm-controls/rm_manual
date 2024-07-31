@@ -563,11 +563,15 @@ void Engineer2Manual::ctrlEPress()
 }
 void Engineer2Manual::ctrlFPress()
 {
-  prefix_ = "LV4_";
-  root_ = "EXCHANGE";
-  changeSpeedMode(EXCHANGE);
+  if (exchange_direction_ == "left")
+    prefix_ = "LV5_L_";
+  else
+    prefix_ = "LV5_R_";
+  if (exchange_arm_position_ == "normal")
+    root_ = "EXCHANGE";
+  else
+    root_ = "DROP_GOLD_EXCHANGE";
   runStepQueue(prefix_ + root_);
-  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 void Engineer2Manual::ctrlGPress()
 {
@@ -625,6 +629,12 @@ void Engineer2Manual::ctrlWPress()
 }
 void Engineer2Manual::ctrlXPress()
 {
+  had_ground_stone_ = true;
+  prefix_ = "";
+  root_ = "GROUND_STONE";
+  changeSpeedMode(LOW);
+  ROS_INFO_STREAM(prefix_ + root_);
+  runStepQueue(prefix_ + root_);
 }
 void Engineer2Manual::ctrlZPress()
 {
@@ -673,7 +683,7 @@ void Engineer2Manual::shiftEPress()
   else if (had_side_gold_)
   {
     exchange_arm_position_ = "front";
-    root_ = "CAR_FRONT_EXCHANGE";
+    root_ = "DROP_GOLD_EXCHANGE";
   }
   else
   {
@@ -692,13 +702,20 @@ void Engineer2Manual::shiftEPress()
 void Engineer2Manual::shiftFPress()
 {
   if (exchange_direction_ == "left")
-    prefix_ = "LV5_L_";
-  else
+  {
     prefix_ = "LV5_R_";
+    exchange_direction_ = "right";
+  }
+  else if (exchange_direction_ == "right")
+  {
+    prefix_ = "LV5_L_";
+    exchange_direction_ = "left";
+  }
   if (exchange_arm_position_ == "normal")
     root_ = "EXCHANGE";
   else
     root_ = "CAR_FRONT_EXCHANGE";
+  ROS_INFO_STREAM(prefix_ + root_);
   runStepQueue(prefix_ + root_);
 }
 void Engineer2Manual::shiftGPress()
@@ -741,7 +758,7 @@ void Engineer2Manual::shiftQPress()
   else if (had_side_gold_)
   {
     exchange_arm_position_ = "front";
-    root_ = "CAR_FRONT_EXCHANGE";
+    root_ = "DROP_GOLD_EXCHANGE";
   }
   else
   {
@@ -782,31 +799,13 @@ void Engineer2Manual::shiftVRelease()
 }
 void Engineer2Manual::shiftXPress()
 {
-  had_ground_stone_ = true;
-  prefix_ = "";
-  root_ = "GROUND_STONE";
-  changeSpeedMode(LOW);
-  ROS_INFO_STREAM(prefix_ + root_);
-  runStepQueue(prefix_ + root_);
 }
 void Engineer2Manual::shiftZPress()
 {
-  if (exchange_direction_ == "left")
-  {
-    prefix_ = "LV5_R_";
-    exchange_direction_ = "right";
-  }
-  else if (exchange_direction_ == "right")
-  {
-    prefix_ = "LV5_L_";
-    exchange_direction_ = "left";
-  }
-  if (exchange_arm_position_ == "normal")
-    root_ = "EXCHANGE";
-  else
-    root_ = "CAR_FRONT_EXCHANGE";
-  ROS_INFO_STREAM(prefix_ + root_);
+  prefix_ = "";
+  root_ = "CG";
   runStepQueue(prefix_ + root_);
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 void Engineer2Manual::shiftZRelease()
 {
