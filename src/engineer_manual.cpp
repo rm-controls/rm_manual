@@ -41,8 +41,6 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   calibration_gather_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   nh.getParam("ore_bin_lifter_calibration", rpc_value);
   ore_bin_lifter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
-  nh.getParam("joint2_calibration", rpc_value);
-  joint2_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   // Key binding
   left_switch_up_event_.setFalling(boost::bind(&EngineerManual::leftSwitchUpFall, this));
   left_switch_up_event_.setRising(boost::bind(&EngineerManual::leftSwitchUpRise, this));
@@ -109,7 +107,6 @@ void EngineerManual::run()
   ChassisGimbalManual::run();
   calibration_gather_->update(ros::Time::now());
   ore_bin_lifter_calibration_->update(ros::Time::now());
-  joint2_calibration_->update(ros::Time::now());
   if (engineer_ui_ != old_ui_)
   {
     engineer_ui_pub_.publish(engineer_ui_);
@@ -172,6 +169,7 @@ void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
   shift_b_event_.update(dbus_data->key_shift & dbus_data->key_b);
   shift_c_event_.update(dbus_data->key_shift & dbus_data->key_c);
   shift_e_event_.update(dbus_data->key_shift & dbus_data->key_e);
+  shift_f_event_.update(dbus_data->key_shift & dbus_data->key_f);
   shift_g_event_.update(dbus_data->key_shift & dbus_data->key_g);
   shift_q_event_.update(dbus_data->key_shift & dbus_data->key_q);
   shift_r_event_.update(dbus_data->key_shift & dbus_data->key_r);
@@ -206,8 +204,21 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 }
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
-  servo_command_sender_->setLinearVel(-dbus_data->wheel, -dbus_data->ch_l_x, -dbus_data->ch_l_y);
-  servo_command_sender_->setAngularVel(-angular_z_scale_, dbus_data->ch_r_y, -dbus_data->ch_r_x);
+  switch (servo_orientation_)
+  {
+    case MID:
+      servo_command_sender_->setLinearVel(-dbus_data->wheel, -dbus_data->ch_l_x, -dbus_data->ch_l_y);
+      servo_command_sender_->setAngularVel(-angular_z_scale_, dbus_data->ch_r_y, dbus_data->ch_r_x);
+      break;
+    case LEFT:
+      servo_command_sender_->setLinearVel(-dbus_data->wheel, -dbus_data->ch_l_y, dbus_data->ch_l_x);
+      servo_command_sender_->setAngularVel(-angular_z_scale_, dbus_data->ch_r_x, -dbus_data->ch_r_y);
+      break;
+    case RIGHT:
+      servo_command_sender_->setLinearVel(-dbus_data->wheel, dbus_data->ch_l_y, -dbus_data->ch_l_x);
+      servo_command_sender_->setAngularVel(-angular_z_scale_, -dbus_data->ch_r_x, dbus_data->ch_r_y);
+  }
+
 }
 void EngineerManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
@@ -293,12 +304,6 @@ void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& 
       prefix_ + root_ == "ORE_LIFTER_DOWN")
   {
     ore_bin_lifter_calibration_->reset();
-  }
-  if (prefix_ + root_ == "HOME")
-  {
-    joint2_calibrated_ = false;
-    if (b_pressed_)
-      joint2_homed_ = true;
   }
   if (prefix_ + root_ == "EXCHANGE_POS" || prefix_ + root_ == "GET_DOWN_STONE_LEFT" ||
       prefix_ + root_ == "GET_DOWN_STONE_RIGHT" || prefix_ + root_ == "GET_UP_STONE_RIGHT" ||
@@ -460,42 +465,12 @@ void EngineerManual::ctrlAPress()
 
 void EngineerManual::ctrlBPress()
 {
-  //  joint2_calibration_->reset();
-  //  prefix_ = "";
-  //  root_ = "HOME";
-  //  engineer_ui_.gripper_state = "CLOSED";
-  //  runStepQueue(prefix_ + root_);
-  //  ROS_INFO_STREAM("RUN_HOME");
-  //  changeSpeedMode(NORMAL);
-  //
-}
-
-void EngineerManual::ctrlBPressing()
-{
-  b_pressed_ = true;
-  if (!joint2_homed_)
-  {
-    initMode();
-    if (!joint2_calibrated_)
-    {
-      joint2_calibration_->reset();
-      joint2_calibrated_ = true;
-    }
-    if (joint2_calibration_->isCalibrated())
-    {
-      prefix_ = "";
-      root_ = "HOME";
-      engineer_ui_.gripper_state = "CLOSED";
-      runStepQueue(prefix_ + root_);
-      changeSpeedMode(NORMAL);
-    }
-  }
-}
-
-void EngineerManual::ctrlBRelease()
-{
-  joint2_homed_ = false;
-  b_pressed_ = false;
+    prefix_ = "";
+    root_ = "HOME";
+    engineer_ui_.gripper_state = "CLOSED";
+    runStepQueue(prefix_ + root_);
+    ROS_INFO_STREAM("RUN_HOME");
+    changeSpeedMode(NORMAL);
 }
 
 void EngineerManual::ctrlCPress()
@@ -519,11 +494,30 @@ void EngineerManual::ctrlEPress()
 
 void EngineerManual::ctrlFPress()
 {
-  prefix_ = "";
-  root_ = "EXCHANGE_POS";
-  runStepQueue(root_);
-  ROS_INFO("%s", (prefix_ + root_).c_str());
-  changeSpeedMode(EXCHANGE);
+  if(root_ == "GET_DOWN_STONE_RIGHT" || root_ == "GET_UP_STONE_RIGHT" || root_ == "RIGHT_EXCHANGE")
+  {
+    prefix_ = "";
+    root_ = "RIGHT_EXCHANGE";
+    runStepQueue(root_);
+    ROS_INFO("%s", (prefix_ + root_).c_str());
+    changeSpeedMode(EXCHANGE);
+  }
+  else if(root_ == "GET_DOWN_STONE_LEFT" || root_ == "GET_UP_STONE_LEFT" || root_ == "LEFT_EXCHANGE")
+  {
+    prefix_ = "";
+    root_ = "LEFT_EXCHANGE";
+    runStepQueue(root_);
+    ROS_INFO("%s", (prefix_ + root_).c_str());
+    changeSpeedMode(EXCHANGE);
+  }
+  else
+  {
+    prefix_ = "";
+    root_ = "EXCHANGE_POS";
+    runStepQueue(root_);
+    ROS_INFO("%s", (prefix_ + root_).c_str());
+    changeSpeedMode(EXCHANGE);
+  }
 }
 
 void EngineerManual::ctrlGPress()
@@ -777,11 +771,13 @@ void EngineerManual::shiftEPress()
       if (stone_num_.top() == "SILVER")
       {
         root_ = "GET_DOWN_STONE_RIGHT";
+        servo_orientation_ = RIGHT;
         ROS_INFO_STREAM("take but silver");
       }
       else
       {
         root_ = "GET_DOWN_STONE_RIGHT";
+        servo_orientation_ = RIGHT;
         ROS_INFO_STREAM("take but gold");
       }
       break;
@@ -789,11 +785,13 @@ void EngineerManual::shiftEPress()
       if (stone_num_.top() == "SILVER")
       {
         root_ = "GET_UP_STONE_RIGHT";
+        servo_orientation_ = RIGHT;
         ROS_INFO_STREAM("take but silver");
       }
       else
       {
         root_ = "GET_UP_STONE_RIGHT";
+        servo_orientation_ = RIGHT;
         ROS_INFO_STREAM("take but gold");
       }
       break;
@@ -806,6 +804,33 @@ void EngineerManual::shiftEPress()
 
 void EngineerManual::shiftFPress()
 {
+  if(root_ == "GET_DOWN_STONE_RIGHT" || root_ == "GET_UP_STONE_RIGHT" || root_ == "RIGHT_EXCHANGE")
+  {
+    prefix_ = "";
+    root_ = "EXCHANGE_POS";
+    servo_orientation_ = MID;
+    runStepQueue(root_);
+    ROS_INFO("%s", (prefix_ + root_).c_str());
+    changeSpeedMode(EXCHANGE);
+  }
+  else if(root_ == "GET_DOWN_STONE_LEFT" || root_ == "GET_UP_STONE_LEFT" || root_ == "LEFT_EXCHANGE")
+  {
+    prefix_ = "";
+    root_ = "RIGHT_EXCHANGE";
+    servo_orientation_ = RIGHT;
+    runStepQueue(root_);
+    ROS_INFO("%s", (prefix_ + root_).c_str());
+    changeSpeedMode(EXCHANGE);
+  }
+  else if(root_ == "GET_DOWN_STONE_BIN" || root_ == "GET_UP_STONE_BIN" || root_ == "EXCHANGE_POS")
+  {
+    prefix_ = "";
+    root_ = "LEFT_EXCHANGE";
+    servo_orientation_ = LEFT;
+    runStepQueue(root_);
+    ROS_INFO("%s", (prefix_ + root_).c_str());
+    changeSpeedMode(EXCHANGE);
+  }
 }
 
 void EngineerManual::shiftGPress()
@@ -819,11 +844,13 @@ void EngineerManual::shiftGPress()
       if (stone_num_.top() == "SILVER")
       {
         root_ = "GET_DOWN_STONE_BIN";
+        servo_orientation_ = MID;
         ROS_INFO_STREAM("take but silver");
       }
       else
       {
         root_ = "GET_DOWN_STONE_BIN";
+        servo_orientation_ = MID;
         ROS_INFO_STREAM("take but gold");
       }
       break;
@@ -831,11 +858,13 @@ void EngineerManual::shiftGPress()
       if (stone_num_.top() == "SILVER")
       {
         root_ = "GET_UP_STONE_BIN";
+        servo_orientation_ = MID;
         ROS_INFO_STREAM("take but silver");
       }
       else
       {
         root_ = "GET_UP_STONE_BIN";
+        servo_orientation_ = MID;
         ROS_INFO_STREAM("take but gold");
       }
       break;
@@ -857,11 +886,13 @@ void EngineerManual::shiftQPress()
       if (stone_num_.top() == "SILVER")
       {
         root_ = "GET_DOWN_STONE_LEFT";
+        servo_orientation_ = LEFT;
         ROS_INFO_STREAM("take but silver");
       }
       else
       {
         root_ = "GET_DOWN_STONE_LEFT";
+        servo_orientation_ = LEFT;
         ROS_INFO_STREAM("take but gold");
       }
       break;
@@ -869,11 +900,13 @@ void EngineerManual::shiftQPress()
       if (stone_num_.top() == "SILVER")
       {
         root_ = "GET_UP_STONE_LEFT";
+        servo_orientation_ = LEFT;
         ROS_INFO_STREAM("take but silver");
       }
       else
       {
         root_ = "GET_UP_STONE_LEFT";
+        servo_orientation_ = LEFT;
         ROS_INFO_STREAM("take but gold");
       }
       break;
