@@ -200,6 +200,7 @@ void Engineer2Manual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   checkKeyboard(dbus_data);
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->getMsg()->command_source_frame = "yaw";
   if (servo_mode_ == JOINT)
     vel_cmd_sender_->setAngularZVel(-dbus_data->m_x * gimbal_scale_);
 }
