@@ -107,7 +107,7 @@ protected:
   void ctrlVPress();
   void ctrlBPress();
   void ctrlRPress();
-  void ctrlRRelease();
+  virtual void ctrlRRelease();
   virtual void ctrlQPress();
 
   InputEvent self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_, b_event_, x_event_,
