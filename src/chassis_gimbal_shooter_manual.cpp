@@ -628,4 +628,10 @@ void ChassisGimbalShooterManual::ctrlQPress()
   gimbal_calibration_->reset();
 }
 
+void ChassisGimbalShooterManual::robotRevive()
+{
+  setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
+  ManualBase::robotRevive();
+}
+
 }  // namespace rm_manual
