@@ -36,6 +36,7 @@ protected:
   void remoteControlTurnOff() override;
   void remoteControlTurnOn() override;
   void robotDie() override;
+  void robotRevive() override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
@@ -48,9 +49,12 @@ protected:
   void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data) override;
   void gameStatusCallback(const rm_msgs::GameStatus::ConstPtr& data) override;
   void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data) override;
+  void shootBeforehandCmdCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data) override;
   void suggestFireCallback(const std_msgs::Bool::ConstPtr& data) override;
   void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override;
+  void shootDataCallback(const rm_msgs::ShootData::ConstPtr& data) override;
   void leftSwitchUpOn(ros::Duration duration);
+  void leftSwitchUpFall();
   void mouseLeftPress();
   void mouseLeftRelease()
   {
@@ -85,7 +89,7 @@ protected:
   virtual void bPress();
   virtual void bRelease();
   virtual void rPress();
-  virtual void xReleasing();
+  virtual void xRelease();
   virtual void shiftPress();
   virtual void shiftRelease();
   void qPress()
@@ -96,17 +100,18 @@ protected:
   {
     shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::LOW);
   }
-  void fPress()
+  void ctrlFPress()
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   }
   void ctrlVPress();
   void ctrlBPress();
   void ctrlRPress();
+  virtual void ctrlRRelease();
   virtual void ctrlQPress();
 
-  InputEvent self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_, f_event_, b_event_,
-      x_event_, r_event_, v_event_, ctrl_v_event_, ctrl_b_event_, ctrl_q_event_, ctrl_r_event_, shift_event_,
+  InputEvent self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_, b_event_, x_event_,
+      r_event_, v_event_, ctrl_f_event_, ctrl_v_event_, ctrl_b_event_, ctrl_q_event_, ctrl_r_event_, shift_event_,
       ctrl_shift_b_event_, mouse_left_event_, mouse_right_event_;
   rm_common::ShooterCommandSender* shooter_cmd_sender_{};
   rm_common::CameraSwitchCommandSender* camera_switch_cmd_sender_{};
@@ -118,9 +123,9 @@ protected:
   rm_common::CalibrationQueue* gimbal_calibration_;
 
   geometry_msgs::PointStamped point_out_;
+  uint8_t last_shoot_freq_{};
 
-  bool prepare_shoot_ = false, turn_flag_ = false, is_balance_ = false, use_scope_ = false,
-       adjust_image_transmission_ = false;
+  bool prepare_shoot_ = false, is_balance_ = false, use_scope_ = false, adjust_image_transmission_ = false;
   double yaw_current_{};
 };
 }  // namespace rm_manual

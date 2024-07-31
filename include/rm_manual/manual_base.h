@@ -30,9 +30,11 @@
 #include <rm_msgs/BalanceState.h>
 #include <rm_msgs/PowerHeatData.h>
 #include <rm_msgs/ActuatorState.h>
+#include <rm_msgs/ShootBeforehandCmd.h>
 #include <rm_msgs/GimbalDesError.h>
 #include <rm_msgs/GameRobotStatus.h>
 #include <rm_msgs/ManualToReferee.h>
+#include <rm_msgs/ShootData.h>
 #include <rm_msgs/PowerManagementSampleAndStatusData.h>
 #include "rm_manual/input_event.h"
 
@@ -71,6 +73,9 @@ protected:
   virtual void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
   {
   }
+  virtual void shootBeforehandCmdCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data)
+  {
+  }
   virtual void odomCallback(const nav_msgs::Odometry::ConstPtr& data)
   {
   }
@@ -82,6 +87,9 @@ protected:
   {
   }
   virtual void suggestFireCallback(const std_msgs::Bool::ConstPtr& data)
+  {
+  }
+  virtual void shootDataCallback(const rm_msgs::ShootData::ConstPtr& data)
   {
   }
 
@@ -137,7 +145,7 @@ protected:
 
   ros::Subscriber odom_sub_, dbus_sub_, track_sub_, referee_sub_, capacity_sub_, game_status_sub_, joint_state_sub_,
       game_robot_hp_sub_, actuator_state_sub_, power_heat_data_sub_, gimbal_des_error_sub_, game_robot_status_sub_,
-      suggest_fire_sub_;
+      suggest_fire_sub_, shoot_beforehand_cmd_sub_, shoot_data_sub_;
 
   sensor_msgs::JointState joint_state_;
   rm_msgs::TrackData track_data_;

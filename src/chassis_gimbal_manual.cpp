@@ -47,11 +47,19 @@ void ChassisGimbalManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ManualBase::updateRc(dbus_data);
   gimbal_cmd_sender_->setRate(-dbus_data->ch_l_x, -dbus_data->ch_l_y);
+  if (gimbal_cmd_sender_->getMsg()->mode == rm_msgs::GimbalCmd::RATE)
+    chassis_cmd_sender_->setFollowVelDes(gimbal_cmd_sender_->getMsg()->rate_yaw);
+  else
+    chassis_cmd_sender_->setFollowVelDes(0.);
 }
 void ChassisGimbalManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ManualBase::updatePc(dbus_data);
   gimbal_cmd_sender_->setRate(-dbus_data->m_x * gimbal_scale_, dbus_data->m_y * gimbal_scale_);
+  if (gimbal_cmd_sender_->getMsg()->mode == rm_msgs::GimbalCmd::RATE)
+    chassis_cmd_sender_->setFollowVelDes(gimbal_cmd_sender_->getMsg()->rate_yaw);
+  else
+    chassis_cmd_sender_->setFollowVelDes(0.);
 }
 
 void ChassisGimbalManual::checkReferee()
@@ -211,6 +219,26 @@ void ChassisGimbalManual::mouseMidRise(double m_z)
       gimbal_scale_ += 1.;
     else if (gimbal_scale_ - 1. >= 1. && m_z < 0.)
       gimbal_scale_ -= 1.;
+  }
+}
+
+void ChassisGimbalManual::setChassisMode(int mode)
+{
+  switch (mode)
+  {
+    case rm_msgs::ChassisCmd::RAW:
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
+      is_gyro_ = true;
+      if (x_scale_ != 0.0 || y_scale_ != 0.0)
+        vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
+      else
+        vel_cmd_sender_->setAngularZVel(1.0);
+      break;
+    case rm_msgs::ChassisCmd::FOLLOW:
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+      is_gyro_ = false;
+      vel_cmd_sender_->setAngularZVel(0.0);
+      break;
   }
 }
 
