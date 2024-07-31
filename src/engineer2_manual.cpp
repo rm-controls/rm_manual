@@ -10,15 +10,14 @@ Engineer2Manual::Engineer2Manual(ros::NodeHandle& nh, ros::NodeHandle& nh_refere
   , operating_mode_(MANUAL)
   , action_client_("/engineer_middleware/move_steps", true)
 {
-  engineer_ui_pub_ = nh.advertise<rm_msgs::EngineerUi>("/engineer_ui", 10);
+  engineer_ui_pub_ = nh.advertise<rm_msgs::Engineer2Ui>("/engineer2_ui", 10);
   ROS_INFO("Waiting for middleware to start.");
   action_client_.waitForServer();
   ROS_INFO("Middleware started.");
   stone_num_sub_ = nh.subscribe<std_msgs::String>("/stone_num", 10, &Engineer2Manual::stoneNumCallback, this);
   gripper_state_sub_ = nh.subscribe<rm_msgs::GpioData>("/controllers/gpio_controller/gpio_states", 10,
                                                        &Engineer2Manual::gpioStateCallback, this);
-  gripper_ui_pub_ = nh.advertise<rm_msgs::VisualizeStateData>("/visualize_state", 1);
-  gripper_state_.state.assign(5, 0);
+
   // Servo
   ros::NodeHandle nh_servo(nh, "servo");
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
@@ -108,7 +107,6 @@ void Engineer2Manual::run()
   //    old_ui_ = engineer_ui_;
   //  }
   engineer_ui_pub_.publish(engineer_ui_);
-  gripper_ui_pub_.publish(gripper_state_);
 }
 
 void Engineer2Manual::changeSpeedMode(SpeedMode speed_mode)
@@ -225,8 +223,7 @@ void Engineer2Manual::stoneNumCallback(const std_msgs::String::ConstPtr& data)
 {
   auto it = stoneNumMap_.find(data->data);
   if (it != stoneNumMap_.end())
-    stone_state_[it->second] = (data->data[0] == '+');
-  // stone_state: gold, silver1, silver2, silver3
+    engineer_ui_.stone_num[it->second] = (data->data[0] == '+');
 }
 
 void Engineer2Manual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
@@ -234,10 +231,14 @@ void Engineer2Manual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
   gpio_state_.gpio_state = data->gpio_state;
   for (int i = 0; i <= 4; i++)
   {
-    gripper_state_.state[i] = data->gpio_state[i];
-    gripper_state_.state[4 - i] = data->gpio_state[4 - i];
+    engineer_ui_.gripper_state[i] = data->gpio_state[i];
   }
-  // gripper state: main, silver1, silver2, silver3, gold, silver pump
+  engineer_ui_.gripper_state[5] = data->gpio_state[7];
+  for (int i = 4; i >= 0; --i)
+  {
+    engineer_ui_.gripper_state[i] = data->gpio_state[i];
+  }
+  engineer_ui_.gripper_state[5] = data->gpio_state[7];
   main_gripper_on_ = data->gpio_state[0];
 }
 
@@ -376,7 +377,7 @@ void Engineer2Manual::leftSwitchUpRise()
   had_side_gold_ = false;
   had_ground_stone_ = false;
   calibration_gather_->reset();
-  for (auto& stone : stone_state_)
+  for (auto& stone : engineer_ui_.stone_num)
   {
     stone = false;
   }
@@ -476,14 +477,14 @@ void Engineer2Manual::rPress()
     had_side_gold_ = false;
   if (had_ground_stone_)
     had_ground_stone_ = false;
-  else if (stone_state_[0])
-    stone_state_[0] = false;
-  else if (stone_state_[3])
-    stone_state_[3] = false;
-  else if (stone_state_[2])
-    stone_state_[2] = false;
-  else if (stone_state_[1])
-    stone_state_[1] = false;
+  else if (engineer_ui_.stone_num[0])
+    engineer_ui_.stone_num[0] = false;
+  else if (engineer_ui_.stone_num[3])
+    engineer_ui_.stone_num[3] = false;
+  else if (engineer_ui_.stone_num[2])
+    engineer_ui_.stone_num[2] = false;
+  else if (engineer_ui_.stone_num[1])
+    engineer_ui_.stone_num[1] = false;
 }
 
 void Engineer2Manual::rRelease()
@@ -562,15 +563,11 @@ void Engineer2Manual::ctrlEPress()
 }
 void Engineer2Manual::ctrlFPress()
 {
-  if (exchange_direction_ == "left")
-    prefix_ = "LV5_L_";
-  else
-    prefix_ = "LV5_R_";
-  if (exchange_arm_position_ == "normal")
-    root_ = "EXCHANGE";
-  else
-    root_ = "CAR_FRONT_EXCHANGE";
+  prefix_ = "LV4_";
+  root_ = "EXCHANGE";
+  changeSpeedMode(EXCHANGE);
   runStepQueue(prefix_ + root_);
+  ROS_INFO("%s", (prefix_ + root_).c_str());
 }
 void Engineer2Manual::ctrlGPress()
 {
@@ -594,7 +591,7 @@ void Engineer2Manual::ctrlRPress()
   calibration_gather_->reset();
   ROS_INFO_STREAM("START CALIBRATE");
   changeSpeedMode(NORMAL);
-  for (auto& stone : stone_state_)
+  for (auto& stone : engineer_ui_.stone_num)
     stone = false;
   runStepQueue("CA");
 }
@@ -681,13 +678,13 @@ void Engineer2Manual::shiftEPress()
   else
   {
     exchange_arm_position_ = "normal";
-    if (stone_state_[0])
+    if (engineer_ui_.stone_num[0])
       root_ = "G";
-    else if (stone_state_[3])
+    else if (engineer_ui_.stone_num[3])
       root_ = "S3";
-    else if (stone_state_[2])
+    else if (engineer_ui_.stone_num[2])
       root_ = "S2";
-    else if (stone_state_[1])
+    else if (engineer_ui_.stone_num[1])
       root_ = "S1";
   }
   runStepQueue(prefix_ + root_);
@@ -695,20 +692,13 @@ void Engineer2Manual::shiftEPress()
 void Engineer2Manual::shiftFPress()
 {
   if (exchange_direction_ == "left")
-  {
-    prefix_ = "LV5_R_";
-    exchange_direction_ = "right";
-  }
-  else if (exchange_direction_ == "right")
-  {
     prefix_ = "LV5_L_";
-    exchange_direction_ = "left";
-  }
+  else
+    prefix_ = "LV5_R_";
   if (exchange_arm_position_ == "normal")
     root_ = "EXCHANGE";
   else
     root_ = "CAR_FRONT_EXCHANGE";
-  ROS_INFO_STREAM(prefix_ + root_);
   runStepQueue(prefix_ + root_);
 }
 void Engineer2Manual::shiftGPress()
@@ -727,13 +717,13 @@ void Engineer2Manual::shiftGPress()
   else
   {
     exchange_arm_position_ = "normal";
-    if (stone_state_[0])
+    if (engineer_ui_.stone_num[0])
       root_ = "G";
-    else if (stone_state_[3])
+    else if (engineer_ui_.stone_num[3])
       root_ = "S3";
-    else if (stone_state_[2])
+    else if (engineer_ui_.stone_num[2])
       root_ = "S2";
-    else if (stone_state_[1])
+    else if (engineer_ui_.stone_num[1])
       root_ = "S1";
   }
   runStepQueue(prefix_ + root_);
@@ -756,13 +746,13 @@ void Engineer2Manual::shiftQPress()
   else
   {
     exchange_arm_position_ = "normal";
-    if (stone_state_[0])
+    if (engineer_ui_.stone_num[0])
       root_ = "G";
-    else if (stone_state_[3])
+    else if (engineer_ui_.stone_num[3])
       root_ = "S3";
-    else if (stone_state_[2])
+    else if (engineer_ui_.stone_num[2])
       root_ = "S2";
-    else if (stone_state_[1])
+    else if (engineer_ui_.stone_num[1])
       root_ = "S1";
   }
   runStepQueue(prefix_ + root_);
@@ -801,6 +791,22 @@ void Engineer2Manual::shiftXPress()
 }
 void Engineer2Manual::shiftZPress()
 {
+  if (exchange_direction_ == "left")
+  {
+    prefix_ = "LV5_R_";
+    exchange_direction_ = "right";
+  }
+  else if (exchange_direction_ == "right")
+  {
+    prefix_ = "LV5_L_";
+    exchange_direction_ = "left";
+  }
+  if (exchange_arm_position_ == "normal")
+    root_ = "EXCHANGE";
+  else
+    root_ = "CAR_FRONT_EXCHANGE";
+  ROS_INFO_STREAM(prefix_ + root_);
+  runStepQueue(prefix_ + root_);
 }
 void Engineer2Manual::shiftZRelease()
 {
