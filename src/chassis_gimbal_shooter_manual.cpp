@@ -427,8 +427,6 @@ void ChassisGimbalShooterManual::rPress()
 {
   if (robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO)
   {
-    if (camera_switch_cmd_sender_)
-      camera_switch_cmd_sender_->switchCamera();
     if (scope_cmd_sender_)
     {
       use_scope_ = !scope_cmd_sender_->getState();
