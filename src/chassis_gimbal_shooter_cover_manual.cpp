@@ -133,31 +133,19 @@ void ChassisGimbalShooterCoverManual::rightSwitchUpRise()
   supply_ = false;
 }
 
-void ChassisGimbalShooterCoverManual::rPress()
-{
-  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
-  {
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
-    if (game_progress_ == 4)
-    {
-      if (stage_remain_time_ < 210)
-        switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::BIG_BUFF);
-      else
-        switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::SMALL_BUFF);
-      if ((ros::Time::now() - game_status_time_).toSec() < 0.2)
-        switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::BIG_BUFF);
-      switch_buff_type_srv_->callService();
-    }
-  }
-  else
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-}
-
 void ChassisGimbalShooterCoverManual::ePress()
 {
+  if (game_progress_ == 4)
+  {
+    if (stage_remain_time_ < 210)
+      switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::BIG_BUFF);
+    else
+      switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::SMALL_BUFF);
+    if ((ros::Time::now() - game_status_time_).toSec() < 0.2)
+      switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::BIG_BUFF);
+  }
   switch_buff_srv_->switchTargetType();
   switch_detection_srv_->switchTargetType();
-  switch_buff_type_srv_->setTargetType(switch_buff_srv_->getTarget());
   switch_exposure_srv_->switchTargetType();
   switch_buff_srv_->callService();
   switch_detection_srv_->callService();

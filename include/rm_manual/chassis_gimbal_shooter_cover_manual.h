@@ -27,7 +27,6 @@ protected:
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
-  void rPress() override;
   void ePress() override;
   void zPress();
   void zRelease();
