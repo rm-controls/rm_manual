@@ -25,6 +25,7 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
 
   ctrl_z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this),
                         boost::bind(&ChassisGimbalShooterCoverManual::ctrlZRelease, this));
+  ctrl_r_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterCoverManual::ctrlRPressing, this));
   z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::zPress, this),
                    boost::bind(&ChassisGimbalShooterCoverManual::zRelease, this));
 }
@@ -223,4 +224,34 @@ void ChassisGimbalShooterCoverManual::gameStatusCallback(const rm_msgs::GameStat
   game_progress_ = data->game_progress;
 }
 
+void ChassisGimbalShooterCoverManual::ctrlRPressing()
+{
+  if (!is_gyro_)
+  {
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    setChassisMode(rm_msgs::ChassisCmd::RAW);
+  }
+  if (track_data_.id == 0)
+  {
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
+    double traj_yaw = M_PI * count_ / 1000;
+    double traj_pitch = 0.15 * sin(2 * M_PI * (count_ % 1100) / 1100) + 0.15;
+    count_++;
+    gimbal_cmd_sender_->setGimbalTraj(traj_yaw, traj_pitch);
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+  }
+  else
+  {
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+    shooter_cmd_sender_->checkError(ros::Time::now());
+  }
+}
+
+void ChassisGimbalShooterCoverManual::ctrlRRelease()
+{
+  count_ = 0;
+  gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+  shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+}
 }  // namespace rm_manual
