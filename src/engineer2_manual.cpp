@@ -101,12 +101,11 @@ void Engineer2Manual::run()
 {
   ChassisGimbalManual::run();
   calibration_gather_->update(ros::Time::now());
-  //  if (engineer_ui_ != old_ui_)
-  //  {
-  //    engineer_ui_pub_.publish(engineer_ui_);
-  //    old_ui_ = engineer_ui_;
-  //  }
-  engineer_ui_pub_.publish(engineer_ui_);
+  if (engineer_ui_ != old_ui_)
+  {
+    engineer_ui_pub_.publish(engineer_ui_);
+    old_ui_ = engineer_ui_;
+  }
 }
 
 void Engineer2Manual::changeSpeedMode(SpeedMode speed_mode)
@@ -286,14 +285,14 @@ void Engineer2Manual::actionDoneCallback(const actionlib::SimpleClientGoalState&
   ROS_INFO("Done %s", (prefix_ + root_).c_str());
   mouse_left_pressed_ = true;
   ROS_INFO("%i", result->finish);
-  engineer_ui_.symbol = UiState::NONE;
-
   operating_mode_ = MANUAL;
   if (root_ == "HOME")
   {
     initMode();
     changeSpeedMode(NORMAL);
   }
+  if (root_ == "BIG_ISLAND0" || root_ == "THREE_SILVER0")
+    engineer_ui_.symbol = UiState::NONE;
   if (prefix_ == "LV4_" || prefix_ == "LV5_L_" || prefix_ == "LV5_R_")
   {
     had_ground_stone_ = false;
@@ -393,11 +392,11 @@ void Engineer2Manual::leftSwitchDownRise()
 {
   if (!main_gripper_on_)
   {
-    runStepQueue("OPEN_MAIN_GRIPPER");
+    runStepQueue("OM");
   }
   else
   {
-    runStepQueue("CLOSE_MAIN_GRIPPER");
+    runStepQueue("CM");
   }
 }
 void Engineer2Manual::leftSwitchDownFall()
@@ -555,7 +554,7 @@ void Engineer2Manual::ctrlDPress()
   engineer_ui_.symbol = UiState::SMALL_ISLAND;
   prefix_ = "GRIPPER_";
   root_ = "THREE_SILVER";
-  changeSpeedMode(LOW);
+  changeSpeedMode(EXCHANGE);
   runStepQueue(prefix_ + root_);
 }
 void Engineer2Manual::ctrlEPress()
@@ -576,8 +575,8 @@ void Engineer2Manual::ctrlFPress()
 void Engineer2Manual::ctrlGPress()
 {
   engineer_ui_.symbol = UiState::BIG_ISLAND;
-  prefix_ = "";
-  root_ = "MID_BIG_ISLAND";
+  prefix_ = "MID_";
+  root_ = "BIG_ISLAND";
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
 }
