@@ -17,7 +17,7 @@ Engineer2Manual::Engineer2Manual(ros::NodeHandle& nh, ros::NodeHandle& nh_refere
   stone_num_sub_ = nh.subscribe<std_msgs::String>("/stone_num", 10, &Engineer2Manual::stoneNumCallback, this);
   gripper_state_sub_ = nh.subscribe<rm_msgs::GpioData>("/controllers/gpio_controller/gpio_states", 10,
                                                        &Engineer2Manual::gpioStateCallback, this);
-
+  gripper_ui_pub_ = nh.advertise<rm_msgs::VisualizeStateData>("/visualize_state", 10);
   // Servo
   ros::NodeHandle nh_servo(nh, "servo");
   servo_command_sender_ = new rm_common::Vel3DCommandSender(nh_servo);
@@ -101,11 +101,8 @@ void Engineer2Manual::run()
 {
   ChassisGimbalManual::run();
   calibration_gather_->update(ros::Time::now());
-  if (engineer_ui_ != old_ui_)
-  {
-    engineer_ui_pub_.publish(engineer_ui_);
-    old_ui_ = engineer_ui_;
-  }
+  engineer_ui_pub_.publish(engineer_ui_);
+  gripper_ui_pub_.publish(gripper_ui_);
 }
 
 void Engineer2Manual::changeSpeedMode(SpeedMode speed_mode)
@@ -227,17 +224,7 @@ void Engineer2Manual::stoneNumCallback(const std_msgs::String::ConstPtr& data)
 
 void Engineer2Manual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
 {
-  gpio_state_.gpio_state = data->gpio_state;
-  for (int i = 0; i <= 4; i++)
-  {
-    engineer_ui_.gripper_state[i] = data->gpio_state[i];
-  }
-  engineer_ui_.gripper_state[5] = data->gpio_state[7];
-  for (int i = 4; i >= 0; --i)
-  {
-    engineer_ui_.gripper_state[i] = data->gpio_state[i];
-  }
-  engineer_ui_.gripper_state[5] = data->gpio_state[7];
+  gripper_ui_.state = { data->gpio_state.begin(), data->gpio_state.end() - 2 };
   main_gripper_on_ = data->gpio_state[0];
 }
 
