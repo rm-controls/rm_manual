@@ -17,6 +17,11 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   gimbal_des_error_sub_ = nh.subscribe<rm_msgs::GimbalDesError>("/controllers/gimbal_controller/error", 10,
                                                                 &ManualBase::gimbalDesErrorCallback, this);
   odom_sub_ = nh.subscribe<nav_msgs::Odometry>("/odom", 10, &ManualBase::odomCallback, this);
+  shoot_beforehand_cmd_sub_ =
+      nh.subscribe<rm_msgs::ShootBeforehandCmd>("/controllers/gimbal_controller/bullet_solver/shoot_beforehand_cmd", 10,
+                                                &ManualBase::shootBeforehandCmdCallback, this);
+  suggest_fire_sub_ =
+      nh.subscribe<std_msgs::Bool>("/forecast/suggest_fire", 10, &ManualBase::suggestFireCallback, this);
 
   game_robot_status_sub_ = nh_referee.subscribe<rm_msgs::GameRobotStatus>("game_robot_status", 10,
                                                                           &ManualBase::gameRobotStatusCallback, this);
@@ -28,12 +33,7 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
       "power_management/sample_and_status", 10, &ManualBase::capacityDataCallback, this);
   power_heat_data_sub_ =
       nh_referee.subscribe<rm_msgs::PowerHeatData>("power_heat_data", 10, &ManualBase::powerHeatDataCallback, this);
-  suggest_fire_sub_ =
-      nh.subscribe<std_msgs::Bool>("/forecast/suggest_fire", 10, &ManualBase::suggestFireCallback, this);
-
-  shoot_beforehand_cmd_sub_ =
-      nh.subscribe<rm_msgs::ShootBeforehandCmd>("/controllers/gimbal_controller/bullet_solver/shoot_beforehand_cmd", 10,
-                                                &ManualBase::shootBeforehandCmdCallback, this);
+  shoot_data_sub_ = nh_referee.subscribe<rm_msgs::ShootData>("shoot_data", 10, &ManualBase::shootDataCallback, this);
 
   // pub
   manual_to_referee_pub_ = nh.advertise<rm_msgs::ManualToReferee>("/manual_to_referee", 1);

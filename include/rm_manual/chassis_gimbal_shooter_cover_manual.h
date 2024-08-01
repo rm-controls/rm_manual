@@ -31,6 +31,8 @@ protected:
   void cPress() override;
   void zPress();
   void zRelease();
+  void ctrlRPressing();
+  void ctrlRRelease() override;
   void wPress() override;
   void wPressing() override;
   void aPressing() override;
@@ -60,5 +62,6 @@ protected:
   ros::Time last_switch_time_;
   bool supply_ = false;
   bool cover_close_ = true;
+  int count_{};
 };
 }  // namespace rm_manual
