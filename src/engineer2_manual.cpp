@@ -204,7 +204,7 @@ void Engineer2Manual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 void Engineer2Manual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   servo_command_sender_->setLinearVel(dbus_data->wheel, dbus_data->ch_l_x, -dbus_data->ch_l_y);
-  servo_command_sender_->setAngularVel(-angular_z_scale_, -dbus_data->ch_r_y, -dbus_data->ch_r_x);
+  servo_command_sender_->setAngularVel(-angular_z_scale_, -dbus_data->ch_r_y, dbus_data->ch_r_x);
 }
 
 void Engineer2Manual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
