@@ -208,7 +208,31 @@ void ChassisGimbalShooterCoverManual::wPress()
 {
   ChassisGimbalShooterManual::wPress();
   if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+  {
     last_switch_time_ = ros::Time::now();
+    vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, buff_gyro_rotate_limit_);
+  }
+}
+
+void ChassisGimbalShooterCoverManual::aPress()
+{
+  ChassisGimbalShooterManual::aPress();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, buff_gyro_rotate_limit_);
+}
+
+void ChassisGimbalShooterCoverManual::sPress()
+{
+  ChassisGimbalShooterManual::sPress();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, buff_gyro_rotate_limit_);
+}
+
+void ChassisGimbalShooterCoverManual::dPress()
+{
+  ChassisGimbalShooterManual::dPress();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, buff_gyro_rotate_limit_);
 }
 
 void ChassisGimbalShooterCoverManual::wPressing()
@@ -226,49 +250,6 @@ void ChassisGimbalShooterCoverManual::wPressing()
     switch_buff_type_srv_->callService();
     switch_exposure_srv_->callService();
   }
-  setAngularVelByTargetWhenMov();
-}
-
-void ChassisGimbalShooterCoverManual::aPressing()
-{
-  ChassisGimbalShooterManual::aPressing();
-  setAngularVelByTargetWhenMov();
-}
-
-void ChassisGimbalShooterCoverManual::sPressing()
-{
-  ChassisGimbalShooterManual::sPressing();
-  setAngularVelByTargetWhenMov();
-}
-
-void ChassisGimbalShooterCoverManual::dPressing()
-{
-  ChassisGimbalShooterManual::dPressing();
-  setAngularVelByTargetWhenMov();
-}
-
-void ChassisGimbalShooterCoverManual::wRelease()
-{
-  ChassisGimbalShooterManual::wRelease();
-  setAngularVelByTargetWhenStopMov();
-}
-
-void ChassisGimbalShooterCoverManual::aRelease()
-{
-  ChassisGimbalShooterManual::aRelease();
-  setAngularVelByTargetWhenStopMov();
-}
-
-void ChassisGimbalShooterCoverManual::sRelease()
-{
-  ChassisGimbalShooterManual::sRelease();
-  setAngularVelByTargetWhenStopMov();
-}
-
-void ChassisGimbalShooterCoverManual::dRelease()
-{
-  ChassisGimbalShooterManual::dRelease();
-  setAngularVelByTargetWhenStopMov();
 }
 
 void ChassisGimbalShooterCoverManual::ctrlZPress()
@@ -317,22 +298,6 @@ void ChassisGimbalShooterCoverManual::ctrlRRelease()
   count_ = 0;
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
-}
-
-void ChassisGimbalShooterCoverManual::setAngularVelByTargetWhenMov()
-{
-  if (switch_buff_srv_->getTarget() == rm_msgs::StatusChangeRequest::ARMOR)
-    vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0);
-  else
-    vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, buff_gyro_rotate_limit_);
-}
-
-void ChassisGimbalShooterCoverManual::setAngularVelByTargetWhenStopMov()
-{
-  if (switch_buff_srv_->getTarget() == rm_msgs::StatusChangeRequest::ARMOR)
-    vel_cmd_sender_->setAngularZVel(is_gyro_ ? 1 : 0);
-  else
-    vel_cmd_sender_->setAngularZVel(is_gyro_ ? 1 : 0, buff_gyro_rotate_limit_);
 }
 
 }  // namespace rm_manual
