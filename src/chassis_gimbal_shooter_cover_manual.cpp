@@ -207,7 +207,7 @@ void ChassisGimbalShooterCoverManual::zRelease()
 void ChassisGimbalShooterCoverManual::wPress()
 {
   ChassisGimbalShooterManual::wPress();
-  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
   {
     last_switch_time_ = ros::Time::now();
     vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, buff_gyro_rotate_limit_);
@@ -217,21 +217,21 @@ void ChassisGimbalShooterCoverManual::wPress()
 void ChassisGimbalShooterCoverManual::aPress()
 {
   ChassisGimbalShooterManual::aPress();
-  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
     vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, buff_gyro_rotate_limit_);
 }
 
 void ChassisGimbalShooterCoverManual::sPress()
 {
   ChassisGimbalShooterManual::sPress();
-  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
     vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, buff_gyro_rotate_limit_);
 }
 
 void ChassisGimbalShooterCoverManual::dPress()
 {
   ChassisGimbalShooterManual::dPress();
-  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
     vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, buff_gyro_rotate_limit_);
 }
 
