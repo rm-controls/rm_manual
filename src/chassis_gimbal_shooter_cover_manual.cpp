@@ -192,8 +192,6 @@ void ChassisGimbalShooterCoverManual::zPress()
 {
   last_shoot_freq_ = shooter_cmd_sender_->getShootFrequency();
   shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::MINIMAL);
-  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
-    vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, gyro_speed_limit_);
 }
 
 void ChassisGimbalShooterCoverManual::zRelease()
