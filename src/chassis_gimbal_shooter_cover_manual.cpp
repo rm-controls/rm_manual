@@ -167,14 +167,11 @@ void ChassisGimbalShooterCoverManual::cPress()
 {
   if (is_gyro_)
   {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    vel_cmd_sender_->setAngularZVel(0.0);
-    is_gyro_ = false;
+    setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
   }
   else
   {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-    is_gyro_ = true;
+    setChassisMode(rm_msgs::ChassisCmd::RAW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
     if (x_scale_ != 0.0 || y_scale_ != 0.0)
     {
