@@ -52,7 +52,6 @@ protected:
   double low_speed_scale_{}, normal_speed_scale_{};
   double low_gyro_speed_scale_{}, normal_gyro_speed_scale_{};
   double exit_buff_mode_duration_{};
-  double buff_gyro_rotate_limit_{};
   rm_common::SwitchDetectionCaller* switch_buff_srv_{};
   rm_common::SwitchDetectionCaller* switch_buff_type_srv_{};
   rm_common::SwitchDetectionCaller* switch_exposure_srv_{};

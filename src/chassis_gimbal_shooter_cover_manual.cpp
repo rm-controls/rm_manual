@@ -24,7 +24,6 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   normal_gyro_speed_scale_ = chassis_nh.param("normal_gryo_speed_scale", 1);
   low_gyro_speed_scale_ = chassis_nh.param("low_gyro_speed_scale", 0.30);
   nh.param("exit_buff_mode_duration", exit_buff_mode_duration_, 0.5);
-  nh.param("buff_gyro_rotate_limit", buff_gyro_rotate_limit_, 6.0);
 
   ctrl_z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this),
                         boost::bind(&ChassisGimbalShooterCoverManual::ctrlZRelease, this));
