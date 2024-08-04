@@ -201,8 +201,8 @@ void ChassisGimbalShooterCoverManual::wPressing()
     switch_detection_srv_->callService();
     switch_buff_type_srv_->callService();
     switch_exposure_srv_->callService();
-    if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
-      changeGyroSpeedMode(LOW);
+    if (switch_buff_srv_->getTarget() == rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
+      changeGyroSpeedMode(NORMAL);
   }
 }
 
