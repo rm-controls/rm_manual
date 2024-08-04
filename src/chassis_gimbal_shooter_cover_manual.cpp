@@ -253,25 +253,28 @@ void ChassisGimbalShooterCoverManual::wRelease()
   ChassisGimbalShooterManual::wRelease();
   if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
     vel_cmd_sender_->setAngularZVel(is_gyro_ ? 1 : 0, gyro_speed_limit_);
-};
+}
+
 void ChassisGimbalShooterCoverManual::aRelease()
 {
   ChassisGimbalShooterManual::aRelease();
   if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
     vel_cmd_sender_->setAngularZVel(is_gyro_ ? 1 : 0, gyro_speed_limit_);
-};
+}
+
 void ChassisGimbalShooterCoverManual::sRelease()
 {
   ChassisGimbalShooterManual::sRelease();
   if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
     vel_cmd_sender_->setAngularZVel(is_gyro_ ? 1 : 0, gyro_speed_limit_);
-};
+}
+
 void ChassisGimbalShooterCoverManual::dRelease()
 {
   ChassisGimbalShooterManual::dRelease();
   if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
     vel_cmd_sender_->setAngularZVel(is_gyro_ ? 1 : 0, gyro_speed_limit_);
-};
+}
 
 void ChassisGimbalShooterCoverManual::ctrlZPress()
 {
