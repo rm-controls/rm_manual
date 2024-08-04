@@ -501,45 +501,45 @@ void ChassisGimbalShooterManual::dPress()
 void ChassisGimbalShooterManual::wRelease()
 {
   ChassisGimbalManual::wRelease();
-  vel_cmd_sender_->setAngularZVel(is_gyro_ ? 1 : 0);
+  vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_speed_change_scale_ : 0);
 }
 void ChassisGimbalShooterManual::aRelease()
 {
   ChassisGimbalManual::aRelease();
-  vel_cmd_sender_->setAngularZVel(is_gyro_ ? 1 : 0);
+  vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_speed_change_scale_ : 0);
 }
 void ChassisGimbalShooterManual::sRelease()
 {
   ChassisGimbalManual::sRelease();
-  vel_cmd_sender_->setAngularZVel(is_gyro_ ? 1 : 0);
+  vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_speed_change_scale_ : 0);
 }
 void ChassisGimbalShooterManual::dRelease()
 {
   ChassisGimbalManual::dRelease();
-  vel_cmd_sender_->setAngularZVel(is_gyro_ ? 1 : 0);
+  vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_speed_change_scale_ : 0);
 }
 void ChassisGimbalShooterManual::wPressing()
 {
   ChassisGimbalManual::wPressing();
-  vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0);
+  vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ * gyro_speed_change_scale_ : 0);
 }
 
 void ChassisGimbalShooterManual::aPressing()
 {
   ChassisGimbalManual::aPressing();
-  vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0);
+  vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ * gyro_speed_change_scale_ : 0);
 }
 
 void ChassisGimbalShooterManual::sPressing()
 {
   ChassisGimbalManual::sPressing();
-  vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0);
+  vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ * gyro_speed_change_scale_ : 0);
 }
 
 void ChassisGimbalShooterManual::dPressing()
 {
   ChassisGimbalManual::dPressing();
-  vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0);
+  vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ * gyro_speed_change_scale_ : 0);
 }
 
 void ChassisGimbalShooterManual::xPress()
