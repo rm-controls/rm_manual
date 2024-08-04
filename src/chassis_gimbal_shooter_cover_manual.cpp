@@ -44,13 +44,13 @@ void ChassisGimbalShooterCoverManual::changeSpeedMode(SpeedMode speed_mode)
   }
 }
 
-void ChassisGimbalShooterCoverManual::changeGyroSpeedMode(SpeedMode speed_mode)
+void ChassisGimbalShooterCoverManual::changeGyroSpeedMode(SpeedMode gyro_speed_mode)
 {
-  if (speed_mode == LOW)
+  if (gyro_speed_mode == LOW)
   {
     gyro_speed_change_scale_ = low_gyro_speed_scale_;
   }
-  else if (speed_mode == NORMAL)
+  else if (gyro_speed_mode == NORMAL)
   {
     gyro_speed_change_scale_ = normal_gyro_speed_scale_;
   }
