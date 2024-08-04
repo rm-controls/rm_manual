@@ -36,6 +36,13 @@ protected:
   void ctrlRRelease() override;
   void wPress() override;
   void wPressing() override;
+  void aPressing() override;
+  void sPressing() override;
+  void dPressing() override;
+  void wRelease() override;
+  void aRelease() override;
+  void sRelease() override;
+  void dRelease() override;
 
   virtual void ctrlZPress();
   virtual void ctrlZRelease()
@@ -43,8 +50,8 @@ protected:
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   };
   double low_speed_scale_{}, normal_speed_scale_{};
-  double low_gyro_speed_scale_{}, normal_gyro_speed_scale_{};
   double exit_buff_mode_duration_{};
+  double buff_gyro_rotate_limit_{};
   rm_common::SwitchDetectionCaller* switch_buff_srv_{};
   rm_common::SwitchDetectionCaller* switch_buff_type_srv_{};
   rm_common::SwitchDetectionCaller* switch_exposure_srv_{};
