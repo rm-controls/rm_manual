@@ -34,10 +34,10 @@ protected:
   void ctrlRPressing();
   void ctrlRRelease() override;
   void wPress() override;
-  void aPress() override;
-  void sPress() override;
-  void dPress() override;
   void wPressing() override;
+  void aPressing() override;
+  void sPressing() override;
+  void dPressing() override;
 
   virtual void ctrlZPress();
   virtual void ctrlZRelease()
