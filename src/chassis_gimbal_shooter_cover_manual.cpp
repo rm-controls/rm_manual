@@ -21,7 +21,7 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   ros::NodeHandle chassis_nh(nh, "chassis");
   normal_speed_scale_ = chassis_nh.param("normal_speed_scale", 1);
   low_speed_scale_ = chassis_nh.param("low_speed_scale", 0.30);
-  normal_gyro_speed_scale_ = chassis_nh.param("normal_gryo_speed_scale", 1);
+  normal_gyro_speed_scale_ = chassis_nh.param("normal_gyro_speed_scale", 1);
   low_gyro_speed_scale_ = chassis_nh.param("low_gyro_speed_scale", 0.30);
   nh.param("exit_buff_mode_duration", exit_buff_mode_duration_, 0.5);
 
