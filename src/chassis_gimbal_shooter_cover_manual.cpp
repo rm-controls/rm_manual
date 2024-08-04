@@ -166,6 +166,8 @@ void ChassisGimbalShooterCoverManual::cPress()
   ChassisGimbalShooterManual::cPress();
   if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
     changeGyroSpeedMode(LOW);
+  else
+    changeGyroSpeedMode(NORMAL);
 }
 
 void ChassisGimbalShooterCoverManual::zPress()
