@@ -21,6 +21,8 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   ros::NodeHandle chassis_nh(nh, "chassis");
   normal_speed_scale_ = chassis_nh.param("normal_speed_scale", 1);
   low_speed_scale_ = chassis_nh.param("low_speed_scale", 0.30);
+  normal_gyro_speed_scale_ = chassis_nh.param("normal_gryo_speed_scale", 1);
+  low_gyro_speed_scale_ = chassis_nh.param("low_gyro_speed_scale", 0.30);
   nh.param("exit_buff_mode_duration", exit_buff_mode_duration_, 0.5);
   nh.param("buff_gyro_rotate_limit", buff_gyro_rotate_limit_, 6.0);
 
@@ -40,6 +42,18 @@ void ChassisGimbalShooterCoverManual::changeSpeedMode(SpeedMode speed_mode)
   else if (speed_mode == NORMAL)
   {
     speed_change_scale_ = normal_speed_scale_;
+  }
+}
+
+void ChassisGimbalShooterCoverManual::changeGyroSpeedMode(SpeedMode speed_mode)
+{
+  if (speed_mode == LOW)
+  {
+    gyro_speed_change_scale_ = low_gyro_speed_scale_;
+  }
+  else if (speed_mode == NORMAL)
+  {
+    gyro_speed_change_scale_ = normal_gyro_speed_scale_;
   }
 }
 
@@ -165,29 +179,9 @@ void ChassisGimbalShooterCoverManual::ePress()
 
 void ChassisGimbalShooterCoverManual::cPress()
 {
-  if (is_gyro_)
-  {
-    setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
-  }
-  else
-  {
-    setChassisMode(rm_msgs::ChassisCmd::RAW);
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-    if (x_scale_ != 0.0 || y_scale_ != 0.0)
-    {
-      if (switch_buff_srv_->getTarget() == rm_msgs::StatusChangeRequest::SMALL_BUFF)
-        vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_, buff_gyro_rotate_limit_);
-      else
-        vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
-    }
-    else
-    {
-      if (switch_buff_srv_->getTarget() == rm_msgs::StatusChangeRequest::SMALL_BUFF)
-        vel_cmd_sender_->setAngularZVel(1.0, buff_gyro_rotate_limit_);
-      else
-        vel_cmd_sender_->setAngularZVel(1.0);
-    }
-  }
+  ChassisGimbalShooterManual::cPress();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
+    changeGyroSpeedMode(LOW);
 }
 
 void ChassisGimbalShooterCoverManual::zPress()
@@ -223,7 +217,7 @@ void ChassisGimbalShooterCoverManual::wPressing()
     switch_buff_type_srv_->callService();
     switch_exposure_srv_->callService();
     if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
-      vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, buff_gyro_rotate_limit_);
+      changeGyroSpeedMode(LOW);
   }
 }
 
@@ -231,22 +225,50 @@ void ChassisGimbalShooterCoverManual::aPressing()
 {
   ChassisGimbalShooterManual::aPressing();
   if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
-    vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, buff_gyro_rotate_limit_);
+    changeGyroSpeedMode(LOW);
 }
 
 void ChassisGimbalShooterCoverManual::sPressing()
 {
   ChassisGimbalShooterManual::sPressing();
   if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
-    vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, buff_gyro_rotate_limit_);
+    changeGyroSpeedMode(LOW);
 }
 
 void ChassisGimbalShooterCoverManual::dPressing()
 {
   ChassisGimbalShooterManual::dPressing();
   if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
-    vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, buff_gyro_rotate_limit_);
+    changeGyroSpeedMode(LOW);
 }
+
+void ChassisGimbalShooterCoverManual::wRelease()
+{
+  ChassisGimbalShooterManual::wRelease();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
+    changeGyroSpeedMode(LOW);
+};
+
+void ChassisGimbalShooterCoverManual::aRelease()
+{
+  ChassisGimbalShooterManual::aRelease();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
+    changeGyroSpeedMode(LOW);
+};
+
+void ChassisGimbalShooterCoverManual::sRelease()
+{
+  ChassisGimbalShooterManual::sRelease();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
+    changeGyroSpeedMode(LOW);
+};
+
+void ChassisGimbalShooterCoverManual::dRelease()
+{
+  ChassisGimbalShooterManual::dRelease();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
+    changeGyroSpeedMode(LOW);
+};
 
 void ChassisGimbalShooterCoverManual::ctrlZPress()
 {

@@ -64,6 +64,7 @@ protected:
   double x_scale_{}, y_scale_{};
   bool is_gyro_{ 0 };
   double speed_change_scale_{ 1. };
+  double gyro_speed_change_scale_{ 1. };
   double gimbal_scale_{ 1. };
   double gyro_move_reduction_{ 1. };
   double gyro_rotate_reduction_{ 1. };
