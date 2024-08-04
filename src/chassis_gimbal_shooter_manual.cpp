@@ -425,18 +425,15 @@ void ChassisGimbalShooterManual::bRelease()
 
 void ChassisGimbalShooterManual::rPress()
 {
-  if (robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO)
+  if (scope_cmd_sender_)
   {
-    if (scope_cmd_sender_)
+    use_scope_ = !scope_cmd_sender_->getState();
+    if (use_scope_)
+      gimbal_cmd_sender_->setEject(true);
+    else
     {
-      use_scope_ = !scope_cmd_sender_->getState();
-      if (use_scope_)
-        gimbal_cmd_sender_->setEject(true);
-      else
-      {
-        gimbal_cmd_sender_->setEject(false);
-        adjust_image_transmission_ = false;
-      }
+      gimbal_cmd_sender_->setEject(false);
+      adjust_image_transmission_ = false;
     }
   }
 }
