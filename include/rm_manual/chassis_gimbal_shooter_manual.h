@@ -88,10 +88,10 @@ protected:
   virtual void cPress();
   virtual void bPress();
   virtual void bRelease();
-  virtual void rPress();
   virtual void xRelease();
   virtual void shiftPress();
   virtual void shiftRelease();
+  void rPress();
   void qPress()
   {
     shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::BURST);
