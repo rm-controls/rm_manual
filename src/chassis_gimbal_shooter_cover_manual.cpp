@@ -204,7 +204,7 @@ void ChassisGimbalShooterCoverManual::zRelease()
 void ChassisGimbalShooterCoverManual::wPress()
 {
   ChassisGimbalShooterManual::wPress();
-  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
     last_switch_time_ = ros::Time::now();
 }
 
