@@ -158,23 +158,8 @@ void ChassisGimbalShooterCoverManual::ePress()
   switch_detection_srv_->callService();
   switch_buff_type_srv_->callService();
   switch_exposure_srv_->callService();
-  if (is_gyro_)
-  {
-    if (switch_buff_srv_->getTarget() == rm_msgs::StatusChangeRequest::ARMOR)
-    {
-      if (x_scale_ != 0.0 || y_scale_ != 0.0)
-        vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
-      else
-        vel_cmd_sender_->setAngularZVel(1.0);
-    }
-    else
-    {
-      if (x_scale_ != 0.0 || y_scale_ != 0.0)
-        vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_, buff_gyro_rotate_limit_);
-      else
-        vel_cmd_sender_->setAngularZVel(1.0, buff_gyro_rotate_limit_);
-    }
-  }
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
+    changeGyroSpeedMode(LOW);
 }
 
 void ChassisGimbalShooterCoverManual::cPress()
