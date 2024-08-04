@@ -226,34 +226,6 @@ void ChassisGimbalShooterCoverManual::dPressing()
     changeGyroSpeedMode(NORMAL);
 }
 
-void ChassisGimbalShooterCoverManual::wRelease()
-{
-  ChassisGimbalShooterManual::wRelease();
-  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
-    changeGyroSpeedMode(LOW);
-};
-
-void ChassisGimbalShooterCoverManual::aRelease()
-{
-  ChassisGimbalShooterManual::aRelease();
-  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
-    changeGyroSpeedMode(LOW);
-};
-
-void ChassisGimbalShooterCoverManual::sRelease()
-{
-  ChassisGimbalShooterManual::sRelease();
-  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
-    changeGyroSpeedMode(LOW);
-};
-
-void ChassisGimbalShooterCoverManual::dRelease()
-{
-  ChassisGimbalShooterManual::dRelease();
-  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR && is_gyro_)
-    changeGyroSpeedMode(LOW);
-};
-
 void ChassisGimbalShooterCoverManual::ctrlZPress()
 {
   if (!cover_command_sender_->getState())
