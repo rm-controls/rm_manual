@@ -36,9 +36,6 @@ protected:
   void ctrlRRelease() override;
   void wPress() override;
   void wPressing() override;
-  void aPressing() override;
-  void sPressing() override;
-  void dPressing() override;
 
   virtual void ctrlZPress();
   virtual void ctrlZRelease()
