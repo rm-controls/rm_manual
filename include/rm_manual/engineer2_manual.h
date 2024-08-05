@@ -151,7 +151,7 @@ private:
       exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
 
   std::string prefix_{}, root_{}, exchange_direction_{ "left" }, exchange_arm_position_{ "normal" };
-  int operating_mode_{}, servo_mode_{}, gimbal_mode_{}, gimbal_direction_{ 0 };
+  int operating_mode_{}, servo_mode_{ 1 }, gimbal_mode_{}, gimbal_direction_{ 0 };
 
   std::stack<std::string> stone_num_{};
 

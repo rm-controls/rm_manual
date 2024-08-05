@@ -379,11 +379,11 @@ void Engineer2Manual::leftSwitchDownRise()
 {
   if (!main_gripper_on_)
   {
-    runStepQueue("OM");
+    runStepQueue("OA");
   }
   else
   {
-    runStepQueue("CM");
+    runStepQueue("CA");
   }
 }
 void Engineer2Manual::leftSwitchDownFall()
@@ -485,20 +485,37 @@ void Engineer2Manual::vRelease()
 }
 void Engineer2Manual::xPress()
 {
-  switch (gimbal_direction_)
+  if (servo_mode_ == SERVO)
   {
-    case 0:
-      runStepQueue("GIMBAL_R");
-      gimbal_direction_ = 1;
-      break;
-    case 1:
-      runStepQueue("GIMBAL_L");
-      gimbal_direction_ = 2;
-      break;
-    case 2:
-      runStepQueue("GIMBAL_F");
-      gimbal_direction_ = 0;
-      break;
+    switch (gimbal_direction_)
+    {
+      case 0:
+        runStepQueue("GIMBAL_EE");
+        gimbal_direction_ = 1;
+        break;
+      case 1:
+        runStepQueue("GIMBAL_R");
+        gimbal_direction_ = 0;
+        break;
+    }
+  }
+  else
+  {
+    switch (gimbal_direction_)
+    {
+      case 0:
+        runStepQueue("GIMBAL_R");
+        gimbal_direction_ = 1;
+        break;
+      case 1:
+        runStepQueue("GIMBAL_B");
+        gimbal_direction_ = 2;
+        break;
+      case 2:
+        runStepQueue("GIMBAL_F");
+        gimbal_direction_ = 0;
+        break;
+    }
   }
 }
 void Engineer2Manual::zPressing()
