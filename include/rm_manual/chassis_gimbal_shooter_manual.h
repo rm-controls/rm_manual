@@ -36,6 +36,7 @@ protected:
   void remoteControlTurnOff() override;
   void remoteControlTurnOn() override;
   void robotDie() override;
+  void robotRevive() override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
@@ -87,10 +88,10 @@ protected:
   virtual void cPress();
   virtual void bPress();
   virtual void bRelease();
-  virtual void rPress();
   virtual void xRelease();
   virtual void shiftPress();
   virtual void shiftRelease();
+  void rPress();
   void qPress()
   {
     shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::BURST);
@@ -106,7 +107,7 @@ protected:
   void ctrlVPress();
   void ctrlBPress();
   void ctrlRPress();
-  void ctrlRRelease();
+  virtual void ctrlRRelease();
   virtual void ctrlQPress();
 
   InputEvent self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_, b_event_, x_event_,

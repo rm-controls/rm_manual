@@ -425,8 +425,6 @@ void ChassisGimbalShooterManual::bRelease()
 
 void ChassisGimbalShooterManual::rPress()
 {
-  if (camera_switch_cmd_sender_)
-    camera_switch_cmd_sender_->switchCamera();
   if (scope_cmd_sender_)
   {
     use_scope_ = !scope_cmd_sender_->getState();
@@ -626,6 +624,12 @@ void ChassisGimbalShooterManual::ctrlQPress()
 {
   shooter_calibration_->reset();
   gimbal_calibration_->reset();
+}
+
+void ChassisGimbalShooterManual::robotRevive()
+{
+  setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
+  ManualBase::robotRevive();
 }
 
 }  // namespace rm_manual

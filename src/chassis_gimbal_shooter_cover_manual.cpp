@@ -22,9 +22,11 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   normal_speed_scale_ = chassis_nh.param("normal_speed_scale", 1);
   low_speed_scale_ = chassis_nh.param("low_speed_scale", 0.30);
   nh.param("exit_buff_mode_duration", exit_buff_mode_duration_, 0.5);
+  nh.param("gyro_speed_limit", gyro_speed_limit_, 6.0);
 
   ctrl_z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this),
                         boost::bind(&ChassisGimbalShooterCoverManual::ctrlZRelease, this));
+  ctrl_r_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterCoverManual::ctrlRPressing, this));
   z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::zPress, this),
                    boost::bind(&ChassisGimbalShooterCoverManual::zRelease, this));
 }
@@ -38,6 +40,24 @@ void ChassisGimbalShooterCoverManual::changeSpeedMode(SpeedMode speed_mode)
   else if (speed_mode == NORMAL)
   {
     speed_change_scale_ = normal_speed_scale_;
+  }
+}
+
+void ChassisGimbalShooterCoverManual::changeGyroSpeedMode(SpeedMode speed_mode)
+{
+  if (speed_mode == LOW)
+  {
+    if (x_scale_ != 0.0 || y_scale_ != 0.0)
+      vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_, gyro_speed_limit_);
+    else
+      vel_cmd_sender_->setAngularZVel(1.0, gyro_speed_limit_);
+  }
+  else if (speed_mode == NORMAL)
+  {
+    if (x_scale_ != 0.0 || y_scale_ != 0.0)
+      vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
+    else
+      vel_cmd_sender_->setAngularZVel(1.0);
   }
 }
 
@@ -132,21 +152,6 @@ void ChassisGimbalShooterCoverManual::rightSwitchUpRise()
   supply_ = false;
 }
 
-void ChassisGimbalShooterCoverManual::rPress()
-{
-  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
-  {
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
-    if (switch_buff_type_srv_->getTarget() == rm_msgs::StatusChangeRequest::SMALL_BUFF)
-      switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::BIG_BUFF);
-    else
-      switch_buff_type_srv_->setTargetType(rm_msgs::StatusChangeRequest::SMALL_BUFF);
-    switch_buff_type_srv_->callService();
-  }
-  else
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-}
-
 void ChassisGimbalShooterCoverManual::ePress()
 {
   switch_buff_srv_->switchTargetType();
@@ -157,6 +162,30 @@ void ChassisGimbalShooterCoverManual::ePress()
   switch_detection_srv_->callService();
   switch_buff_type_srv_->callService();
   switch_exposure_srv_->callService();
+  if (is_gyro_)
+  {
+    if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+      changeGyroSpeedMode(LOW);
+    else
+      changeGyroSpeedMode(NORMAL);
+  }
+}
+
+void ChassisGimbalShooterCoverManual::cPress()
+{
+  if (is_gyro_)
+  {
+    setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
+  }
+  else
+  {
+    setChassisMode(rm_msgs::ChassisCmd::RAW);
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+      changeGyroSpeedMode(LOW);
+    else
+      changeGyroSpeedMode(NORMAL);
+  }
 }
 
 void ChassisGimbalShooterCoverManual::zPress()
@@ -192,6 +221,57 @@ void ChassisGimbalShooterCoverManual::wPressing()
     switch_buff_type_srv_->callService();
     switch_exposure_srv_->callService();
   }
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, gyro_speed_limit_);
+}
+
+void ChassisGimbalShooterCoverManual::aPressing()
+{
+  ChassisGimbalShooterManual::aPressing();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, gyro_speed_limit_);
+}
+
+void ChassisGimbalShooterCoverManual::sPressing()
+{
+  ChassisGimbalShooterManual::sPressing();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, gyro_speed_limit_);
+}
+
+void ChassisGimbalShooterCoverManual::dPressing()
+{
+  ChassisGimbalShooterManual::dPressing();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    vel_cmd_sender_->setAngularZVel(is_gyro_ ? gyro_rotate_reduction_ : 0, gyro_speed_limit_);
+}
+
+void ChassisGimbalShooterCoverManual::wRelease()
+{
+  ChassisGimbalShooterManual::wRelease();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    vel_cmd_sender_->setAngularZVel(is_gyro_ ? 1 : 0, gyro_speed_limit_);
+}
+
+void ChassisGimbalShooterCoverManual::aRelease()
+{
+  ChassisGimbalShooterManual::aRelease();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    vel_cmd_sender_->setAngularZVel(is_gyro_ ? 1 : 0, gyro_speed_limit_);
+}
+
+void ChassisGimbalShooterCoverManual::sRelease()
+{
+  ChassisGimbalShooterManual::sRelease();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    vel_cmd_sender_->setAngularZVel(is_gyro_ ? 1 : 0, gyro_speed_limit_);
+}
+
+void ChassisGimbalShooterCoverManual::dRelease()
+{
+  ChassisGimbalShooterManual::dRelease();
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    vel_cmd_sender_->setAngularZVel(is_gyro_ ? 1 : 0, gyro_speed_limit_);
 }
 
 void ChassisGimbalShooterCoverManual::ctrlZPress()
@@ -209,6 +289,37 @@ void ChassisGimbalShooterCoverManual::ctrlZPress()
   {
     changeSpeedMode(NORMAL);
   }
+}
+
+void ChassisGimbalShooterCoverManual::ctrlRPressing()
+{
+  if (!is_gyro_)
+  {
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    setChassisMode(rm_msgs::ChassisCmd::RAW);
+  }
+  if (track_data_.id == 0)
+  {
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
+    double traj_yaw = M_PI * count_ / 1000;
+    double traj_pitch = 0.15 * sin(2 * M_PI * (count_ % 1100) / 1100) + 0.15;
+    count_++;
+    gimbal_cmd_sender_->setGimbalTraj(traj_yaw, traj_pitch);
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
+  }
+  else
+  {
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRACK);
+    shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::PUSH);
+    shooter_cmd_sender_->checkError(ros::Time::now());
+  }
+}
+
+void ChassisGimbalShooterCoverManual::ctrlRRelease()
+{
+  count_ = 0;
+  gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+  shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
 }
 
 }  // namespace rm_manual
