@@ -51,9 +51,9 @@ public:
 
   enum ServoOrientation
   {
-      MID,
-      RIGHT,
-      LEFT
+    MID,
+    RIGHT,
+    LEFT
   };
 
   EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
@@ -92,8 +92,6 @@ private:
   void leftSwitchDownFall();
   void ctrlAPress();
   void ctrlBPress();
-  void ctrlBPressing();
-  void ctrlBRelease();
   void ctrlCPress();
   void ctrlDPress();
   void ctrlEPress();
@@ -149,16 +147,16 @@ private:
 
   // Servo
 
-  bool change_flag_{}, ore_rotator_pos_{ false },
-      shift_z_pressed_{ false }, ore_lifter_on_{ false }, v_pressed_{ false };
+  bool change_flag_{}, ore_rotator_pos_{ false }, shift_z_pressed_{ false }, ore_lifter_on_{ false },
+      v_pressed_{ false };
 
   double angular_z_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
       exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
 
   std::string prefix_{}, root_{}, reversal_state_{}, drag_state_{ "off" }, gripper_state_{ "off" }, last_ore_{};
 
-  int operating_mode_{}, servo_mode_{}, servo_orientation_{ 0 }, gimbal_mode_{}, gimbal_height_{ 0 }, gimbal_direction_{ 0 },
-      ore_lifter_pos_{ 0 };
+  int operating_mode_{}, servo_mode_{}, servo_orientation_{ 0 }, gimbal_mode_{}, gimbal_height_{ 0 },
+      gimbal_direction_{ 0 }, ore_lifter_pos_{ 0 };
 
   std::stack<std::string> stone_num_{};
 
@@ -173,7 +171,6 @@ private:
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;
 
   rm_common::CalibrationQueue *calibration_gather_{}, *pitch_calibration_, *ore_bin_lifter_calibration_{};
-
 
   actionlib::SimpleActionClient<rm_msgs::EngineerAction> action_client_;
 

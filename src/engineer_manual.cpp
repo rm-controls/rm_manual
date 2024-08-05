@@ -49,8 +49,6 @@ EngineerManual::EngineerManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   ctrl_a_event_.setRising(boost::bind(&EngineerManual::ctrlAPress, this));
   ctrl_b_event_.setRising(boost::bind(&EngineerManual::ctrlBPress, this));
   ctrl_c_event_.setRising(boost::bind(&EngineerManual::ctrlCPress, this));
-  ctrl_b_event_.setActiveHigh(boost::bind(&EngineerManual::ctrlBPressing, this));
-  ctrl_b_event_.setFalling(boost::bind(&EngineerManual::ctrlBRelease, this));
   ctrl_d_event_.setRising(boost::bind(&EngineerManual::ctrlDPress, this));
   ctrl_e_event_.setRising(boost::bind(&EngineerManual::ctrlEPress, this));
   ctrl_f_event_.setRising(boost::bind(&EngineerManual::ctrlFPress, this));
@@ -218,7 +216,6 @@ void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
       servo_command_sender_->setLinearVel(-dbus_data->wheel, dbus_data->ch_l_y, -dbus_data->ch_l_x);
       servo_command_sender_->setAngularVel(-angular_z_scale_, -dbus_data->ch_r_x, dbus_data->ch_r_y);
   }
-
 }
 void EngineerManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
@@ -465,12 +462,12 @@ void EngineerManual::ctrlAPress()
 
 void EngineerManual::ctrlBPress()
 {
-    prefix_ = "";
-    root_ = "HOME";
-    engineer_ui_.gripper_state = "CLOSED";
-    runStepQueue(prefix_ + root_);
-    ROS_INFO_STREAM("RUN_HOME");
-    changeSpeedMode(NORMAL);
+  prefix_ = "";
+  root_ = "HOME";
+  engineer_ui_.gripper_state = "CLOSED";
+  runStepQueue(prefix_ + root_);
+  ROS_INFO_STREAM("RUN_HOME");
+  changeSpeedMode(NORMAL);
 }
 
 void EngineerManual::ctrlCPress()
@@ -494,7 +491,7 @@ void EngineerManual::ctrlEPress()
 
 void EngineerManual::ctrlFPress()
 {
-  if(root_ == "GET_DOWN_STONE_RIGHT" || root_ == "GET_UP_STONE_RIGHT" || root_ == "RIGHT_EXCHANGE")
+  if (root_ == "GET_DOWN_STONE_RIGHT" || root_ == "GET_UP_STONE_RIGHT" || root_ == "RIGHT_EXCHANGE")
   {
     prefix_ = "";
     root_ = "RIGHT_EXCHANGE";
@@ -502,7 +499,7 @@ void EngineerManual::ctrlFPress()
     ROS_INFO("%s", (prefix_ + root_).c_str());
     changeSpeedMode(EXCHANGE);
   }
-  else if(root_ == "GET_DOWN_STONE_LEFT" || root_ == "GET_UP_STONE_LEFT" || root_ == "LEFT_EXCHANGE")
+  else if (root_ == "GET_DOWN_STONE_LEFT" || root_ == "GET_UP_STONE_LEFT" || root_ == "LEFT_EXCHANGE")
   {
     prefix_ = "";
     root_ = "LEFT_EXCHANGE";
@@ -804,7 +801,7 @@ void EngineerManual::shiftEPress()
 
 void EngineerManual::shiftFPress()
 {
-  if(root_ == "GET_DOWN_STONE_RIGHT" || root_ == "GET_UP_STONE_RIGHT" || root_ == "RIGHT_EXCHANGE")
+  if (root_ == "GET_DOWN_STONE_RIGHT" || root_ == "GET_UP_STONE_RIGHT" || root_ == "RIGHT_EXCHANGE")
   {
     prefix_ = "";
     root_ = "EXCHANGE_POS";
@@ -813,7 +810,7 @@ void EngineerManual::shiftFPress()
     ROS_INFO("%s", (prefix_ + root_).c_str());
     changeSpeedMode(EXCHANGE);
   }
-  else if(root_ == "GET_DOWN_STONE_LEFT" || root_ == "GET_UP_STONE_LEFT" || root_ == "LEFT_EXCHANGE")
+  else if (root_ == "GET_DOWN_STONE_LEFT" || root_ == "GET_UP_STONE_LEFT" || root_ == "LEFT_EXCHANGE")
   {
     prefix_ = "";
     root_ = "RIGHT_EXCHANGE";
@@ -822,7 +819,7 @@ void EngineerManual::shiftFPress()
     ROS_INFO("%s", (prefix_ + root_).c_str());
     changeSpeedMode(EXCHANGE);
   }
-  else if(root_ == "GET_DOWN_STONE_BIN" || root_ == "GET_UP_STONE_BIN" || root_ == "EXCHANGE_POS")
+  else if (root_ == "GET_DOWN_STONE_BIN" || root_ == "GET_UP_STONE_BIN" || root_ == "EXCHANGE_POS")
   {
     prefix_ = "";
     root_ = "LEFT_EXCHANGE";
