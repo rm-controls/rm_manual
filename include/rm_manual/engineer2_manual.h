@@ -48,7 +48,8 @@ public:
     LOW,
     NORMAL,
     FAST,
-    EXCHANGE
+    EXCHANGE,
+    BIG_ISLAND_SPEED
   };
 
   Engineer2Manual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee);
@@ -145,10 +146,11 @@ private:
 
   // Servo
 
-  bool mouse_left_pressed_{}, had_ground_stone_{ false }, main_gripper_on_{ false }, had_side_gold_{ false },
-      stone_state_[4]{};
+  bool mouse_left_pressed_{}, mouse_right_pressed_{}, had_ground_stone_{ false }, main_gripper_on_{ false },
+      had_side_gold_{ false }, stone_state_[4]{};
   double angular_z_scale_{}, gyro_scale_{}, fast_gyro_scale_{}, low_gyro_scale_{}, normal_gyro_scale_{},
-      exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{};
+      exchange_gyro_scale_{}, fast_speed_scale_{}, low_speed_scale_{}, normal_speed_scale_{}, exchange_speed_scale_{},
+      big_island_speed_scale_{};
 
   std::string prefix_{}, root_{}, exchange_direction_{ "left" }, exchange_arm_position_{ "normal" };
   int operating_mode_{}, servo_mode_{ 1 }, gimbal_mode_{}, gimbal_direction_{ 0 };

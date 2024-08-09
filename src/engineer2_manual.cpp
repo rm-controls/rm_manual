@@ -28,6 +28,7 @@ Engineer2Manual::Engineer2Manual(ros::NodeHandle& nh, ros::NodeHandle& nh_refere
   chassis_nh.param("normal_speed_scale", normal_speed_scale_, 0.5);
   chassis_nh.param("low_speed_scale", low_speed_scale_, 0.1);
   chassis_nh.param("exchange_speed_scale", exchange_speed_scale_, 0.2);
+  chassis_nh.param("big_island_speed_scale", big_island_speed_scale_, 0.02);
   chassis_nh.param("fast_gyro_scale", fast_gyro_scale_, 0.5);
   chassis_nh.param("normal_gyro_scale", normal_gyro_scale_, 0.15);
   chassis_nh.param("low_gyro_scale", low_gyro_scale_, 0.05);
@@ -125,6 +126,9 @@ void Engineer2Manual::changeSpeedMode(SpeedMode speed_mode)
       speed_change_scale_ = exchange_speed_scale_;
       gyro_scale_ = exchange_gyro_scale_;
       break;
+    case BIG_ISLAND_SPEED:
+      speed_change_scale_ = big_island_speed_scale_;
+      gyro_scale_ = exchange_gyro_scale_;
     default:
       speed_change_scale_ = normal_speed_scale_;
       gyro_scale_ = normal_gyro_scale_;
@@ -271,6 +275,7 @@ void Engineer2Manual::actionDoneCallback(const actionlib::SimpleClientGoalState&
   ROS_INFO("Result: %i", result->finish);
   ROS_INFO("Done %s", (prefix_ + root_).c_str());
   mouse_left_pressed_ = true;
+  mouse_right_pressed_ = true;
   ROS_INFO("%i", result->finish);
   operating_mode_ = MANUAL;
   if (root_ == "HOME")
@@ -286,6 +291,26 @@ void Engineer2Manual::actionDoneCallback(const actionlib::SimpleClientGoalState&
     had_side_gold_ = false;
     changeSpeedMode(EXCHANGE);
     enterServo();
+  }
+  if (root_ == "GROUND_STONE0")
+  {
+    changeSpeedMode(NORMAL);
+  }
+  if (prefix_ + root_ == "SIDE_BIG_ISLAND1")
+  {
+    enterServo();
+    changeSpeedMode(BIG_ISLAND_SPEED);
+  }
+  if (prefix_ + root_ == "MID_BIG_ISLAND11" || prefix_ + root_ == "BOTH_BIG_ISLAND1")
+  {
+    enterServo();
+    changeSpeedMode(BIG_ISLAND_SPEED);
+  }
+  if (prefix_ + root_ == "MID_BIG_ISLAND111" || prefix_ + root_ == "SIDE_BIG_ISLAND111" ||
+      prefix_ + root_ == "BOTH_BIG_ISLAND111")
+  {
+    initMode();
+    changeSpeedMode(NORMAL);
   }
 }
 
@@ -551,6 +576,8 @@ void Engineer2Manual::ctrlBRelease()
 void Engineer2Manual::ctrlCPress()
 {
   action_client_.cancelAllGoals();
+  changeSpeedMode(NORMAL);
+  initMode();
   ROS_INFO("cancel all goal");
 }
 void Engineer2Manual::ctrlDPress()
@@ -706,18 +733,18 @@ void Engineer2Manual::shiftFPress()
 {
   if (exchange_direction_ == "left")
   {
-    prefix_ = "LV5_R_";
+    prefix_ = "L2R_";
     exchange_direction_ = "right";
   }
   else if (exchange_direction_ == "right")
   {
-    prefix_ = "LV5_L_";
+    prefix_ = "R2L_";
     exchange_direction_ = "left";
   }
   if (exchange_arm_position_ == "normal")
     root_ = "EXCHANGE";
   else
-    root_ = "CAR_FRONT_EXCHANGE";
+    root_ = "EXCHANGE";
   ROS_INFO_STREAM(prefix_ + root_);
   runStepQueue(prefix_ + root_);
 }
@@ -732,7 +759,7 @@ void Engineer2Manual::shiftGPress()
   else if (had_side_gold_)
   {
     exchange_arm_position_ = "front";
-    root_ = "CAR_FRONT_EXCHANGE";
+    root_ = "EXCHANGE";
   }
   else
   {
