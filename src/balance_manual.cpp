@@ -9,10 +9,6 @@ namespace rm_manual
 BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   : ChassisGimbalShooterCoverManual(nh, nh_referee)
 {
-  ros::NodeHandle balance_nh(nh, "balance");
-  balance_cmd_sender_ = new rm_common::BalanceCommandSender(balance_nh);
-  balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
-
   nh.param("flank_frame", flank_frame_, std::string("flank_frame"));
   nh.param("reverse_frame", reverse_frame_, std::string("yaw_reverse_frame"));
   is_balance_ = true;
@@ -40,7 +36,6 @@ void BalanceManual::sendCommand(const ros::Time& time)
 
   ChassisGimbalShooterManual::sendCommand(time);
   cover_command_sender_->sendCommand(time);
-  balance_cmd_sender_->sendCommand(time);
 }
 
 void BalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -61,7 +56,6 @@ void BalanceManual::rightSwitchDownRise()
 {
   ChassisGimbalShooterCoverManual::rightSwitchDownRise();
   state_ = RC;
-  balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FALLEN);
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
 }
@@ -69,7 +63,6 @@ void BalanceManual::rightSwitchDownRise()
 void BalanceManual::rightSwitchMidRise()
 {
   ChassisGimbalShooterCoverManual::rightSwitchMidRise();
-  balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
 }
@@ -79,13 +72,11 @@ void BalanceManual::ctrlZPress()
   ChassisGimbalShooterCoverManual::ctrlZPress();
   if (supply_)
   {
-    balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FALLEN);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
   }
   else
   {
-    balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
     chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
     chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
   }

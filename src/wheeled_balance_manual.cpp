@@ -9,16 +9,14 @@ namespace rm_manual
 WheeledBalanceManual::WheeledBalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   : BalanceManual(nh, nh_referee)
 {
-  ros::NodeHandle balance_nh(nh, "balance");
-  balance_cmd_sender_ = new rm_common::BalanceCommandSender(balance_nh);
-  balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
+  ros::NodeHandle balance_chassis_nh(nh, "balance_chassis");
+  balance_chassis_cmd_sender_ = new rm_common::BalanceCommandSender(balance_chassis_nh);
+  balance_chassis_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
 
   nh.param("balance_dangerous_angle", balance_dangerous_angle_, 0.3);
 
-  is_balance_ = true;
-  state_sub_ =
-      balance_nh.subscribe<rm_msgs::BalanceState>("/state", 1, &WheeledBalanceManual::balanceStateCallback, this);
-  BalanceManual::xPress();
+  state_sub_ = balance_chassis_nh.subscribe<rm_msgs::BalanceState>("/state", 1,
+                                                                   &WheeledBalanceManual::balanceStateCallback, this);
   x_event_.setRising(boost::bind(&WheeledBalanceManual::xPress, this));
   v_event_.setRising(boost::bind(&WheeledBalanceManual::vPress, this));
   auto_fallen_event_.setActiveHigh(boost::bind(&WheeledBalanceManual::modeFallen, this, _1));
@@ -29,6 +27,7 @@ WheeledBalanceManual::WheeledBalanceManual(ros::NodeHandle& nh, ros::NodeHandle&
 void WheeledBalanceManual::sendCommand(const ros::Time& time)
 {
   BalanceManual::sendCommand(time);
+  balance_chassis_cmd_sender_->sendCommand(time);
 }
 
 void WheeledBalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -36,6 +35,31 @@ void WheeledBalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus
   ChassisGimbalShooterCoverManual::checkKeyboard(dbus_data);
   v_event_.update(dbus_data->key_v && !dbus_data->key_ctrl);
   ctrl_x_event_.update(dbus_data->key_ctrl && dbus_data->key_x);
+}
+
+void WheeledBalanceManual::rightSwitchDownRise()
+{
+  BalanceManual::rightSwitchDownRise();
+  balance_chassis_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
+}
+
+void WheeledBalanceManual::rightSwitchMidRise()
+{
+  BalanceManual::rightSwitchMidRise();
+  balance_chassis_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
+}
+
+void WheeledBalanceManual::ctrlZPress()
+{
+  BalanceManual::ctrlZPress();
+  if (supply_)
+  {
+    balance_chassis_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
+  }
+  else
+  {
+    balance_chassis_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
+  }
 }
 
 void WheeledBalanceManual::vPress()
@@ -51,10 +75,10 @@ void WheeledBalanceManual::bPress()
 
 void WheeledBalanceManual::ctrlXPress()
 {
-  if (balance_cmd_sender_->getMsg()->data == rm_msgs::BalanceState::NORMAL)
-    balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
+  if (balance_chassis_cmd_sender_->getMsg()->data == rm_msgs::BalanceState::NORMAL)
+    balance_chassis_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
   else
-    balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
+    balance_chassis_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
 }
 
 void WheeledBalanceManual::balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& msg)
@@ -72,7 +96,7 @@ void WheeledBalanceManual::balanceStateCallback(const rm_msgs::BalanceState::Con
 
 void WheeledBalanceManual::modeNormalize()
 {
-  balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
+  balance_chassis_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
   ROS_INFO("mode normalize");
 }
 
@@ -80,7 +104,7 @@ void WheeledBalanceManual::modeFallen(ros::Duration duration)
 {
   if (duration.toSec() > 0.3)
   {
-    balance_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
+    balance_chassis_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
     ROS_INFO("mode fallen");
   }
 }

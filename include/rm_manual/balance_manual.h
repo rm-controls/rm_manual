@@ -33,8 +33,6 @@ protected:
   void rightSwitchMidRise() override;
   void sendCommand(const ros::Time& time) override;
 
-  rm_common::BalanceCommandSender* balance_cmd_sender_{};
-
 private:
   bool flank_ = false, reverse_ = false;
   std::string flank_frame_, reverse_frame_;

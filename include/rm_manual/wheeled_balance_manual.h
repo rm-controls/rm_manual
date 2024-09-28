@@ -16,12 +16,15 @@ public:
 protected:
   void sendCommand(const ros::Time& time) override;
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
+  void rightSwitchDownRise() override;
+  void rightSwitchMidRise() override;
+  void ctrlZPress() override;
   void bPress() override;
   void vPress() override;
   void ctrlXPress();
   void modeFallen(ros::Duration duration);
   void modeNormalize();
-  rm_common::BalanceCommandSender* balance_cmd_sender_{};
+  rm_common::BalanceCommandSender* balance_chassis_cmd_sender_{};
 
 private:
   void balanceStateCallback(const rm_msgs::BalanceState::ConstPtr& msg);
