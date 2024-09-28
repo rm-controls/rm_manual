@@ -20,6 +20,7 @@ public:
 
 protected:
   void changeSpeedMode(SpeedMode speed_mode);
+  void changeGyroSpeedMode(SpeedMode speed_mode);
   void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void checkReferee() override;
@@ -27,14 +28,21 @@ protected:
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
-  void rPress() override;
   void ePress() override;
+  void cPress() override;
   void zPress();
   void zRelease();
-  void wPress() override;
-  void wPressing() override;
   void ctrlRPressing();
   void ctrlRRelease() override;
+  void wPress() override;
+  void wPressing() override;
+  void aPressing() override;
+  void sPressing() override;
+  void dPressing() override;
+  void wRelease() override;
+  void aRelease() override;
+  void sRelease() override;
+  void dRelease() override;
 
   virtual void ctrlZPress();
   virtual void ctrlZRelease()
@@ -43,6 +51,7 @@ protected:
   };
   double low_speed_scale_{}, normal_speed_scale_{};
   double exit_buff_mode_duration_{};
+  double gyro_speed_limit_{};
   rm_common::SwitchDetectionCaller* switch_buff_srv_{};
   rm_common::SwitchDetectionCaller* switch_buff_type_srv_{};
   rm_common::SwitchDetectionCaller* switch_exposure_srv_{};
