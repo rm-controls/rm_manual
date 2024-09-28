@@ -6,7 +6,7 @@
 #include "rm_manual/chassis_gimbal_shooter_cover_manual.h"
 #include "rm_manual/engineer_manual.h"
 #include "rm_manual/dart_manual.h"
-#include "rm_manual/balance_manual.h"
+#include "rm_manual/wheeled_balance_manual.h"
 
 int main(int argc, char** argv)
 {
