@@ -119,6 +119,7 @@ protected:
   rm_common::JointPositionBinaryCommandSender* image_transmission_cmd_sender_{};
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::SwitchDetectionCaller* switch_armor_target_srv_{};
+  rm_common::CalibrationQueue* chassis_calibration_;
   rm_common::CalibrationQueue* shooter_calibration_;
   rm_common::CalibrationQueue* gimbal_calibration_;
 

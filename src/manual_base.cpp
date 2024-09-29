@@ -79,6 +79,7 @@ void ManualBase::run()
 
 void ManualBase::checkReferee()
 {
+  chassis_power_on_event_.update(chassis_output_on_);
   gimbal_power_on_event_.update(gimbal_output_on_);
   shooter_power_on_event_.update(shooter_output_on_);
   referee_is_online_ = (ros::Time::now() - referee_last_get_stamp_ < ros::Duration(0.3));
@@ -110,6 +111,7 @@ void ManualBase::jointStateCallback(const sensor_msgs::JointState::ConstPtr& dat
 
 void ManualBase::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data)
 {
+  updateActuatorStamp(data, chassis_mount_motor_, chassis_actuator_last_get_stamp_);
   updateActuatorStamp(data, gimbal_mount_motor_, gimbal_actuator_last_get_stamp_);
   updateActuatorStamp(data, shooter_mount_motor_, shooter_actuator_last_get_stamp_);
 }
