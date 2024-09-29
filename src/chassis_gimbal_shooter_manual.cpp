@@ -36,6 +36,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   shooter_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   nh.getParam("gimbal_calibration", rpc_value);
   gimbal_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
+  nh.getParam("chassis_calibration", rpc_value);
+  chassis_calibration_ = new rm_common::CalibrationQueue(rpc_value, nh, controller_manager_);
   shooter_power_on_event_.setRising(boost::bind(&ChassisGimbalShooterManual::shooterOutputOn, this));
   self_inspection_event_.setRising(boost::bind(&ChassisGimbalShooterManual::selfInspectionStart, this));
   game_start_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gameStart, this));
@@ -71,6 +73,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
 void ChassisGimbalShooterManual::run()
 {
   ChassisGimbalManual::run();
+  chassis_calibration_->update(ros::Time::now());
   shooter_calibration_->update(ros::Time::now());
   gimbal_calibration_->update(ros::Time::now());
 }
@@ -197,6 +200,7 @@ void ChassisGimbalShooterManual::remoteControlTurnOff()
   shooter_cmd_sender_->setZero();
   shooter_calibration_->stop();
   gimbal_calibration_->stop();
+  chassis_calibration_->stop();
   use_scope_ = false;
   adjust_image_transmission_ = false;
 }
@@ -206,6 +210,7 @@ void ChassisGimbalShooterManual::remoteControlTurnOn()
   ChassisGimbalManual::remoteControlTurnOn();
   shooter_calibration_->stopController();
   gimbal_calibration_->stopController();
+  chassis_calibration_->stopController();
   std::string robot_color = robot_id_ >= 100 ? "blue" : "red";
   switch_detection_srv_->setEnemyColor(robot_id_, robot_color);
 }
@@ -222,6 +227,7 @@ void ChassisGimbalShooterManual::chassisOutputOn()
 {
   ChassisGimbalManual::chassisOutputOn();
   chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
+  chassis_calibration_->reset();
 }
 
 void ChassisGimbalShooterManual::shooterOutputOn()
