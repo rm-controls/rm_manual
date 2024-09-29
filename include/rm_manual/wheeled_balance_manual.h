@@ -32,6 +32,6 @@ private:
   ros::Subscriber state_sub_;
   double balance_dangerous_angle_;
 
-  InputEvent v_event_, ctrl_x_event_, auto_fallen_event_;
+  InputEvent ctrl_x_event_, auto_fallen_event_;
 };
 }  // namespace rm_manual

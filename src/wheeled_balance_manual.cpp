@@ -9,11 +9,11 @@ namespace rm_manual
 WheeledBalanceManual::WheeledBalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   : BalanceManual(nh, nh_referee)
 {
-  ros::NodeHandle balance_chassis_nh(nh, "balance_chassis");
+  ros::NodeHandle balance_chassis_nh(nh, "balance/wheeled_chassis");
   balance_chassis_cmd_sender_ = new rm_common::BalanceCommandSender(balance_chassis_nh);
   balance_chassis_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
 
-  nh.param("balance_dangerous_angle", balance_dangerous_angle_, 0.3);
+  balance_chassis_nh.param("balance_dangerous_angle", balance_dangerous_angle_, 0.3);
 
   state_sub_ = balance_chassis_nh.subscribe<rm_msgs::BalanceState>("/state", 1,
                                                                    &WheeledBalanceManual::balanceStateCallback, this);

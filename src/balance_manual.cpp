@@ -9,8 +9,9 @@ namespace rm_manual
 BalanceManual::BalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   : ChassisGimbalShooterCoverManual(nh, nh_referee)
 {
-  nh.param("flank_frame", flank_frame_, std::string("flank_frame"));
-  nh.param("reverse_frame", reverse_frame_, std::string("yaw_reverse_frame"));
+  ros::NodeHandle balance_nh(nh, "balance");
+  balance_nh.param("flank_frame", flank_frame_, std::string("flank_frame"));
+  balance_nh.param("reverse_frame", reverse_frame_, std::string("yaw_reverse_frame"));
   is_balance_ = true;
 }
 
@@ -91,7 +92,7 @@ void BalanceManual::shiftPress()
 {
   ChassisGimbalShooterCoverManual::shiftPress();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::UP_SLOPE);
-  chassis_cmd_sender_->updateSafetyPower(60);
+  chassis_cmd_sender_->updateSafetyPower(220);
 }
 
 void BalanceManual::wPress()
