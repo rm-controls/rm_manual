@@ -159,7 +159,7 @@ protected:
   ros::NodeHandle nh_;
 
   ros::Time referee_last_get_stamp_;
-  bool remote_is_open_{ false }, referee_is_online_ = false;
+  bool remote_is_open_{}, referee_is_online_ = false;
   int state_ = PASSIVE;
   int robot_id_, chassis_power_;
   int chassis_output_on_ = 0, gimbal_output_on_ = 0, shooter_output_on_ = 0;
