@@ -118,7 +118,7 @@ void ManualBase::actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& d
 
 void ManualBase::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
-  if (ros::Time::now() - data->stamp < ros::Duration(1.0))
+  if (data->rc_is_open)
   {
     if (!remote_is_open_)
     {
