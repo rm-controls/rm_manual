@@ -111,6 +111,7 @@ void EngineerManual::run()
     previous_ui_ = engineer_ui_;
   }
 }
+
 void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
 {
   if (speed_mode == LOW)
@@ -134,6 +135,7 @@ void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
     gyro_scale_ = exchange_gyro_scale_;
   }
 }
+
 void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::checkKeyboard(dbus_data);
@@ -180,6 +182,7 @@ void EngineerManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
 
   c_event_.update(dbus_data->key_c & !dbus_data->key_ctrl & !dbus_data->key_shift);
 }
+
 void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   ChassisGimbalManual::updateRc(dbus_data);
@@ -192,6 +195,7 @@ void EngineerManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   left_switch_up_event_.update(dbus_data->s_l == rm_msgs::DbusData::UP);
   left_switch_down_event_.update(dbus_data->s_l == rm_msgs::DbusData::DOWN);
 }
+
 void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   checkKeyboard(dbus_data);
@@ -200,6 +204,7 @@ void EngineerManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
   if (servo_mode_ == JOINT)
     vel_cmd_sender_->setAngularZVel(-dbus_data->m_x * gimbal_scale_);
 }
+
 void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
 {
   switch (servo_orientation_)
@@ -217,6 +222,7 @@ void EngineerManual::updateServo(const rm_msgs::DbusData::ConstPtr& dbus_data)
       servo_command_sender_->setAngularVel(-angular_z_scale_, -dbus_data->ch_r_x, dbus_data->ch_r_y);
   }
 }
+
 void EngineerManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
 {
   ManualBase::dbusDataCallback(data);
@@ -224,6 +230,7 @@ void EngineerManual::dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data)
   if (servo_mode_ == SERVO)
     updateServo(data);
 }
+
 void EngineerManual::stoneNumCallback(const std_msgs::String::ConstPtr& data)
 {
   if (data->data == "-1" && !stone_num_.empty())
@@ -240,6 +247,7 @@ void EngineerManual::stoneNumCallback(const std_msgs::String::ConstPtr& data)
     engineer_ui_.stone_num++;
   }
 }
+
 void EngineerManual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
 {
   gpio_state_.gpio_state = data->gpio_state;
@@ -254,6 +262,7 @@ void EngineerManual::gpioStateCallback(const rm_msgs::GpioData::ConstPtr& data)
     engineer_ui_.gripper_state = "CLOSED";
   }
 }
+
 void EngineerManual::sendCommand(const ros::Time& time)
 {
   if (operating_mode_ == MANUAL)
@@ -269,6 +278,7 @@ void EngineerManual::sendCommand(const ros::Time& time)
       gimbal_cmd_sender_->sendCommand(time);
   }
 }
+
 void EngineerManual::runStepQueue(const std::string& step_queue_name)
 {
   rm_msgs::EngineerGoal goal;
@@ -284,9 +294,11 @@ void EngineerManual::runStepQueue(const std::string& step_queue_name)
   else
     ROS_ERROR("Can not connect to middleware");
 }
+
 void EngineerManual::actionFeedbackCallback(const rm_msgs::EngineerFeedbackConstPtr& feedback)
 {
 }
+
 void EngineerManual::actionDoneCallback(const actionlib::SimpleClientGoalState& state,
                                         const rm_msgs::EngineerResultConstPtr& result)
 {
@@ -335,6 +347,7 @@ void EngineerManual::enterServo()
   chassis_cmd_sender_->getMsg()->command_source_frame = "link4";
   engineer_ui_.control_mode = "SERVO";
 }
+
 void EngineerManual::initMode()
 {
   servo_mode_ = JOINT;
@@ -357,6 +370,7 @@ void EngineerManual::gimbalOutputOn()
   pitch_calibration_->reset();
   ROS_INFO("pitch calibrated");
 }
+
 void EngineerManual::chassisOutputOn()
 {
   if (operating_mode_ == MIDDLEWARE)
@@ -371,6 +385,7 @@ void EngineerManual::rightSwitchUpRise()
   servo_mode_ = JOINT;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
+
 void EngineerManual::rightSwitchMidRise()
 {
   ChassisGimbalManual::rightSwitchMidRise();
@@ -379,6 +394,7 @@ void EngineerManual::rightSwitchMidRise()
   gimbal_cmd_sender_->setZero();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
+
 void EngineerManual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
@@ -403,6 +419,7 @@ void EngineerManual::leftSwitchUpRise()
   engineer_ui_.control_mode = "NORMAL";
   ROS_INFO_STREAM("START CALIBRATE");
 }
+
 void EngineerManual::leftSwitchUpFall()
 {
   runStepQueue("HOME");
@@ -422,9 +439,11 @@ void EngineerManual::leftSwitchDownRise()
     engineer_ui_.gripper_state = "CLOSED";
   }
 }
+
 void EngineerManual::leftSwitchDownFall()
 {
 }
+
 // mouse input
 void EngineerManual::mouseLeftRelease()
 {
@@ -436,6 +455,7 @@ void EngineerManual::mouseLeftRelease()
     ROS_INFO("Finished %s", (prefix_ + root_).c_str());
   }
 }
+
 //--------------------- keyboard input ------------------------
 void EngineerManual::mouseRightRelease()
 {
@@ -587,10 +607,12 @@ void EngineerManual::ctrlXPress()
 void EngineerManual::ctrlZPress()
 {
 }
+
 //-------------------------- keys ------------------------------
 void EngineerManual::bPressing()
 {
 }
+
 void EngineerManual::bRelease()
 {
 }
@@ -600,6 +622,7 @@ void EngineerManual::cPressing()
   angular_z_scale_ = 0.5;
   //  ROS_INFO_STREAM("angular_z_scale is 0.5");
 }
+
 void EngineerManual::cRelease()
 {
   angular_z_scale_ = 0.;
@@ -610,6 +633,7 @@ void EngineerManual::ePressing()
   if (servo_mode_ == SERVO)
     vel_cmd_sender_->setAngularZVel(-gyro_scale_);
 }
+
 void EngineerManual::eRelease()
 {
   if (servo_mode_ == SERVO)
@@ -634,6 +658,7 @@ void EngineerManual::fPress()
       break;
   }
 }
+
 void EngineerManual::fRelease()
 {
 }
@@ -647,6 +672,7 @@ void EngineerManual::gPress()
   }
   ROS_INFO_STREAM("Stone num is: " << stone_num_.size() << ", stone is " << stone_num_.top());
 }
+
 void EngineerManual::gRelease()
 {
 }
@@ -656,6 +682,7 @@ void EngineerManual::qPressing()
   if (servo_mode_ == SERVO)
     vel_cmd_sender_->setAngularZVel(gyro_scale_);
 }
+
 void EngineerManual::qRelease()
 {
   if (servo_mode_ == SERVO)
@@ -689,6 +716,7 @@ void EngineerManual::vPressing()
     }
   }
 }
+
 void EngineerManual::vRelease()
 {
   v_pressed_ = false;
@@ -718,16 +746,19 @@ void EngineerManual::zPressing()
   angular_z_scale_ = -0.5;
   //  ROS_INFO_STREAM("angular_z_scale is -0.5");
 }
+
 void EngineerManual::zRelease()
 {
   angular_z_scale_ = 0.;
 }
+
 //----------------------------- shift ----------------------------
 void EngineerManual::shiftPressing()
 {
   changeSpeedMode(FAST);
   ROS_DEBUG_STREAM("speed mode is fast");
 }
+
 void EngineerManual::shiftRelease()
 {
   changeSpeedMode(NORMAL);
@@ -737,6 +768,7 @@ void EngineerManual::shiftRelease()
 void EngineerManual::shiftBPress()
 {
 }
+
 void EngineerManual::shiftBRelease()
 {
 }
@@ -917,6 +949,7 @@ void EngineerManual::shiftQPress()
 void EngineerManual::shiftRPress()
 {
 }
+
 void EngineerManual::shiftRRelease()
 {
 }
@@ -934,6 +967,7 @@ void EngineerManual::shiftVPress()
     engineer_ui_.gripper_state = "CLOSED";
   }
 }
+
 void EngineerManual::shiftVRelease()
 {
 }

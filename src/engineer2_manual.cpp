@@ -361,6 +361,7 @@ void Engineer2Manual::rightSwitchUpRise()
   servo_mode_ = JOINT;
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
+
 void Engineer2Manual::rightSwitchMidRise()
 {
   ChassisGimbalManual::rightSwitchMidRise();
@@ -369,6 +370,7 @@ void Engineer2Manual::rightSwitchMidRise()
   gimbal_cmd_sender_->setZero();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
 }
+
 void Engineer2Manual::rightSwitchDownRise()
 {
   ChassisGimbalManual::rightSwitchDownRise();
@@ -395,6 +397,7 @@ void Engineer2Manual::leftSwitchUpRise()
   engineer_ui_.control_mode = "NORMAL";
   ROS_INFO_STREAM("START CALIBRATE");
 }
+
 void Engineer2Manual::leftSwitchUpFall()
 {
   runStepQueue("HOME_WITH_PITCH");
@@ -411,6 +414,7 @@ void Engineer2Manual::leftSwitchDownRise()
     runStepQueue("CA");
   }
 }
+
 void Engineer2Manual::leftSwitchDownFall()
 {
   runStepQueue("MIDDLE_PITCH_UP");
@@ -442,46 +446,57 @@ void Engineer2Manual::bPressing()
 void Engineer2Manual::bRelease()
 {
 }
+
 void Engineer2Manual::cPressing()
 {
   angular_z_scale_ = -0.8;
 }
+
 void Engineer2Manual::cRelease()
 {
   angular_z_scale_ = 0.;
 }
+
 void Engineer2Manual::ePressing()
 {
   if (servo_mode_ == SERVO)
     vel_cmd_sender_->setAngularZVel(-gyro_scale_);
 }
+
 void Engineer2Manual::eRelease()
 {
   if (servo_mode_ == SERVO)
     vel_cmd_sender_->setAngularZVel(0.);
 }
+
 void Engineer2Manual::fPress()
 {
 }
+
 void Engineer2Manual::fRelease()
 {
 }
+
 void Engineer2Manual::gPress()
 {
 }
+
 void Engineer2Manual::gRelease()
 {
 }
+
 void Engineer2Manual::qPressing()
 {
   if (servo_mode_ == SERVO)
     vel_cmd_sender_->setAngularZVel(gyro_scale_);
 }
+
 void Engineer2Manual::qRelease()
 {
   if (servo_mode_ == SERVO)
     vel_cmd_sender_->setAngularZVel(0.);
 }
+
 void Engineer2Manual::rPress()
 {
   if (had_side_gold_)
@@ -505,9 +520,11 @@ void Engineer2Manual::rRelease()
 void Engineer2Manual::vPressing()
 {
 }
+
 void Engineer2Manual::vRelease()
 {
 }
+
 void Engineer2Manual::xPress()
 {
   if (servo_mode_ == SERVO)
@@ -543,10 +560,12 @@ void Engineer2Manual::xPress()
     }
   }
 }
+
 void Engineer2Manual::zPressing()
 {
   angular_z_scale_ = 0.8;
 }
+
 void Engineer2Manual::zRelease()
 {
   angular_z_scale_ = 0.;
@@ -560,6 +579,7 @@ void Engineer2Manual::ctrlAPress()
   runStepQueue(prefix_ + root_);
   changeSpeedMode(LOW);
 }
+
 void Engineer2Manual::ctrlBPress()
 {
   prefix_ = "";
@@ -567,12 +587,15 @@ void Engineer2Manual::ctrlBPress()
   runStepQueue(prefix_ + root_);
   changeSpeedMode(NORMAL);
 }
+
 void Engineer2Manual::ctrlBPressing()
 {
 }
+
 void Engineer2Manual::ctrlBRelease()
 {
 }
+
 void Engineer2Manual::ctrlCPress()
 {
   action_client_.cancelAllGoals();
@@ -580,6 +603,7 @@ void Engineer2Manual::ctrlCPress()
   initMode();
   ROS_INFO("cancel all goal");
 }
+
 void Engineer2Manual::ctrlDPress()
 {
   engineer_ui_.symbol = UiState::SMALL_ISLAND;
@@ -588,9 +612,11 @@ void Engineer2Manual::ctrlDPress()
   changeSpeedMode(EXCHANGE);
   runStepQueue(prefix_ + root_);
 }
+
 void Engineer2Manual::ctrlEPress()
 {
 }
+
 void Engineer2Manual::ctrlFPress()
 {
   if (exchange_direction_ == "left")
@@ -603,6 +629,7 @@ void Engineer2Manual::ctrlFPress()
     root_ = "DROP_GOLD_EXCHANGE";
   runStepQueue(prefix_ + root_);
 }
+
 void Engineer2Manual::ctrlGPress()
 {
   engineer_ui_.symbol = UiState::BIG_ISLAND;
@@ -611,9 +638,11 @@ void Engineer2Manual::ctrlGPress()
   changeSpeedMode(LOW);
   runStepQueue(prefix_ + root_);
 }
+
 void Engineer2Manual::ctrlQPress()
 {
 }
+
 void Engineer2Manual::ctrlRPress()
 {
   runStepQueue("CALIBRATION");
@@ -629,6 +658,7 @@ void Engineer2Manual::ctrlRPress()
     stone = false;
   runStepQueue("CA");
 }
+
 void Engineer2Manual::ctrlSPress()
 {
   engineer_ui_.symbol = UiState::BIG_ISLAND;
@@ -640,12 +670,15 @@ void Engineer2Manual::ctrlSPress()
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
+
 void Engineer2Manual::ctrlVPress()
 {
 }
+
 void Engineer2Manual::ctrlVRelease()
 {
 }
+
 void Engineer2Manual::ctrlWPress()
 {
   engineer_ui_.symbol = UiState::BIG_ISLAND;
@@ -657,6 +690,7 @@ void Engineer2Manual::ctrlWPress()
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
+
 void Engineer2Manual::ctrlXPress()
 {
   had_ground_stone_ = true;
@@ -666,26 +700,30 @@ void Engineer2Manual::ctrlXPress()
   ROS_INFO_STREAM(prefix_ + root_);
   runStepQueue(prefix_ + root_);
 }
+
 void Engineer2Manual::ctrlZPress()
 {
 }
 
 //---------------  SHIFT  --------------------------
-
 void Engineer2Manual::shiftPressing()
 {
   changeSpeedMode(FAST);
 }
+
 void Engineer2Manual::shiftRelease()
 {
   changeSpeedMode(NORMAL);
 }
+
 void Engineer2Manual::shiftBPress()
 {
 }
+
 void Engineer2Manual::shiftBRelease()
 {
 }
+
 void Engineer2Manual::shiftCPress()
 {
   action_client_.cancelAllGoals();
@@ -701,6 +739,7 @@ void Engineer2Manual::shiftCPress()
   }
   ROS_INFO("cancel all goal");
 }
+
 void Engineer2Manual::shiftEPress()
 {
   exchange_direction_ = "right";
@@ -729,6 +768,7 @@ void Engineer2Manual::shiftEPress()
   }
   runStepQueue(prefix_ + root_);
 }
+
 void Engineer2Manual::shiftFPress()
 {
   if (exchange_direction_ == "left")
@@ -748,6 +788,7 @@ void Engineer2Manual::shiftFPress()
   ROS_INFO_STREAM(prefix_ + root_);
   runStepQueue(prefix_ + root_);
 }
+
 void Engineer2Manual::shiftGPress()
 {
   prefix_ = "LV4_";
@@ -776,6 +817,7 @@ void Engineer2Manual::shiftGPress()
   runStepQueue(prefix_ + root_);
   ROS_INFO_STREAM(prefix_ + root_);
 }
+
 void Engineer2Manual::shiftQPress()
 {
   exchange_direction_ = "left";
@@ -805,12 +847,15 @@ void Engineer2Manual::shiftQPress()
   runStepQueue(prefix_ + root_);
   ROS_INFO_STREAM(prefix_ + root_);
 }
+
 void Engineer2Manual::shiftRPress()
 {
 }
+
 void Engineer2Manual::shiftRRelease()
 {
 }
+
 void Engineer2Manual::shiftVPress()
 {
   prefix_ = "";
@@ -824,12 +869,15 @@ void Engineer2Manual::shiftVPress()
   }
   runStepQueue(root_);
 }
+
 void Engineer2Manual::shiftVRelease()
 {
 }
+
 void Engineer2Manual::shiftXPress()
 {
 }
+
 void Engineer2Manual::shiftZPress()
 {
   prefix_ = "";
@@ -837,6 +885,7 @@ void Engineer2Manual::shiftZPress()
   runStepQueue(prefix_ + root_);
   ROS_INFO("%s", (prefix_ + root_).c_str());
 }
+
 void Engineer2Manual::shiftZRelease()
 {
 }
