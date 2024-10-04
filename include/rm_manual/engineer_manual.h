@@ -165,7 +165,7 @@ private:
   ros::Publisher engineer_ui_pub_;
 
   rm_msgs::GpioData gpio_state_;
-  rm_msgs::EngineerUi engineer_ui_, old_ui_;
+  rm_msgs::EngineerUi engineer_ui_, previous_ui_;
 
   rm_common::Vel3DCommandSender* servo_command_sender_;
   rm_common::ServiceCallerBase<std_srvs::Empty>* servo_reset_caller_;

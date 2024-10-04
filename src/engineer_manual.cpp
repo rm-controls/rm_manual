@@ -105,10 +105,10 @@ void EngineerManual::run()
   ChassisGimbalManual::run();
   calibration_gather_->update(ros::Time::now());
   ore_bin_lifter_calibration_->update(ros::Time::now());
-  if (engineer_ui_ != old_ui_)
+  if (engineer_ui_ != previous_ui_)
   {
     engineer_ui_pub_.publish(engineer_ui_);
-    old_ui_ = engineer_ui_;
+    previous_ui_ = engineer_ui_;
   }
 }
 void EngineerManual::changeSpeedMode(SpeedMode speed_mode)
