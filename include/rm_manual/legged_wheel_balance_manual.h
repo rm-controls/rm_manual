@@ -31,7 +31,9 @@ protected:
   rm_common::LegCommandSender* legCommandSender_{};
 
 private:
-  bool stretch_ = false;
+  bool stretch_ = false, stretching_ = false;
   InputEvent ctrl_shift_event_, ctrl_g_event_;
+  ros::Subscriber unstick_sub_;
+  void unstickCallback(const std_msgs::BoolConstPtr& msg);
 };
 }  // namespace rm_manual

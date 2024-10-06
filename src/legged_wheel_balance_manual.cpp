@@ -9,8 +9,8 @@ namespace rm_manual
 LeggedWheelBalanceManual::LeggedWheelBalanceManual(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   : BalanceManual(nh, nh_referee)
 {
-  ros::NodeHandle leg_nh(nh, "balance/legged_wheel_chassis");
-  legCommandSender_ = new rm_common::LegCommandSender(leg_nh);
+  ros::NodeHandle leg_wheel_chassis_nh(nh, "balance/legged_wheel_chassis");
+  legCommandSender_ = new rm_common::LegCommandSender(leg_wheel_chassis_nh);
   legCommandSender_->setLgeLength(0.18);
   legCommandSender_->setJump(false);
 
@@ -19,6 +19,12 @@ LeggedWheelBalanceManual::LeggedWheelBalanceManual(ros::NodeHandle& nh, ros::Nod
   ctrl_shift_event_.setEdge(boost::bind(&LeggedWheelBalanceManual::ctrlShiftPress, this),
                             boost::bind(&LeggedWheelBalanceManual::ctrlShiftRelease, this));
   ctrl_g_event_.setRising(boost::bind(&LeggedWheelBalanceManual::ctrlGPress, this));
+
+  std::string unstick_topic;
+  leg_wheel_chassis_nh.param("unstick_topic", unstick_topic,
+                             std::string("/controllers/legged_balance_controller/unstick/two_leg_unstick"));
+  unstick_sub_ = leg_wheel_chassis_nh.subscribe<std_msgs::Bool>(unstick_topic, 1,
+                                                                &LeggedWheelBalanceManual::unstickCallback, this);
 }
 
 void LeggedWheelBalanceManual::sendCommand(const ros::Time& time)
@@ -117,4 +123,21 @@ void LeggedWheelBalanceManual::ctrlGPress()
     stretch_ = false;
   }
 }
+
+void LeggedWheelBalanceManual::unstickCallback(const std_msgs::BoolConstPtr& msg)
+{
+  auto two_leg_unstick = msg->data;
+  if (two_leg_unstick)
+  {
+    auto delta = legCommandSender_->getLgeLength() + 0.02;
+    legCommandSender_->setLgeLength(delta > 0.33 ? 0.33 : delta);
+    stretching_ = true;
+  }
+  else if (stretching_ && !two_leg_unstick)
+  {
+    legCommandSender_->setLgeLength(0.2);
+    stretching_ = false;
+  }
+}
+
 }  // namespace rm_manual
