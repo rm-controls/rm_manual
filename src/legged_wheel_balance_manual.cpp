@@ -54,7 +54,7 @@ void LeggedWheelBalanceManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_
   }
   else
   {
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
   }
 }
 
@@ -73,7 +73,7 @@ void LeggedWheelBalanceManual::ctrlZPress()
   BalanceManual::ctrlZPress();
   if (!supply_)
   {
-    is_gyro_ = false;
+    setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
     legCommandSender_->setLgeLength(0.18);
   }
 }
@@ -114,7 +114,7 @@ void LeggedWheelBalanceManual::ctrlGPress()
 {
   if (!stretch_)
   {
-    legCommandSender_->setLgeLength(0.25);
+    legCommandSender_->setLgeLength(0.3);
     stretch_ = true;
   }
   else
