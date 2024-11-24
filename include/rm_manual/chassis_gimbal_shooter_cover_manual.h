@@ -20,6 +20,7 @@ public:
 
 protected:
   void changeSpeedMode(SpeedMode speed_mode);
+  double getDynamicScale(double base_scale, double amplitude, double period, double phase);
   void changeGyroSpeedMode(SpeedMode speed_mode);
   void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
@@ -52,6 +53,10 @@ protected:
   double low_speed_scale_{}, normal_speed_scale_{};
   double exit_buff_mode_duration_{};
   double gyro_speed_limit_{};
+  double sin_gyro_base_scale_{ 1. };
+  double sin_gyro_amplitude_{ 0. };
+  double sin_gyro_period_{ 1. };
+  double sin_gyro_phase_{ 0. };
   rm_common::SwitchDetectionCaller* switch_buff_srv_{};
   rm_common::SwitchDetectionCaller* switch_buff_type_srv_{};
   rm_common::SwitchDetectionCaller* switch_exposure_srv_{};
