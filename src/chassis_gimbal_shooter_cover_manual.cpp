@@ -47,7 +47,8 @@ void ChassisGimbalShooterCoverManual::changeSpeedMode(SpeedMode speed_mode)
     speed_change_scale_ = normal_speed_scale_;
   }
 }
-double ChassisGimbalShooterCoverManual::getDynamicScale(double base_scale, double amplitude, double period, double phase)
+double ChassisGimbalShooterCoverManual::getDynamicScale(const double base_scale, const double amplitude,
+                                                        const double period, const double phase)
 {
   ros::Time current_time = ros::Time::now();
   double t = current_time.toSec();
@@ -75,12 +76,9 @@ void ChassisGimbalShooterCoverManual::changeGyroSpeedMode(SpeedMode speed_mode)
   else if (speed_mode == NORMAL)
   {
     if (x_scale_ != 0.0 || y_scale_ != 0.0)
-      vel_cmd_sender_->setAngularZVel(
-          getDynamicScale(sin_gyro_base_scale_, sin_gyro_amplitude_, sin_gyro_period_, sin_gyro_phase_) *
-          gyro_rotate_reduction_);
+      vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_);
     else
-      vel_cmd_sender_->setAngularZVel(
-          getDynamicScale(sin_gyro_base_scale_, sin_gyro_amplitude_, sin_gyro_period_, sin_gyro_phase_));
+      vel_cmd_sender_->setAngularZVel(1.0);
   }
 }
 
