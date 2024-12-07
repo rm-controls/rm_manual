@@ -47,6 +47,7 @@ void ChassisGimbalShooterCoverManual::changeSpeedMode(SpeedMode speed_mode)
     speed_change_scale_ = normal_speed_scale_;
   }
 }
+
 double ChassisGimbalShooterCoverManual::getDynamicScale(const double base_scale, const double amplitude,
                                                         const double period, const double phase)
 {
@@ -64,6 +65,7 @@ double ChassisGimbalShooterCoverManual::getDynamicScale(const double base_scale,
   }
   return dynamic_scale;
 }
+
 void ChassisGimbalShooterCoverManual::changeGyroSpeedMode(SpeedMode speed_mode)
 {
   if (speed_mode == LOW)
