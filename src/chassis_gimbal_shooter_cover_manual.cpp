@@ -87,6 +87,21 @@ void ChassisGimbalShooterCoverManual::updatePc(const rm_msgs::DbusData::ConstPtr
   ChassisGimbalShooterManual::updatePc(dbus_data);
   gimbal_cmd_sender_->setRate(-dbus_data->m_x * gimbal_scale_,
                               cover_command_sender_->getState() ? 0.0 : dbus_data->m_y * gimbal_scale_);
+  if (is_gyro_)
+  {
+    if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+      if (x_scale_ != 0.0 || y_scale_ != 0.0)
+        vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_, gyro_speed_limit_);
+      else
+        vel_cmd_sender_->setAngularZVel(1.0, gyro_speed_limit_);
+    else if (x_scale_ != 0.0 || y_scale_ != 0.0)
+      vel_cmd_sender_->setAngularZVel(
+          getDynamicScale(sin_gyro_base_scale_, sin_gyro_amplitude_, sin_gyro_period_, sin_gyro_phase_) *
+          gyro_rotate_reduction_);
+    else
+      vel_cmd_sender_->setAngularZVel(
+          getDynamicScale(sin_gyro_base_scale_, sin_gyro_amplitude_, sin_gyro_period_, sin_gyro_phase_));
+  }
 }
 
 void ChassisGimbalShooterCoverManual::checkReferee()
@@ -153,22 +168,6 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
   }
   ChassisGimbalShooterManual::sendCommand(time);
   cover_command_sender_->sendCommand(time);
-  if (state_ == PC && is_gyro_)
-  {
-    if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
-      if (x_scale_ != 0.0 || y_scale_ != 0.0)
-        vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_, gyro_speed_limit_);
-      else
-        vel_cmd_sender_->setAngularZVel(1.0, gyro_speed_limit_);
-    else if (x_scale_ != 0.0 || y_scale_ != 0.0)
-      vel_cmd_sender_->setAngularZVel(
-          getDynamicScale(sin_gyro_base_scale_, sin_gyro_amplitude_, sin_gyro_period_, sin_gyro_phase_) *
-          gyro_rotate_reduction_);
-    else
-      vel_cmd_sender_->setAngularZVel(
-          getDynamicScale(sin_gyro_base_scale_, sin_gyro_amplitude_, sin_gyro_period_, sin_gyro_phase_));
-    vel_cmd_sender_->sendCommand(time);
-  }
 }
 
 void ChassisGimbalShooterCoverManual::rightSwitchDownRise()

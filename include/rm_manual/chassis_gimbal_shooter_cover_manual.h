@@ -20,7 +20,7 @@ public:
 
 protected:
   void changeSpeedMode(SpeedMode speed_mode);
-  double getDynamicScale(double base_scale, double amplitude, double period, double phase);
+  double getDynamicScale(const double base_scale, const double amplitude, const double period, const double phase);
   void changeGyroSpeedMode(SpeedMode speed_mode);
   void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
