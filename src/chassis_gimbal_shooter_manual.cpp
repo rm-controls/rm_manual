@@ -25,6 +25,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   {
     ros::NodeHandle image_transmission_nh(nh, "image_transmission");
     image_transmission_cmd_sender_ = new rm_common::JointPositionBinaryCommandSender(image_transmission_nh);
+    scale_ = getParam(image_transmission_nh,"position_scale",1);
   }
 
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
@@ -60,6 +61,8 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
   ctrl_q_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlQPress, this));
+  ctrl_z_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlZPress, this));
+  ctrl_x_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlXPress, this));
   ctrl_r_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::ctrlRPress, this),
                         boost::bind(&ChassisGimbalShooterManual::ctrlRRelease, this));
   shift_event_.setEdge(boost::bind(&ChassisGimbalShooterManual::shiftPress, this),
@@ -106,6 +109,8 @@ void ChassisGimbalShooterManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr
   ctrl_b_event_.update(dbus_data->key_ctrl & dbus_data->key_b & !dbus_data->key_shift);
   ctrl_q_event_.update(dbus_data->key_ctrl & dbus_data->key_q);
   ctrl_r_event_.update(dbus_data->key_ctrl & dbus_data->key_r);
+  ctrl_z_event_.update(dbus_data->key_ctrl & dbus_data->key_z);
+  ctrl_x_event_.update(dbus_data->key_ctrl & dbus_data->key_x);
   shift_event_.update(dbus_data->key_shift & !dbus_data->key_ctrl);
   ctrl_shift_b_event_.update(dbus_data->key_ctrl & dbus_data->key_shift & dbus_data->key_b);
   mouse_left_event_.update(dbus_data->p_l & !dbus_data->key_ctrl);
@@ -186,10 +191,23 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
   }
   if (image_transmission_cmd_sender_)
   {
-    if (!adjust_image_transmission_)
-      image_transmission_cmd_sender_->off();
-    else
-      image_transmission_cmd_sender_->on();
+    if (!need_change_position)
+    {
+      if (!adjust_image_transmission_)
+        image_transmission_cmd_sender_->off();
+      else
+        image_transmission_cmd_sender_->on();
+    }
+    if (up_change_position_)
+    {
+      image_transmission_cmd_sender_->changePosition(scale_);
+      up_change_position_ = false;
+    }
+    else if (low_change_position)
+    {
+      image_transmission_cmd_sender_->changePosition(-scale_);
+      low_change_position = false;
+    }
     image_transmission_cmd_sender_->sendCommand(time);
   }
 }
@@ -203,6 +221,9 @@ void ChassisGimbalShooterManual::remoteControlTurnOff()
   chassis_calibration_->stop();
   use_scope_ = false;
   adjust_image_transmission_ = false;
+  up_change_position_ = false;
+  low_change_position = false;
+  need_change_position = false;
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOn()
@@ -221,6 +242,9 @@ void ChassisGimbalShooterManual::robotDie()
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
   use_scope_ = false;
   adjust_image_transmission_ = false;
+  up_change_position_ = false;
+  low_change_position = false;
+  need_change_position = false;
 }
 
 void ChassisGimbalShooterManual::chassisOutputOn()
@@ -630,6 +654,18 @@ void ChassisGimbalShooterManual::ctrlQPress()
 {
   shooter_calibration_->reset();
   gimbal_calibration_->reset();
+}
+
+void ChassisGimbalShooterManual::ctrlZPress()
+{
+  up_change_position_ = true;
+  need_change_position = true;
+}
+
+void ChassisGimbalShooterManual::ctrlXPress()
+{
+  low_change_position = true;
+  need_change_position = true;
 }
 
 void ChassisGimbalShooterManual::robotRevive()
