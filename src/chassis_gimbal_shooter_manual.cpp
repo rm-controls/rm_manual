@@ -654,6 +654,9 @@ void ChassisGimbalShooterManual::ctrlQPress()
 {
   shooter_calibration_->reset();
   gimbal_calibration_->reset();
+  up_change_position_ = false;
+  low_change_position = false;
+  need_change_position = false;
 }
 
 void ChassisGimbalShooterManual::ctrlZPress()
