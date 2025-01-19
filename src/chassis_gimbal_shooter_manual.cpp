@@ -191,8 +191,7 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
   }
   if (image_transmission_cmd_sender_)
   {
-    if (!need_change_position)
-    {
+    if (!need_change_position_) {
       if (!adjust_image_transmission_)
         image_transmission_cmd_sender_->off();
       else
@@ -202,11 +201,9 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
     {
       image_transmission_cmd_sender_->changePosition(scale_);
       up_change_position_ = false;
-    }
-    else if (low_change_position)
-    {
+    } else if (low_change_position_) {
       image_transmission_cmd_sender_->changePosition(-scale_);
-      low_change_position = false;
+      low_change_position_ = false;
     }
     image_transmission_cmd_sender_->sendCommand(time);
   }
@@ -222,8 +219,8 @@ void ChassisGimbalShooterManual::remoteControlTurnOff()
   use_scope_ = false;
   adjust_image_transmission_ = false;
   up_change_position_ = false;
-  low_change_position = false;
-  need_change_position = false;
+  low_change_position_ = false;
+  need_change_position_ = false;
 }
 
 void ChassisGimbalShooterManual::remoteControlTurnOn()
@@ -243,8 +240,8 @@ void ChassisGimbalShooterManual::robotDie()
   use_scope_ = false;
   adjust_image_transmission_ = false;
   up_change_position_ = false;
-  low_change_position = false;
-  need_change_position = false;
+  low_change_position_ = false;
+  need_change_position_ = false;
 }
 
 void ChassisGimbalShooterManual::chassisOutputOn()
@@ -655,20 +652,20 @@ void ChassisGimbalShooterManual::ctrlQPress()
   shooter_calibration_->reset();
   gimbal_calibration_->reset();
   up_change_position_ = false;
-  low_change_position = false;
-  need_change_position = false;
+  low_change_position_ = false;
+  need_change_position_ = false;
 }
 
 void ChassisGimbalShooterManual::ctrlZPress()
 {
   up_change_position_ = true;
-  need_change_position = true;
+  need_change_position_ = true;
 }
 
 void ChassisGimbalShooterManual::ctrlXPress()
 {
-  low_change_position = true;
-  need_change_position = true;
+  low_change_position_ = true;
+  need_change_position_ = true;
 }
 
 void ChassisGimbalShooterManual::robotRevive()
