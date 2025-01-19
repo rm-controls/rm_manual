@@ -191,7 +191,8 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
   }
   if (image_transmission_cmd_sender_)
   {
-    if (!need_change_position_) {
+    if (!need_change_position_)
+    {
       if (!adjust_image_transmission_)
         image_transmission_cmd_sender_->off();
       else
@@ -201,7 +202,9 @@ void ChassisGimbalShooterManual::sendCommand(const ros::Time& time)
     {
       image_transmission_cmd_sender_->changePosition(scale_);
       up_change_position_ = false;
-    } else if (low_change_position_) {
+    }
+    else if (low_change_position_)
+    {
       image_transmission_cmd_sender_->changePosition(-scale_);
       low_change_position_ = false;
     }
