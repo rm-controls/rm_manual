@@ -25,7 +25,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   {
     ros::NodeHandle image_transmission_nh(nh, "image_transmission");
     image_transmission_cmd_sender_ = new rm_common::JointPositionBinaryCommandSender(image_transmission_nh);
-    scale_ = getParam(image_transmission_nh,"position_scale",1);
+    scale_ = getParam(image_transmission_nh, "position_scale", 1);
   }
 
   ros::NodeHandle detection_switch_nh(nh, "detection_switch");
