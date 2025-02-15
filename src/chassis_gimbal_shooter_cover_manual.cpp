@@ -23,6 +23,11 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   low_speed_scale_ = chassis_nh.param("low_speed_scale", 0.30);
   nh.param("exit_buff_mode_duration", exit_buff_mode_duration_, 0.5);
   nh.param("gyro_speed_limit", gyro_speed_limit_, 6.0);
+  ros::NodeHandle vel_nh(nh, "vel");
+  sin_gyro_base_scale_ = vel_nh.param("sin_gyro_base_scale", 1.0);
+  sin_gyro_amplitude_ = vel_nh.param("sin_gyro_amplitude", 0.0);
+  sin_gyro_period_ = vel_nh.param("sin_gyro_period", 1.0);
+  sin_gyro_phase_ = vel_nh.param("sin_gyro_phase", 0.0);
 
   ctrl_z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this),
                         boost::bind(&ChassisGimbalShooterCoverManual::ctrlZRelease, this));
@@ -41,6 +46,24 @@ void ChassisGimbalShooterCoverManual::changeSpeedMode(SpeedMode speed_mode)
   {
     speed_change_scale_ = normal_speed_scale_;
   }
+}
+
+double ChassisGimbalShooterCoverManual::getDynamicScale(const double base_scale, const double amplitude,
+                                                        const double period, const double phase)
+{
+  ros::Time current_time = ros::Time::now();
+  double t = current_time.toSec();
+  double f = 2 * M_PI / period;
+  double dynamic_scale = base_scale + amplitude * sin(f * t + phase);
+  if (dynamic_scale < 0.0)
+  {
+    dynamic_scale = 0.0;
+  }
+  else if (dynamic_scale > 1.0)
+  {
+    dynamic_scale = 1.0;
+  }
+  return dynamic_scale;
 }
 
 void ChassisGimbalShooterCoverManual::changeGyroSpeedMode(SpeedMode speed_mode)
@@ -66,6 +89,21 @@ void ChassisGimbalShooterCoverManual::updatePc(const rm_msgs::DbusData::ConstPtr
   ChassisGimbalShooterManual::updatePc(dbus_data);
   gimbal_cmd_sender_->setRate(-dbus_data->m_x * gimbal_scale_,
                               cover_command_sender_->getState() ? 0.0 : dbus_data->m_y * gimbal_scale_);
+  if (is_gyro_)
+  {
+    if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+      if (x_scale_ != 0.0 || y_scale_ != 0.0)
+        vel_cmd_sender_->setAngularZVel(gyro_rotate_reduction_, gyro_speed_limit_);
+      else
+        vel_cmd_sender_->setAngularZVel(1.0, gyro_speed_limit_);
+    else if (x_scale_ != 0.0 || y_scale_ != 0.0)
+      vel_cmd_sender_->setAngularZVel(
+          getDynamicScale(sin_gyro_base_scale_, sin_gyro_amplitude_, sin_gyro_period_, sin_gyro_phase_) *
+          gyro_rotate_reduction_);
+    else
+      vel_cmd_sender_->setAngularZVel(
+          getDynamicScale(sin_gyro_base_scale_, sin_gyro_amplitude_, sin_gyro_period_, sin_gyro_phase_));
+  }
 }
 
 void ChassisGimbalShooterCoverManual::checkReferee()
