@@ -16,8 +16,8 @@ LeggedWheelBalanceManual::LeggedWheelBalanceManual(ros::NodeHandle& nh, ros::Nod
 
   b_event_.setEdge(boost::bind(&LeggedWheelBalanceManual::bPress, this),
                    boost::bind(&LeggedWheelBalanceManual::bRelease, this));
-  ctrl_shift_event_.setEdge(boost::bind(&LeggedWheelBalanceManual::ctrlShiftPress, this),
-                            boost::bind(&LeggedWheelBalanceManual::ctrlShiftRelease, this));
+  ctrl_event_.setEdge(boost::bind(&LeggedWheelBalanceManual::ctrlPress, this),
+                      boost::bind(&LeggedWheelBalanceManual::ctrlRelease, this));
   ctrl_g_event_.setRising(boost::bind(&LeggedWheelBalanceManual::ctrlGPress, this));
 
   std::string unstick_topic;
@@ -61,7 +61,7 @@ void LeggedWheelBalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& 
 {
   ChassisGimbalShooterCoverManual::checkKeyboard(dbus_data);
   ctrl_g_event_.update(dbus_data->key_ctrl && dbus_data->key_g);
-  ctrl_shift_event_.update(dbus_data->key_ctrl && dbus_data->key_shift);
+  ctrl_event_.update(dbus_data->key_ctrl);
 }
 
 void LeggedWheelBalanceManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -112,12 +112,12 @@ void LeggedWheelBalanceManual::shiftPress()
   BalanceManual::shiftPress();
 }
 
-void LeggedWheelBalanceManual::ctrlShiftPress()
+void LeggedWheelBalanceManual::ctrlPress()
 {
   legCommandSender_->setJump(true);
 }
 
-void LeggedWheelBalanceManual::ctrlShiftRelease()
+void LeggedWheelBalanceManual::ctrlRelease()
 {
   legCommandSender_->setJump(false);
 }
