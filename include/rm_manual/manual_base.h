@@ -69,6 +69,7 @@ protected:
   virtual void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data);
   virtual void capacityDataCallback(const rm_msgs::PowerManagementSampleAndStatusData::ConstPtr& data)
   {
+    chassis_power_ = data->chassis_power;
   }
   virtual void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
   {
