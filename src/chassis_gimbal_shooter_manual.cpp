@@ -57,7 +57,7 @@ ChassisGimbalShooterManual::ChassisGimbalShooterManual(ros::NodeHandle& nh, ros:
   r_event_.setRising(boost::bind(&ChassisGimbalShooterManual::rPress, this));
   g_event_.setRising(boost::bind(&ChassisGimbalShooterManual::gPress, this));
   v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::vPress, this));
-  z_event_.setRising(boost::bind(&ChassisGimbalShooterManual::zPress, this));
+  z_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterManual::zPress, this,_1));
   ctrl_f_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlFPress, this));
   ctrl_v_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlVPress, this));
   ctrl_b_event_.setRising(boost::bind(&ChassisGimbalShooterManual::ctrlBPress, this));
