@@ -81,12 +81,11 @@ protected:
   void sRelease() override;
   void dRelease() override;
   virtual void gPress();
+  virtual void zPress();
   virtual void vPress();
   virtual void xPress();
   virtual void ePress();
   virtual void eRelease();
-  virtual void zPress();
-  virtual void zRelease();
   virtual void cPress();
   virtual void bPress();
   virtual void bRelease();
