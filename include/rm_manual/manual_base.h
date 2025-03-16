@@ -23,6 +23,7 @@
 #include <rm_common/decision/controller_manager.h>
 #include <rm_common/decision/calibration_queue.h>
 
+#include <rm_msgs/BusState.h>
 #include <rm_msgs/DbusData.h>
 #include <rm_msgs/TrackData.h>
 #include <rm_msgs/GameStatus.h>
@@ -69,6 +70,7 @@ protected:
   virtual void powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data);
   virtual void capacityDataCallback(const rm_msgs::PowerManagementSampleAndStatusData::ConstPtr& data)
   {
+    chassis_power_ = data->chassis_power;
   }
   virtual void gimbalDesErrorCallback(const rm_msgs::GimbalDesError::ConstPtr& data)
   {
@@ -76,6 +78,7 @@ protected:
   virtual void shootBeforehandCmdCallback(const rm_msgs::ShootBeforehandCmd ::ConstPtr& data)
   {
   }
+  virtual void ecatBusStateCallback(const rm_msgs::BusState::ConstPtr& data);
   virtual void odomCallback(const nav_msgs::Odometry::ConstPtr& data)
   {
   }
@@ -91,6 +94,12 @@ protected:
   }
   virtual void shootDataCallback(const rm_msgs::ShootData::ConstPtr& data)
   {
+  }
+
+  // EtherCAT
+  virtual void ecatReconnected()
+  {
+    ROS_INFO("EtherCAT Bus reconnected");
   }
 
   // Referee
@@ -143,9 +152,9 @@ protected:
 
   ros::Publisher manual_to_referee_pub_;
 
-  ros::Subscriber odom_sub_, dbus_sub_, track_sub_, referee_sub_, capacity_sub_, game_status_sub_, joint_state_sub_,
-      game_robot_hp_sub_, actuator_state_sub_, power_heat_data_sub_, gimbal_des_error_sub_, game_robot_status_sub_,
-      suggest_fire_sub_, shoot_beforehand_cmd_sub_, shoot_data_sub_;
+  ros::Subscriber ecat_bus_state_sub_, odom_sub_, dbus_sub_, track_sub_, referee_sub_, capacity_sub_, game_status_sub_,
+      joint_state_sub_, game_robot_hp_sub_, actuator_state_sub_, power_heat_data_sub_, gimbal_des_error_sub_,
+      game_robot_status_sub_, suggest_fire_sub_, shoot_beforehand_cmd_sub_, shoot_data_sub_;
 
   sensor_msgs::JointState joint_state_;
   rm_msgs::TrackData track_data_;
@@ -160,11 +169,12 @@ protected:
 
   ros::Time referee_last_get_stamp_;
   bool remote_is_open_{ false }, referee_is_online_ = false;
+  bool ecat_bus_is_online_{ true };
   int state_ = PASSIVE;
   int robot_id_, chassis_power_;
   int chassis_output_on_ = 0, gimbal_output_on_ = 0, shooter_output_on_ = 0;
   InputEvent robot_hp_event_, right_switch_down_event_, right_switch_mid_event_, right_switch_up_event_,
-      left_switch_down_event_, left_switch_mid_event_, left_switch_up_event_;
+      left_switch_down_event_, left_switch_mid_event_, left_switch_up_event_, ecat_reconnected_event_;
 
   InputEvent chassis_power_on_event_, gimbal_power_on_event_, shooter_power_on_event_;
   ros::Time chassis_actuator_last_get_stamp_, gimbal_actuator_last_get_stamp_, shooter_actuator_last_get_stamp_;

@@ -17,6 +17,7 @@ public:
   void run() override;
 
 protected:
+  void ecatReconnected() override;
   void checkReferee() override;
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;

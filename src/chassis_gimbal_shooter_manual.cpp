@@ -82,6 +82,16 @@ void ChassisGimbalShooterManual::run()
   gimbal_calibration_->update(ros::Time::now());
 }
 
+void ChassisGimbalShooterManual::ecatReconnected()
+{
+  ChassisGimbalManual::ecatReconnected();
+  shooter_calibration_->reset();
+  gimbal_calibration_->reset();
+  up_change_position_ = false;
+  low_change_position_ = false;
+  need_change_position_ = false;
+}
+
 void ChassisGimbalShooterManual::checkReferee()
 {
   manual_to_referee_pub_data_.power_limit_state = chassis_cmd_sender_->power_limit_->getState();

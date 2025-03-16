@@ -11,6 +11,8 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   std::string dbus_topic_;
   dbus_topic_ = getParam(nh, "dbus_topic", std::string("/rm_ecat_hw/dbus"));
   // sub
+  ecat_bus_state_sub_ =
+      nh.subscribe<rm_msgs::BusState>("/rm_ecat_hw/bus_state", 10, &ManualBase::ecatBusStateCallback, this);
   joint_state_sub_ = nh.subscribe<sensor_msgs::JointState>("/joint_states", 10, &ManualBase::jointStateCallback, this);
   actuator_state_sub_ =
       nh.subscribe<rm_msgs::ActuatorState>("/actuator_states", 10, &ManualBase::actuatorStateCallback, this);
@@ -52,6 +54,7 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
   left_switch_mid_event_.setEdge(boost::bind(&ManualBase::leftSwitchMidRise, this),
                                  boost::bind(&ManualBase::leftSwitchMidFall, this));
   robot_hp_event_.setEdge(boost::bind(&ManualBase::robotRevive, this), boost::bind(&ManualBase::robotDie, this));
+  ecat_reconnected_event_.setRising(boost::bind(&ManualBase::ecatReconnected, this));
 
   XmlRpc::XmlRpcValue xml;
   if (!nh.getParam("chassis_calibrate_motor", xml))
@@ -74,6 +77,7 @@ ManualBase::ManualBase(ros::NodeHandle& nh, ros::NodeHandle& nh_referee)
 void ManualBase::run()
 {
   checkReferee();
+  ecat_reconnected_event_.update(ecat_bus_is_online_);
   controller_manager_.update();
 }
 
@@ -101,6 +105,26 @@ void ManualBase::updateActuatorStamp(const rm_msgs::ActuatorState::ConstPtr& dat
     dis = std::distance(data->name.begin(), it);
     if (data->stamp.at(dis) > last_get_stamp)
       last_get_stamp = data->stamp.at(dis);
+  }
+}
+
+void ManualBase::ecatBusStateCallback(const rm_msgs::BusState::ConstPtr& data)
+{
+  size_t online_bus_count = 0;
+  for (const auto& state : data->isOnline)
+  {
+    if (state)
+    {
+      online_bus_count++;
+    }
+  }
+  if (online_bus_count != data->name.size())
+  {
+    ecat_bus_is_online_ = false;
+  }
+  else
+  {
+    ecat_bus_is_online_ = true;
   }
 }
 
@@ -164,7 +188,6 @@ void ManualBase::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPt
 
 void ManualBase::powerHeatDataCallback(const rm_msgs::PowerHeatData::ConstPtr& data)
 {
-  chassis_power_ = data->chassis_power;
   referee_last_get_stamp_ = data->stamp;
 }
 
