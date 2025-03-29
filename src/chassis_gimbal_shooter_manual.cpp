@@ -608,9 +608,7 @@ void ChassisGimbalShooterManual::vPress()
 
 void ChassisGimbalShooterManual::zPress() {
   if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::RAW && !is_gyro_) {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::RAW);
-    is_gyro_ = true;
-    vel_cmd_sender_->setAngularZVel(0.0);
+    setChassisMode(rm_msgs::ChassisCmd::DEPLOY);
   } else
     setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
 }
