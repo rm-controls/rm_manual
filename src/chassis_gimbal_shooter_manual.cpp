@@ -606,10 +606,13 @@ void ChassisGimbalShooterManual::vPress()
   shooter_cmd_sender_->raiseSpeed();
 }
 
-void ChassisGimbalShooterManual::zPress() {
-  if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::RAW && !is_gyro_) {
+void ChassisGimbalShooterManual::zPress()
+{
+  if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::RAW && !is_gyro_)
+  {
     setChassisMode(rm_msgs::ChassisCmd::DEPLOY);
-  } else
+  }
+  else
     setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
 }
 

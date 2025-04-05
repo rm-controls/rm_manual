@@ -116,8 +116,7 @@ protected:
 
   InputEvent self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_, b_event_, x_event_,
       r_event_, v_event_, z_event_, ctrl_f_event_, ctrl_v_event_, ctrl_b_event_, ctrl_q_event_, ctrl_r_event_,
-      ctrl_z_event_,
-      ctrl_x_event_, shift_event_, ctrl_shift_b_event_, mouse_left_event_, mouse_right_event_;
+      ctrl_z_event_, ctrl_x_event_, shift_event_, ctrl_shift_b_event_, mouse_left_event_, mouse_right_event_;
   rm_common::ShooterCommandSender* shooter_cmd_sender_{};
   rm_common::CameraSwitchCommandSender* camera_switch_cmd_sender_{};
   rm_common::JointPositionBinaryCommandSender* scope_cmd_sender_{};
