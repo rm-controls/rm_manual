@@ -147,6 +147,7 @@ void ChassisGimbalManual::rightSwitchMidRise()
   ManualBase::rightSwitchMidRise();
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+  gimbal_cmd_sender_->setUseRc(true);
 }
 
 void ChassisGimbalManual::rightSwitchUpRise()
@@ -155,6 +156,7 @@ void ChassisGimbalManual::rightSwitchUpRise()
   chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
   vel_cmd_sender_->setZero();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+  gimbal_cmd_sender_->setUseRc(false);
 }
 
 void ChassisGimbalManual::leftSwitchDownRise()
