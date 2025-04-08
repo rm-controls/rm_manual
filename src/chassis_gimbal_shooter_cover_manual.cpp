@@ -34,6 +34,7 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   ctrl_r_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterCoverManual::ctrlRPressing, this));
   z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::zPress, this),
                    boost::bind(&ChassisGimbalShooterCoverManual::zRelease, this));
+  q_event_.setRising(boost::bind(&ChassisGimbalShooterCoverManual::qPress, this));
 }
 
 void ChassisGimbalShooterCoverManual::changeSpeedMode(SpeedMode speed_mode)
@@ -211,19 +212,18 @@ void ChassisGimbalShooterCoverManual::ePress()
 
 void ChassisGimbalShooterCoverManual::cPress()
 {
-  if (is_gyro_)
-  {
-    setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
-  }
+  setChassisMode(rm_msgs::ChassisCmd::RAW);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
+  if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
+    changeGyroSpeedMode(LOW);
   else
-  {
-    setChassisMode(rm_msgs::ChassisCmd::RAW);
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-    if (switch_buff_srv_->getTarget() != rm_msgs::StatusChangeRequest::ARMOR)
-      changeGyroSpeedMode(LOW);
-    else
-      changeGyroSpeedMode(NORMAL);
-  }
+    changeGyroSpeedMode(NORMAL);
+}
+
+void ChassisGimbalShooterCoverManual::qPress()
+{
+  setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
 }
 
 void ChassisGimbalShooterCoverManual::zPress()

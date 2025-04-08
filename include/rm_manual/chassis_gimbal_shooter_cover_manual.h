@@ -31,6 +31,7 @@ protected:
   void rightSwitchUpRise() override;
   void ePress() override;
   void cPress() override;
+  void qPress() override;
   void zPress();
   void zRelease();
   void ctrlRPressing();
