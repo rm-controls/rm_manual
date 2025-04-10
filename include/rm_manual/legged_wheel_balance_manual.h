@@ -22,8 +22,8 @@ protected:
   void ctrlZPress() override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
-  void ctrlPress();
-  void ctrlRelease();
+  void rPress() override;
+  void rRelease();
 
   void sendCommand(const ros::Time& time) override;
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;

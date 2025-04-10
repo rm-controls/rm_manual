@@ -93,7 +93,7 @@ protected:
   virtual void xRelease();
   virtual void shiftPress();
   virtual void shiftRelease();
-  void rPress();
+  virtual void rPress();
   virtual void qPress()
   {
   }
