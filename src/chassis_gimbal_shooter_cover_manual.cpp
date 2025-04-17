@@ -211,7 +211,8 @@ void ChassisGimbalShooterCoverManual::ePress()
   shooter_cmd_sender_->setShootFrequency(rm_common::HeatLimit::MINIMAL);
 }
 
-void ChassisGimbalShooterCoverManual::eRelease() {
+void ChassisGimbalShooterCoverManual::eRelease()
+{
   ChassisGimbalShooterManual::eRelease();
   shooter_cmd_sender_->setShootFrequency(last_shoot_freq_);
 }
