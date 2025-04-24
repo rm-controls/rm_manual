@@ -217,6 +217,11 @@ void ChassisGimbalShooterCoverManual::eRelease()
   shooter_cmd_sender_->setShootFrequency(last_shoot_freq_);
 }
 
+void ChassisGimbalShooterCoverManual::bPress()
+{
+  chassis_cmd_sender_->power_limit_->setStartBurstTime(ros::Time::now());
+}
+
 void ChassisGimbalShooterCoverManual::cPress()
 {
   setChassisMode(rm_msgs::ChassisCmd::RAW);
