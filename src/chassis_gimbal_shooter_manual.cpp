@@ -93,6 +93,7 @@ void ChassisGimbalShooterManual::ecatReconnected()
 void ChassisGimbalShooterManual::checkReferee()
 {
   manual_to_referee_pub_data_.power_limit_state = chassis_cmd_sender_->power_limit_->getState();
+  manual_to_referee_pub_data_.start_burst_time = chassis_cmd_sender_->power_limit_->getStartBurstTime();
   manual_to_referee_pub_data_.shoot_frequency = shooter_cmd_sender_->getShootFrequency();
   manual_to_referee_pub_data_.gimbal_eject = gimbal_cmd_sender_->getEject();
   manual_to_referee_pub_data_.det_armor_target = switch_armor_target_srv_->getArmorTarget();
@@ -445,11 +446,12 @@ void ChassisGimbalShooterManual::cPress()
   if (is_gyro_)
   {
     setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
   }
   else
   {
     setChassisMode(rm_msgs::ChassisCmd::RAW);
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
+    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::BURST);
   }
 }
 
