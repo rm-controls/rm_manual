@@ -21,6 +21,7 @@ ChassisGimbalManual::ChassisGimbalManual(ros::NodeHandle& nh, ros::NodeHandle& n
   ros::NodeHandle gimbal_nh(nh, "gimbal");
   gimbal_cmd_sender_ = new rm_common::GimbalCommandSender(gimbal_nh);
   gimbal_scale_ = getParam(gimbal_nh, "gimbal_scale", 1.0);
+  traj_scale_ = getParam(gimbal_nh, "traj_scale", 0.5);
   if (!gimbal_nh.getParam("finish_turning_threshold", finish_turning_threshold_))
     ROS_ERROR("Finish turning threshold no defined (namespace: %s)", nh.getNamespace().c_str());
 
