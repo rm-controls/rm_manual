@@ -630,11 +630,13 @@ void ChassisGimbalShooterManual::zPress()
     traj_yaw_ = yaw, traj_pitch_ = -0.40;
     gimbal_cmd_sender_->setGimbalTraj(traj_yaw_, traj_pitch_);
     setChassisMode(rm_msgs::ChassisCmd::DEPLOY);
+    shooter_cmd_sender_->deploySpeed();
   }
   else
   {
     setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+    shooter_cmd_sender_->exitDeploySpeed();
   }
 }
 
