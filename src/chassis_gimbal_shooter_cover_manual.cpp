@@ -362,4 +362,10 @@ void ChassisGimbalShooterCoverManual::ctrlRRelease()
   shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
 }
 
+void ChassisGimbalShooterCoverManual::ctrlQPress()
+{
+  shooter_calibration_->reset();
+  gimbal_calibration_->reset();
+}
+
 }  // namespace rm_manual

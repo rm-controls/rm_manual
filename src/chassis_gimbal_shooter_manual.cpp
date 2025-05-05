@@ -703,6 +703,8 @@ void ChassisGimbalShooterManual::ctrlQPress()
 {
   shooter_calibration_->reset();
   gimbal_calibration_->reset();
+  if (gimbal_cmd_sender_->getMsg()->mode != rm_msgs::GimbalCmd::TRAJ)
+    shooter_cmd_sender_->resetExtraWheelSpeed();
   up_change_position_ = false;
   low_change_position_ = false;
   need_change_position_ = false;

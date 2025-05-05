@@ -48,6 +48,7 @@ protected:
   void zPress() override
   {
   }
+  void ctrlQPress() override;
 
   virtual void ctrlZPress();
   virtual void ctrlZRelease()
