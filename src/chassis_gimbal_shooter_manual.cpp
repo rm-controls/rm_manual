@@ -311,6 +311,12 @@ void ChassisGimbalShooterManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbu
     else if (chassis_power_ < 6.0 && chassis_cmd_sender_->getMsg()->mode == rm_msgs::ChassisCmd::FOLLOW)
       chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
   }
+  if (gimbal_cmd_sender_->getMsg()->mode == rm_msgs::GimbalCmd::TRAJ && deployed_)
+  {
+    traj_yaw_ += traj_scale_ * gimbal_cmd_sender_->getMsg()->rate_yaw * ros::Duration(0.01).toSec();
+    traj_pitch_ += traj_scale_ * gimbal_cmd_sender_->getMsg()->rate_pitch * ros::Duration(0.01).toSec();
+    gimbal_cmd_sender_->setGimbalTraj(traj_yaw_, traj_pitch_);
+  }
 }
 
 void ChassisGimbalShooterManual::rightSwitchDownRise()
@@ -586,12 +592,13 @@ void ChassisGimbalShooterManual::xPress()
   double roll{}, pitch{}, yaw{};
   try
   {
-    quatToRPY(tf_buffer_.lookupTransform("odom", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
+    quatToRPY(tf_buffer_.lookupTransform("base_link", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
   }
   catch (tf2::TransformException& ex)
   {
     ROS_WARN("%s", ex.what());
   }
+  gimbal_cmd_sender_->setGimbalTrajFrameId("base_link");
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
   gimbal_cmd_sender_->setGimbalTraj(yaw + M_PI, pitch);
 }
@@ -610,10 +617,30 @@ void ChassisGimbalShooterManual::zPress()
 {
   if (chassis_cmd_sender_->getMsg()->mode != rm_msgs::ChassisCmd::RAW && !is_gyro_)
   {
+    double roll{}, pitch{}, yaw{};
+    try
+    {
+      quatToRPY(tf_buffer_.lookupTransform("base_link", "yaw", ros::Time(0)).transform.rotation, roll, pitch, yaw);
+    }
+    catch (tf2::TransformException& ex)
+    {
+      ROS_WARN("%s", ex.what());
+    }
+    gimbal_cmd_sender_->setGimbalTrajFrameId("base_link");
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
+    traj_yaw_ = yaw, traj_pitch_ = -0.40;
+    gimbal_cmd_sender_->setGimbalTraj(traj_yaw_, traj_pitch_);
     setChassisMode(rm_msgs::ChassisCmd::DEPLOY);
+    shooter_cmd_sender_->deploySpeed();
+    deployed_ = true;
   }
   else
+  {
     setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
+    gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
+    shooter_cmd_sender_->exitDeploySpeed();
+    deployed_ = false;
+  }
 }
 
 void ChassisGimbalShooterManual::shiftPress()
@@ -657,7 +684,7 @@ void ChassisGimbalShooterManual::ctrlRPress()
       ROS_WARN("%s", ex.what());
     }
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::TRAJ);
-    gimbal_cmd_sender_->setGimbalTraj(yaw, pitch - 0.64);
+    gimbal_cmd_sender_->setGimbalTraj(yaw, -0.45);
   }
 }
 

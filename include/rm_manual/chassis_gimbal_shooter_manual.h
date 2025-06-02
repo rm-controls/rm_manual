@@ -129,8 +129,9 @@ protected:
   uint8_t last_shoot_freq_{};
 
   bool prepare_shoot_ = false, is_balance_ = false, use_scope_ = false, adjust_image_transmission_ = false,
-       up_change_position_ = false, low_change_position_ = false, need_change_position_ = false;
+       up_change_position_ = false, low_change_position_ = false, need_change_position_ = false, deployed_ = false;
   double yaw_current_{};
+  double traj_yaw_, traj_pitch_;
   double scale_;
 };
 }  // namespace rm_manual
