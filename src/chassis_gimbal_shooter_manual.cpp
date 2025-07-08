@@ -246,6 +246,8 @@ void ChassisGimbalShooterManual::remoteControlTurnOn()
   chassis_calibration_->stopController();
   std::string robot_color = robot_id_ >= 100 ? "blue" : "red";
   switch_detection_srv_->setEnemyColor(robot_id_, robot_color);
+  if (robot_id_ == rm_msgs::GameRobotStatus::BLUE_HERO || robot_id_ == rm_msgs::GameRobotStatus::RED_HERO)
+    shooter_cmd_sender_->setHeroState(true);
 }
 
 void ChassisGimbalShooterManual::robotDie()
