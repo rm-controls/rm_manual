@@ -28,7 +28,7 @@ protected:
   void checkReferee() override;
   void sendCommand(const ros::Time& time) override;
   void updateWheelsState(const rm_ecat_msgs::RmEcatStandardSlaveReadings::ConstPtr& data,
-                        const std::vector<std::string>& chassis_motor);
+                         const std::vector<std::string>& chassis_motor);
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;

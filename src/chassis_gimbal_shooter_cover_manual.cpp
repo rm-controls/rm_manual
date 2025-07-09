@@ -154,7 +154,8 @@ void ChassisGimbalShooterCoverManual::checkKeyboard(const rm_msgs::DbusData::Con
   ctrl_z_event_.update(dbus_data->key_ctrl & dbus_data->key_z);
 }
 
-void ChassisGimbalShooterCoverManual::wheelsOnlineCallback(const rm_ecat_msgs::RmEcatStandardSlaveReadings::ConstPtr& data)
+void ChassisGimbalShooterCoverManual::wheelsOnlineCallback(
+    const rm_ecat_msgs::RmEcatStandardSlaveReadings::ConstPtr& data)
 {
   updateWheelsState(data, chassis_motor_);
 }
@@ -218,7 +219,7 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
 }
 
 void ChassisGimbalShooterCoverManual::updateWheelsState(const rm_ecat_msgs::RmEcatStandardSlaveReadings::ConstPtr& data,
-                                                       const std::vector<std::string>& chassis_motor)
+                                                        const std::vector<std::string>& chassis_motor)
 {
   std::unordered_map<std::string, size_t> wheel_index_map;
   for (size_t i = 0; i < chassis_motor.size(); ++i)
