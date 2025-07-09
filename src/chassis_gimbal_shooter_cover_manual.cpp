@@ -10,7 +10,7 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   : ChassisGimbalShooterManual(nh, nh_referee)
 {
   wheel_online_sub_ = nh.subscribe<rm_ecat_msgs::RmEcatStandardSlaveReadings>(
-      "/rm_ecat_hw/rm_readings", 10, &ChassisGimbalShooterCoverManual::wheelOnlineCallback, this);
+      "/rm_ecat_hw/rm_readings", 10, &ChassisGimbalShooterCoverManual::wheelsOnlineCallback, this);
   ros::NodeHandle cover_nh(nh, "cover");
   nh.param("supply_frame", supply_frame_, std::string("supply_frame"));
   cover_command_sender_ = new rm_common::JointPositionBinaryCommandSender(cover_nh);
@@ -46,7 +46,7 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   {
     for (int i = 0; i < xml.size(); i++)
       chassis_motor_.push_back(xml[i]);
-    wheel_online_state_.resize(chassis_motor_.size(), true);
+    wheels_online_state_.resize(chassis_motor_.size(), true);
   }
 }
 
@@ -98,21 +98,21 @@ void ChassisGimbalShooterCoverManual::changeGyroSpeedMode(SpeedMode speed_mode)
   }
 }
 
-void ChassisGimbalShooterCoverManual::check_wheel_online()
+void ChassisGimbalShooterCoverManual::checkWheelsOnline()
 {
   bool all_wheels_online = true;
-  if (ros::Time::now() - last_check_wheel_time_ < ros::Duration(3.0))
+  if (ros::Time::now() - last_check_wheels_time_ < ros::Duration(3.0))
   {
-    for (auto wheel_status : wheel_online_state_)
+    for (auto wheel_status : wheels_online_state_)
     {
       if (!wheel_status)
         all_wheels_online = false;
     }
   }
   if (!all_wheels_online)
-    wheel_error_ = true;
-  else if (wheel_error_)
-    wheel_error_ = false;
+    wheels_offline_ = true;
+  else if (wheels_offline_)
+    wheels_offline_ = false;
 }
 
 void ChassisGimbalShooterCoverManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -145,7 +145,7 @@ void ChassisGimbalShooterCoverManual::checkReferee()
   else
     manual_to_referee_pub_data_.det_target = switch_detection_srv_->getTarget();
   ChassisGimbalShooterManual::checkReferee();
-  check_wheel_online();
+  checkWheelsOnline();
 }
 
 void ChassisGimbalShooterCoverManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)
@@ -154,16 +154,16 @@ void ChassisGimbalShooterCoverManual::checkKeyboard(const rm_msgs::DbusData::Con
   ctrl_z_event_.update(dbus_data->key_ctrl & dbus_data->key_z);
 }
 
-void ChassisGimbalShooterCoverManual::wheelOnlineCallback(const rm_ecat_msgs::RmEcatStandardSlaveReadings::ConstPtr& data)
+void ChassisGimbalShooterCoverManual::wheelsOnlineCallback(const rm_ecat_msgs::RmEcatStandardSlaveReadings::ConstPtr& data)
 {
-  updateWheelState(data, chassis_motor_);
+  updateWheelsState(data, chassis_motor_);
 }
 
 void ChassisGimbalShooterCoverManual::gameRobotStatusCallback(const rm_msgs::GameRobotStatus::ConstPtr& data)
 {
   ChassisGimbalShooterManual::gameRobotStatusCallback(data);
   if (data->mains_power_chassis_output - last_power_chassis_output_ == 1)
-    last_check_wheel_time_ = ros::Time::now();
+    last_check_wheels_time_ = ros::Time::now();
   last_power_chassis_output_ = data->mains_power_chassis_output;
 }
 
@@ -217,12 +217,12 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
   cover_command_sender_->sendCommand(time);
 }
 
-void ChassisGimbalShooterCoverManual::updateWheelState(const rm_ecat_msgs::RmEcatStandardSlaveReadings::ConstPtr& data,
-                                                       const std::vector<std::string>& wheel_vector)
+void ChassisGimbalShooterCoverManual::updateWheelsState(const rm_ecat_msgs::RmEcatStandardSlaveReadings::ConstPtr& data,
+                                                       const std::vector<std::string>& chassis_motor)
 {
   std::unordered_map<std::string, size_t> wheel_index_map;
-  for (size_t i = 0; i < wheel_vector.size(); ++i)
-    wheel_index_map[wheel_vector[i]] = i;
+  for (size_t i = 0; i < chassis_motor.size(); ++i)
+    wheel_index_map[chassis_motor[i]] = i;
 
   for (const auto& reading : data->readings)
   {
@@ -232,7 +232,7 @@ void ChassisGimbalShooterCoverManual::updateWheelState(const rm_ecat_msgs::RmEca
       const auto it = wheel_index_map.find(name);
       if (it == wheel_index_map.end())
         continue;
-      wheel_online_state_[it->second] = reading.isOnline[i];
+      wheels_online_state_[it->second] = reading.isOnline[i];
     }
   }
 }
