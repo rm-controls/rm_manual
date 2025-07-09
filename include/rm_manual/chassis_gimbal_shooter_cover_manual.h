@@ -54,6 +54,7 @@ protected:
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   };
+  virtual void ctrlXPress();
   double low_speed_scale_{}, normal_speed_scale_{};
   double exit_buff_mode_duration_{};
   double gyro_speed_limit_{};
@@ -64,8 +65,10 @@ protected:
   rm_common::JointPositionBinaryCommandSender* cover_command_sender_{};
   InputEvent ctrl_z_event_, z_event_;
   std::string supply_frame_;
+  std::string wireless_frame_;
   ros::Time last_switch_time_;
   bool supply_ = false;
+  bool need_wireless_ = false;
   bool cover_close_ = true;
   int count_{};
 };
