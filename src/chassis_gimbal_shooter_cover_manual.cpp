@@ -339,9 +339,15 @@ void ChassisGimbalShooterCoverManual::ctrlZPress()
 void ChassisGimbalShooterCoverManual::ctrlXPress()
 {
   if (!need_wireless_)
+  {
     need_wireless_ = true;
+    chassis_cmd_sender_->setWirelessState(true);
+  }
   else
+  {
     need_wireless_ = false;
+    chassis_cmd_sender_->setWirelessState(false);
+  }
 }
 
 void ChassisGimbalShooterCoverManual::ctrlRPressing()
