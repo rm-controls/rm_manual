@@ -246,7 +246,7 @@ void ChassisGimbalShooterManual::remoteControlTurnOn()
   gimbal_calibration_->stopController();
   chassis_calibration_->stopController();
   gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+  ChassisGimbalManual::setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
   std::string robot_color = robot_id_ >= 100 ? "blue" : "red";
   switch_detection_srv_->setEnemyColor(robot_id_, robot_color);
 }
