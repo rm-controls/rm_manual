@@ -322,9 +322,8 @@ void ChassisGimbalShooterManual::updatePc(const rm_msgs::DbusData::ConstPtr& dbu
     traj_pitch_ += traj_scale_ * gimbal_cmd_sender_->getMsg()->rate_pitch * ros::Duration(0.01).toSec();
     gimbal_cmd_sender_->setGimbalTraj(traj_yaw_, traj_pitch_);
   }
-  if (deployed_ &&
-      std::sqrt(std::pow(vel_cmd_sender_->getMsg()->linear.x, 2) + std::pow(vel_cmd_sender_->getMsg()->linear.y, 2)) >
-          0.0)
+  if (deployed_ && std::sqrt(std::pow(vel_cmd_sender_->getMsg()->linear.x, 2) +
+                             std::pow(vel_cmd_sender_->getMsg()->linear.y, 2)) > 0.0)
   {
     setChassisMode(rm_msgs::ChassisCmd::FOLLOW);
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
