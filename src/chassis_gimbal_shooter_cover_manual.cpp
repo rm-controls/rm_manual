@@ -216,15 +216,13 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
         ROS_WARN("%s", ex.what());
       }
     }
-  }
-  if (need_wireless_)
-  {
-    chassis_cmd_sender_->getMsg()->follow_source_frame = wireless_frame_;
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-  }
-  else
-  {
-    chassis_cmd_sender_->getMsg()->follow_source_frame = "yaw";
+    if (need_wireless_)
+    {
+      chassis_cmd_sender_->getMsg()->follow_source_frame = wireless_frame_;
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    }
+    else
+      chassis_cmd_sender_->getMsg()->follow_source_frame = "yaw";
   }
   ChassisGimbalShooterManual::sendCommand(time);
   cover_command_sender_->sendCommand(time);
