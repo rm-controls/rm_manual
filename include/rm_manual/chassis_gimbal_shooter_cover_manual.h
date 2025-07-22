@@ -59,6 +59,7 @@ protected:
   {
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
   };
+  virtual void ctrlXPress();
 
   ros::Subscriber wheel_online_sub_;
 
@@ -72,10 +73,12 @@ protected:
   rm_common::JointPositionBinaryCommandSender* cover_command_sender_{};
   InputEvent ctrl_z_event_, z_event_;
   std::string supply_frame_;
+  std::string wireless_frame_;
   ros::Time last_switch_time_, last_check_wheels_time_;
   std::vector<std::string> chassis_motor_;
   std::vector<bool> wheels_online_state_;
   bool supply_ = false;
+  bool need_wireless_ = false;
   bool cover_close_ = true;
   bool last_power_chassis_output_ = false;
   int count_{};

@@ -14,6 +14,8 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
   ros::NodeHandle cover_nh(nh, "cover");
   nh.param("supply_frame", supply_frame_, std::string("supply_frame"));
   cover_command_sender_ = new rm_common::JointPositionBinaryCommandSender(cover_nh);
+  ros::NodeHandle wireless_nh(nh, "wireless");
+  nh.param("wireless_frame", wireless_frame_, std::string("wireless_frame"));
   ros::NodeHandle buff_switch_nh(nh, "buff_switch");
   switch_buff_srv_ = new rm_common::SwitchDetectionCaller(buff_switch_nh);
   ros::NodeHandle buff_type_switch_nh(nh, "buff_type_switch");
@@ -33,6 +35,7 @@ ChassisGimbalShooterCoverManual::ChassisGimbalShooterCoverManual(ros::NodeHandle
 
   ctrl_z_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ctrlZPress, this),
                         boost::bind(&ChassisGimbalShooterCoverManual::ctrlZRelease, this));
+  ctrl_x_event_.setRising(boost::bind(&ChassisGimbalShooterCoverManual::ctrlXPress, this));
   ctrl_r_event_.setActiveHigh(boost::bind(&ChassisGimbalShooterCoverManual::ctrlRPressing, this));
   e_event_.setEdge(boost::bind(&ChassisGimbalShooterCoverManual::ePress, this),
                    boost::bind(&ChassisGimbalShooterCoverManual::eRelease, this));
@@ -213,6 +216,13 @@ void ChassisGimbalShooterCoverManual::sendCommand(const ros::Time& time)
         ROS_WARN("%s", ex.what());
       }
     }
+    if (need_wireless_)
+    {
+      chassis_cmd_sender_->getMsg()->follow_source_frame = wireless_frame_;
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+    }
+    else
+      chassis_cmd_sender_->getMsg()->follow_source_frame = "yaw";
   }
   ChassisGimbalShooterManual::sendCommand(time);
   cover_command_sender_->sendCommand(time);
@@ -386,6 +396,20 @@ void ChassisGimbalShooterCoverManual::ctrlZPress()
   else
   {
     changeSpeedMode(NORMAL);
+  }
+}
+
+void ChassisGimbalShooterCoverManual::ctrlXPress()
+{
+  if (!need_wireless_)
+  {
+    need_wireless_ = true;
+    chassis_cmd_sender_->setWirelessState(true);
+  }
+  else
+  {
+    need_wireless_ = false;
+    chassis_cmd_sender_->setWirelessState(false);
   }
 }
 
