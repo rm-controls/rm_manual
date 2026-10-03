@@ -249,6 +249,11 @@ void ChassisGimbalManual::setChassisMode(int mode)
       is_gyro_ = true;
       vel_cmd_sender_->setAngularZVel(0.0);
       break;
+    case rm_msgs::ChassisCmd::FALLEN:
+      chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FALLEN);
+      is_gyro_ = false;
+      vel_cmd_sender_->setAngularZVel(0.0);
+      break;
   }
 }
 

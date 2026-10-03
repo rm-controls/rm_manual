@@ -301,8 +301,10 @@ void ChassisGimbalShooterManual::updateRc(const rm_msgs::DbusData::ConstPtr& dbu
   vel_cmd_sender_->setAngularZVel((std::abs(dbus_data->ch_r_y) > 0.01 || std::abs(dbus_data->ch_r_x) > 0.01) ?
                                       dbus_data->wheel * gyro_rotate_reduction_ :
                                       dbus_data->wheel);
-  vel_cmd_sender_->setLinearXVel(is_gyro_ ? dbus_data->ch_r_y * gyro_move_reduction_ : dbus_data->ch_r_y);
-  vel_cmd_sender_->setLinearYVel(is_gyro_ ? -dbus_data->ch_r_x * gyro_move_reduction_ : -dbus_data->ch_r_x);
+  vel_cmd_sender_->setLinearXVel(is_gyro_ ? dbus_data->ch_r_y * gyro_move_reduction_ :
+                                            dbus_data->ch_r_y * speed_change_scale_);
+  vel_cmd_sender_->setLinearYVel(is_gyro_ ? -dbus_data->ch_r_x * gyro_move_reduction_ :
+                                            -dbus_data->ch_r_x * speed_change_scale_);
 
   if (shooter_cmd_sender_->getMsg()->mode != rm_msgs::ShootCmd::STOP)
     gimbal_cmd_sender_->setBulletSpeed(shooter_cmd_sender_->getSpeed());

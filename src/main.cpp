@@ -10,6 +10,7 @@
 #include "rm_manual/wheeled_balance_manual.h"
 #include "rm_manual/drone_manual.h"
 #include "rm_manual/legged_wheel_balance_manual.h"
+#include "rm_manual/series_legged_manual.h"
 
 int main(int argc, char** argv)
 {
@@ -35,6 +36,8 @@ int main(int argc, char** argv)
     manual_control = new rm_manual::WheeledBalanceManual(nh, nh_referee);
   else if (robot == "legged_wheel_balance")
     manual_control = new rm_manual::LeggedWheelBalanceManual(nh, nh_referee);
+  else if (robot == "series_legged")
+    manual_control = new rm_manual::SeriesLeggedManual(nh, nh_referee);
   else
   {
     ROS_ERROR("no robot type ");
