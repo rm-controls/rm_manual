@@ -23,20 +23,7 @@ void BalanceManual::sendCommand(const ros::Time& time)
     chassis_cmd_sender_->getMsg()->follow_source_frame = reverse_frame_;
   else
     chassis_cmd_sender_->getMsg()->follow_source_frame = "yaw";
-
-  if (supply_)
-  {
-    cover_close_ = false;
-    cover_command_sender_->on();
-  }
-  else
-  {
-    cover_close_ = true;
-    cover_command_sender_->off();
-  }
-
-  ChassisGimbalShooterManual::sendCommand(time);
-  cover_command_sender_->sendCommand(time);
+  rm_manual::ChassisGimbalShooterCoverManual::sendCommand(time);
 }
 
 void BalanceManual::checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data)

@@ -6,7 +6,9 @@
 
 #include "rm_manual/chassis_gimbal_manual.h"
 #include <rm_common/decision/calibration_queue.h>
+#include <std_srvs/Empty.h>
 #include <angles/angles.h>
+#include <unordered_set>
 
 namespace rm_manual
 {
@@ -19,10 +21,14 @@ public:
 protected:
   void ecatReconnected() override;
   void checkReferee() override;
+  void checkWheelsOnline();
   void checkKeyboard(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updateRc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void updatePc(const rm_msgs::DbusData::ConstPtr& dbus_data) override;
   void sendCommand(const ros::Time& time) override;
+  void updateWheelsState(const rm_ecat_msgs::RmEcatStandardSlaveReadings::ConstPtr& data,
+                         const std::vector<std::string>& chassis_motor);
+  void wheelsOnlineCallback(const rm_ecat_msgs::RmEcatStandardSlaveReadings::ConstPtr& data);
   void chassisOutputOn() override;
   void shooterOutputOn() override;
   void gimbalOutputOn() override;
@@ -37,7 +43,6 @@ protected:
   void remoteControlTurnOff() override;
   void remoteControlTurnOn() override;
   void robotDie() override;
-  void robotRevive() override;
   void rightSwitchDownRise() override;
   void rightSwitchMidRise() override;
   void rightSwitchUpRise() override;
@@ -54,6 +59,8 @@ protected:
   void suggestFireCallback(const std_msgs::Bool::ConstPtr& data) override;
   void trackCallback(const rm_msgs::TrackData::ConstPtr& data) override;
   void shootDataCallback(const rm_msgs::ShootData::ConstPtr& data) override;
+  void ballisticSolutionCallback(const std_msgs::Float32MultiArray::ConstPtr& data) override;
+  void protectStateCallback(const std_msgs::Bool::ConstPtr& data) override;
   void leftSwitchUpOn(ros::Duration duration);
   void leftSwitchUpFall();
   void mouseLeftPress();
@@ -62,13 +69,14 @@ protected:
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
     prepare_shoot_ = true;
   }
-  void mouseRightPress();
+  virtual void mouseRightPress();
   void mouseRightRelease()
   {
+    if (deployed_)
+      return;
     gimbal_cmd_sender_->setMode(rm_msgs::GimbalCmd::RATE);
-    if (shooter_cmd_sender_->getMsg()->mode == rm_msgs::ShootCmd::PUSH)
-      shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::READY);
   }
+  void mouseRightRising();
   void wPress() override;
   void aPress() override;
   void sPress() override;
@@ -94,12 +102,8 @@ protected:
   virtual void shiftPress();
   virtual void shiftRelease();
   virtual void rPress();
-  virtual void qPress()
-  {
-  }
-  virtual void qRelease()
-  {
-  }
+  virtual void qPress();
+
   void ctrlFPress()
   {
     shooter_cmd_sender_->setMode(rm_msgs::ShootCmd::STOP);
@@ -108,31 +112,45 @@ protected:
   void ctrlRPress();
   void ctrlZPress();
   void ctrlXPress();
-  virtual void ctrlRRelease();
+  virtual void ctrlCPress();
   virtual void ctrlQPress();
   virtual void ctrlBPress();
 
   InputEvent self_inspection_event_, game_start_event_, e_event_, c_event_, g_event_, q_event_, b_event_, x_event_,
       r_event_, v_event_, z_event_, ctrl_f_event_, ctrl_v_event_, ctrl_b_event_, ctrl_q_event_, ctrl_r_event_,
-      ctrl_z_event_, ctrl_x_event_, shift_event_, ctrl_shift_b_event_, mouse_left_event_, mouse_right_event_;
+      ctrl_z_event_, ctrl_c_event_, ctrl_x_event_, shift_event_, mouse_left_event_, mouse_right_event_;
   rm_common::ShooterCommandSender* shooter_cmd_sender_{};
   rm_common::CameraSwitchCommandSender* camera_switch_cmd_sender_{};
   rm_common::JointPositionBinaryCommandSender* scope_cmd_sender_{};
   rm_common::JointPositionBinaryCommandSender* image_transmission_cmd_sender_{};
+  rm_common::ChassisActiveSuspensionCommandSender* chassis_active_sus_cmd_sender_{};
+  rm_common::BallisticSolverRequestCommandSender* ballistic_solver_request_cmd_sender_{};
+
   rm_common::SwitchDetectionCaller* switch_detection_srv_{};
   rm_common::SwitchDetectionCaller* switch_detection_left_srv_{};
   rm_common::SwitchDetectionCaller* switch_armor_target_srv_{};
+  rm_common::ServiceCallerBase<std_srvs::Empty>* relocate_srv_{};
+  rm_common::ColorChangeServiceCaller* color_change_srv_{};
+  rm_common::TrackerResetServiceCaller* tracker_reset_srv_{};
+
   rm_common::CalibrationQueue* chassis_calibration_;
   rm_common::CalibrationQueue* shooter_calibration_;
   rm_common::CalibrationQueue* gimbal_calibration_;
 
-  geometry_msgs::PointStamped point_out_;
-  uint8_t last_shoot_freq_{};
+  ros::Subscriber wheel_online_sub_;
+  ros::Time last_wheels_power_time_;
+  std::vector<std::string> chassis_motor_;
+  std::vector<bool> wheels_online_state_;
 
-  bool prepare_shoot_ = false, is_balance_ = false, use_scope_ = false, adjust_image_transmission_ = false,
-       up_change_position_ = false, low_change_position_ = false, need_change_position_ = false, deployed_ = false;
-  double yaw_current_{};
-  double traj_yaw_, traj_pitch_;
-  double scale_;
+  std_msgs::Float32MultiArray ballistic_solution_;
+  ros::Time last_ballistic_solution_request_time_;
+
+  bool prepare_shoot_{ false }, is_balance_{ false }, use_scope_{ false }, deployed_{ false },
+      is_follow_yaw_reverse_{ false }, all_wheel_offline_{ false }, protect_state_{ false };
+  double ballistic_yaw_{}, ballistic_pitch_{};
+  double ballistic_yaw_step_{}, ballistic_pitch_step_{};
+  double deploy_pitch_{}, deploy_yaw_;
+  uint8_t last_shoot_freq_{};
+  double scale_{};
 };
 }  // namespace rm_manual

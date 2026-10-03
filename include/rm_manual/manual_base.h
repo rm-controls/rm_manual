@@ -8,6 +8,7 @@
 #include <iostream>
 #include <ros/ros.h>
 #include <unordered_map>
+#include <std_msgs/Float32MultiArray.h>
 #include <serial/serial.h>
 #include <std_msgs/Bool.h>
 #include <tf2_ros/buffer.h>
@@ -98,6 +99,12 @@ protected:
   virtual void shootDataCallback(const rm_msgs::ShootData::ConstPtr& data)
   {
   }
+  virtual void ballisticSolutionCallback(const std_msgs::Float32MultiArray::ConstPtr& data)
+  {
+  }
+  virtual void protectStateCallback(const std_msgs::Bool::ConstPtr& data)
+  {
+  }
 
   // EtherCAT
   virtual void ecatReconnected()
@@ -157,7 +164,8 @@ protected:
 
   ros::Subscriber ecat_bus_state_sub_, odom_sub_, dbus_sub_, track_sub_, referee_sub_, capacity_sub_, game_status_sub_,
       joint_state_sub_, game_robot_hp_sub_, actuator_state_sub_, power_heat_data_sub_, gimbal_des_error_sub_,
-      game_robot_status_sub_, suggest_fire_sub_, shoot_beforehand_cmd_sub_, shoot_data_sub_;
+      game_robot_status_sub_, suggest_fire_sub_, shoot_beforehand_cmd_sub_, shoot_data_sub_, ballistic_solution_sub_,
+      protect_state_sub_;
 
   sensor_msgs::JointState joint_state_;
   rm_msgs::TrackData track_data_;
@@ -171,11 +179,10 @@ protected:
   ros::NodeHandle nh_;
 
   ros::Time referee_last_get_stamp_;
-  bool remote_is_open_{ false }, referee_is_online_ = false;
-  bool ecat_bus_is_online_{ true };
+  bool remote_is_open_{ false }, referee_is_online_{ false }, ecat_bus_is_online_{ true };
   int state_ = PASSIVE;
-  int robot_id_, chassis_power_;
-  int chassis_output_on_ = 0, gimbal_output_on_ = 0, shooter_output_on_ = 0;
+  int robot_id_{}, chassis_power_{};
+  int chassis_output_on_{}, gimbal_output_on_{}, shooter_output_on_{};
   InputEvent robot_hp_event_, right_switch_down_event_, right_switch_mid_event_, right_switch_up_event_,
       left_switch_down_event_, left_switch_mid_event_, left_switch_up_event_, ecat_reconnected_event_;
 
