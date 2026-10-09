@@ -19,6 +19,7 @@ find_package(catkin REQUIRED
         rm_ecat_msgs
         rm_msgs
         rm_common
+        control_toolbox
         tf2_geometry_msgs
         serial
         std_msgs
@@ -48,6 +49,7 @@ catkin_package(
         rm_ecat_msgs
         rm_msgs
         rm_common
+        control_toolbox
         tf2_geometry_msgs
         std_msgs
         actionlib
