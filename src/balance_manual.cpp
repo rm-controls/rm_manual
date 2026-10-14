@@ -58,16 +58,8 @@ void BalanceManual::rightSwitchMidRise()
 void BalanceManual::ctrlZPress()
 {
   ChassisGimbalShooterCoverManual::ctrlZPress();
-  if (supply_)
-  {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FALLEN);
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::CHARGE);
-  }
-  else
-  {
-    chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
-    chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
-  }
+  chassis_cmd_sender_->setMode(rm_msgs::ChassisCmd::FOLLOW);
+  chassis_cmd_sender_->power_limit_->updateState(rm_common::PowerLimit::NORMAL);
 }
 
 void BalanceManual::shiftRelease()
@@ -96,8 +88,6 @@ void BalanceManual::wPressing()
   if (flank_)
     flank_ = !flank_;
   ChassisGimbalShooterCoverManual::wPressing();
-  if (supply_)
-    vel_cmd_sender_->setLinearXVel(x_scale_ * 0.4);
 }
 
 void BalanceManual::sPress()
@@ -114,8 +104,6 @@ void BalanceManual::sPressing()
   if (flank_)
     flank_ = !flank_;
   ChassisGimbalShooterCoverManual::sPressing();
-  if (supply_)
-    vel_cmd_sender_->setLinearXVel(x_scale_ * 0.4);
 }
 
 void BalanceManual::aPress()
@@ -130,8 +118,6 @@ void BalanceManual::aPressing()
   if (!flank_)
     flank_ = !flank_;
   ChassisGimbalShooterCoverManual::aPressing();
-  if (supply_)
-    vel_cmd_sender_->setLinearYVel(y_scale_ * 0.4);
 }
 
 void BalanceManual::dPress()
@@ -146,8 +132,6 @@ void BalanceManual::dPressing()
   if (!flank_)
     flank_ = !flank_;
   ChassisGimbalShooterCoverManual::dPressing();
-  if (supply_)
-    vel_cmd_sender_->setLinearYVel(y_scale_ * 0.4);
 }
 
 void BalanceManual::cPress()

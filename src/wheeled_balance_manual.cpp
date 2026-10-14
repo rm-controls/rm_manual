@@ -52,14 +52,7 @@ void WheeledBalanceManual::rightSwitchMidRise()
 void WheeledBalanceManual::ctrlZPress()
 {
   BalanceManual::ctrlZPress();
-  if (supply_)
-  {
-    balance_chassis_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::FALLEN);
-  }
-  else
-  {
-    balance_chassis_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
-  }
+  balance_chassis_cmd_sender_->setBalanceMode(rm_msgs::BalanceState::NORMAL);
 }
 
 void WheeledBalanceManual::vPress()

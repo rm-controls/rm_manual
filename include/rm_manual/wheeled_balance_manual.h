@@ -21,7 +21,7 @@ protected:
   void ctrlZPress() override;
   void bPress() override;
   void vPress() override;
-  void ctrlXPress();
+  void ctrlXPress() override;
   void modeFallen(ros::Duration duration);
   void modeNormalize();
   rm_common::BalanceCommandSender* balance_chassis_cmd_sender_{};
