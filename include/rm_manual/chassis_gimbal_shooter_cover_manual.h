@@ -44,7 +44,7 @@ protected:
   void cPress() override;
   void qPress() override;
   void ctrlRPressing();
-  void ctrlRRelease() override;
+  void ctrlRRelease();
   void wPress() override;
   void wPressing() override;
   void aPressing() override;
